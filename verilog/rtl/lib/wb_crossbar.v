@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  OMS 8051 cores common library Module                        ////
+////  yifive common library Module                                ////
 ////                                                              ////
-////  This file is part of the OMS 8051 cores project             ////
-////  http://www.opencores.org/cores/oms8051mini/                 ////
+////  This file is part of the yifive cores project               ////
+////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
 ////  Description                                                 ////
-////  OMS 8051 definitions.                                       ////
+////     This module  does the WBbone crossbar network            ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -15,12 +15,10 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-////  Revision : Nov 26, 2016                                    
-////      v-0.0 - Dinesh.A, Nov 26, 2016
-////          1. Initial Version
-////      v-0.1 - Dinesh.A, Jan 19, 2017
-////          1. Lint warning fixes, Seperated resetable and non 
-//               resetable logic                        
+////  Revision :                                                  ////
+////     v0:    Nov 26, 2016, Dinesh A                            ////
+////            This files copied from my open core               ////
+////             turbo8051 project                                ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

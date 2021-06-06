@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  OMS 8051 cores common library Module                        ////
+////  yifive common library Module                                ////
 ////                                                              ////
-////  This file is part of the OMS 8051 cores project             ////
-////  http://www.opencores.org/cores/oms8051mini/                 ////
+////  This file is part of the yifive cores project               ////
+////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
-////  Description                                                 ////
-////  OMS 8051 definitions.                                       ////
+////  Description:                                                ////
+////     This module does the DMA to westboone I/f                ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -14,7 +14,10 @@
 ////  Author(s):                                                  ////
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
-////  Revision : Nov 26, 2016                                     //// 
+////  Revision :                                                  ////
+////     v0:    Nov 26, 2016, Dinesh A                            ////
+////            This files copied from my open core               ////
+////             turbo8051 project                                ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
