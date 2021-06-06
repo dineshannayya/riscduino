@@ -27,7 +27,32 @@ set ::env(DESIGN_NAME) scr1_top_axi
 
 # Change if needed
 set ::env(VERILOG_FILES) [glob  \
-            $::env(DESIGN_DIR)/synth/syntacore.sv ]
+	../src/core/pipeline/scr1_pipe_top.sv  \
+	../src/core/scr1_core_top.sv  \
+	../src/core/scr1_dm.sv  \
+	../src/core/scr1_tapc_synchronizer.sv  \
+	../src/core/scr1_clk_ctrl.sv  \
+	../src/core/scr1_scu.sv  \
+	../src/core/scr1_tapc.sv  \
+	../src/core/scr1_tapc_shift_reg.sv  \
+	../src/core/scr1_dmi.sv  \
+	../src/core/primitives/scr1_reset_cells.sv  \
+	../src/core/pipeline/scr1_pipe_ifu.sv  \
+	../src/core/pipeline/scr1_pipe_idu.sv  \
+	../src/core/pipeline/scr1_pipe_exu.sv  \
+	../src/core/pipeline/scr1_pipe_mprf.sv  \
+	../src/core/pipeline/scr1_pipe_csr.sv  \
+	../src/core/pipeline/scr1_pipe_ialu.sv  \
+	../src/core/pipeline/scr1_pipe_lsu.sv  \
+	../src/core/pipeline/scr1_pipe_hdu.sv  \
+	../src/core/pipeline/scr1_pipe_tdu.sv  \
+	../src/core/pipeline/scr1_ipic.sv   \
+	../src/top/scr1_dmem_router.sv   \
+	../src/top/scr1_imem_router.sv   \
+	../src/top/scr1_tcm.sv   \
+	../src/top/scr1_timer.sv   \
+	../src/top/scr1_top_axi.sv   \
+	../src/top/scr1_mem_axi.sv  ]
 
 #set ::env(VERILOG_FILES_BLACKBOX) [glob  \
 #            $::env(DESIGN_DIR)/src/top/scr1_dp_memory.sv ]
