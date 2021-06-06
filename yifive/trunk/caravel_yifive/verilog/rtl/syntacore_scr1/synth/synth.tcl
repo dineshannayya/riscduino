@@ -27,7 +27,7 @@ set ::env(DESIGN_NAME) scr1_top_axi
 
 # Change if needed
 set ::env(VERILOG_FILES) [glob  \
-            $::env(DESIGN_DIR)/synth/pyfive.sv ]
+            $::env(DESIGN_DIR)/synth/syntacore.sv ]
 
 #set ::env(VERILOG_FILES_BLACKBOX) [glob  \
 #            $::env(DESIGN_DIR)/src/top/scr1_dp_memory.sv ]
