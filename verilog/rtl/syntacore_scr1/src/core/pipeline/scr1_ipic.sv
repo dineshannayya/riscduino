@@ -58,12 +58,12 @@ module scr1_ipic
 //-------------------------------------------------------------------------------
 // Local types declaration
 //-------------------------------------------------------------------------------
-typedef struct {
+typedef struct packed { // cp.6
     logic                                   vd;
     logic                                   idx;
 } type_scr1_search_one_2_s;
 
-typedef struct {
+typedef struct packed { // cp.6
     logic                                   vd;
     logic   [SCR1_IRQ_VECT_WIDTH-1:0]       idx;
 } type_scr1_search_one_16_s;
@@ -93,9 +93,9 @@ function automatic type_scr1_search_one_2_s scr1_search_one_2(
 begin
     tmp.vd  = |din;
     tmp.idx = ~din[0];
-    return  tmp;
+    scr1_search_one_2 =  tmp;
 end
-endfunction : scr1_search_one_2
+endfunction
 
 function automatic type_scr1_search_one_16_s scr1_search_one_16(
     input   logic [15:0]    din
@@ -109,26 +109,23 @@ begin
     logic [1:0]         stage2_idx [3:0];
     logic [2:0]         stage3_idx [1:0];
     type_scr1_search_one_16_s result;
-
+    integer i; // cp.17
     // Stage 1
-    for (int unsigned i=0; i<8; ++i) begin
-        type_scr1_search_one_2_s tmp;
+    for (i=0; i<8; i=i+1) begin
         tmp = scr1_search_one_2(din[(i+1)*2-1-:2]);
         stage1_vd[i]  = tmp.vd;
         stage1_idx[i] = tmp.idx;
     end
 
     // Stage 2
-    for (int unsigned i=0; i<4; ++i) begin
-        type_scr1_search_one_2_s tmp;
+    for (i=0; i<4; i=i+1) begin
         tmp = scr1_search_one_2(stage1_vd[(i+1)*2-1-:2]);
         stage2_vd[i]  = tmp.vd;
         stage2_idx[i] = (~tmp.idx) ? {tmp.idx, stage1_idx[2*i]} : {tmp.idx, stage1_idx[2*i+1]};
     end
 
     // Stage 3
-    for (int unsigned i=0; i<2; ++i) begin
-        type_scr1_search_one_2_s tmp;
+    for (i=0; i<2; i=i+1) begin
         tmp = scr1_search_one_2(stage2_vd[(i+1)*2-1-:2]);
         stage3_vd[i]  = tmp.vd;
         stage3_idx[i] = (~tmp.idx) ? {tmp.idx, stage2_idx[2*i]} : {tmp.idx, stage2_idx[2*i+1]};
@@ -138,9 +135,9 @@ begin
     result.vd = |stage3_vd;
     result.idx = (stage3_vd[0]) ? {1'b0, stage3_idx[0]} : {1'b1, stage3_idx[1]};
 
-    return result;
+    scr1_search_one_16 = result;
 end
-endfunction : scr1_search_one_16
+endfunction
 
 //------------------------------------------------------------------------------
 // Local signals declaration
@@ -466,10 +463,10 @@ end
 
 assign ipic_ipr_clr_cond = ~irq_lvl | ipic_imr_next;
 assign ipic_ipr_clr      = ipic_ipr_clr_req & ipic_ipr_clr_cond;
-
+integer i;
 always_comb begin
     ipic_ipr_next = '0;
-    for (int unsigned i=0; i<SCR1_IRQ_VECT_NUM; ++i) begin
+    for (i=0; i<SCR1_IRQ_VECT_NUM; i=i+1) begin
         ipic_ipr_next[i] = ipic_ipr_clr[i] ? 1'b0
                          : ~ipic_imr_ff[i] ? irq_lvl[i]
                                            : ipic_ipr_ff[i] | irq_edge_detected[i];
@@ -586,13 +583,67 @@ assign ipic_icsr.line  = SCR1_IRQ_LINES_WIDTH'(ipic_idxr_ff);
 
 assign irq_req_v = ipic_ipr_ff & ipic_ier_ff;
 
+/*** Modified for Yosys handing typedef in function - dinesha
 assign irr_priority        = scr1_search_one_16(irq_req_v);
 assign irq_req_vd          = irr_priority.vd;
 assign irq_req_idx         = irr_priority.idx;
+****/
 
+always_comb 
+begin
+    casex(irq_req_v)
+	    16'bxxxx_xxxx_xxxx_xxx1 : irq_req_idx = 0;
+	    16'bxxxx_xxxx_xxxx_xx10 : irq_req_idx = 1;
+	    16'bxxxx_xxxx_xxxx_x100 : irq_req_idx = 2;
+	    16'bxxxx_xxxx_xxxx_1000 : irq_req_idx = 3;
+	    16'bxxxx_xxxx_xxx1_0000 : irq_req_idx = 4;
+	    16'bxxxx_xxxx_xx10_0000 : irq_req_idx = 5;
+	    16'bxxxx_xxxx_x100_0000 : irq_req_idx = 6;
+	    16'bxxxx_xxxx_1000_0000 : irq_req_idx = 7;
+	    16'bxxxx_xxx1_0000_0000 : irq_req_idx = 8;
+	    16'bxxxx_xx10_0000_0000 : irq_req_idx = 9;
+	    16'bxxxx_x100_0000_0000 : irq_req_idx = 10;
+	    16'bxxxx_1000_0000_0000 : irq_req_idx = 11;
+	    16'bxxx1_0000_0000_0000 : irq_req_idx = 12;
+	    16'bxx10_0000_0000_0000 : irq_req_idx = 13;
+	    16'bx100_0000_0000_0000 : irq_req_idx = 14;
+	    16'b1000_0000_0000_0000 : irq_req_idx = 15;
+	    16'b0000_0000_0000_0000 : irq_req_idx = 16;
+	    default : irq_req_idx = 16;
+    endcase
+    irq_req_vd = |irq_req_v;
+end
+
+/*** Modified for Yosys handing typedef in function - dinesha
 assign isvr_priority_eoi   = scr1_search_one_16(ipic_isvr_eoi);
 assign irq_eoi_req_vd      = isvr_priority_eoi.vd;
 assign irq_eoi_req_idx     = isvr_priority_eoi.idx;
+*************************************************/
+
+always_comb 
+begin
+    casex(ipic_isvr_eoi)
+	    16'bxxxx_xxxx_xxxx_xxx1 : irq_eoi_req_idx = 0;
+	    16'bxxxx_xxxx_xxxx_xx10 : irq_eoi_req_idx = 1;
+	    16'bxxxx_xxxx_xxxx_x100 : irq_eoi_req_idx = 2;
+	    16'bxxxx_xxxx_xxxx_1000 : irq_eoi_req_idx = 3;
+	    16'bxxxx_xxxx_xxx1_0000 : irq_eoi_req_idx = 4;
+	    16'bxxxx_xxxx_xx10_0000 : irq_eoi_req_idx = 5;
+	    16'bxxxx_xxxx_x100_0000 : irq_eoi_req_idx = 6;
+	    16'bxxxx_xxxx_1000_0000 : irq_eoi_req_idx = 7;
+	    16'bxxxx_xxx1_0000_0000 : irq_eoi_req_idx = 8;
+	    16'bxxxx_xx10_0000_0000 : irq_eoi_req_idx = 9;
+	    16'bxxxx_x100_0000_0000 : irq_eoi_req_idx = 10;
+	    16'bxxxx_1000_0000_0000 : irq_eoi_req_idx = 11;
+	    16'bxxx1_0000_0000_0000 : irq_eoi_req_idx = 12;
+	    16'bxx10_0000_0000_0000 : irq_eoi_req_idx = 13;
+	    16'bx100_0000_0000_0000 : irq_eoi_req_idx = 14;
+	    16'b1000_0000_0000_0000 : irq_eoi_req_idx = 15;
+	    16'b0000_0000_0000_0000 : irq_eoi_req_idx = 16;
+	    default : irq_eoi_req_idx = 16;
+    endcase
+    irq_eoi_req_vd = |ipic_isvr_eoi;
+end
 
 assign irq_hi_prior_pnd     = irq_req_idx < irq_serv_idx;
 

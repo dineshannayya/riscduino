@@ -154,7 +154,7 @@ logic                                           csr_icount_hit;
 
 // TDATA2 register
 logic [MTRIG_NUM-1:0]                           csr_tdata2_upd;
-logic [MTRIG_NUM-1:0] [SCR1_TDU_DATA_W-1:0]     csr_tdata2_ff;
+logic [MTRIG_NUM-1:0]                           csr_tdata2_ff [SCR1_TDU_DATA_W-1:0];
 
 //------------------------------------------------------------------------------
 // CSR read/write interface
@@ -164,8 +164,9 @@ logic [MTRIG_NUM-1:0] [SCR1_TDU_DATA_W-1:0]     csr_tdata2_ff;
 //------------------------------------------------------------------------------
 
 assign tdu2csr_resp_o = csr2tdu_req_i ? SCR1_CSR_RESP_OK : SCR1_CSR_RESP_ER;
-
+integer i;
 always_comb begin
+    i = 0; // yosys latch warning fix
     tdu2csr_rdata_o = '0;
     if (csr2tdu_req_i) begin
         case (csr2tdu_addr_i)
@@ -173,14 +174,14 @@ always_comb begin
                 tdu2csr_rdata_o = {'0, csr_tselect_ff};
             end
             SCR1_CSR_ADDR_TDU_OFFS_TDATA2 : begin
-                for(int unsigned i = 0; i < MTRIG_NUM; ++i) begin
+                for(i = 0; i < MTRIG_NUM; i=i+1) begin // cp.4
                     if(csr_tselect_ff == ALLTRIG_W'(i)) begin
                         tdu2csr_rdata_o = csr_tdata2_ff[i];
                     end
                 end
             end
             SCR1_CSR_ADDR_TDU_OFFS_TDATA1 : begin
-                for(int unsigned i = 0; i < MTRIG_NUM; ++i) begin
+                for(i = 0; i < MTRIG_NUM; i=i+1) begin // cp.4
                     if(csr_tselect_ff == ALLTRIG_W'(i)) begin
                         tdu2csr_rdata_o[SCR1_TDU_TDATA1_TYPE_HI:
                                        SCR1_TDU_TDATA1_TYPE_LO]      = SCR1_TDU_MCONTROL_TYPE_VAL;
@@ -221,7 +222,7 @@ always_comb begin
 `endif // SCR1_TDU_ICOUNT_EN
             end
             SCR1_CSR_ADDR_TDU_OFFS_TINFO : begin
-                for(int unsigned i = 0; i < MTRIG_NUM; ++i) begin
+                for(i = 0; i < MTRIG_NUM; i=i+1) begin // cp.4
                     if(csr_tselect_ff == ALLTRIG_W'(i)) begin
                         tdu2csr_rdata_o[SCR1_TDU_MCONTROL_TYPE_VAL] = 1'b1;
                     end
@@ -265,8 +266,9 @@ end
 
 // Register selection
 //------------------------------------------------------------------------------
-
+integer k;
 always_comb begin
+    k = 0; // yosys latch warning fix
     csr_addr_tselect  = 1'b0;
     csr_addr_tdata2   = '0;
     csr_addr_mcontrol = '0;
@@ -280,9 +282,9 @@ always_comb begin
                 csr_addr_tselect = 1'b1;
             end
             SCR1_CSR_ADDR_TDU_OFFS_TDATA1 : begin
-                for(int unsigned i = 0; i < MTRIG_NUM; ++i) begin
-                    if(csr_tselect_ff == ALLTRIG_W'(i)) begin
-                        csr_addr_mcontrol[i] = 1'b1;
+                for(k = 0; k < MTRIG_NUM; k=k+1) begin
+                    if(csr_tselect_ff == ALLTRIG_W'(k)) begin
+                        csr_addr_mcontrol[k] = 1'b1;
                     end
                 end
 `ifdef SCR1_TDU_ICOUNT_EN
@@ -292,9 +294,9 @@ always_comb begin
 `endif // SCR1_TDU_ICOUNT_EN
             end
             SCR1_CSR_ADDR_TDU_OFFS_TDATA2 : begin
-                for(int unsigned i = 0; i < MTRIG_NUM; ++i) begin
-                    if(csr_tselect_ff == ALLTRIG_W'(i) ) begin
-                        csr_addr_tdata2[i] = 1'b1;
+                for(k = 0; k < MTRIG_NUM; k=k+1) begin // cp.4
+                    if(csr_tselect_ff == ALLTRIG_W'(k) ) begin
+                        csr_addr_tdata2[k] = 1'b1;
                     end
                 end
             end
@@ -398,7 +400,7 @@ assign csr_icount_skip_next = csr_icount_wr_req    ? csr_wr_data[SCR1_TDU_ICOUNT
 
 genvar trig;
 generate
-for (trig = 0; $unsigned(trig) < MTRIG_NUM; ++trig) begin : gblock_mtrig
+for (trig = 0; $unsigned(trig) < MTRIG_NUM; trig=trig+1) begin : gblock_mtrig
 
 assign csr_mcontrol_wr_req[trig] = csr_addr_mcontrol[trig] & csr_wr_req;
 assign csr_mcontrol_clk_en[trig] = clk_en
@@ -490,7 +492,7 @@ assign tdu2exu_ibrkpt_exc_req_o = |csr_mcontrol_exec_hit | csr_icount_hit;
 //------------------------------------------------------------------------------
 
 generate
-for (trig = 0; $unsigned(trig) < MTRIG_NUM; ++trig) begin : gblock_break_trig
+for (trig = 0; $unsigned(trig) < MTRIG_NUM; trig=trig+1) begin : gblock_break_trig
 assign csr_mcontrol_exec_hit[trig] = ~tdu_dsbl_i
                                    & csr_mcontrol_m_ff[trig]
                                    & csr_mcontrol_exec_ff[trig]
@@ -509,7 +511,7 @@ assign tdu2lsu_ibrkpt_exc_req_o = |csr_mcontrol_exec_hit | csr_icount_hit;
 //------------------------------------------------------------------------------
 
 generate
-for( trig = 0; $unsigned(trig) < MTRIG_NUM; ++trig ) begin : gblock_watch_trig
+for( trig = 0; $unsigned(trig) < MTRIG_NUM; trig=trig+1 ) begin : gblock_watch_trig
 assign csr_mcontrol_ldst_hit[trig] = ~tdu_dsbl_i
                                    & csr_mcontrol_m_ff[trig]
                                    & lsu2tdu_dmon_i.vd
@@ -529,12 +531,12 @@ assign tdu2lsu_brk_en_o = |csr_mcontrol_m_ff | csr_icount_m_ff;
 //------------------------------------------------------------------------------
 // TDU <-> HDU interface
 //------------------------------------------------------------------------------
-
+integer j;
 always_comb begin
     tdu2hdu_dmode_req_o = 1'b0;
 
-    for(int unsigned i = 0; i < MTRIG_NUM; ++i) begin
-        tdu2hdu_dmode_req_o |= (csr_mcontrol_action_ff[i] & exu2tdu_bp_retire_i[i]);
+    for(j = 0; j < MTRIG_NUM; j=j+1) begin
+        tdu2hdu_dmode_req_o |= (csr_mcontrol_action_ff[j] & exu2tdu_bp_retire_i[j]);
     end
 `ifdef SCR1_TDU_ICOUNT_EN
     tdu2hdu_dmode_req_o |= (csr_icount_action_ff & exu2tdu_bp_retire_i[ALLTRIG_NUM-1]);

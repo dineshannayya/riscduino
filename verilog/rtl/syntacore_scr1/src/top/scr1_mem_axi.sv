@@ -90,9 +90,9 @@ begin
                      default:  axsize = 'x;
     endcase
 
-    return axsize;
+    width2axsize = axsize; // cp.11
 end
-endfunction: width2axsize
+endfunction
 
 typedef struct packed {
     type_scr1_mem_width_e                               axi_width;
@@ -108,9 +108,21 @@ typedef struct packed {
 } type_scr1_req_status_s;
 
 
-type_scr1_request_s         [SCR1_REQ_BUF_SIZE-1:0]     req_fifo;
-type_scr1_req_status_s      [SCR1_REQ_BUF_SIZE-1:0]     req_status;
-type_scr1_req_status_s      [SCR1_REQ_BUF_SIZE-1:0]     req_status_new;
+//type_scr1_request_s         [SCR1_REQ_BUF_SIZE-1:0]   req_fifo;
+logic [1:0]                                             req_fifo_axi_width[SCR1_REQ_BUF_SIZE-1:0];
+logic [SCR1_ADDR_WIDTH-1:0]                             req_fifo_axi_addr [SCR1_REQ_BUF_SIZE-1:0];
+logic [31:0]                                            req_fifo_axi_wdata [SCR1_REQ_BUF_SIZE-1:0];
+//type_scr1_req_status_s      [SCR1_REQ_BUF_SIZE-1:0]   req_status;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_req_write ;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_req_addr ;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_req_data ;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_req_resp ;
+//type_scr1_req_status_s      [SCR1_REQ_BUF_SIZE-1:0]   req_status_new;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_new_req_write ;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_new_req_addr ;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_new_req_data ;
+logic   [SCR1_REQ_BUF_SIZE-1:0]                         req_status_new_req_resp ;
+
 logic                       [SCR1_REQ_BUF_SIZE-1:0]     req_status_en;
 logic               [$clog2(SCR1_REQ_BUF_SIZE)-1:0]     req_aval_ptr;
 logic               [$clog2(SCR1_REQ_BUF_SIZE)-1:0]     req_proc_ptr;
@@ -124,30 +136,30 @@ logic                                                   force_write;
 
 
 assign core_req_ack =   ~axi_reinit                        &
-                        ~req_status[req_aval_ptr].req_resp &
+                        ~req_status_req_resp[req_aval_ptr] &
                          core_resp!=SCR1_MEM_RESP_RDY_ER;
 
 
-assign rready      = ~req_status[req_done_ptr].req_write;
-assign bready      =  req_status[req_done_ptr].req_write;
+assign rready      = ~req_status_req_write[req_done_ptr];
+assign bready      =  req_status_req_write[req_done_ptr];
 
 
-assign force_read  = bit'(SCR1_AXI_REQ_BP) & core_req & core_req_ack & req_aval_ptr==req_proc_ptr & core_cmd==SCR1_MEM_CMD_RD;
-assign force_write = bit'(SCR1_AXI_REQ_BP) & core_req & core_req_ack & req_aval_ptr==req_proc_ptr & core_cmd==SCR1_MEM_CMD_WR;
+assign force_read  = SCR1_AXI_REQ_BP & core_req & core_req_ack & req_aval_ptr==req_proc_ptr & core_cmd==SCR1_MEM_CMD_RD;
+assign force_write = SCR1_AXI_REQ_BP & core_req & core_req_ack & req_aval_ptr==req_proc_ptr & core_cmd==SCR1_MEM_CMD_WR;
 
-
+integer i;
 always_comb begin: idle_status
     core_idle = 1'b1;
-    for (int unsigned i=0; i<SCR1_REQ_BUF_SIZE; ++i) begin
-        core_idle &= req_status[i].req_resp==1'b0;
+    for (i=0; i<SCR1_REQ_BUF_SIZE; i=i+1) begin
+        core_idle &= req_status_req_resp[i]==1'b0;
     end
 end
 
 always_ff @(posedge clk) begin
     if (core_req & core_req_ack) begin
-        req_fifo[req_aval_ptr].axi_width <= core_width;
-        req_fifo[req_aval_ptr].axi_addr  <= core_addr;
-        req_fifo[req_aval_ptr].axi_wdata <= core_wdata;
+        req_fifo_axi_width[req_aval_ptr] <= core_width;
+        req_fifo_axi_addr[req_aval_ptr]  <= core_addr;
+        req_fifo_axi_wdata[req_aval_ptr] <= core_wdata;
     end
 end
 
@@ -158,49 +170,59 @@ end
 always_comb begin
     // Default
     req_status_en  = '0; // No update
-    req_status_new = req_status; // Hold request info
+    req_status_new_req_write = req_status_req_write; // Hold request info
+    req_status_new_req_addr  = req_status_req_addr; // Hold request info
+    req_status_new_req_data  = req_status_req_data; // Hold request info
+    req_status_new_req_resp  = req_status_req_resp; // Hold request info
 
     // Update status on new core request
     if( core_req & core_req_ack ) begin
         req_status_en[req_aval_ptr]            = 1'd1;
 
-        req_status_new[req_aval_ptr].req_resp  = 1'd1;
-        req_status_new[req_aval_ptr].req_write = core_cmd == SCR1_MEM_CMD_WR;
+        req_status_new_req_resp[req_aval_ptr]  = 1'd1;
+        req_status_new_req_write[req_aval_ptr] = core_cmd == SCR1_MEM_CMD_WR;
 
-        req_status_new[req_aval_ptr].req_addr  = ~( (force_read & arready) |
+        req_status_new_req_addr[req_aval_ptr]  = ~( (force_read & arready) |
                                                     (force_write & awready) );
 
-        req_status_new[req_aval_ptr].req_data  = ~( (force_write & wready & awlen == 8'd0) |
+        req_status_new_req_data[req_aval_ptr]  = ~( (force_write & wready & awlen == 8'd0) |
                                                     (~force_write & core_cmd == SCR1_MEM_CMD_RD) );
     end
 
     // Update status on AXI address phase
     if ( (awvalid & awready) | (arvalid & arready) ) begin
         req_status_en[req_proc_ptr]           = 1'd1;
-        req_status_new[req_proc_ptr].req_addr = 1'd0;
+        req_status_new_req_addr[req_proc_ptr] = 1'd0;
     end
 
     // Update status on AXI data phase
     if ( wvalid & wready & wlast ) begin
         req_status_en[req_proc_ptr]           = 1'd1;
-        req_status_new[req_proc_ptr].req_data = 1'd0;
+        req_status_new_req_data[req_proc_ptr] = 1'd0;
     end
 
     // Update status when AXI finish transaction
     if ( (bvalid & bready) | (rvalid & rready & rlast) ) begin
         req_status_en[req_done_ptr]           = 1'd1;
-        req_status_new[req_done_ptr].req_resp = 1'd0;
+        req_status_new_req_resp[req_done_ptr] = 1'd0;
     end
 end
 
 // Request Status Queue register
+integer j;
 always_ff @(negedge rst_n, posedge clk) begin
     if (~rst_n) begin
-        req_status <= '0;
+        req_status_req_write <= '0;
+        req_status_req_addr <= '0;
+        req_status_req_data <= '0;
+        req_status_req_resp <= '0;
     end else begin
-        for (int unsigned i = 0; i < SCR1_REQ_BUF_SIZE; ++i) begin
-            if ( req_status_en[i] ) begin
-                req_status[i] <= req_status_new[i];
+        for (j = 0; j < SCR1_REQ_BUF_SIZE; j = j+1) begin // cp.4
+            if ( req_status_en[j] ) begin
+                req_status_req_write[j] <= req_status_new_req_write[j];
+                req_status_req_addr[j]  <= req_status_new_req_addr[j];
+                req_status_req_data[j]  <= req_status_new_req_data[j];
+                req_status_req_resp[j]  <= req_status_new_req_resp[j];
             end
         end
     end
@@ -216,9 +238,9 @@ always_ff @(negedge rst_n, posedge clk) begin
         req_proc_ptr <= '0;
     end else begin
         if ((                                                    awvalid & awready & wvalid & wready & wlast) |
-            (~force_write & ~req_status[req_proc_ptr].req_data & awvalid & awready                          ) |
-            (~force_write & ~req_status[req_proc_ptr].req_addr &                     wvalid & wready & wlast) |
-            (               ~req_status[req_proc_ptr].req_data & arvalid & arready                          )  ) begin
+            (~force_write & ~req_status_req_data[req_proc_ptr] & awvalid & awready                          ) |
+            (~force_write & ~req_status_req_addr[req_proc_ptr] &                     wvalid & wready & wlast) |
+            (               ~req_status_req_data[req_proc_ptr] & arvalid & arready                          )  ) begin
 
             req_proc_ptr <= req_proc_ptr + 1'b1;
         end
@@ -229,7 +251,7 @@ always_ff @(negedge rst_n, posedge clk) begin
     if (~rst_n) begin
         req_done_ptr <= '0;
     end else begin
-        if ((bvalid & bready | rvalid & rready & rlast) & req_status[req_done_ptr].req_resp) begin
+        if ((bvalid & bready | rvalid & rready & rlast) & req_status_req_resp[req_done_ptr]) begin
 
             req_done_ptr <= req_done_ptr + 1'b1;
         end
@@ -238,19 +260,19 @@ end
 
 
 
-assign arvalid = req_status[req_proc_ptr].req_addr & ~req_status[req_proc_ptr].req_write | force_read;
-assign awvalid = req_status[req_proc_ptr].req_addr &  req_status[req_proc_ptr].req_write | force_write;
-assign  wvalid = req_status[req_proc_ptr].req_data &  req_status[req_proc_ptr].req_write | force_write;
+assign arvalid = req_status_req_addr[req_proc_ptr] & ~req_status_req_write[req_proc_ptr] | force_read;
+assign awvalid = req_status_req_addr[req_proc_ptr] &  req_status_req_write[req_proc_ptr] | force_write;
+assign  wvalid = req_status_req_data[req_proc_ptr] &  req_status_req_write[req_proc_ptr] | force_write;
 
-assign araddr  = (~force_read )? req_fifo[req_proc_ptr].axi_addr : core_addr;
-assign awaddr  = (~force_write)? req_fifo[req_proc_ptr].axi_addr : core_addr;
+assign araddr  = (~force_read )? req_fifo_axi_addr[req_proc_ptr] : core_addr;
+assign awaddr  = (~force_write)? req_fifo_axi_addr[req_proc_ptr] : core_addr;
 
 always_comb begin
-    if (bvalid & bready & req_status[req_done_ptr].req_resp) begin
+    if (bvalid & bready & req_status_req_resp[req_done_ptr]) begin
         rcvd_resp = (bresp==2'b00)? SCR1_MEM_RESP_RDY_OK :
                                     SCR1_MEM_RESP_RDY_ER;
     end else begin
-        if (rvalid & rready & rlast & req_status[req_done_ptr].req_resp) begin
+        if (rvalid & rready & rlast & req_status_req_resp[req_done_ptr]) begin
             rcvd_resp = (rresp==2'b00)? SCR1_MEM_RESP_RDY_OK :
                                         SCR1_MEM_RESP_RDY_ER;
         end else begin
@@ -260,7 +282,8 @@ always_comb begin
 end
 
 
-
+wire [SCR1_ADDR_WIDTH-1:0] CurAddr1 = req_fifo_axi_addr[req_proc_ptr];
+wire [1:0]  bShift1 = CurAddr1[1:0];
 
 // Write data signals adaptation
 always_comb begin
@@ -272,10 +295,10 @@ always_comb begin
                          default:  wstrb = 'x;
         endcase
     else
-        case (req_fifo[req_proc_ptr].axi_width)
-            SCR1_MEM_WIDTH_BYTE :  wstrb = 4'h1 << req_fifo[req_proc_ptr].axi_addr[1:0];
-            SCR1_MEM_WIDTH_HWORD:  wstrb = 4'h3 << req_fifo[req_proc_ptr].axi_addr[1:0];
-            SCR1_MEM_WIDTH_WORD :  wstrb = 4'hf << req_fifo[req_proc_ptr].axi_addr[1:0];
+        case (req_fifo_axi_width[req_proc_ptr])
+            SCR1_MEM_WIDTH_BYTE :  wstrb = 4'h1 << bShift1;
+            SCR1_MEM_WIDTH_HWORD:  wstrb = 4'h3 << bShift1;
+            SCR1_MEM_WIDTH_WORD :  wstrb = 4'hf << bShift1;
                          default:  wstrb = 'x;
         endcase
 end
@@ -283,17 +306,17 @@ end
 
 
 assign wdata = (force_write)?                       core_wdata << (8*                       core_addr[1:0]) :
-                              req_fifo[req_proc_ptr].axi_wdata << (8* req_fifo[req_proc_ptr].axi_addr[1:0]);
+                              req_fifo_axi_wdata[req_proc_ptr] << (8* bShift1);
 
 
 // Read data adaptation
 always_comb begin
-    case (req_fifo[req_done_ptr].axi_width)
-        SCR1_MEM_WIDTH_BYTE :  rcvd_rdata = rdata >> (8*req_fifo[req_done_ptr].axi_addr[1:0]);
-        SCR1_MEM_WIDTH_HWORD:  rcvd_rdata = rdata >> (8*req_fifo[req_done_ptr].axi_addr[1:0]);
-        SCR1_MEM_WIDTH_WORD :  rcvd_rdata = rdata >> (8*req_fifo[req_done_ptr].axi_addr[1:0]);
-                     default:  rcvd_rdata = 'x;
-    endcase
+   case (req_fifo_axi_width[req_done_ptr])
+        SCR1_MEM_WIDTH_BYTE :  rcvd_rdata = rdata >> (8*bShift2);
+        SCR1_MEM_WIDTH_HWORD:  rcvd_rdata = rdata >> (8*bShift2);
+        SCR1_MEM_WIDTH_WORD :  rcvd_rdata = rdata >> (8*bShift2);
+        default:  rcvd_rdata = 'x;
+    endcase 
 end
 
 
@@ -317,7 +340,7 @@ endgenerate
 // AXI interface assignments
 assign awid     = SCR1_AXI_IDWIDTH'(1);
 assign awlen    = 8'd0;
-assign awsize   = (force_write) ? width2axsize(core_width) : width2axsize(req_fifo[req_proc_ptr].axi_width);
+assign awsize   = (force_write) ? width2axsize(core_width) : width2axsize(req_fifo_axi_width[req_proc_ptr]);
 assign awburst  = 2'd1;
 assign awcache  = 4'd2;
 assign awlock   = '0;
@@ -328,7 +351,7 @@ assign awqos    = '0;
 
 assign arid     = SCR1_AXI_IDWIDTH'(0);
 assign arlen    = 8'd0;
-assign arsize   = (force_read) ? width2axsize(core_width) : width2axsize(req_fifo[req_proc_ptr].axi_width);
+assign arsize   = (force_read) ? width2axsize(core_width) : width2axsize(req_fifo_axi_width[req_proc_ptr]);
 assign arburst  = 2'd1;
 assign arcache  = 4'd2;
 assign arprot   = '0;

@@ -487,16 +487,17 @@ assign div_dvdnd_lo_next = (~mdu_cmd_div | mdu_fsm_corr) ? '0
 //-------------------------------------------------------------------------------
 // MDU adder
 //-------------------------------------------------------------------------------
+logic           sgn;
+logic           inv;
 
 always_comb begin
     mdu_sum_sub    = 1'b0;
     mdu_sum_op1    = '0;
     mdu_sum_op2    = '0;
+    sgn            = '0; // yosys - latch fix
+    inv            = '0; // yosys - latch fix
     case (mdu_cmd)
         SCR1_IALU_MDU_DIV : begin
-            logic           sgn;
-            logic           inv;
-
             sgn         = mdu_fsm_corr ? div_op1_is_neg ^ mdu_res_c_ff
                         : mdu_fsm_idle ? 1'b0
                                        : ~mdu_res_lo_ff[0];
@@ -683,6 +684,7 @@ SCR1_SVA_IALU_ILL_STATE : assert property (
     $onehot0({~exu2ialu_rvm_cmd_vd_i, mdu_fsm_iter, mdu_fsm_corr})
     ) else $error("IALU Error: illegal state");
 
+`ifndef VERILATOR    
 SCR1_SVA_IALU_JUMP_FROM_IDLE : assert property (
     @(negedge clk) disable iff (~rst_n)
     (mdu_fsm_idle & (~exu2ialu_rvm_cmd_vd_i | ~mdu_iter_req)) |=> mdu_fsm_idle
@@ -712,6 +714,7 @@ SCR1_SVA_IALU_CORR_TO_IDLE : assert property (
     @(negedge clk) disable iff (~rst_n)
     mdu_fsm_corr |=> mdu_fsm_idle
     ) else $error("EXU Error: illegal state stay in CORR");
+`endif // VERILATOR
 
 `endif // SCR1_RVM_EXT
 

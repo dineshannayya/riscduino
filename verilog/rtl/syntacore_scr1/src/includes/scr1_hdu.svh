@@ -17,7 +17,7 @@
 // Parameters
 //==============================================================================
 //localparam int unsigned SCR1_HDU_DEBUGCSR_BASE_ADDR      = 12'h7B0;
-localparam int unsigned SCR1_HDU_DEBUGCSR_ADDR_SPAN      = SCR1_CSR_ADDR_HDU_MSPAN;
+localparam int unsigned SCR1_HDU_DEBUGCSR_ADDR_SPAN      = 4; // YOSYS FIX
 localparam int unsigned SCR1_HDU_DEBUGCSR_ADDR_WIDTH     = $clog2(SCR1_HDU_DEBUGCSR_ADDR_SPAN);
 localparam bit [3:0]    SCR1_HDU_DEBUGCSR_DCSR_XDEBUGVER = 4'h4;
 localparam int unsigned SCR1_HDU_PBUF_ADDR_SPAN          = 8;

@@ -96,9 +96,9 @@ begin
             tmp = SCR1_HSIZE_ERR;
         end
     endcase
-    return tmp;
+    scr1_conv_mem2ahb_width =  tmp; // cp.11
 end
-endfunction : scr1_conv_mem2ahb_width
+endfunction
 
 function automatic logic[SCR1_AHB_WIDTH-1:0] scr1_conv_mem2ahb_wdata (
     input   logic   [1:0]                   dmem_addr,
@@ -145,9 +145,9 @@ begin
         default : begin
         end
     endcase
-    return tmp;
+    scr1_conv_mem2ahb_wdata = tmp;
 end
-endfunction : scr1_conv_mem2ahb_wdata
+endfunction
 
 function automatic logic[SCR1_AHB_WIDTH-1:0] scr1_conv_ahb2mem_rdata (
     input   logic [2:0]                 hwidth,
@@ -182,9 +182,9 @@ begin
         default : begin
         end
     endcase
-    return tmp;
+    scr1_conv_ahb2mem_rdata = tmp;
 end
-endfunction : scr1_conv_ahb2mem_rdata
+endfunction
 
 //-------------------------------------------------------------------------------
 // Local signal declaration
