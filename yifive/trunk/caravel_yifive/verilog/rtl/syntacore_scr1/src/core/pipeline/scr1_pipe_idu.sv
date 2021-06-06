@@ -80,10 +80,10 @@ assign idu2exu_req_o  = ifu2idu_vd_i;
 assign instr          = ifu2idu_instr_i;
 
 // RVI / RVC
-assign instr_type   = type_scr1_instr_type_e'(instr[1:0]);
+assign instr_type   = instr[1:0];
 
 // RVI / RVC fields
-assign rvi_opcode   = type_scr1_rvi_opcode_e'(instr[6:2]);                          // RVI
+assign rvi_opcode   = instr[6:2];                          // RVI
 assign funct3       = (instr_type == SCR1_INSTR_RVI) ? instr[14:12] : instr[15:13]; // RVI / RVC
 assign funct7       = instr[31:25];                                                 // RVI
 assign funct12      = instr[31:20];                                                 // RVI (SYSTEM)

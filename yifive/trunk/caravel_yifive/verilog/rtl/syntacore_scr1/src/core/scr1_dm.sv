@@ -1131,9 +1131,9 @@ always_comb begin
 
         ABS_STATE_ERR: begin
             if (dmi_req_abstractcs & dmi2dm_wr_i) begin
-                abstractcs_cmderr_next = type_scr1_abs_err_e'(logic'(abstractcs_cmderr_ff)
+                abstractcs_cmderr_next = abstractcs_cmderr_ff  // cp.7
                                        & (~dmi2dm_wdata_i[SCR1_DBG_ABSTRACTCS_CMDERR_HI:
-                                                          SCR1_DBG_ABSTRACTCS_CMDERR_LO]));
+                                                          SCR1_DBG_ABSTRACTCS_CMDERR_LO]);
             end
         end
 

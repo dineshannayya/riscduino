@@ -187,7 +187,7 @@ always_ff @(posedge clk, negedge pwrup_rst_n_sync) begin
 end
 
 assign tapc_shift_next = tapc_dr_cap_req  ? tapc_shadow_ff
-                       : tapc_dr_shft_req ? {tapcsync2scu_ch_tdi_i, tapc_shift_ff[$bits(type_scr1_scu_sysctrl_dr_s)-1:1]}
+                       : tapc_dr_shft_req ? {tapcsync2scu_ch_tdi_i, tapc_shift_ff[SCR1_SCU_DR_SYSCTRL_WIDTH-1:1]}// cp.5
                                           : tapc_shift_ff;
 
 // TAPC shadow register
@@ -319,12 +319,12 @@ assign scu_status_ff_posedge = scu_status_ff & ~scu_status_ff_dly;
 // STICKY_STATUS register
 //------------------------------------------------------------------------------
 // For every output reset signal shows if it was asserted since the last bit clearing
-
+integer i;
 always_ff @(posedge clk, negedge pwrup_rst_n_sync) begin
     if (~pwrup_rst_n_sync) begin
         scu_sticky_sts_ff <= '0;
     end else begin
-        for (int unsigned i = 0; i < $bits(type_scr1_scu_sysctrl_status_reg_s); ++i) begin
+        for (i = 0; i < SCR1_SCU_SYSCTRL_STATUS_REG_WIDTH ; i=i+1) begin // cp.4
             if (scu_status_ff_posedge[i]) begin
                 scu_sticky_sts_ff[i] <= 1'b1;
             end else if (scu_sticky_sts_wr_req) begin
@@ -483,6 +483,7 @@ SCR1_SVA_SCU_RESETS_XCHECK : assert property (
     !$isunknown({pwrup_rst_n, rst_n, cpu_rst_n, ndm_rst_n_i, hart_rst_n_i})
 ) else $error("SCU resets error: unknown values of input resets");
 
+`ifndef VERILATOR
 // Qualifiers checks
 SCR1_SVA_SCU_SYS2SOC_QLFY_CHECK : assert property (
     @(negedge clk) disable iff (~pwrup_rst_n)
@@ -508,7 +509,7 @@ SCR1_SVA_SCU_HDU2DM_QLFY_CHECK : assert property (
     @(negedge clk) disable iff (~pwrup_rst_n)
     $fell(hdu_rst_n_o) |-> $fell($past(hdu2dm_rdc_qlfy_o))
 ) else $error("SCU hdu2dm qlfy error: qlfy wasn't raised prior to reset");
-
+`endif // VERILATOR
 `endif // SCR1_TRGT_SIMULATION
 
 endmodule : scr1_scu

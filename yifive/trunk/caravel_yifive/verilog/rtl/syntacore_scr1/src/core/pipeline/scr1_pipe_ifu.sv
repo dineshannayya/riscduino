@@ -420,8 +420,10 @@ assign q_wr_en = imem_resp_vd & ~q_flush_req;
 
 always_ff @(posedge clk, negedge rst_n) begin
     if (~rst_n) begin
+     `ifdef SCR1_MPRF_RST_EN // Two dimensional array init not allowed in YOSYS - cp.13
         q_data  <= '{SCR1_IFU_Q_SIZE_HALF{'0}};
         q_err   <= '{SCR1_IFU_Q_SIZE_HALF{1'b0}};
+     `endif
     end else if (q_wr_en) begin
         case (q_wr_size)
             SCR1_IFU_QUEUE_WR_HI    : begin
@@ -777,12 +779,12 @@ SCR1_SVA_IFU_XCHECK_REQ : assert property (
     ) else $error("IFU Error: unknown {ifu2imem_addr_o, ifu2imem_cmd_o}");
 
 // Behavior checks
-
+`ifndef VERILATOR
 SCR1_SVA_IFU_DRC_UNDERFLOW : assert property (
     @(negedge clk) disable iff (~rst_n)
     ~imem_resp_discard_req |=> ~(imem_resp_discard_cnt == SCR1_TXN_CNT_W'('1))
     ) else $error("IFU Error: imem_resp_discard_cnt underflow");
-
+`endif // VERILATOR
 SCR1_SVA_IFU_DRC_RANGE : assert property (
     @(negedge clk) disable iff (~rst_n)
     (imem_resp_discard_cnt >= 0) & (imem_resp_discard_cnt <= imem_pnd_txns_cnt)
@@ -795,6 +797,7 @@ SCR1_SVA_IFU_QUEUE_OVF : assert property (
                                                                 : (q_wr_size == SCR1_IFU_QUEUE_WR_NONE))
     ) else $error("IFU Error: queue overflow");
 
+`ifndef VERILATOR
 SCR1_SVA_IFU_IMEM_ERR_BEH : assert property (
     @(negedge clk) disable iff (~rst_n)
     (imem_resp_er & ~imem_resp_discard_req & ~exu2ifu_pc_new_req_i) |=>
@@ -805,17 +808,18 @@ SCR1_SVA_IFU_NEW_PC_REQ_BEH : assert property (
     @(negedge clk) disable iff (~rst_n)
     exu2ifu_pc_new_req_i |=> q_is_empty
     ) else $error("IFU Error: incorrect behavior after exu2ifu_pc_new_req_i");
-
+`endif // VERILATOR
 SCR1_SVA_IFU_IMEM_ADDR_ALIGNED : assert property (
     @(negedge clk) disable iff (~rst_n)
     ifu2imem_req_o |-> ~|ifu2imem_addr_o[1:0]
     ) else $error("IFU Error: unaligned IMEM access");
 
+`ifndef VERILATOR
 SCR1_SVA_IFU_STOP_FETCH : assert property (
     @(negedge clk) disable iff (~rst_n)
     pipe2ifu_stop_fetch_i |=> (ifu_fsm_curr == SCR1_IFU_FSM_IDLE)
     ) else $error("IFU Error: fetch not stopped");
-
+`endif // VERILATOR
 SCR1_SVA_IFU_IMEM_FAULT_RVI_HI : assert property (
     @(negedge clk) disable iff (~rst_n)
     ifu2idu_err_rvi_hi_o |-> ifu2idu_imem_err_o

@@ -59,7 +59,7 @@
 
 // Uncomment one of these defines to set the recommended configuration:
 
-//`define SCR1_CFG_RV32IMC_MAX
+`define SCR1_CFG_RV32IMC_MAX
 //`define SCR1_CFG_RV32IC_BASE
 //`define SCR1_CFG_RV32EC_MIN
 
@@ -74,15 +74,15 @@
   parameter int unsigned SCR1_MTVEC_BASE_WR_BITS = 26;
   `define SCR1_MTVEC_MODE_EN
   `define SCR1_FAST_MUL
-  `define SCR1_MPRF_RST_EN
+//`define SCR1_MPRF_RST_EN - yosys fix, two dimensional array init not allowed
   `define SCR1_MCOUNTEN_EN
-  `define SCR1_DBG_EN
+//  `define SCR1_DBG_EN
   `define SCR1_TDU_EN
   parameter int unsigned SCR1_TDU_TRIG_NUM = 4;
   `define SCR1_TDU_ICOUNT_EN
   `define SCR1_IPIC_EN
   `define SCR1_IPIC_SYNC_EN
-  `define SCR1_TCM_EN
+//  `define SCR1_TCM_EN
 `elsif  SCR1_CFG_RV32IC_BASE
   `define SCR1_RVI_EXT
   `define SCR1_RVC_EXT

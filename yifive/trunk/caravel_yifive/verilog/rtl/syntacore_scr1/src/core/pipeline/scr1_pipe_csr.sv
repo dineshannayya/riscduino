@@ -302,10 +302,10 @@ assign csr_tirq_pnd_en = csr_mip_mtip & csr_mie_mtie_ff;
 // IRQ exception codes priority
 always_comb begin
     case (1'b1)
-        csr_eirq_pnd_en: csr_mcause_ec_new = type_scr1_exc_code_e'(SCR1_EXC_CODE_IRQ_M_EXTERNAL);
-        csr_sirq_pnd_en: csr_mcause_ec_new = type_scr1_exc_code_e'(SCR1_EXC_CODE_IRQ_M_SOFTWARE);
-        csr_tirq_pnd_en: csr_mcause_ec_new = type_scr1_exc_code_e'(SCR1_EXC_CODE_IRQ_M_TIMER);
-        default        : csr_mcause_ec_new = type_scr1_exc_code_e'(SCR1_EXC_CODE_IRQ_M_EXTERNAL);
+        csr_eirq_pnd_en: csr_mcause_ec_new = SCR1_EXC_CODE_IRQ_M_EXTERNAL; // cp.7
+        csr_sirq_pnd_en: csr_mcause_ec_new = SCR1_EXC_CODE_IRQ_M_SOFTWARE; // cp.7
+        csr_tirq_pnd_en: csr_mcause_ec_new = SCR1_EXC_CODE_IRQ_M_TIMER; // cp.7
+        default        : csr_mcause_ec_new = SCR1_EXC_CODE_IRQ_M_EXTERNAL; // cp.7
     endcase
 end
 
@@ -348,7 +348,7 @@ always_comb begin
         // Machine Trap Handling (read-write)
         SCR1_CSR_ADDR_MSCRATCH  : csr_r_data    = csr_mscratch_ff;
         SCR1_CSR_ADDR_MEPC      : csr_r_data    = csr_mepc;
-        SCR1_CSR_ADDR_MCAUSE    : csr_r_data    = {csr_mcause_i_ff, type_scr1_csr_mcause_ec_v'(csr_mcause_ec_ff)};
+        SCR1_CSR_ADDR_MCAUSE    : csr_r_data    = {csr_mcause_i_ff, (`SCR1_XLEN-1)'(csr_mcause_ec_ff)};
         SCR1_CSR_ADDR_MTVAL     : csr_r_data    = csr_mtval_ff;
         SCR1_CSR_ADDR_MIP       : csr_r_data    = csr_mip;
 
@@ -794,7 +794,7 @@ end
 always_ff @(negedge rst_n, posedge clk) begin
     if (~rst_n) begin
         csr_mcause_i_ff  <= 1'b0;
-        csr_mcause_ec_ff <= type_scr1_exc_code_e'(SCR1_EXC_CODE_RESET);
+        csr_mcause_ec_ff <= SCR1_EXC_CODE_RESET; // cp.7
     end else begin
         csr_mcause_i_ff  <= csr_mcause_i_next;
         csr_mcause_ec_ff <= csr_mcause_ec_next;
@@ -813,7 +813,7 @@ always_comb begin
         end
         csr_mcause_upd: begin
             csr_mcause_i_next  = csr_w_data[`SCR1_XLEN-1];
-            csr_mcause_ec_next = type_scr1_exc_code_e'(csr_w_data[SCR1_EXC_CODE_WIDTH_E-1:0]);
+            csr_mcause_ec_next = csr_w_data[SCR1_EXC_CODE_WIDTH_E-1:0]; // cp.7
         end
         default       : begin
             csr_mcause_i_next  = csr_mcause_i_ff;
@@ -1089,6 +1089,7 @@ SCR1_SVA_CSR_XCHECK_WRITE_IPIC : assert property (
 
 // Behavior checks
 
+`ifndef VERILATOR
 SCR1_SVA_CSR_MRET : assert property (
     @(negedge clk) disable iff (~rst_n)
     e_mret |=> ($stable(csr_mepc_ff) & $stable(csr_mtval_ff))
@@ -1110,7 +1111,7 @@ SCR1_SVA_CSR_EXC_IRQ : assert property (
     (~csr_mstatus_mie_ff & (~csr_mcause_i_ff)
     & (exu2csr_pc_curr_i=={csr_mtvec_base, SCR1_CSR_MTVEC_BASE_ZERO_BITS'(0)}))
     ) else $error("CSR Error: wrong EXC+IRQ");
-
+`endif // VERILATOR
 SCR1_SVA_CSR_EVENTS : assert property (
     @(negedge clk) disable iff (~rst_n)
     $onehot0({e_irq, e_exc, e_mret})
@@ -1121,14 +1122,16 @@ SCR1_SVA_CSR_RW_EXC : assert property (
     csr2exu_rw_exc_o |-> (exu2csr_w_req_i | exu2csr_r_req_i)
     ) else $error("CSR Error: impossible exception");
 
+`ifndef VERILATOR
 SCR1_SVA_CSR_MSTATUS_MIE_UP : assert property (
     @(negedge clk) disable iff (~rst_n)
     csr2exu_mstatus_mie_up_o |=> ~csr2exu_mstatus_mie_up_o
     ) else $error("CSR Error: csr2exu_mstatus_mie_up_o can only be high for one mcycle");
-
+`endif // VERILATOR
 
 `ifndef SCR1_CSR_REDUCED_CNT
 
+`ifndef VERILATOR
 SCR1_SVA_CSR_CYCLE_INC : assert property (
     @(
 `ifndef SCR1_CLKCTRL_EN
@@ -1154,7 +1157,7 @@ SCR1_SVA_CSR_INSTRET_INC : assert property (
     (csr_minstret == $past(csr_minstret + 1'b1))
 `endif // SCR1_MCOUNTEN_EN
     ) else $error("CSR Error: INSTRET increment wrong behavior");
-
+`endif
 SCR1_SVA_CSR_CYCLE_INSTRET_UP : assert property (
     @(negedge clk) disable iff (~rst_n)
     ~(&csr_minstret_upd | &csr_mcycle_upd)
