@@ -1,2 +1,0 @@
-vlib work
-vlog -f wb_top.files -f core.files +incdir+includes -sv
