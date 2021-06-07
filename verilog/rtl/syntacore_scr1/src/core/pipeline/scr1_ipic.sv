@@ -100,7 +100,6 @@ endfunction
 function automatic type_scr1_search_one_16_s scr1_search_one_16(
     input   logic [15:0]    din
 );
-begin
     logic [7:0]         stage1_vd;
     logic [3:0]         stage2_vd;
     logic [1:0]         stage3_vd;
@@ -109,7 +108,9 @@ begin
     logic [1:0]         stage2_idx [3:0];
     logic [2:0]         stage3_idx [1:0];
     type_scr1_search_one_16_s result;
+    type_scr1_search_one_2_s tmp;
     integer i; // cp.17
+begin
     // Stage 1
     for (i=0; i<8; i=i+1) begin
         tmp = scr1_search_one_2(din[(i+1)*2-1-:2]);

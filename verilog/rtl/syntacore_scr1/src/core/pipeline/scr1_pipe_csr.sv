@@ -78,7 +78,7 @@ module scr1_pipe_csr (
     input   logic                                       exu2csr_take_exc_i,         // Take exception trap
     input   logic                                       exu2csr_mret_update_i,      // MRET update CSR
     input   logic                                       exu2csr_mret_instr_i,       // MRET instruction
-    input   type_scr1_exc_code_e                        exu2csr_exc_code_i,         // Exception code (see scr1_arch_types.svh)
+    input   logic [SCR1_EXC_CODE_WIDTH_E-1:0]          exu2csr_exc_code_i,         // Exception code (see scr1_arch_types.svh) - cp.7
     input   logic [`SCR1_XLEN-1:0]                      exu2csr_trap_val_i,         // Trap value
     output  logic                                       csr2exu_irq_o,              // IRQ request
     output  logic                                       csr2exu_ip_ie_o,            // Some IRQ pending and locally enabled
@@ -181,9 +181,9 @@ logic [`SCR1_XLEN-1:0]                              csr_mepc;               // M
 logic                                               csr_mcause_upd;         // MCAUSE update enable
 logic                                               csr_mcause_i_ff;        // MCAUSE: Interrupt
 logic                                               csr_mcause_i_next;      // MCAUSE: Interrupt next value
-type_scr1_exc_code_e                                csr_mcause_ec_ff;       // MCAUSE: Exception code
-type_scr1_exc_code_e                                csr_mcause_ec_next;     // MCAUSE: Exception code next value
-type_scr1_exc_code_e                                csr_mcause_ec_new;      // MCAUSE: Exception code new value (IRQs)
+logic [SCR1_EXC_CODE_WIDTH_E-1:0]                   csr_mcause_ec_ff;       // MCAUSE: Exception code - cp.7
+logic [SCR1_EXC_CODE_WIDTH_E-1:0]                   csr_mcause_ec_next;     // MCAUSE: Exception code next value - cp.7
+logic [SCR1_EXC_CODE_WIDTH_E-1:0]                   csr_mcause_ec_new;      // MCAUSE: Exception code new value (IRQs) - cp.7
 
 // MTVAL register
 logic                                               csr_mtval_upd;          // MTVAL update enable

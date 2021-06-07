@@ -1,28 +1,23 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Syntacore SCR1 interface map to westbone                    ////
+////  yifive Wishbone interface for syntacore                     ////
 ////                                                              ////
-////  This file is part of the  yifive project                    ////
+////  This file is part of the yifive cores project               ////
 ////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
-////  Description                                                 ////
-////   This module does the westbone interface to syntacore/scr1  ////
+////  Description:                                                ////
+////     integrated wishbone i/f to instruction/data memory       ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
-////  Initial Author: syntacore
-////      -  https://github.com/syntacore/scr1
 ////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////  Revision : 06-June- 2021                                    ////
-////      v-0.0 - Dinesh.A, June 06, 2021                         ////
-////          1. Initial Version picked from                      ////
-////             https://github.com/syntacore/scr1                ////
-////          2. Added westone i/f towards instruction            ////
-////             and data memory                                  ////
+////  Revision :                                                  ////
+////     v0:    June 7, 2021, Dinesh A                            ////
+////             wishbone integration                             ////
+////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -49,11 +44,16 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-
+//     Orginal owner Details                                      ////
+//////////////////////////////////////////////////////////////////////
+/// Copyright by Syntacore LLC © 2016-2020. See LICENSE for details///
+/// @file       <scr1_top_wb.sv>                                   ///
+/// @brief      SCR1 AHB top                                       ///
+//////////////////////////////////////////////////////////////////////
 
 `include "scr1_arch_description.svh"
 `include "scr1_memif.svh"
-`include "scr1_ahb.svh"
+`include "scr1_wb.svh"
 `ifdef SCR1_IPIC_EN
 `include "scr1_ipic.svh"
 `endif // SCR1_IPIC_EN
@@ -104,28 +104,24 @@ module scr1_top_wb (
 `endif // SCR1_DBG_EN
 
     // Instruction Memory Interface
-    output  logic [3:0]                             imem_hprot,
-    output  logic [2:0]                             imem_hburst,
-    output  logic [2:0]                             imem_hsize,
-    output  logic [1:0]                             imem_htrans,
-    output  logic                                   imem_hmastlock,
-    output  logic [SCR1_AHB_WIDTH-1:0]              imem_haddr,
-    input   logic                                   imem_hready,
-    input   logic [SCR1_AHB_WIDTH-1:0]              imem_hrdata,
-    input   logic                                   imem_hresp,
+    output  logic                           wbd_imem_stb_o, // strobe/request
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_adr_o, // address
+    output  logic                           wbd_imem_we_o,  // write
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_dat_o, // data output
+    output  logic   [3:0]                   wbd_imem_sel_o, // byte enable
+    input   logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_dat_i, // data input
+    input   logic                           wbd_imem_ack_i, // acknowlegement
+    input   logic                           wbd_imem_err_i,  // error
 
     // Data Memory Interface
-    output  logic [3:0]                             dmem_hprot,
-    output  logic [2:0]                             dmem_hburst,
-    output  logic [2:0]                             dmem_hsize,
-    output  logic [1:0]                             dmem_htrans,
-    output  logic                                   dmem_hmastlock,
-    output  logic [SCR1_AHB_WIDTH-1:0]              dmem_haddr,
-    output  logic                                   dmem_hwrite,
-    output  logic [SCR1_AHB_WIDTH-1:0]              dmem_hwdata,
-    input   logic                                   dmem_hready,
-    input   logic [SCR1_AHB_WIDTH-1:0]              dmem_hrdata,
-    input   logic                                   dmem_hresp
+    output  logic                           wbd_dmem_stb_o, // strobe/request
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_dmem_adr_o, // address
+    output  logic                           wbd_dmem_we_o,  // write
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_dmem_dat_o, // data output
+    output  logic   [3:0]                   wbd_dmem_sel_o, // byte enable
+    input   logic   [SCR1_WB_WIDTH-1:0]     wbd_dmem_dat_i, // data input
+    input   logic                           wbd_dmem_ack_i, // acknowlegement
+    input   logic                           wbd_dmem_err_i  // error
 );
 
 //-------------------------------------------------------------------------------
@@ -163,23 +159,23 @@ logic [`SCR1_DMEM_DWIDTH-1:0]                       core_dmem_wdata;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       core_dmem_rdata;
 type_scr1_mem_resp_e                                core_dmem_resp;
 
-// Instruction memory interface from router to AHB bridge
-logic                                               ahb_imem_req_ack;
-logic                                               ahb_imem_req;
-type_scr1_mem_cmd_e                                 ahb_imem_cmd;
-logic [`SCR1_IMEM_AWIDTH-1:0]                       ahb_imem_addr;
-logic [`SCR1_IMEM_DWIDTH-1:0]                       ahb_imem_rdata;
-type_scr1_mem_resp_e                                ahb_imem_resp;
+// Instruction memory interface from router to WB bridge
+logic                                               wb_imem_req_ack;
+logic                                               wb_imem_req;
+type_scr1_mem_cmd_e                                 wb_imem_cmd;
+logic [`SCR1_IMEM_AWIDTH-1:0]                       wb_imem_addr;
+logic [`SCR1_IMEM_DWIDTH-1:0]                       wb_imem_rdata;
+type_scr1_mem_resp_e                                wb_imem_resp;
 
-// Data memory interface from router to AHB bridge
-logic                                               ahb_dmem_req_ack;
-logic                                               ahb_dmem_req;
-type_scr1_mem_cmd_e                                 ahb_dmem_cmd;
-type_scr1_mem_width_e                               ahb_dmem_width;
-logic [`SCR1_DMEM_AWIDTH-1:0]                       ahb_dmem_addr;
-logic [`SCR1_DMEM_DWIDTH-1:0]                       ahb_dmem_wdata;
-logic [`SCR1_DMEM_DWIDTH-1:0]                       ahb_dmem_rdata;
-type_scr1_mem_resp_e                                ahb_dmem_resp;
+// Data memory interface from router to WB bridge
+logic                                               wb_dmem_req_ack;
+logic                                               wb_dmem_req;
+type_scr1_mem_cmd_e                                 wb_dmem_cmd;
+type_scr1_mem_width_e                               wb_dmem_width;
+logic [`SCR1_DMEM_AWIDTH-1:0]                       wb_dmem_addr;
+logic [`SCR1_DMEM_DWIDTH-1:0]                       wb_dmem_wdata;
+logic [`SCR1_DMEM_DWIDTH-1:0]                       wb_dmem_rdata;
+type_scr1_mem_resp_e                                wb_dmem_resp;
 
 `ifdef SCR1_TCM_EN
 // Instruction memory interface from router to TCM
@@ -404,13 +400,13 @@ scr1_imem_router #(
     .imem_addr      (core_imem_addr   ),
     .imem_rdata     (core_imem_rdata  ),
     .imem_resp      (core_imem_resp   ),
-    // Interface to AHB bridge
-    .port0_req_ack  (ahb_imem_req_ack ),
-    .port0_req      (ahb_imem_req     ),
-    .port0_cmd      (ahb_imem_cmd     ),
-    .port0_addr     (ahb_imem_addr    ),
-    .port0_rdata    (ahb_imem_rdata   ),
-    .port0_resp     (ahb_imem_resp    ),
+    // Interface to WB bridge
+    .port0_req_ack  (wb_imem_req_ack ),
+    .port0_req      (wb_imem_req     ),
+    .port0_cmd      (wb_imem_cmd     ),
+    .port0_addr     (wb_imem_addr    ),
+    .port0_rdata    (wb_imem_rdata   ),
+    .port0_resp     (wb_imem_resp    ),
  `ifdef SCR1_TCM_EN
     // Interface to TCM
     .port1_req_ack  (tcm_imem_req_ack ),
@@ -424,12 +420,12 @@ scr1_imem_router #(
 
 `else // SCR1_IMEM_ROUTER_EN
 
-assign ahb_imem_req         = core_imem_req;
-assign ahb_imem_cmd         = core_imem_cmd;
-assign ahb_imem_addr        = core_imem_addr;
-assign core_imem_req_ack    = ahb_imem_req_ack;
-assign core_imem_resp       = ahb_imem_resp;
-assign core_imem_rdata      = ahb_imem_rdata;
+assign wb_imem_req         = core_imem_req;
+assign wb_imem_cmd         = core_imem_cmd;
+assign wb_imem_addr        = core_imem_addr;
+assign core_imem_req_ack    = wb_imem_req_ack;
+assign core_imem_resp       = wb_imem_resp;
+assign core_imem_rdata      = wb_imem_rdata;
 
 `endif // SCR1_IMEM_ROUTER_EN
 
@@ -490,72 +486,68 @@ scr1_dmem_router #(
     .port2_wdata    (timer_dmem_wdata    ),
     .port2_rdata    (timer_dmem_rdata    ),
     .port2_resp     (timer_dmem_resp     ),
-    // Interface to AHB bridge
-    .port0_req_ack  (ahb_dmem_req_ack    ),
-    .port0_req      (ahb_dmem_req        ),
-    .port0_cmd      (ahb_dmem_cmd        ),
-    .port0_width    (ahb_dmem_width      ),
-    .port0_addr     (ahb_dmem_addr       ),
-    .port0_wdata    (ahb_dmem_wdata      ),
-    .port0_rdata    (ahb_dmem_rdata      ),
-    .port0_resp     (ahb_dmem_resp       )
+    // Interface to WB bridge
+    .port0_req_ack  (wb_dmem_req_ack    ),
+    .port0_req      (wb_dmem_req        ),
+    .port0_cmd      (wb_dmem_cmd        ),
+    .port0_width    (wb_dmem_width      ),
+    .port0_addr     (wb_dmem_addr       ),
+    .port0_wdata    (wb_dmem_wdata      ),
+    .port0_rdata    (wb_dmem_rdata      ),
+    .port0_resp     (wb_dmem_resp       )
 );
 
 
 //-------------------------------------------------------------------------------
-// Instruction memory AHB bridge
+// Instruction memory WB bridge
 //-------------------------------------------------------------------------------
-scr1_imem_ahb i_imem_ahb (
+scr1_imem_wb i_imem_wb (
     .rst_n          (core_rst_n_local   ),
     .clk            (clk                ),
     // Interface to imem router
-    .imem_req_ack   (ahb_imem_req_ack   ),
-    .imem_req       (ahb_imem_req       ),
-    .imem_addr      (ahb_imem_addr      ),
-    .imem_rdata     (ahb_imem_rdata     ),
-    .imem_resp      (ahb_imem_resp      ),
-    // AHB interface
-    .hprot          (imem_hprot         ),
-    .hburst         (imem_hburst        ),
-    .hsize          (imem_hsize         ),
-    .htrans         (imem_htrans        ),
-    .hmastlock      (imem_hmastlock     ),
-    .haddr          (imem_haddr         ),
-    .hready         (imem_hready        ),
-    .hrdata         (imem_hrdata        ),
-    .hresp          (imem_hresp         )
+    .imem_req_ack   (wb_imem_req_ack   ),
+    .imem_req       (wb_imem_req       ),
+    .imem_addr      (wb_imem_addr      ),
+    .imem_rdata     (wb_imem_rdata     ),
+    .imem_resp      (wb_imem_resp      ),
+    // WB interface
+    .wbd_stb_o      (wbd_imem_stb_o    ), 
+    .wbd_adr_o      (wbd_imem_adr_o    ), 
+    .wbd_we_o       (wbd_imem_we_o     ),  
+    .wbd_dat_o      (wbd_imem_dat_o    ), 
+    .wbd_sel_o      (wbd_imem_sel_o    ), 
+    .wbd_dat_i      (wbd_imem_dat_i    ), 
+    .wbd_ack_i      (wbd_imem_ack_i    ), 
+    .wbd_err_i      (wbd_imem_err_i    )
 );
 
 
 //-------------------------------------------------------------------------------
-// Data memory AHB bridge
+// Data memory WB bridge
 //-------------------------------------------------------------------------------
-scr1_dmem_ahb i_dmem_ahb (
+scr1_dmem_wb i_dmem_wb (
     .rst_n          (core_rst_n_local   ),
     .clk            (clk                ),
     // Interface to dmem router
-    .dmem_req_ack   (ahb_dmem_req_ack   ),
-    .dmem_req       (ahb_dmem_req       ),
-    .dmem_cmd       (ahb_dmem_cmd       ),
-    .dmem_width     (ahb_dmem_width     ),
-    .dmem_addr      (ahb_dmem_addr      ),
-    .dmem_wdata     (ahb_dmem_wdata     ),
-    .dmem_rdata     (ahb_dmem_rdata     ),
-    .dmem_resp      (ahb_dmem_resp      ),
-    // AHB interface
-    .hprot          (dmem_hprot         ),
-    .hburst         (dmem_hburst        ),
-    .hsize          (dmem_hsize         ),
-    .htrans         (dmem_htrans        ),
-    .hmastlock      (dmem_hmastlock     ),
-    .haddr          (dmem_haddr         ),
-    .hwrite         (dmem_hwrite        ),
-    .hwdata         (dmem_hwdata        ),
-    .hready         (dmem_hready        ),
-    .hrdata         (dmem_hrdata        ),
-    .hresp          (dmem_hresp         )
+    .dmem_req_ack   (wb_dmem_req_ack   ),
+    .dmem_req       (wb_dmem_req       ),
+    .dmem_cmd       (wb_dmem_cmd       ),
+    .dmem_width     (wb_dmem_width     ),
+    .dmem_addr      (wb_dmem_addr      ),
+    .dmem_wdata     (wb_dmem_wdata     ),
+    .dmem_rdata     (wb_dmem_rdata     ),
+    .dmem_resp      (wb_dmem_resp      ),
+    // WB interface
+    .wbd_stb_o      (wbd_dmem_stb_o    ), 
+    .wbd_adr_o      (wbd_dmem_adr_o    ), 
+    .wbd_we_o       (wbd_dmem_we_o     ),  
+    .wbd_dat_o      (wbd_dmem_dat_o    ), 
+    .wbd_sel_o      (wbd_dmem_sel_o    ), 
+    .wbd_dat_i      (wbd_dmem_dat_i    ), 
+    .wbd_ack_i      (wbd_dmem_ack_i    ), 
+    .wbd_err_i      (wbd_dmem_err_i    )
 );
 
-endmodule : scr1_top_ahb
+endmodule : scr1_top_wb
 
 

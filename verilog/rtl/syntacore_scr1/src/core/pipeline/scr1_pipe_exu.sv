@@ -94,7 +94,7 @@ module scr1_pipe_exu (
     output  logic                               exu2csr_take_exc_o,         // Take exception trap
     output  logic                               exu2csr_mret_update_o,      // MRET update CSR
     output  logic                               exu2csr_mret_instr_o,       // MRET instruction
-    output  type_scr1_exc_code_e                exu2csr_exc_code_o,         // Exception code (see scr1_arch_types.svh)
+    output  logic [SCR1_EXC_CODE_WIDTH_E-1:0]   exu2csr_exc_code_o,         // Exception code (see scr1_arch_types.svh) - cp.7
     output  logic [`SCR1_XLEN-1:0]              exu2csr_trap_val_o,         // Trap value
     input   logic [`SCR1_XLEN-1:0]              csr2exu_new_pc_i,           // Exception/IRQ/MRET new PC
     input   logic                               csr2exu_irq_i,              // IRQ request
@@ -103,13 +103,13 @@ module scr1_pipe_exu (
 
     // EXU <-> DMEM interface
     output  logic                               exu2dmem_req_o,             // Data memory request
-    output  type_scr1_mem_cmd_e                 exu2dmem_cmd_o,             // Data memory command
+    output  logic                               exu2dmem_cmd_o,             // Data memory command - cp.7
     output  type_scr1_mem_width_e               exu2dmem_width_o,           // Data memory width
     output  logic [`SCR1_DMEM_AWIDTH-1:0]       exu2dmem_addr_o,            // Data memory address
     output  logic [`SCR1_DMEM_DWIDTH-1:0]       exu2dmem_wdata_o,           // Data memory write data
     input   logic                               dmem2exu_req_ack_i,         // Data memory request acknowledge
     input   logic [`SCR1_DMEM_DWIDTH-1:0]       dmem2exu_rdata_i,           // Data memory read data
-    input   type_scr1_mem_resp_e                dmem2exu_resp_i,            // Data memory response
+    input   logic [1:0]                         dmem2exu_resp_i,            // Data memory response - cp.7
 
     // EXU control
     output  logic                               exu2pipe_exc_req_o,         // Exception on last instruction
@@ -219,7 +219,7 @@ logic                               exu_exc_req;
 logic                               exu_exc_req_ff;
 logic                               exu_exc_req_next;
 `endif // SCR1_DBG_EN
-type_scr1_exc_code_e                exc_code;
+logic [SCR1_EXC_CODE_WIDTH_E-1:0]   exc_code; // cp.7
 logic [`SCR1_XLEN-1:0]              exc_trap_val;
 logic                               instr_fault_rvi_hi;
 
@@ -263,7 +263,7 @@ logic                               lsu_req;
 logic                               lsu_rdy;
 logic [`SCR1_XLEN-1:0]              lsu_l_data;
 logic                               lsu_exc_req;
-type_scr1_exc_code_e                lsu_exc_code;
+logic [SCR1_EXC_CODE_WIDTH_E-1:0]   lsu_exc_code; // cp.7
 
 // EXU status signals
 //------------------------------------------------------------------------------
