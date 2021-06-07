@@ -6,7 +6,7 @@
 ////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
 ////  Description:                                                ////
-////     This module does the DMA to westboone I/f                ////
+////     This module does the DMA to wishbone I/f                 ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
