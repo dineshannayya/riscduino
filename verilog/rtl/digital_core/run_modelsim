@@ -1,0 +1,3 @@
+vlib work
+vlog -f filelist_rtl.f
+vsim -c digital_core -suppress vsim-3999 -do "exit"
