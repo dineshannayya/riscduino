@@ -339,18 +339,17 @@ end
 wire [SCR1_WB_WIDTH+SCR1_WB_WIDTH+3+4:0] req_fifo_din = {hbel_in,hwrite_in,hwidth_in,haddr_in,hwdata_in};
 
  sync_fifo #(
-      .DATA_WIDTH(SCR1_WB_WIDTH+SCR1_WB_WIDTH+3+1+4), // Data Width
-      .ADDR_WIDTH(1),   // Address Width
-      .FIFO_DEPTH(2)    // FIFO DEPTH
+      .W(SCR1_WB_WIDTH+SCR1_WB_WIDTH+3+1+4), // Data Width
+      .D(2)    // FIFO DEPTH
      )   u_req_fifo(
 
-       .dout      (req_fifo_dout  ),
+       .rd_data      (req_fifo_dout  ),
 
-       .rstn      (rst_n          ),
+       .reset_n   (rst_n          ),
        .clk       (clk            ),
        .wr_en     (req_fifo_wr    ), // Write
        .rd_en     (req_fifo_rd    ), // Read
-       .din       (req_fifo_din   ),
+       .wr_data   (req_fifo_din   ),
        .full      (req_fifo_full  ),
        .empty     (req_fifo_empty )
 );

@@ -168,18 +168,17 @@ assign req_fifo[0] = (req_fifo_full) ? req_fifo_r : imem_addr;
 
 
  sync_fifo #(
-      .DATA_WIDTH(SCR1_WB_WIDTH), // Data Width
-      .ADDR_WIDTH(1),   // Address Width
-      .FIFO_DEPTH(2)    // FIFO DEPTH
+      .W(SCR1_WB_WIDTH), // Data Width
+      .D(2)    // FIFO DEPTH
      )   u_req_fifo(
 
-       .dout      (req_fifo_dout  ),
+       .rd_data    (req_fifo_dout  ),
 
-       .rstn      (rst_n          ),
+       .reset_n   (rst_n          ),
        .clk       (clk            ),
        .wr_en     (req_fifo_wr    ), // Write
        .rd_en     (req_fifo_rd    ), // Read
-       .din       (imem_addr      ),
+       .wr_data   (imem_addr      ),
        .full      (req_fifo_full  ),
        .empty     (req_fifo_empty )
 );
