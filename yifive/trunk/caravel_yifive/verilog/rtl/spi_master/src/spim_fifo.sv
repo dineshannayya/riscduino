@@ -43,20 +43,22 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
-module sync_fifo #(
+module spim_fifo #(
       parameter  DATA_WIDTH  = 32, // Data Width
-      parameter  ADDR_WIDTH   = 1,  // Address Width
-      parameter  FIFO_DEPTH   = 2 // FIFO DEPTH
+      parameter  ADDR_WIDTH   = 1, // Address Width
+      parameter  FIFO_DEPTH   = 2  // FIFO DEPTH
 	
 )(
-       output [DATA_WIDTH-1:0] dout,
-       input                    rstn,
-       input                    clk,
-       input                    wr_en, // Write
-       input                    rd_en, // Read
+       input                   rstn,
+       input                   srst,
+       input                   clk,
+       input                   wr_en, // Write
        input [DATA_WIDTH-1:0]  din,
-       output                  full,
-       output                  empty
+       output                  ready_o,
+
+       input                   rd_en, // Read
+       output [DATA_WIDTH-1:0] dout,
+       output                  valid_o
 );
 
 
@@ -67,11 +69,15 @@ reg [ADDR_WIDTH:0]    status_cnt; // status counter
 reg                   empty;
 reg                   full;
 
- 
+ wire ready_o = ! full;
+ wire valid_o = ! empty;
+
  //-----------Code Start---------------------------
  always @ (negedge rstn or posedge clk)
  begin : WRITE_POINTER
    if (rstn==1'b0) begin
+     wptr <= 0;
+   end else if (srst ) begin
      wptr <= 0;
    end else if (wr_en ) begin
      wptr <= wptr + 1;
@@ -82,6 +88,8 @@ always @ (negedge rstn or posedge clk)
 begin : READ_POINTER
   if (rstn==1'b0) begin
     rptr <= 0;
+   end else if (srst ) begin
+     rptr <= 0;
   end else if (rd_en) begin
     rptr <= rptr + 1;
   end
@@ -90,6 +98,8 @@ end
 always @ (negedge rstn or posedge clk)
 begin : STATUS_COUNTER
   if (rstn==1'b0) begin
+       status_cnt <= 0;
+  end else if (srst ) begin
        status_cnt <= 0;
   // Read but no write.
   end else if (rd_en &&   (!wr_en) && (status_cnt  != 0)) begin
@@ -104,6 +114,8 @@ end
 always @ (negedge rstn or posedge clk)
 begin : EMPTY_FLAG
   if (rstn==1'b0) begin
+       empty <= 1;
+  end else if (srst ) begin
        empty <= 1;
   // Read but no write.
   end else if (rd_en &&   (!wr_en) && (status_cnt  == 1)) begin
@@ -120,6 +132,8 @@ end
 always @ (negedge rstn or posedge clk)
 begin : FULL_FLAG
   if (rstn==1'b0) begin
+       full <= 0;
+  end else if (srst ) begin
        full <= 0;
   // Write but no read.
   end else if (wr_en &&  (!rd_en) && (status_cnt  == (FIFO_DEPTH-1))) begin
