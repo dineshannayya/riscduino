@@ -1,0 +1,2 @@
+vlib work
+vlog -f filelist_rtl.f +incdir+./defs
