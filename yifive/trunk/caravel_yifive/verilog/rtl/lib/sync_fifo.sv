@@ -51,7 +51,8 @@ module sync_fifo (clk,
    parameter W = 8;
    parameter D = 4;
 
-   parameter AW = (D == 4)   ? 2 :
+   parameter AW = (D == 2)   ? 1 :
+	          (D == 4)   ? 2 :
 		  (D == 8)   ? 3 :
 		  (D == 16)  ? 4 :
 		  (D == 32)  ? 5 :

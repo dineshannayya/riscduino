@@ -337,6 +337,7 @@ end
 
 
 wire [SCR1_WB_WIDTH+SCR1_WB_WIDTH+3+4:0] req_fifo_din = {hbel_in,hwrite_in,hwidth_in,haddr_in,hwdata_in};
+wire [SCR1_WB_WIDTH+SCR1_WB_WIDTH+3+4:0] req_fifo_dout;
 
  sync_fifo #(
       .W(SCR1_WB_WIDTH+SCR1_WB_WIDTH+3+1+4), // Data Width
@@ -362,6 +363,7 @@ wire [2:0]               hwidth_out;
 wire [SCR1_WB_WIDTH-1:0] haddr_out;
 wire [SCR1_WB_WIDTH-1:0] hwdata_out;
 wire [3:0]               hbel_out;
+
 
 assign {hbel_out,hwrite_out,hwidth_out,haddr_out,hwdata_out} = req_fifo_dout;
 

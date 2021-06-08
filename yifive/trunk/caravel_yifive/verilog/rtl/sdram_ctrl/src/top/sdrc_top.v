@@ -91,7 +91,10 @@ module sdrc_top
                     sdr_dqm             ,
                     sdr_ba              ,
                     sdr_addr            , 
-                    sdr_dq              ,
+                    pad_sdr_din         , 
+                    sdr_dout            , 
+                    sdr_den_n           ,
+		    sdram_pad_clk       ,
                     
 		/* Parameters */
                     sdr_init_done       ,
@@ -108,15 +111,14 @@ module sdrc_top
 	            cfg_sdr_rfmax
 	    );
   
-parameter      APP_AW   = 26;  // Application Address Width
+parameter      APP_AW   = 32;  // Application Address Width
 parameter      APP_DW   = 32;  // Application Data Width 
 parameter      APP_BW   = 4;   // Application Byte Width
 parameter      APP_RW   = 9;   // Application Request Width
 
-parameter      SDR_DW   = 16;  // SDR Data Width 
-parameter      SDR_BW   = 2;   // SDR Byte Width
+parameter      SDR_DW   = 8;  // SDR Data Width 
+parameter      SDR_BW   = 1;   // SDR Byte Width
              
-parameter      dw       = 32;  // data width
 parameter      tw       = 8;   // tag id width
 parameter      bl       = 9;   // burst_lenght_width 
 
@@ -137,11 +139,11 @@ input                   wb_clk_i           ;
 
 input                   wb_stb_i           ;
 output                  wb_ack_o           ;
-input [APP_AW-1:0]            wb_addr_i          ;
+input [APP_AW-1:0]      wb_addr_i          ;
 input                   wb_we_i            ; // 1 - Write, 0 - Read
-input [dw-1:0]          wb_dat_i           ;
-input [dw/8-1:0]        wb_sel_i           ; // Byte enable
-output [dw-1:0]         wb_dat_o           ;
+input [APP_DW-1:0]      wb_dat_i           ;
+input [APP_DW/8-1:0]    wb_sel_i           ; // Byte enable
+output [APP_DW-1:0]     wb_dat_o           ;
 input                   wb_cyc_i           ;
 input  [2:0]            wb_cti_i           ;
 
@@ -156,7 +158,10 @@ output			sdr_we_n            ; // SDRAM write enable
 output [SDR_BW-1:0] 	sdr_dqm             ; // SDRAM Data Mask
 output [1:0] 		sdr_ba              ; // SDRAM Bank Enable
 output [12:0] 		sdr_addr            ; // SDRAM Address
-inout [SDR_DW-1:0] 	sdr_dq              ; // SDRA Data Input/output
+input                   sdram_pad_clk       ; // Sdram clock loop back from pad
+input  [SDR_DW-1:0]     pad_sdr_din         ; // SDRA Data Input
+output  [SDR_DW-1:0]    sdr_dout            ; // SDRAM Data Output
+output  [SDR_BW-1:0]    sdr_den_n           ; // SDRAM Data Output enable
 
 //------------------------------------------------
 // Configuration Parameter
@@ -183,13 +188,13 @@ wire [bl-1:0]         app_req_len        ;
 wire                  app_req_wr_n       ; // 0 - Write, 1 -> Read
 wire                  app_req_ack        ; // SDRAM request Accepted
 wire                  app_busy_n         ; // 0 -> sdr busy
-wire [dw/8-1:0]       app_wr_en_n        ; // Active low sdr byte-wise write data valid
+wire [APP_DW/8-1:0]   app_wr_en_n        ; // Active low sdr byte-wise write data valid
 wire                  app_wr_next_req    ; // Ready to accept the next write
 wire                  app_rd_valid       ; // sdr read valid
 wire                  app_last_rd        ; // Indicate last Read of Burst Transfer
 wire                  app_last_wr        ; // Indicate last Write of Burst Transfer
-wire [dw-1:0]         app_wr_data        ; // sdr write data
-wire  [dw-1:0]        app_rd_data        ; // sdr read data
+wire [APP_DW-1:0]     app_wr_data        ; // sdr write data
+wire  [APP_DW-1:0]    app_rd_data        ; // sdr read data
 
 /****************************************
 *  These logic has to be implemented using Pads
@@ -199,15 +204,15 @@ wire  [SDR_DW-1:0]    sdr_dout            ; // SDRAM Data Output
 wire  [SDR_BW-1:0]    sdr_den_n           ; // SDRAM Data Output enable
 
 
-assign   sdr_dq = (&sdr_den_n == 1'b0) ? sdr_dout :  {SDR_DW{1'bz}}; 
-assign   pad_sdr_din = sdr_dq;
+//assign   sdr_dq = (&sdr_den_n == 1'b0) ? sdr_dout :  {SDR_DW{1'bz}}; 
+//assign   pad_sdr_din = sdr_dq;
 
 // sdram pad clock is routed back through pad
 // SDRAM Clock from Pad, used for registering Read Data
-wire #(1.0) sdram_pad_clk = sdram_clk;
+//wire #(1.0) sdram_pad_clk = sdram_clk;
 
 /************** Ends Here **************************/
-wb2sdrc #(.dw(dw),.tw(tw),.bl(bl)) u_wb2sdrc (
+wb2sdrc #(.dw(APP_DW),.tw(tw),.bl(bl),.APP_AW(APP_AW)) u_wb2sdrc (
       // WB bus
           .wb_rst_i           (wb_rst_i           ) ,
           .wb_clk_i           (wb_clk_i           ) ,
@@ -242,7 +247,7 @@ wb2sdrc #(.dw(dw),.tw(tw),.bl(bl)) u_wb2sdrc (
       ); 
 
 
-sdrc_core #(.SDR_DW(SDR_DW) , .SDR_BW(SDR_BW)) u_sdrc_core (
+sdrc_core #(.SDR_DW(SDR_DW) , .SDR_BW(SDR_BW),.APP_AW(APP_AW)) u_sdrc_core (
           .clk                (sdram_clk          ) ,
           .pad_clk            (sdram_pad_clk      ) ,
           .reset_n            (sdram_resetn       ) ,

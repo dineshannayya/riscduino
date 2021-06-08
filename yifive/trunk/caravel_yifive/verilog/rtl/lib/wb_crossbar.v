@@ -6,7 +6,7 @@
 ////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
 ////  Description                                                 ////
-////     This module  does the WBbone crossbar network            ////
+////     This module  does the Wishone crossbar network           ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -47,7 +47,7 @@
 //////////////////////////////////////////////////////////////////////
 
 /**********************************************
-      Web-bone cross bar M-Master By S-Slave
+      Wish-bone cross bar M-Master By S-Slave
 **********************************************/
 
 module wb_crossbar (

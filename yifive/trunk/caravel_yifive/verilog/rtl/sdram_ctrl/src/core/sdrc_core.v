@@ -268,7 +268,7 @@ end
    // This module takes requests from the app, chops them to burst booundaries
    // if wrap=0, decodes the bank and passe the request to bank_ctl
 
-sdrc_req_gen #(.SDR_DW(SDR_DW) , .SDR_BW(SDR_BW)) u_req_gen (
+sdrc_req_gen #(.SDR_DW(SDR_DW) , .SDR_BW(SDR_BW),.APP_AW(APP_AW)) u_req_gen (
           .clk                (clk          ),
           .reset_n            (reset_n            ),
 	  .cfg_colbits        (cfg_colbits        ),

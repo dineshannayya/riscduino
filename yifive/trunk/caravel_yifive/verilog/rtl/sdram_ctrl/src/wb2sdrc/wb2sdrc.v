@@ -121,7 +121,7 @@ CTI_O(2:0) Description
 input                   sdram_clk          ; // sdram clock
 input                   sdram_resetn       ; // sdram reset
 output                  sdr_req            ; // SDRAM request
-output [APP_AW-1:0]           sdr_req_addr       ; // SDRAM Request Address
+output [APP_AW-1:0]     sdr_req_addr       ; // SDRAM Request Address
 output [bl-1:0]         sdr_req_len        ;
 output                  sdr_req_wr_n       ; // 0 - Write, 1 -> Read
 input                   sdr_req_ack        ; // SDRAM request Accepted

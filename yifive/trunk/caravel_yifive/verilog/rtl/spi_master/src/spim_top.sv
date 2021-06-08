@@ -53,14 +53,14 @@ module spim_top
     input  logic                          rst_n,
 
 
-    output  logic                         wbd_stb_i, // strobe/request
-    output  logic   [WB_WIDTH-1:0]        wbd_adr_i, // address
-    output  logic                         wbd_we_i,  // write
-    output  logic   [WB_WIDTH-1:0]        wbd_dat_i, // data output
-    output  logic   [3:0]                 wbd_sel_i, // byte enable
-    input   logic   [WB_WIDTH-1:0]        wbd_dat_o, // data input
-    input   logic                         wbd_ack_o, // acknowlegement
-    input   logic                         wbd_err_o,  // error
+    input  logic                         wbd_stb_i, // strobe/request
+    input  logic   [WB_WIDTH-1:0]        wbd_adr_i, // address
+    input  logic                         wbd_we_i,  // write
+    input  logic   [WB_WIDTH-1:0]        wbd_dat_i, // data output
+    input  logic   [3:0]                 wbd_sel_i, // byte enable
+    output logic   [WB_WIDTH-1:0]        wbd_dat_o, // data input
+    output logic                         wbd_ack_o, // acknowlegement
+    output logic                         wbd_err_o,  // error
 
     output logic                    [1:0] events_o,
 
