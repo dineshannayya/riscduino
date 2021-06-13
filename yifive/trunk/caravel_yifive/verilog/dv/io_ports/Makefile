@@ -25,7 +25,9 @@ CARAVEL_BEHAVIOURAL_MODELS = $(CARAVEL_VERILOG_PATH)/dv/caravel
 ## User Project Pointers
 UPRJ_VERILOG_PATH ?= ../../../verilog
 UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
-UPRJ_BEHAVIOURAL_MODELS = ../
+UPRJ_BEHAVIOURAL_MODELS = ../model
+UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/syntacore/scr1/src/includes
+UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 
 ## RISCV GCC 
 GCC_PATH?=/ef/apps/bin
@@ -43,11 +45,14 @@ all:  ${PATTERN:=.vcd}
 
 hex:  ${PATTERN:=.hex}
 
+vvp:  ${PATTERN:=.vvp}
+
 %.vvp: %_tb.v %.hex
 ifeq ($(SIM),RTL)
-	iverilog -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
 	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
 	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) \
+	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) \
 	$< -o $@ 
 else  
 	iverilog -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \

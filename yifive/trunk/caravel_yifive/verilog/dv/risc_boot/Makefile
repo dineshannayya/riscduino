@@ -28,6 +28,7 @@ UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
 UPRJ_BEHAVIOURAL_MODELS = ../model
 UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/syntacore/scr1/src/includes
 UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
+UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 
 ## RISCV GCC 
 GCC_PATH?=/ef/apps/bin
@@ -39,7 +40,7 @@ SIM?=RTL
 
 .SUFFIXES:
 
-PATTERN = la_test2
+PATTERN = risc_boot
 
 all:  ${PATTERN:=.vcd}
 
