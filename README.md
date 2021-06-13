@@ -15,14 +15,33 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 ```
 
-# YiFive SOC 
+# Table of contents
+- [Overview](#overview)
+- [YiFive Architecture](#yifive-architecture)
+- [Key Feature](#key-features)
+- [Repository contents](#Repository contents)
+- [Prerequisites](#prerequisites)
+- [Project Tools](#project-tools)
+- [Tests preparation](#tests-preparation)
+    - [Running Simuation](#running-simulation)
+- [Openlane Tools](#openlane-tools)
 
-This is YiFive SOC Targeted for efebless Shuttle program. 
-This project uses only open source tool set for simulation,synthesis and backend tools. 
-The SOC flow follow the openlane methodology and SOC enviornment is compatible with efebless/carvel methodology.
+
+# Overview
+
+YiFive is is RISC V based SOC design targeted for efebless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC enviornment is compatible with efebless/carvel methodology.
+
+# YiFive Architecture
+
+<table>
+  <tr>
+    <td  align="center"><img src="./docs/_static/YiFive_Soc.png" ></td>
+  </tr>
+
+</table>
 
 
-## Key features
+# Key features
 
 * Open sourced under SHL-license (see LICENSE file) - unrestricted commercial use allowed
 * industry-grade and silicon-proven RISC-V core from syntacore 
@@ -41,7 +60,7 @@ The SOC flow follow the openlane methodology and SOC enviornment is compatible w
 * Verification suite provided
 
 
-## Repository contents
+# Repository contents
 
 ```
 |verilog
@@ -89,19 +108,27 @@ The SOC flow follow the openlane methodology and SOC enviornment is compatible w
 ```
 
 
-### Requirements
+# Prerequisites
+   - Docker (ensure docker daemon is running) -- tested with version 19.03.12, but any recent version should suffice
 
-#### Environment setting
+## Environment setting
 
-project need following environmental variable
+```bash
+    export STD_CELL_LIBRARY=<Library name, i.e. sky130_fd_sc_ls>
+    export CARAVEL_ROOT=<Carvel Installed Path>
+    export OPENLANE_ROOT=<OpenLane Installed Path>
+    export PDK_ROOT=<PDK Installed Path>
+    export IMAGE_NAME=efabless/openlane:rc7
+```
 
-* export CARAVEL_ROOT=<Carvel Installed Path>
-* export OPENLANE_ROOT=<OpenLane Installed Path>
-* export PDK_ROOT=<PDK Installed Path>
-* export IMAGE_NAME=efabless/openlane:rc7
+
+export CARAVEL_ROOT=<Carvel Installed Path>
+export OPENLANE_ROOT=<OpenLane Installed Path>
+export PDK_ROOT=<PDK Installed Path>
+export IMAGE_NAME=efabless/openlane:rc7
 
 
-#### Project Tools
+# Project Tools
 
 Currently supported simulators:
 
@@ -111,7 +138,7 @@ Currently supported simulators:
 
 Please note that RTL simulator executables should be in your $PATH variable.
 
-#### Tests preparation
+# Tests preparation
 
 The simulation package includes the following tests:
 
@@ -120,7 +147,7 @@ The simulation package includes the following tests:
 * **user_risc_boot** - Standalone User Risc core boot
 
 
-### Running Simuation
+# Running Simuation
 
 Examples:
 ``` sh
@@ -128,6 +155,39 @@ Examples:
     make verify-risc_hello
 ```
 
+# Openlane Tools
+
+Soc flow uses Openlane tool sets.
+
+1. **Synthesis**
+    1. `yosys` - Performs RTL synthesis
+    2. `abc` - Performs technology mapping
+    3. `OpenSTA` - Pefroms static timing analysis on the resulting netlist to generate timing reports
+2. **Floorplan and PDN**
+    1. `init_fp` - Defines the core area for the macro as well as the rows (used for placement) and the tracks (used for routing)
+    2. `ioplacer` - Places the macro input and output ports
+    3. `pdn` - Generates the power distribution network
+    4. `tapcell` - Inserts welltap and decap cells in the floorplan
+3. **Placement**
+    1. `RePLace` - Performs global placement
+    2. `Resizer` - Performs optional optimizations on the design
+    3. `OpenPhySyn` - Performs timing optimizations on the design
+    4. `OpenDP` - Perfroms detailed placement to legalize the globally placed components
+4. **CTS**
+    1. `TritonCTS` - Synthesizes the clock distribution network (the clock tree)
+5. **Routing**
+    1. `FastRoute` - Performs global routing to generate a guide file for the detailed router
+    2. `CU-GR` - Another option for performing global routing.
+    3. `TritonRoute` - Performs detailed routing
+    4. `SPEF-Extractor` - Performs SPEF extraction
+6. **GDSII Generation**
+    1. `Magic` - Streams out the final GDSII layout file from the routed def
+    2. `Klayout` - Streams out the final GDSII layout file from the routed def as a back-up
+7. **Checks**
+    1. `Magic` - Performs DRC Checks & Antenna Checks
+    2. `Klayout` - Performs DRC Checks
+    3. `Netgen` - Performs LVS Checks
+    4. `CVC` - Performs Circuit Validity Checks
 
 
 ## Contacts

@@ -1,13 +1,13 @@
 ---
 project:
-  description: "A template SoC for Google sponsored Open MPW shuttles for SKY130."
+  description: "A User SoC for Google sponsored Open MPW shuttles for SKY130."
   foundry: "SkyWater"
-  git_url: "https://github.com/efabless/caravel_project_example.git"
-  organization: "Efabless"
-  organization_url: "http://efabless.com"
-  owner: "Tim Edwards"
+  git_url: "https://github.com/dineshannayya/yifive_r0.git"
+  organization: "None"
+  organization_url: "None"
+  owner: "Dinesh Annayya"
   process: "SKY130"
-  project_name: "Caravel"
+  project_name: "YiFive"
   project_id: "00000000"
   tags:
     - "Open MPW"
@@ -16,4 +16,4 @@ project:
   top_level_netlist: "caravel/verilog/gl/caravel.v"
   user_level_netlist: "verilog/gl/user_project_wrapper.v"
   version: "1.00"
-  cover_image: "docs/source/_static/caravel_harness.png"
+  cover_image: "docs/source/_static/YiFive_Soc.png"
