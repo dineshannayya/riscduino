@@ -144,68 +144,68 @@ logic                                               tapc_trst_n;
 // Instruction memory interface from core to router
 logic                                               core_imem_req_ack;
 logic                                               core_imem_req;
-type_scr1_mem_cmd_e                                 core_imem_cmd;
+logic                                               core_imem_cmd;
 logic [`SCR1_IMEM_AWIDTH-1:0]                       core_imem_addr;
 logic [`SCR1_IMEM_DWIDTH-1:0]                       core_imem_rdata;
-type_scr1_mem_resp_e                                core_imem_resp;
+logic [1:0]                                         core_imem_resp;
 
 // Data memory interface from core to router
 logic                                               core_dmem_req_ack;
 logic                                               core_dmem_req;
-type_scr1_mem_cmd_e                                 core_dmem_cmd;
-type_scr1_mem_width_e                               core_dmem_width;
+logic                                               core_dmem_cmd;
+logic [1:0]                                         core_dmem_width;
 logic [`SCR1_DMEM_AWIDTH-1:0]                       core_dmem_addr;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       core_dmem_wdata;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       core_dmem_rdata;
-type_scr1_mem_resp_e                                core_dmem_resp;
+logic [1:0]                                         core_dmem_resp;
 
 // Instruction memory interface from router to WB bridge
 logic                                               wb_imem_req_ack;
 logic                                               wb_imem_req;
-type_scr1_mem_cmd_e                                 wb_imem_cmd;
+logic                                               wb_imem_cmd;
 logic [`SCR1_IMEM_AWIDTH-1:0]                       wb_imem_addr;
 logic [`SCR1_IMEM_DWIDTH-1:0]                       wb_imem_rdata;
-type_scr1_mem_resp_e                                wb_imem_resp;
+logic [1:0]                                         wb_imem_resp;
 
 // Data memory interface from router to WB bridge
 logic                                               wb_dmem_req_ack;
 logic                                               wb_dmem_req;
-type_scr1_mem_cmd_e                                 wb_dmem_cmd;
-type_scr1_mem_width_e                               wb_dmem_width;
+logic                                               wb_dmem_cmd;
+logic [1:0]                                         wb_dmem_width;
 logic [`SCR1_DMEM_AWIDTH-1:0]                       wb_dmem_addr;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       wb_dmem_wdata;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       wb_dmem_rdata;
-type_scr1_mem_resp_e                                wb_dmem_resp;
+logic [1:0]                                         wb_dmem_resp;
 
 `ifdef SCR1_TCM_EN
 // Instruction memory interface from router to TCM
 logic                                               tcm_imem_req_ack;
 logic                                               tcm_imem_req;
-type_scr1_mem_cmd_e                                 tcm_imem_cmd;
+logic                                               tcm_imem_cmd;
 logic [`SCR1_IMEM_AWIDTH-1:0]                       tcm_imem_addr;
 logic [`SCR1_IMEM_DWIDTH-1:0]                       tcm_imem_rdata;
-type_scr1_mem_resp_e                                tcm_imem_resp;
+logic [1:0]                                         tcm_imem_resp;
 
 // Data memory interface from router to TCM
 logic                                               tcm_dmem_req_ack;
 logic                                               tcm_dmem_req;
-type_scr1_mem_cmd_e                                 tcm_dmem_cmd;
-type_scr1_mem_width_e                               tcm_dmem_width;
+logic                                               tcm_dmem_cmd;
+logic [1:0]                                         tcm_dmem_width;
 logic [`SCR1_DMEM_AWIDTH-1:0]                       tcm_dmem_addr;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       tcm_dmem_wdata;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       tcm_dmem_rdata;
-type_scr1_mem_resp_e                                tcm_dmem_resp;
+logic [1:0]                                         tcm_dmem_resp;
 `endif // SCR1_TCM_EN
 
 // Data memory interface from router to memory-mapped timer
 logic                                               timer_dmem_req_ack;
 logic                                               timer_dmem_req;
-type_scr1_mem_cmd_e                                 timer_dmem_cmd;
-type_scr1_mem_width_e                               timer_dmem_width;
+logic                                               timer_dmem_cmd;
+logic [1:0]                                         timer_dmem_width;
 logic [`SCR1_DMEM_AWIDTH-1:0]                       timer_dmem_addr;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       timer_dmem_wdata;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       timer_dmem_rdata;
-type_scr1_mem_resp_e                                timer_dmem_resp;
+logic [1:0]                                         timer_dmem_resp;
 
 logic                                               timer_irq;
 logic [63:0]                                        timer_val;
@@ -474,7 +474,7 @@ scr1_dmem_router #(
     .port1_width    (                    ),
     .port1_addr     (                    ),
     .port1_wdata    (                    ),
-    .port1_rdata    ('0                  ),
+    .port1_rdata    (32'h0               ),
     .port1_resp     (SCR1_MEM_RESP_RDY_ER),
 `endif // SCR1_TCM_EN
     // Interface to memory-mapped timer

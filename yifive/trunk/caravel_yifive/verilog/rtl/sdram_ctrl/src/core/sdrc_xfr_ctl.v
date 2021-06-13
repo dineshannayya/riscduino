@@ -638,7 +638,7 @@ output [SDR_BW-1:0] 	sdr_den_n;
 	     cntr1_tc or trcar_delay or rfsh_row_cnt or ref_req or sdr_init_done
 	     or precharge_ok or sdram_mode_reg) begin 
 
-      case (mgmt_st)          // synopsys full_case parallel_case
+      case (mgmt_st)         
 
 	`MGM_POWERUP : begin
 	   mgmt_idle = 1'b0;

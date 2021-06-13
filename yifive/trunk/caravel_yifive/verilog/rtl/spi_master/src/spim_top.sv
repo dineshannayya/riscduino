@@ -85,7 +85,8 @@ module spim_top
 
     logic   [7:0] spi_clk_div;
     logic         spi_clk_div_valid;
-    logic   [7:0] spi_status;
+    logic         spi_req;
+    logic         spi_ack;
     logic  [31:0] spi_addr;
     logic   [5:0] spi_addr_len;
     logic  [7:0]  spi_cmd;
@@ -109,7 +110,7 @@ module spim_top
     logic  [31:0] spi_data_rx;
     logic         spi_data_rx_valid;
     logic         spi_data_rx_ready;
-    logic   [7:0] spi_ctrl_status;
+    logic   [8:0] spi_ctrl_status;
     logic  [31:0] spi_ctrl_data_tx;
     logic         spi_ctrl_data_tx_valid;
     logic         spi_ctrl_data_tx_ready;
@@ -144,7 +145,7 @@ module spim_top
 
         .spi_clk_div                    (spi_clk_div                  ),
         .spi_clk_div_valid              (spi_clk_div_valid            ),
-        .spi_status                     (spi_status                   ),
+        .spi_status                     (spi_ctrl_status              ),
 
 
         .spi_req                        (spi_req                     ),

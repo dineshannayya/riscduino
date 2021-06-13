@@ -17,6 +17,10 @@
 ////  Revision :                                                  ////
 ////     v0:    June 7, 2021, Dinesh A                            ////
 ////             wishbone integration                             ////
+////     v1:    June 9, 2021, Dinesh A                            ////
+////              On power up, wishbone output are unkown as it   ////
+////              driven from fifo output. To avoid unknown       ////
+////              propgation, we are driving 'h0 when fifo empty  ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -62,12 +66,12 @@ module scr1_dmem_wb (
     // Core Interface
     output  logic                           dmem_req_ack,
     input   logic                           dmem_req,
-    input   type_scr1_mem_cmd_e             dmem_cmd,
-    input   type_scr1_mem_width_e           dmem_width,
+    input   logic                           dmem_cmd,
+    input   logic [1:0]                     dmem_width,
     input   logic   [SCR1_WB_WIDTH-1:0]     dmem_addr,
     input   logic   [SCR1_WB_WIDTH-1:0]     dmem_wdata,
     output  logic   [SCR1_WB_WIDTH-1:0]     dmem_rdata,
-    output  type_scr1_mem_resp_e            dmem_resp,
+    output  logic [1:0]                     dmem_resp,
 
     // WB Interface
     output  logic                           wbd_stb_o, // strobe/request
@@ -106,7 +110,6 @@ typedef struct packed {
 } type_scr1_req_fifo_s;
 
 typedef struct packed {
-    logic                           hwrite;
     logic   [2:0]                   hwidth;
     logic   [1:0]                   haddr;
 } type_scr1_data_fifo_s;
@@ -122,7 +125,7 @@ typedef struct packed {
 // Local functions
 //-------------------------------------------------------------------------------
 function automatic logic   [2:0] scr1_conv_mem2wb_width (
-    input   type_scr1_mem_width_e    dmem_width
+    input   logic [1:0]              dmem_width
 );
     logic   [2:0]   tmp;
 begin
@@ -146,7 +149,7 @@ endfunction
 
 function automatic logic[SCR1_WB_WIDTH-1:0] scr1_conv_mem2wb_wdata (
     input   logic   [1:0]                   dmem_addr,
-    input   type_scr1_mem_width_e           dmem_width,
+    input   logic [1:0]                     dmem_width,
     input   logic   [SCR1_WB_WIDTH-1:0]    dmem_wdata
 );
     logic   [SCR1_WB_WIDTH-1:0]  tmp;
@@ -259,7 +262,7 @@ logic                                       resp_fifo_hready;
 assign dmem_req_ack = ~req_fifo_full;
 assign req_fifo_wr  = ~req_fifo_full & dmem_req;
 
-assign dmem_rdata = scr1_conv_wb2mem_rdata(resp_fifo.hwidth, resp_fifo.haddr, resp_fifo.hrdata);
+assign dmem_rdata = (resp_fifo_hready) ? scr1_conv_wb2mem_rdata(resp_fifo.hwidth, resp_fifo.haddr, resp_fifo.hrdata) : 'h0;
 
 assign dmem_resp = (resp_fifo_hready)
                     ? (resp_fifo.hresp == 1'b1)
@@ -429,18 +432,20 @@ end
 always_ff @(posedge clk) begin
     if (wbd_ack_i) begin
         resp_fifo.hresp  <= (wbd_err_i) ? 1'b0 : 1'b1;
-        resp_fifo.hwidth <= data_fifo.hwidth;
-        resp_fifo.haddr  <= data_fifo.haddr;
-        resp_fifo.hrdata <= wbd_dat_i;
+        resp_fifo.hwidth <= hwidth_out;
+        resp_fifo.haddr  <= haddr_out[1:0];
+        resp_fifo.hrdata <= (wbd_we_o) ? 'h0: wbd_dat_i;
     end
 end
 
 
 assign wbd_stb_o    = ~req_fifo_empty;
-assign wbd_adr_o    = haddr_out;
-assign wbd_we_o     = hwrite_out;
-assign wbd_dat_o    = hwdata_out;
-assign wbd_sel_o    = hbel_out;
+
+// To avoid unknown progating the design, driven zero when fifo is empty
+assign wbd_adr_o    = (req_fifo_empty) ? 'h0 : haddr_out;
+assign wbd_we_o     = (req_fifo_empty) ? 'h0 : hwrite_out;
+assign wbd_dat_o    = (req_fifo_empty) ? 'h0 : hwdata_out;
+assign wbd_sel_o    = (req_fifo_empty) ? 'h0 : hbel_out;
 
 `endif // SCR1_DMEM_WB_IN_BP
 

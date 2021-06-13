@@ -51,7 +51,7 @@ module spim_ctrl
 
     input  logic                    [7:0] spi_clk_div,
     input  logic                          spi_clk_div_valid,
-    output logic                    [7:0] spi_status,
+    output logic                    [8:0] spi_status,
 
 
     input  logic                          spi_req,
@@ -133,7 +133,7 @@ parameter  SPI_QUAD_RX = 2'b10;
 
   enum logic [2:0] {DATA_NULL,DATA_EMPTY,DATA_CMD,DATA_ADDR,DATA_MODE,DATA_FIFO} ctrl_data_mux;
 
-  enum logic [4:0] {IDLE,CMD,ADDR,MODE,DUMMY,DATA_TX,DATA_RX,WAIT_EDGE} state,state_next;
+  enum logic [4:0] {IDLE,CMD,ADDR,MODE,DUMMY_RX,DUMMY_TX,DATA_TX,DATA_RX,WAIT_EDGE} state,state_next;
 
   assign en_quad = spi_qrd | spi_qwr | en_quad_int;
   
@@ -169,7 +169,6 @@ parameter  SPI_QUAD_RX = 2'b10;
     .data_ready     (                  ),
     .clk_en_o       ( tx_clk_en        )
   );
-
   spim_rx u_rxreg
   (
     .clk            ( clk                    ),
@@ -189,7 +188,6 @@ parameter  SPI_QUAD_RX = 2'b10;
     .data_ready     ( 1'b1                   ),
     .clk_en_o       ( rx_clk_en              )
   );
-
 
   
   always_comb
@@ -256,7 +254,7 @@ parameter  SPI_QUAD_RX = 2'b10;
       begin
         spi_status[0] = 1'b1;
         s_spi_mode = SPI_QUAD_RX;
-        if (spi_req)
+        if (spi_req && spi_fall)
         begin
           spi_cs       = 1'b0;
           spi_clock_en = 1'b1;
@@ -299,17 +297,19 @@ parameter  SPI_QUAD_RX = 2'b10;
                 s_spi_mode = (spi_qrd) ? SPI_QUAD_RX : SPI_STD;
                 if(spi_dummy_rd_len != 0)
                 begin
-                  counter_tx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
-                  counter_tx_valid = 1'b1;
-                  spi_en_tx        = 1'b1;
+                  counter_rx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
+                  counter_rx_valid = 1'b1;
+                  spi_en_rx        = 1'b1;
                   ctrl_data_mux    = DATA_EMPTY;
-                  state_next       = DUMMY;
+                  spi_clock_en     = rx_clk_en;
+                  state_next       = DUMMY_RX;
                 end
                 else
                 begin
                    counter_rx       = spi_data_len;
                    counter_rx_valid = 1'b1;
                    spi_en_rx        = 1'b1;
+                   spi_clock_en     = rx_clk_en;
                    state_next       = DATA_RX;
                 end
              end
@@ -322,7 +322,8 @@ parameter  SPI_QUAD_RX = 2'b10;
                    counter_tx_valid = 1'b1;
                    ctrl_data_mux    = DATA_EMPTY;
                    spi_en_tx        = 1'b1;
-                   state_next       = DUMMY;
+                   spi_clock_en     = tx_clk_en;
+                   state_next       = DUMMY_TX;
                 end
                 else
                 begin
@@ -331,6 +332,7 @@ parameter  SPI_QUAD_RX = 2'b10;
                    ctrl_data_mux    = DATA_FIFO;
                    ctrl_data_valid  = 1'b0;
                    spi_en_tx        = 1'b1;
+                   spi_clock_en     = tx_clk_en;
                    state_next       = DATA_TX;
                 end
              end
@@ -350,7 +352,7 @@ parameter  SPI_QUAD_RX = 2'b10;
         spi_clock_en = 1'b1;
 //      s_spi_mode = (en_quad) ? SPI_QUAD_TX : SPI_STD;
         s_spi_mode = SPI_STD; // Command is always Standard Mode ?
-        if (tx_done)
+        if (tx_done && spi_fall)
         begin
           if (spi_addr_len != 0)
           begin
@@ -379,17 +381,19 @@ parameter  SPI_QUAD_RX = 2'b10;
               s_spi_mode = (en_quad) ? SPI_QUAD_RX : SPI_STD;
               if(spi_dummy_rd_len != 0)
               begin
-                counter_tx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
-                counter_tx_valid = 1'b1;
-                spi_en_tx        = 1'b1;
+                counter_rx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
+                counter_rx_valid = 1'b1;
+                spi_en_rx        = 1'b1;
                 ctrl_data_mux    = DATA_EMPTY;
-                state_next       = DUMMY;
+                spi_clock_en     = rx_clk_en;
+                state_next       = DUMMY_RX;
               end
               else
               begin
                 counter_rx       = spi_data_len;
                 counter_rx_valid = 1'b1;
                 spi_en_rx        = 1'b1;
+                spi_clock_en     = rx_clk_en;
                 state_next       = DATA_RX;
               end
             end
@@ -402,7 +406,8 @@ parameter  SPI_QUAD_RX = 2'b10;
                 counter_tx_valid = 1'b1;
                 ctrl_data_mux    = DATA_EMPTY;
                 spi_en_tx        = 1'b1;
-                state_next       = DUMMY;
+                spi_clock_en     = tx_clk_en;
+                state_next       = DUMMY_TX;
               end
               else
               begin
@@ -411,6 +416,7 @@ parameter  SPI_QUAD_RX = 2'b10;
                 ctrl_data_mux    = DATA_FIFO;
                 ctrl_data_valid  = 1'b1;
                 spi_en_tx        = 1'b1;
+                spi_clock_en     = tx_clk_en;
                 state_next       = DATA_TX;
               end
             end
@@ -436,7 +442,7 @@ parameter  SPI_QUAD_RX = 2'b10;
         spi_clock_en  = 1'b1;
         s_spi_mode    = (en_quad) ? SPI_QUAD_TX : SPI_STD;
 
-        if (tx_done)
+        if (tx_done && spi_fall)
         begin
           if (spi_mode_cmd_enb != 0)
           begin
@@ -455,17 +461,19 @@ parameter  SPI_QUAD_RX = 2'b10;
               s_spi_mode = (en_quad) ? SPI_QUAD_RX : SPI_STD;
               if(spi_dummy_rd_len != 0)
               begin
-                counter_tx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
-                counter_tx_valid = 1'b1;
-                spi_en_tx        = 1'b1;
+                counter_rx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
+                counter_rx_valid = 1'b1;
+                spi_en_rx        = 1'b1;
                 ctrl_data_mux    = DATA_EMPTY;
-                state_next       = DUMMY;
+                spi_clock_en     = rx_clk_en;
+                state_next       = DUMMY_RX;
               end
               else
               begin
                 counter_rx       = spi_data_len;
                 counter_rx_valid = 1'b1;
                 spi_en_rx        = 1'b1;
+                spi_clock_en     = rx_clk_en;
                 state_next       = DATA_RX;
               end
             end
@@ -478,12 +486,14 @@ parameter  SPI_QUAD_RX = 2'b10;
                 counter_tx       = en_quad ? {2'b00,spi_dummy_wr_len[13:0]} : spi_dummy_wr_len;
                 counter_tx_valid = 1'b1;
                 ctrl_data_mux    = DATA_EMPTY;
-                state_next       = DUMMY;
+                spi_clock_en     = tx_clk_en;
+                state_next       = DUMMY_TX;
               end else begin
                 counter_tx       = spi_data_len;
                 counter_tx_valid = 1'b1;
                 ctrl_data_mux    = DATA_FIFO;
                 ctrl_data_valid  = 1'b1;
+                spi_clock_en     = tx_clk_en;
                 state_next       = DATA_TX;
               end
             end
@@ -502,7 +512,7 @@ parameter  SPI_QUAD_RX = 2'b10;
         spi_cs        = 1'b0;
         spi_clock_en  = 1'b1;
         s_spi_mode    = (en_quad) ? SPI_QUAD_TX : SPI_STD;
-        if (tx_done)
+        if (tx_done && spi_fall)
         begin
           if (spi_data_len != 0)
           begin
@@ -511,17 +521,19 @@ parameter  SPI_QUAD_RX = 2'b10;
               s_spi_mode = (en_quad) ? SPI_QUAD_RX : SPI_STD;
               if(spi_dummy_rd_len != 0)
               begin
-                counter_tx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
-                counter_tx_valid = 1'b1;
-                spi_en_tx        = 1'b1;
+                counter_rx       = en_quad ? {2'b00,spi_dummy_rd_len[13:0]} : spi_dummy_rd_len;
+                counter_rx_valid = 1'b1;
+                spi_en_rx        = 1'b1;
                 ctrl_data_mux    = DATA_EMPTY;
-                state_next       = DUMMY;
+                spi_clock_en     = rx_clk_en;
+                state_next       = DUMMY_RX;
               end
               else
               begin
                 counter_rx       = spi_data_len;
                 counter_rx_valid = 1'b1;
                 spi_en_rx        = 1'b1;
+                spi_clock_en     = rx_clk_en;
                 state_next       = DATA_RX;
               end
             end
@@ -534,12 +546,14 @@ parameter  SPI_QUAD_RX = 2'b10;
                 counter_tx       = en_quad ? {2'b00,spi_dummy_wr_len[13:0]} : spi_dummy_wr_len;
                 counter_tx_valid = 1'b1;
                 ctrl_data_mux    = DATA_EMPTY;
-                state_next       = DUMMY;
+                spi_clock_en     = tx_clk_en;
+                state_next       = DUMMY_TX;
               end else begin
                 counter_tx       = spi_data_len;
                 counter_tx_valid = 1'b1;
                 ctrl_data_mux    = DATA_FIFO;
                 ctrl_data_valid  = 1'b1;
+                spi_clock_en     = tx_clk_en;
                 state_next       = DATA_TX;
               end
             end
@@ -551,7 +565,7 @@ parameter  SPI_QUAD_RX = 2'b10;
         end
       end
 
-      DUMMY:
+      DUMMY_TX:
       begin
         spi_en_tx     = 1'b1;
         spi_status[4] = 1'b1;
@@ -559,12 +573,13 @@ parameter  SPI_QUAD_RX = 2'b10;
         spi_clock_en  = 1'b1;
         s_spi_mode    = (en_quad) ? SPI_QUAD_RX : SPI_STD;
 
-        if (tx_done) begin
+        if (tx_done && spi_fall) begin
           if (spi_data_len != 0) begin
             if (do_rx) begin
               counter_rx       = spi_data_len;
               counter_rx_valid = 1'b1;
               spi_en_rx        = 1'b1;
+              spi_clock_en     = rx_clk_en;
               state_next       = DATA_RX;
             end else begin
               counter_tx       = spi_data_len;
@@ -586,21 +601,60 @@ parameter  SPI_QUAD_RX = 2'b10;
         begin
           ctrl_data_mux = DATA_EMPTY;
           spi_en_tx     = 1'b1;
-          state_next    = DUMMY;
+          state_next    = DUMMY_TX;
         end
       end
 
+      DUMMY_RX:
+      begin
+        spi_en_rx     = 1'b1;
+        spi_status[5] = 1'b1;
+        spi_cs        = 1'b0;
+        spi_clock_en  = 1'b1;
+        s_spi_mode    = (en_quad) ? SPI_QUAD_RX : SPI_STD;
+
+        if (rx_done && spi_rise) begin
+          if (spi_data_len != 0) begin
+            if (do_rx) begin
+              counter_rx       = spi_data_len;
+              counter_rx_valid = 1'b1;
+              spi_en_rx        = 1'b1;
+              spi_clock_en     = rx_clk_en;
+              state_next       = DATA_RX;
+            end else begin
+              counter_tx       = spi_data_len;
+              counter_tx_valid = 1'b1;
+              s_spi_mode       = (en_quad) ? SPI_QUAD_TX : SPI_STD;
+
+              spi_clock_en     = tx_clk_en;
+              spi_en_tx        = 1'b1;
+              state_next       = DATA_TX;
+            end
+          end
+          else
+          begin
+            eot        = 1'b1;
+            state_next = WAIT_EDGE;
+          end
+        end
+        else
+        begin
+          ctrl_data_mux = DATA_EMPTY;
+          spi_en_tx     = 1'b1;
+          spi_clock_en  = rx_clk_en;
+          state_next    = DUMMY_RX;
+        end
+      end
       DATA_TX:
       begin
-        spi_status[5]    = 1'b1;
+        spi_status[6]    = 1'b1;
         spi_cs           = 1'b0;
         spi_clock_en     = tx_clk_en;
         ctrl_data_mux    = DATA_FIFO;
-        ctrl_data_valid  = 1'b1;
         spi_en_tx        = 1'b1;
         s_spi_mode       = (en_quad) ? SPI_QUAD_TX : SPI_STD;
 
-        if (tx_done) begin
+        if (tx_done && spi_fall) begin
           eot          = 1'b1;
           state_next   = WAIT_EDGE;
           spi_clock_en = 1'b0;
@@ -611,12 +665,12 @@ parameter  SPI_QUAD_RX = 2'b10;
 
       DATA_RX:
       begin
-        spi_status[6] = 1'b1;
+        spi_status[7] = 1'b1;
         spi_cs        = 1'b0;
         spi_clock_en  = rx_clk_en;
         s_spi_mode    = (en_quad) ? SPI_QUAD_RX : SPI_STD;
 
-        if (rx_done) begin
+        if (rx_done && spi_rise) begin
           state_next = WAIT_EDGE;
         end else begin
           spi_en_rx  = 1'b1;
@@ -625,7 +679,7 @@ parameter  SPI_QUAD_RX = 2'b10;
       end
       WAIT_EDGE:
       begin
-        spi_status[7] = 1'b1;
+        spi_status[8] = 1'b1;
         spi_cs        = 1'b0;
         spi_clock_en  = 1'b0;
         s_spi_mode    = (en_quad) ? SPI_QUAD_RX : SPI_STD;
@@ -635,7 +689,7 @@ parameter  SPI_QUAD_RX = 2'b10;
     endcase
   end
 
-assign  spi_ack = ((spi_req ==1) && (state_next == WAIT_EDGE)) ? 1'b1 : 1'b0;
+assign  spi_ack = ((spi_req ==1) && (state == WAIT_EDGE)) ? 1'b1 : 1'b0;
 
 
   always_ff @(posedge clk, negedge rstn)

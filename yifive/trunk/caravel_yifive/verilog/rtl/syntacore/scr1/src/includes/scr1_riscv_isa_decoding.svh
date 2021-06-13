@@ -12,29 +12,29 @@
 //-------------------------------------------------------------------------------
 // Instruction types
 //-------------------------------------------------------------------------------
-typedef enum logic [1:0] {
-    SCR1_INSTR_RVC0     = 2'b00,
-    SCR1_INSTR_RVC1     = 2'b01,
-    SCR1_INSTR_RVC2     = 2'b10,
-    SCR1_INSTR_RVI      = 2'b11
-} type_scr1_instr_type_e;
+//typedef enum logic [1:0] {
+parameter    SCR1_INSTR_RVC0     = 2'b00;
+parameter    SCR1_INSTR_RVC1     = 2'b01;
+parameter    SCR1_INSTR_RVC2     = 2'b10;
+parameter    SCR1_INSTR_RVI      = 2'b11;
+//} type_scr1_instr_type_e;
 
 //-------------------------------------------------------------------------------
 // RV32I opcodes (bits 6:2)
 //-------------------------------------------------------------------------------
-typedef enum logic [6:2] {
-    SCR1_OPCODE_LOAD        = 5'b00000,
-    SCR1_OPCODE_MISC_MEM    = 5'b00011,
-    SCR1_OPCODE_OP_IMM      = 5'b00100,
-    SCR1_OPCODE_AUIPC       = 5'b00101,
-    SCR1_OPCODE_STORE       = 5'b01000,
-    SCR1_OPCODE_OP          = 5'b01100,
-    SCR1_OPCODE_LUI         = 5'b01101,
-    SCR1_OPCODE_BRANCH      = 5'b11000,
-    SCR1_OPCODE_JALR        = 5'b11001,
-    SCR1_OPCODE_JAL         = 5'b11011,
-    SCR1_OPCODE_SYSTEM      = 5'b11100
-} type_scr1_rvi_opcode_e;
+//typedef enum logic [6:2] {
+parameter    SCR1_OPCODE_LOAD        = 5'b00000;
+parameter    SCR1_OPCODE_MISC_MEM    = 5'b00011;
+parameter    SCR1_OPCODE_OP_IMM      = 5'b00100;
+parameter    SCR1_OPCODE_AUIPC       = 5'b00101;
+parameter    SCR1_OPCODE_STORE       = 5'b01000;
+parameter    SCR1_OPCODE_OP          = 5'b01100;
+parameter    SCR1_OPCODE_LUI         = 5'b01101;
+parameter    SCR1_OPCODE_BRANCH      = 5'b11000;
+parameter    SCR1_OPCODE_JALR        = 5'b11001;
+parameter    SCR1_OPCODE_JAL         = 5'b11011;
+parameter    SCR1_OPCODE_SYSTEM      = 5'b11100;
+//} type_scr1_rvi_opcode_e;
 
 
 //-------------------------------------------------------------------------------

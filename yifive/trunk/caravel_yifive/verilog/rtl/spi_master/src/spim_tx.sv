@@ -80,15 +80,6 @@ module spim_tx
 
   enum logic [0:0] { IDLE, TRANSMIT } tx_CS, tx_NS;
 
-  // Counter Exit condition, quad mode div-4 , else actual counter
-  always_comb
-  begin
-     counter_trgt = (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
-  end
-
-  //Indicate end of transmission of all the bytes
-  assign tx_done = (counter == counter_trgt) && tx_edge;
-
 
   // Indicate 32 bit data done, usefull for readining next 32b from txfifo
   assign tx32b_done  = (!en_quad && (counter[4:0] == 5'b11111)) || (en_quad && (counter[2:0] == 3'b111)) && tx_edge;
@@ -98,15 +89,14 @@ module spim_tx
   always_comb
   begin
     tx_NS         = tx_CS;
-    clk_en_o      = 1'b0;
     data_int_next = data_int;
     data_ready    = 1'b0;
     counter_next  = counter;
 
     case (tx_CS)
       IDLE: begin
-        clk_en_o = 1'b0;
         data_int_next = txdata;
+        counter_next  = '0;
 
         if (en && data_valid) begin
           data_ready    = 1'b1;
@@ -115,27 +105,24 @@ module spim_tx
       end
 
       TRANSMIT: begin
-        clk_en_o = 1'b1;
-        counter_next = counter + 1;
-        data_int_next = (en_quad) ? {data_int[27:0],4'b0000} : {data_int[30:0],1'b0};
+       counter_next = counter + 1;
+       data_int_next = (en_quad) ? {data_int[27:0],4'b0000} : {data_int[30:0],1'b0};
 
-        if (tx_done) begin
+      if (tx_done) begin
             counter_next = 0;
-	    // Check if there is next data
+            // Check if there is next data
             if (en && data_valid) begin 
               data_int_next = txdata;
               data_ready    = 1'b1;
               tx_NS         = TRANSMIT;
             end else begin
-              clk_en_o = 1'b0;
               tx_NS    = IDLE;
             end
-        end else if (tx32b_done) begin
+      end else if (tx32b_done) begin
             if (data_valid) begin
               data_int_next = txdata;
               data_ready    = 1'b1;
             end else begin
-              clk_en_o = 1'b0;
               tx_NS    = IDLE;
             end
         end
@@ -151,6 +138,13 @@ module spim_tx
       data_int     <= 'h0;
       tx_CS        <= IDLE;
       en_quad      <= 0;
+      tx_done      <= '0;
+      clk_en_o     <= '0;
+      sdo0         <= '0;
+      sdo1         <= '0;
+      sdo2         <= '0;
+      sdo3         <= '0;
+      counter_trgt <= '0;
     end
     else
     begin
@@ -158,12 +152,18 @@ module spim_tx
           counter      <= counter_next;
           data_int     <= data_int_next;
           sdo0         <= (en_quad_in) ? data_int_next[28] : data_int_next[31];
-          sdo1         <= (en_quad_in) ? data_int_next[29] : 1'b1;
-          sdo2         <= (en_quad_in) ? data_int_next[30] : 1'b1;
-          sdo3         <= (en_quad_in) ? data_int_next[31] : 1'b1;
+          sdo1         <= (en_quad_in) ? data_int_next[29] : 1'b0;
+          sdo2         <= (en_quad_in) ? data_int_next[30] : 1'b0;
+          sdo3         <= (en_quad_in) ? data_int_next[31] : 1'b0;
           tx_CS        <= tx_NS;
 	  en_quad      <= en_quad_in;
+          tx_done      <= (counter_next == (counter_trgt -1)) && (tx_NS == TRANSMIT);
+          clk_en_o     <= (tx_NS == TRANSMIT);
        end
-    end
+       // Counter Exit condition, quad mode div-4 , else actual counter
+       if (en && data_valid) begin
+          counter_trgt <= (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
+       end
+    end      
   end
 endmodule

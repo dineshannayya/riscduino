@@ -40,10 +40,10 @@ module scr1_pipe_ifu
     // IFU <-> IMEM interface
     input   logic                                   imem2ifu_req_ack_i,         // Instruction memory request acknowledgement
     output  logic                                   ifu2imem_req_o,             // Instruction memory request
-    output  type_scr1_mem_cmd_e                     ifu2imem_cmd_o,             // Instruction memory command (READ/WRITE)
+    output  logic                                   ifu2imem_cmd_o,             // Instruction memory command (READ/WRITE)
     output  logic [`SCR1_IMEM_AWIDTH-1:0]           ifu2imem_addr_o,            // Instruction memory address
     input   logic [`SCR1_IMEM_DWIDTH-1:0]           imem2ifu_rdata_i,           // Instruction memory read data
-    input   type_scr1_mem_resp_e                    imem2ifu_resp_i,            // Instruction memory response
+    input   logic [1:0]                             imem2ifu_resp_i,            // Instruction memory response
 
     // IFU <-> EXU New PC interface
     input   logic                                   exu2ifu_pc_new_req_i,       // New PC request (jumps, branches, traps etc)
@@ -88,22 +88,22 @@ localparam SCR1_IFU_Q_FREE_W_W      = $clog2(SCR1_IFU_Q_SIZE_WORD + 1);
 // Local types declaration
 //------------------------------------------------------------------------------
 
-typedef enum logic {
-    SCR1_IFU_FSM_IDLE,
-    SCR1_IFU_FSM_FETCH
-} type_scr1_ifu_fsm_e;
+//typedef enum logic {
+parameter    SCR1_IFU_FSM_IDLE    = 1'b0;
+parameter    SCR1_IFU_FSM_FETCH   = 1'b1;
+//} type_scr1_ifu_fsm_e;
 
-typedef enum logic[1:0] {
-    SCR1_IFU_QUEUE_WR_NONE,      // No write to queue
-    SCR1_IFU_QUEUE_WR_FULL,      // Write 32 rdata bits to queue
-    SCR1_IFU_QUEUE_WR_HI         // Write 16 upper rdata bits to queue
-} type_scr1_ifu_queue_wr_e;
+//typedef enum logic[1:0] {
+parameter    SCR1_IFU_QUEUE_WR_NONE = 2'b00;  // No write to queue
+parameter    SCR1_IFU_QUEUE_WR_FULL = 2'b01;  // Write 32 rdata bits to queue
+parameter    SCR1_IFU_QUEUE_WR_HI   = 2'b10;  // Write 16 upper rdata bits to queue
+//} type_scr1_ifu_queue_wr_e;
 
-typedef enum logic[1:0] {
-    SCR1_IFU_QUEUE_RD_NONE,      // No queue read
-    SCR1_IFU_QUEUE_RD_HWORD,     // Read halfword
-    SCR1_IFU_QUEUE_RD_WORD       // Read word
-} type_scr1_ifu_queue_rd_e;
+//typedef enum logic[1:0] {
+parameter    SCR1_IFU_QUEUE_RD_NONE  = 2'b00; // No queue read
+parameter    SCR1_IFU_QUEUE_RD_HWORD = 2'b01; // Read halfword
+parameter    SCR1_IFU_QUEUE_RD_WORD  = 2'b10; // Read word
+//} type_scr1_ifu_queue_rd_e;
 
 `ifdef SCR1_NO_DEC_STAGE
 typedef enum logic[1:0] {
@@ -114,17 +114,17 @@ typedef enum logic[1:0] {
 } type_scr1_bypass_e;
 `endif // SCR1_NO_DEC_STAGE
 
-typedef enum logic [2:0] {
+//typedef enum logic [2:0] {
     // SCR1_IFU_INSTR_<UPPER_16_BITS>_<LOWER_16_BITS>
-    SCR1_IFU_INSTR_NONE,                // No valid instruction
-    SCR1_IFU_INSTR_RVI_HI_RVI_LO,       // Full RV32I instruction
-    SCR1_IFU_INSTR_RVC_RVC,
-    SCR1_IFU_INSTR_RVI_LO_RVC,
-    SCR1_IFU_INSTR_RVC_RVI_HI,
-    SCR1_IFU_INSTR_RVI_LO_RVI_HI,
-    SCR1_IFU_INSTR_RVC_NV,              // Instruction after unaligned new_pc
-    SCR1_IFU_INSTR_RVI_LO_NV            // Instruction after unaligned new_pc
-} type_scr1_ifu_instr_e;
+parameter     SCR1_IFU_INSTR_NONE           = 3'b000 ; // No valid instruction
+parameter     SCR1_IFU_INSTR_RVI_HI_RVI_LO  = 3'b001 ; // Full RV32I instruction
+parameter     SCR1_IFU_INSTR_RVC_RVC        = 3'b010 ;
+parameter     SCR1_IFU_INSTR_RVI_LO_RVC     = 3'b011 ;
+parameter     SCR1_IFU_INSTR_RVC_RVI_HI     = 3'b100 ;
+parameter     SCR1_IFU_INSTR_RVI_LO_RVI_HI  = 3'b101 ;
+parameter     SCR1_IFU_INSTR_RVC_NV         = 3'b110 ;  // Instruction after unaligned new_pc
+parameter     SCR1_IFU_INSTR_RVI_LO_NV      = 3'b111 ;  // Instruction after unaligned new_pc
+//} type_scr1_ifu_instr_e;
 
 //------------------------------------------------------------------------------
 // Local signals declaration
@@ -141,7 +141,7 @@ logic                               new_pc_unaligned_upd;
 // IMEM instruction type decoder
 logic                               instr_hi_is_rvi;
 logic                               instr_lo_is_rvi;
-type_scr1_ifu_instr_e               instr_type;
+logic [2:0]                         instr_type;
 
 // Register to store if the previous IMEM instruction had low part of RVI instruction
 // in its high part
@@ -149,11 +149,11 @@ logic                               instr_hi_rvi_lo_ff;
 logic                               instr_hi_rvi_lo_next;
 
 // Queue read/write size decoders
-type_scr1_ifu_queue_rd_e            q_rd_size;
+logic [1:0]                         q_rd_size;
 logic                               q_rd_vd;
 logic                               q_rd_none;
 logic                               q_rd_hword;
-type_scr1_ifu_queue_wr_e            q_wr_size;
+logic [1:0]                         q_wr_size;
 logic                               q_wr_none;
 logic                               q_wr_full;
 
@@ -196,8 +196,8 @@ logic [SCR1_IFU_Q_FREE_W_W-1:0]     q_free_w_next;
 logic                               ifu_fetch_req;
 logic                               ifu_stop_req;
 
-type_scr1_ifu_fsm_e                 ifu_fsm_curr;
-type_scr1_ifu_fsm_e                 ifu_fsm_next;
+logic                               ifu_fsm_curr;
+logic                               ifu_fsm_next;
 logic                               ifu_fsm_fetch;
 
 // IMEM signals

@@ -18,26 +18,26 @@ module scr1_imem_router
     // Core interface
     output  logic                           imem_req_ack,
     input   logic                           imem_req,
-    input   type_scr1_mem_cmd_e             imem_cmd,
+    input   logic                           imem_cmd,
     input   logic [`SCR1_IMEM_AWIDTH-1:0]   imem_addr,
     output  logic [`SCR1_IMEM_DWIDTH-1:0]   imem_rdata,
-    output  type_scr1_mem_resp_e            imem_resp,
+    output  logic [1:0]                     imem_resp,
 
     // PORT0 interface
     input   logic                           port0_req_ack,
     output  logic                           port0_req,
-    output  type_scr1_mem_cmd_e             port0_cmd,
+    output  logic                           port0_cmd,
     output  logic [`SCR1_IMEM_AWIDTH-1:0]   port0_addr,
     input   logic [`SCR1_IMEM_DWIDTH-1:0]   port0_rdata,
-    input   type_scr1_mem_resp_e            port0_resp,
+    input   logic [1:0]                     port0_resp,
 
     // PORT1 interface
     input   logic                           port1_req_ack,
     output  logic                           port1_req,
-    output  type_scr1_mem_cmd_e             port1_cmd,
+    output  logic                           port1_cmd,
     output  logic [`SCR1_IMEM_AWIDTH-1:0]   port1_addr,
     input   logic [`SCR1_IMEM_DWIDTH-1:0]   port1_rdata,
-    input   type_scr1_mem_resp_e            port1_resp
+    input   logic [1:0]                     port1_resp
 );
 
 //-------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ type_scr1_fsm_e                 fsm;
 logic                           port_sel;
 logic                           port_sel_r;
 logic [`SCR1_IMEM_DWIDTH-1:0]   sel_rdata;
-type_scr1_mem_resp_e            sel_resp;
+logic [1:0]                     sel_resp;
 logic                           sel_req_ack;
 
 //-------------------------------------------------------------------------------

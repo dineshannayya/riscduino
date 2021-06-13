@@ -20,8 +20,9 @@
   `define SCR1_MPRF_SIZE      32
 `endif // SCR1_RVE_EXT
 
-typedef logic [`SCR1_XLEN-1:0]  type_scr1_mprf_v;
-typedef logic [`SCR1_XLEN-1:0]  type_scr1_pc_v;
+// Masked due to iverilog issue
+//typedef logic [`SCR1_XLEN-1:0]  type_scr1_mprf_v;
+//typedef logic [`SCR1_XLEN-1:0]  type_scr1_pc_v;
 
 parameter int unsigned  SCR1_CSR_ADDR_WIDTH             = 12;
 parameter int unsigned  SCR1_CSR_MTVEC_BASE_ZERO_BITS   = 6;

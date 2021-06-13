@@ -16,7 +16,7 @@ module scr1_imem_ahb (
     input   logic                           imem_req,
     input   logic   [SCR1_AHB_WIDTH-1:0]    imem_addr,
     output  logic   [SCR1_AHB_WIDTH-1:0]    imem_rdata,
-    output  type_scr1_mem_resp_e            imem_resp,
+    output  logic [1:0]                     imem_resp,
 
     // AHB Interface
     output  logic   [3:0]                   hprot,

@@ -72,7 +72,6 @@ module spim_rx #(
   logic [15:0] counter;
   logic [15:0] counter_trgt;
   logic [15:0] counter_next;
-  logic [15:0] counter_trgt_next;
   logic        reg_done;
   enum logic [1:0] { IDLE, RECEIVE, WAIT_FIFO, WAIT_FIFO_DONE } rx_CS, rx_NS;
 
@@ -81,27 +80,17 @@ module spim_rx #(
 
   // RISV is little endian, so data is converted to little endian format
   assign data = (ENDIEAN) ? data_int_next : {data_int_next[7:0],data_int_next[15:8],data_int_next[23:16],data_int_next[31:24]};
-  assign rx_done = (counter == (counter_trgt-1)) &  rx_edge;
 
-  always_comb
-  begin
-    if (counter_in_upd)
-      counter_trgt_next = (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
-    else
-      counter_trgt_next = counter_trgt;
-  end
 
   always_comb
   begin
     rx_NS         = rx_CS;
-    clk_en_o      = 1'b0;
     data_int_next = data_int;
     data_valid    = 1'b0;
     counter_next  = counter;
 
     case (rx_CS)
       IDLE: begin
-        clk_en_o = 1'b0;
 
         // check first if there is available space instead of later
         if (en) begin
@@ -110,7 +99,6 @@ module spim_rx #(
       end
 
       RECEIVE: begin
-        clk_en_o = 1'b1;
 
         if (rx_edge) begin
           counter_next = counter + 1;
@@ -132,7 +120,6 @@ module spim_rx #(
 
             if (~data_ready) begin
               // no space in the FIFO, wait for free space
-              clk_en_o = 1'b0;
               rx_NS    = WAIT_FIFO;
             end
           end
@@ -161,14 +148,22 @@ module spim_rx #(
       counter      <= 0;
       counter_trgt <= 'h8;
       data_int     <= '0;
+      rx_done      <= '0;
+      clk_en_o     <= '0;
       rx_CS        <= IDLE;
     end
     else
     begin
-      counter      <= counter_next;
-      counter_trgt <= counter_trgt_next;
-      data_int     <= data_int_next;
-      rx_CS        <= rx_NS;
+      if (rx_edge) begin
+         counter      <= counter_next;
+         data_int     <= data_int_next;
+         rx_CS        <= rx_NS;
+         rx_done      <= (counter_next == (counter_trgt-1)) && (rx_NS == RECEIVE);
+         clk_en_o     <= (rx_NS == RECEIVE);
+      end
+       if (en && counter_in_upd) begin
+          counter_trgt <= (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
+	end
     end
   end
 

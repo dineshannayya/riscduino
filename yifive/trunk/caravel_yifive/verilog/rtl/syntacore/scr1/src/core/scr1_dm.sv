@@ -113,13 +113,13 @@ typedef enum logic [2:0] {
     DHI_STATE_RESUME_RUN
 } type_scr1_dhi_fsm_e;
 
-typedef enum logic [SCR1_DBG_ABSTRACTCS_CMDERR_WDTH:0] {
-    ABS_ERR_NONE      = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d0),
-    ABS_ERR_BUSY      = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d1),
-    ABS_ERR_CMD       = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d2),
-    ABS_ERR_EXCEPTION = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d3),
-    ABS_ERR_NOHALT    = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d4)
-} type_scr1_abs_err_e;
+//typedef enum logic [SCR1_DBG_ABSTRACTCS_CMDERR_WDTH:0] {
+parameter    ABS_ERR_NONE      = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d0);
+parameter    ABS_ERR_BUSY      = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d1);
+parameter    ABS_ERR_CMD       = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d2);
+parameter    ABS_ERR_EXCEPTION = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d3);
+parameter    ABS_ERR_NOHALT    = (SCR1_DBG_ABSTRACTCS_CMDERR_WDTH+1)'('d4);
+//} type_scr1_abs_err_e;
 
 
 //------------------------------------------------------------------------------
@@ -362,8 +362,8 @@ logic                                             abs_err_acc_busy_upd;
 logic                                             abs_err_acc_busy_ff;
 logic                                             abs_err_acc_busy_next;
 
-type_scr1_abs_err_e                               abstractcs_cmderr_ff;
-type_scr1_abs_err_e                               abstractcs_cmderr_next;
+logic [SCR1_DBG_ABSTRACTCS_CMDERR_WDTH:0]         abstractcs_cmderr_ff;
+logic [SCR1_DBG_ABSTRACTCS_CMDERR_WDTH:0]         abstractcs_cmderr_next;
 
 // Abstract instruction signals
 //------------------------------------------------------------------------------
