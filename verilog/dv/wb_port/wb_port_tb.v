@@ -47,9 +47,14 @@ module wb_port_tb;
 		clock = 0;
 	end
 
+	`ifdef WFDUMP
 	initial begin
 		$dumpfile("wb_port.vcd");
-		$dumpvars(0, wb_port_tb);
+		$dumpvars(0, wb_port_tb.uut.mprj);
+	end
+       `endif
+
+	initial begin
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (30) begin
@@ -57,11 +62,13 @@ module wb_port_tb;
 			// $display("+1000 cycles");
 		end
 		$display("%c[1;31m",27);
+		$display ("##########################################################");
 		`ifdef GL
 			$display ("Monitor: Timeout, Test Mega-Project WB Port (GL) Failed");
 		`else
 			$display ("Monitor: Timeout, Test Mega-Project WB Port (RTL) Failed");
 		`endif
+		$display ("##########################################################");
 		$display("%c[0m",27);
 		$finish;
 	end
@@ -70,11 +77,13 @@ module wb_port_tb;
 	   wait(checkbits == 16'h AB60);
 		$display("Monitor: MPRJ-Logic WB Started");
 		wait(checkbits == 16'h AB61);
+		$display ("##########################################################");
 		`ifdef GL
 	    	$display("Monitor: Mega-Project WB (GL) Passed");
 		`else
 		    $display("Monitor: Mega-Project WB (RTL) Passed");
 		`endif
+		$display ("##########################################################");
 	    $finish;
 	end
 
@@ -102,9 +111,9 @@ module wb_port_tb;
 		power4 <= 1'b1;
 	end
 
-	always @(mprj_io) begin
-		#1 $display("MPRJ-IO state = %b ", mprj_io[7:0]);
-	end
+	//always @(mprj_io) begin
+	//	#1 $display("MPRJ-IO state = %b ", mprj_io[7:0]);
+	//end
 
 	wire flash_csb;
 	wire flash_clk;

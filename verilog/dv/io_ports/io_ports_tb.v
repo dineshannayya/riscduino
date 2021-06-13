@@ -49,8 +49,10 @@ module io_ports_tb;
 	end
 
 	initial begin
-		$dumpfile("io_ports.vcd");
-		$dumpvars(0, io_ports_tb);
+		`ifdef WFDUMP
+		    $dumpfile("io_ports.vcd");
+		    $dumpvars(0, io_ports_tb);
+	        `endif
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (25) begin

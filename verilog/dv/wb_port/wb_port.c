@@ -19,6 +19,27 @@
 #include "verilog/dv/caravel/defs.h"
 #include "verilog/dv/caravel/stub.c"
 
+// User Project Slaves (0x3000_0000)
+#define reg_mprj_slave (*(volatile uint32_t*)0x30000000)
+
+#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30000000)
+#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30000004)
+#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30000008)
+#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x3000000C)
+#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x30000010)
+#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x30000014)
+#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x30000018)
+#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x3000001C)
+#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x30000020)
+#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x30000024)
+#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x30000028)
+#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x3000002C)
+#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x30000030)
+#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x30000034)
+#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30000038)
+#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3000003C)
+
+
 /*
 	Wishbone Test:
 		- Configures MPRJ lower 8-IO pins as outputs
@@ -30,6 +51,7 @@ int clk = 0;
 void main()
 {
 
+	int bFail = 0;
 	/* 
 	IO Control Registers
 	| DM     | VTRIP | SLOW  | AN_POL | AN_SEL | AN_EN | MOD_SEL | INP_DIS | HOLDH | OEB_N | MGMT_EN |
@@ -80,8 +102,34 @@ void main()
     // Flag start of the test
 	reg_mprj_datal = 0xAB600000;
 
-    reg_mprj_slave = 0x00002710;
-    if (reg_mprj_slave == 0x2752) {
+    if (reg_mprj_globl_reg1 != 0xA55AA55A) bFail = 1;
+    if (reg_mprj_globl_reg2 != 0xAABBCCDD) bFail = 1;
+
+    // Write software Write & Read Register
+    reg_mprj_globl_reg6  = 0x11223344; 
+    reg_mprj_globl_reg7  = 0x22334455; 
+    reg_mprj_globl_reg8  = 0x33445566; 
+    reg_mprj_globl_reg9  = 0x44556677; 
+    reg_mprj_globl_reg10 = 0x55667788; 
+    reg_mprj_globl_reg11 = 0x66778899; 
+    reg_mprj_globl_reg12 = 0x778899AA; 
+    reg_mprj_globl_reg13 = 0x8899AABB; 
+    reg_mprj_globl_reg14 = 0x99AABBCC; 
+    reg_mprj_globl_reg15 = 0xAABBCCDD; 
+
+
+    if (reg_mprj_globl_reg6  != 0x11223344) bFail = 1;
+    if (reg_mprj_globl_reg7  != 0x22334455) bFail = 1;
+    if (reg_mprj_globl_reg8  != 0x33445566) bFail = 1;
+    if (reg_mprj_globl_reg9  != 0x44556677) bFail = 1;
+    if (reg_mprj_globl_reg10 != 0x55667788) bFail = 1;
+    if (reg_mprj_globl_reg11 != 0x66778899) bFail = 1;
+    if (reg_mprj_globl_reg12 != 0x778899AA) bFail = 1;
+    if (reg_mprj_globl_reg13 != 0x8899AABB) bFail = 1;
+    if (reg_mprj_globl_reg14 != 0x99AABBCC) bFail = 1;
+    if (reg_mprj_globl_reg15 != 0xAABBCCDD) bFail = 1;
+
+    if(bFail == 0) {
         reg_mprj_datal = 0xAB610000;
     } else {
         reg_mprj_datal = 0xAB600000;

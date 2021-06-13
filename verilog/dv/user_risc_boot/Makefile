@@ -31,7 +31,7 @@ UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 
 ## RISCV GCC 
 GCC_PATH?=/ef/apps/bin
-GCC_PREFIX?=riscv32-unknown-elf
+GCC_PREFIX?=riscv64-unknown-elf
 PDK_PATH?=/ef/tech/SW/sky130A
 
 ## Simulation mode: RTL/GL
@@ -39,7 +39,7 @@ SIM?=RTL
 
 .SUFFIXES:
 
-PATTERN = la_test2
+PATTERN = user_risc_boot
 
 all:  ${PATTERN:=.vcd}
 
@@ -65,15 +65,15 @@ endif
 	vvp $<
 
 %.elf: %.c $(CARAVEL_FIRMWARE_PATH)/sections.lds $(CARAVEL_FIRMWARE_PATH)/start.s
-	${GCC_PATH}/${GCC_PREFIX}-gcc -I $(CARAVEL_PATH) -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,$(CARAVEL_FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(CARAVEL_FIRMWARE_PATH)/start.s $<
+	${GCC_PREFIX}-gcc -I $(CARAVEL_PATH) -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,$(CARAVEL_FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(CARAVEL_FIRMWARE_PATH)/start.s $<
 
 %.hex: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objcopy -O verilog $< $@ 
+	${GCC_PREFIX}-objcopy -O verilog $< $@ 
 	# to fix flash base address
 	sed -i 's/@10000000/@00000000/g' $@
 
 %.bin: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
+	${GCC_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
 
 # ---- Clean ----
 
