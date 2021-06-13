@@ -20,6 +20,9 @@
 ../sdram_ctrl/src/core/sdrc_xfr_ctl.v 
 
 ../lib/wb_crossbar.v
+../lib/registers.v
+../lib/clk_ctl.v
+./src/glbl_cfg.sv
 ./src/digital_core.sv
 
 

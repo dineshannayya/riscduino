@@ -17,6 +17,10 @@
 ////  Revision :                                                  ////
 ////     v0:    June 7, 2021, Dinesh A                            ////
 ////             wishbone integration                             ////
+////     v1:    June 9, 2021, Dinesh A                            ////
+////              On power up, wishbone output are unkown as it   ////
+////              driven from fifo output. To avoid unknown       ////
+////              propgation, we are driving 'h0 when fifo empty  ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -64,7 +68,7 @@ module scr1_imem_wb (
     input   logic                           imem_req,
     input   logic   [SCR1_WB_WIDTH-1:0]     imem_addr,
     output  logic   [SCR1_WB_WIDTH-1:0]     imem_rdata,
-    output  type_scr1_mem_resp_e            imem_resp,
+    output  logic [1:0]                     imem_resp,
 
     // WB Interface
     output  logic                           wbd_stb_o, // strobe/request
@@ -227,7 +231,8 @@ always_ff @(posedge clk) begin
 end
 
 assign wbd_stb_o    = ~req_fifo_empty;
-assign wbd_adr_o    = req_fifo_dout;
+// On Power, to avoid unknow propgating the value
+assign wbd_adr_o    = (req_fifo_empty) ? 'h0 : req_fifo_dout; 
 assign wbd_we_o     = 0; // Only Read supported
 assign wbd_dat_o    = 32'h0; // No Write
 assign wbd_sel_o    = 4'b1111; // Only Read allowed in imem i/f

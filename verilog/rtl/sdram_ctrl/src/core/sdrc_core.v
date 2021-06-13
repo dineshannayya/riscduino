@@ -200,6 +200,30 @@ input                   app_req_dma_last;    // this signal should close the ban
 // Internal Nets
    
 // SDR_REQ_GEN
+wire                    x2a_rdstart;
+wire                    x2a_wrstart;
+wire                    x2a_rdlast;
+wire                    x2a_wrlast;
+wire                    x2a_rdok;
+wire                    x2a_wrnext;
+wire                    x2b_ack;
+wire                    x2b_refresh;
+wire                    x2b_act_ok;
+wire                    x2b_rdok;
+wire                    x2b_wrok;
+wire                    b2x_idle;
+wire                    b2x_req;
+wire                    b2x_start;
+wire                    b2x_last;
+wire                    b2x_wrap;
+wire                    b2x_tras_ok;
+wire                    b2r_ack;
+wire                    b2r_arb_ok;
+wire                    r2b_req;
+wire                    r2b_start;
+wire                    r2b_last;
+wire                    r2b_wrap;
+wire                    r2b_write;
 wire [`SDR_REQ_ID_W-1:0]r2b_req_id;
 wire [1:0] 		r2b_ba;
 wire [12:0] 		r2b_raddr;
@@ -235,6 +259,8 @@ wire [APP_DW-1:0]        app_wr_data;
 wire [SDR_DW-1:0]        a2x_wrdt       ;
 wire [APP_BW-1:0]        app_wr_en_n;
 wire [SDR_BW-1:0]        a2x_wren_n;
+
+wire                     r2x_idle;
 
 //wire [31:0] app_rd_data;
 wire [SDR_DW-1:0]        x2a_rddt;

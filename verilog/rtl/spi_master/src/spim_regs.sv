@@ -66,7 +66,7 @@ module spim_regs #( parameter WB_WIDTH = 32) (
 
     output logic                   [7:0] spi_clk_div,
     output logic                         spi_clk_div_valid,
-    input logic                    [7:0] spi_status,
+    input logic                    [8:0] spi_status,
 
     // Towards SPI TX/RX FSM
 
@@ -107,10 +107,12 @@ parameter REG_SPIRDATA = 4'b0111;
 parameter REG_STATUS   = 4'b1000;
 
 // Init FSM
-parameter SPI_INIT_IDLE     = 3'b000;
-parameter SPI_INIT_CMD_WAIT = 3'b001;
-parameter SPI_INIT_WRR_CMD  = 3'b010;
-parameter SPI_INIT_WRR_WAIT = 3'b011;
+parameter SPI_INIT_IDLE      = 3'b000;
+parameter SPI_INIT_CMD_WAIT  = 3'b001;
+parameter SPI_INIT_WREN_CMD  = 3'b010;
+parameter SPI_INIT_WREN_WAIT = 3'b011;
+parameter SPI_INIT_WRR_CMD   = 3'b100;
+parameter SPI_INIT_WRR_WAIT  = 3'b101;
 
 //---------------------------------------------------------
 // Variable declartion
@@ -161,8 +163,8 @@ logic         [31:0]  reg2spi_wdata;
     assign  spi_mode_cmd      =  (spim_mem_req && !spim_wb_we) ? 8'h00                          : reg2spi_mode;       
     assign  spi_mode_cmd_enb  =  (spim_mem_req && !spim_wb_we) ? 1                              : reg2spi_mode_enb;   
     assign  spi_csreg         =  (spim_mem_req && !spim_wb_we) ? '1                             : reg2spi_csreg;     
-    assign  spi_data_len      =  (spim_mem_req && !spim_wb_we) ? 'h10                           : reg2spi_data_len;  
-    assign  spi_dummy_rd_len  =  (spim_mem_req && !spim_wb_we) ? 16                             : reg2spi_dummy_rd_len;  
+    assign  spi_data_len      =  (spim_mem_req && !spim_wb_we) ? 'h20                           : reg2spi_data_len;  
+    assign  spi_dummy_rd_len  =  (spim_mem_req && !spim_wb_we) ? 'h20                           : reg2spi_dummy_rd_len;  
     assign  spi_dummy_wr_len  =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_dummy_wr_len;  
     assign  spi_swrst         =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_swrst;     
     assign  spi_rd            =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_rd;        
@@ -200,27 +202,29 @@ always_ff @(negedge rst_n or posedge mclk) begin
         spim_wb_we    <= '0;
         spim_wb_ack   <= '0;
    end else begin
-        spim_wb_req   <= wbd_stb_i;
-        spim_wb_req_l <= spim_wb_req;
-        spim_wb_wdata <= wbd_dat_i;
-        spim_wb_addr  <= wbd_adr_i;
-        spim_wb_be    <= wbd_sel_i;
-        spim_wb_we    <= wbd_we_i;
-
-
-	// If there is Reg2Spi read Access, Register the Read Data
-	if(reg2spi_req && (reg2spi_rd || reg2spi_qrd ) && spi_ack) 
-             spim_reg_rdata <= spi_rdata;
-
-	if(!spim_wb_we && spim_wb_req && spi_ack) 
-           spim_wb_rdata <= spi_rdata;
-        else
-           spim_wb_rdata <= reg_rdata;
-
+	if(spi_init_done) begin // Wait for internal SPI Init Done
+            spim_wb_req   <= wbd_stb_i && (spi_ack == 0) && (spim_wb_ack==0);
+            spim_wb_req_l <= spim_wb_req;
+            spim_wb_wdata <= wbd_dat_i;
+            spim_wb_addr  <= wbd_adr_i;
+            spim_wb_be    <= wbd_sel_i;
+            spim_wb_we    <= wbd_we_i;
+    
+    
+    	// If there is Reg2Spi read Access, Register the Read Data
+    	if(reg2spi_req && (reg2spi_rd || reg2spi_qrd ) && spi_ack) 
+                 spim_reg_rdata <= spi_rdata;
+    
+    	if(!spim_wb_we && spim_wb_req && spi_ack) 
+               spim_wb_rdata <= spi_rdata;
+            else if (spim_reg_req)
+               spim_wb_rdata <= reg_rdata;
+    
         // For safer design, we have generated ack after 2 cycle latter to 
-	// cross-check current request is towards SPI or not
-        spim_wb_ack   <= (spi_req) ? spi_ack :
-		         ((spim_wb_ack==0) && spim_wb_req && spim_wb_req_l) ;
+    	// cross-check current request is towards SPI or not
+            spim_wb_ack   <= (spi_req && spim_wb_req) ? spi_ack :
+    		         ((spim_wb_ack==0) && spim_wb_req && spim_wb_req_l) ;
+       end
    end
 end
 
@@ -259,7 +263,7 @@ end
               reg2spi_qwr       <= 'h0;
               reg2spi_swrst     <= 'h0;
               reg2spi_csreg     <= 'h1;
-              reg2spi_cmd[7:0]  <= 'h6; // WREN command
+              reg2spi_cmd[7:0]  <= 'hAB; // POWER UP command
               reg2spi_mode[7:0] <= 'h0;
               reg2spi_cmd_len   <= 'h8;
               reg2spi_addr_len  <= 'h0;
@@ -269,6 +273,30 @@ end
               spi_init_state    <=  SPI_INIT_CMD_WAIT;
 	   end
 	   SPI_INIT_CMD_WAIT:
+	   begin
+	      if(spi_ack)   begin
+	         reg2spi_req      <= 1'b0;
+                 spi_init_state    <=  SPI_INIT_WREN_CMD;
+	      end
+           end
+	   SPI_INIT_WREN_CMD:
+	   begin
+              reg2spi_rd        <= 'h0;
+              reg2spi_wr        <= 'h1; // SPI Write Req
+              reg2spi_qrd       <= 'h0;
+              reg2spi_qwr       <= 'h0;
+              reg2spi_swrst     <= 'h0;
+              reg2spi_csreg     <= 'h1;
+              reg2spi_cmd[7:0]  <= 'h6; // WREN command
+              reg2spi_mode[7:0] <= 'h0;
+              reg2spi_cmd_len   <= 'h8;
+              reg2spi_addr_len  <= 'h0;
+              reg2spi_data_len  <= 'h0;
+              reg2spi_wdata     <= 'h0;
+	      reg2spi_req       <= 'h1;
+              spi_init_state    <=  SPI_INIT_WREN_WAIT;
+	   end
+	   SPI_INIT_WREN_WAIT:
 	   begin
 	      if(spi_ack)   begin
 	         reg2spi_req      <= 1'b0;
@@ -372,38 +400,43 @@ end
   end 
 
 
+
+  wire [3:0] reg_addr = spim_wb_addr[7:4];
+
   // implement slave model register read mux
   always_comb
     begin
       reg_rdata = '0;
-      case(spim_wb_addr[7:4])
-        REG_CTRL:
-                reg_rdata[31:0] =  { 20'h0, 
-		                     reg2spi_csreg,
-		                     3'b0,
-		                     reg2spi_swrst,
-		                     reg2spi_qwr,
-		                     reg2spi_qrd,
-		                     reg2spi_wr,
-		                     reg2spi_rd};
+      if(spim_reg_req) begin
+          case(reg_addr)
+            REG_CTRL:
+                    reg_rdata[31:0] =  { 20'h0, 
+            	                     reg2spi_csreg,
+            	                     3'b0,
+            	                     reg2spi_swrst,
+            	                     reg2spi_qwr,
+            	                     reg2spi_qrd,
+            	                     reg2spi_wr,
+            	                     reg2spi_rd};
 
-        REG_CLKDIV:
-                reg_rdata[31:0] = {24'h0,spi_clk_div};
-        REG_SPICMD:
-                reg_rdata[31:0] = {16'h0,reg2spi_mode,reg2spi_cmd};
-        REG_SPIADR:
-                reg_rdata[31:0] = reg2spi_addr;
-        REG_SPILEN:
-                reg_rdata[31:0] = {reg2spi_data_len,2'b00,reg2spi_addr_len,1'b0,reg2spi_mode_enb,reg2spi_cmd_len};
-        REG_SPIDUM:
-                reg_rdata[31:0] = {reg2spi_dummy_wr_len,reg2spi_dummy_rd_len};
-        REG_SPIWDATA:
-                reg_rdata[31:0] = reg2spi_wdata;
-        REG_SPIRDATA:
-                reg_rdata[31:0] = spim_reg_rdata;
-        REG_STATUS:
-                reg_rdata[31:0] = {24'h0,spi_status};
-      endcase
+            REG_CLKDIV:
+                    reg_rdata[31:0] = {24'h0,spi_clk_div};
+            REG_SPICMD:
+                    reg_rdata[31:0] = {16'h0,reg2spi_mode,reg2spi_cmd};
+            REG_SPIADR:
+                    reg_rdata[31:0] = reg2spi_addr;
+            REG_SPILEN:
+                    reg_rdata[31:0] = {reg2spi_data_len,2'b00,reg2spi_addr_len,1'b0,reg2spi_mode_enb,reg2spi_cmd_len};
+            REG_SPIDUM:
+                    reg_rdata[31:0] = {reg2spi_dummy_wr_len,reg2spi_dummy_rd_len};
+            REG_SPIWDATA:
+                    reg_rdata[31:0] = reg2spi_wdata;
+            REG_SPIRDATA:
+                    reg_rdata[31:0] = spim_reg_rdata;
+            REG_STATUS:
+                    reg_rdata[31:0] = {23'h0,spi_status};
+          endcase
+       end
     end 
 
 

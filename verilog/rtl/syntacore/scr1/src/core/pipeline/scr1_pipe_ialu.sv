@@ -80,17 +80,17 @@ typedef struct packed {
 } type_scr1_ialu_flags_s;
 
  `ifdef SCR1_RVM_EXT
-typedef enum logic [1:0] {
-    SCR1_IALU_MDU_FSM_IDLE,
-    SCR1_IALU_MDU_FSM_ITER,
-    SCR1_IALU_MDU_FSM_CORR
-} type_scr1_ialu_fsm_state;
+//typedef enum logic [1:0] {
+parameter    SCR1_IALU_MDU_FSM_IDLE  = 2'b00;
+parameter    SCR1_IALU_MDU_FSM_ITER  = 2'b01;
+parameter    SCR1_IALU_MDU_FSM_CORR  = 2'b10;
+//} type_scr1_ialu_fsm_state;
 
-typedef enum logic [1:0] {
-   SCR1_IALU_MDU_NONE,
-   SCR1_IALU_MDU_MUL,
-   SCR1_IALU_MDU_DIV
-} type_scr1_ialu_mdu_cmd;
+//typedef enum logic [1:0] {
+parameter   SCR1_IALU_MDU_NONE       = 2'b00;
+parameter   SCR1_IALU_MDU_MUL        = 2'b01;
+parameter   SCR1_IALU_MDU_DIV        = 2'b10;
+//} type_scr1_ialu_mdu_cmd;
  `endif // SCR1_RVM_EXT
 
 //-------------------------------------------------------------------------------
@@ -123,8 +123,8 @@ logic                                       div_corr_req;       // Correction re
 logic                                       rem_corr_req;       // Correction request for REM(U) operations
 
 // MUL/DIV FSM signals
-type_scr1_ialu_fsm_state                    mdu_fsm_ff;         // Current FSM state
-type_scr1_ialu_fsm_state                    mdu_fsm_next;       // Next FSM state
+logic [1:0]                                 mdu_fsm_ff;         // Current FSM state
+logic [1:0]                                 mdu_fsm_next;       // Next FSM state
 logic                                       mdu_fsm_idle;       // MDU FSM is in IDLE state
 `ifdef SCR1_TRGT_SIMULATION
 logic                                       mdu_fsm_iter;       // MDU FSM is in ITER state
@@ -132,7 +132,7 @@ logic                                       mdu_fsm_iter;       // MDU FSM is in
 logic                                       mdu_fsm_corr;       // MDU FSM is in CORR state
 
 // MDU command signals
-type_scr1_ialu_mdu_cmd                      mdu_cmd;            // MDU command: 00 - NONE, 01 - MUL,  10 - DIV
+logic [1:0]                                 mdu_cmd;            // MDU command: 00 - NONE, 01 - MUL,  10 - DIV
 logic                                       mdu_cmd_mul;        // MDU command is MUL(HSU)
 logic                                       mdu_cmd_div;        // MDU command is DIV(U)/REM(U)
 logic        [1:0]                          mul_cmd;            // MUL command: 00 - MUL,  01 - MULH, 10 - MULHSU, 11 - MULHU

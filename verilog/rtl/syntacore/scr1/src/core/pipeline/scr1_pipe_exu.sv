@@ -104,7 +104,7 @@ module scr1_pipe_exu (
     // EXU <-> DMEM interface
     output  logic                               exu2dmem_req_o,             // Data memory request
     output  logic                               exu2dmem_cmd_o,             // Data memory command - cp.7
-    output  type_scr1_mem_width_e               exu2dmem_width_o,           // Data memory width
+    output  logic [1:0]                         exu2dmem_width_o,           // Data memory width
     output  logic [`SCR1_DMEM_AWIDTH-1:0]       exu2dmem_addr_o,            // Data memory address
     output  logic [`SCR1_DMEM_DWIDTH-1:0]       exu2dmem_wdata_o,           // Data memory write data
     input   logic                               dmem2exu_req_ack_i,         // Data memory request acknowledge
@@ -167,10 +167,10 @@ localparam SCR1_JUMP_MASK = `SCR1_XLEN'hFFFF_FFFE;
 // Local types declaration
 //------------------------------------------------------------------------------
 
-typedef enum logic {
-    SCR1_CSR_INIT,
-    SCR1_CSR_RDY
-} scr1_csr_access_e;
+//typedef enum logic {
+parameter     SCR1_CSR_INIT = 1'b0;
+parameter     SCR1_CSR_RDY  = 1'b1;
+//} scr1_csr_access_e;
 
 //------------------------------------------------------------------------------
 // Local signals declaration
@@ -280,8 +280,8 @@ logic   [`SCR1_MPRF_AWIDTH-1:0]     mprf_rs2_addr;
 // CSR signals
 //------------------------------------------------------------------------------
 // CSR access register
-scr1_csr_access_e                   csr_access_ff;
-scr1_csr_access_e                   csr_access_next;
+logic                               csr_access_ff;
+logic                               csr_access_next;
 logic                               csr_access_init;
 
 //------------------------------------------------------------------------------

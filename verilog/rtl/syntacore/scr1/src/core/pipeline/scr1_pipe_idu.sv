@@ -57,8 +57,8 @@ localparam [SCR1_GPR_FIELD_WIDTH-1:0] SCR1_MPRF_SP_ADDR     = 5'd2;
 //-------------------------------------------------------------------------------
 
 logic [`SCR1_IMEM_DWIDTH-1:0]       instr;
-type_scr1_instr_type_e              instr_type;
-type_scr1_rvi_opcode_e              rvi_opcode;
+logic [1:0]                         instr_type;
+logic [6:2]                         rvi_opcode;
 logic                               rvi_illegal;
 logic [2:0]                         funct3;
 logic [6:0]                         funct7;
@@ -80,19 +80,10 @@ assign idu2exu_req_o  = ifu2idu_vd_i;
 assign instr          = ifu2idu_instr_i;
 
 // RVI / RVC
-`ifdef YOSYS
-assign instr_type   = 2'(instr[1:0]);
-`else 
-
-assign instr_type   = type_scr1_instr_type_e'(instr[1:0]);
-`endif
+assign instr_type   = instr[1:0];
 
 // RVI / RVC fields
-`ifdef YOSYS
-assign rvi_opcode   = 5'(instr[6:2]);                          // RVI
-`else 
-assign rvi_opcode   = type_scr1_rvi_opcode_e'(instr[6:2]);                          // RVI
-`endif
+assign rvi_opcode   = instr[6:2];                          // RVI
 assign funct3       = (instr_type == SCR1_INSTR_RVI) ? instr[14:12] : instr[15:13]; // RVI / RVC
 assign funct7       = instr[31:25];                                                 // RVI
 assign funct12      = instr[31:20];                                                 // RVI (SYSTEM)

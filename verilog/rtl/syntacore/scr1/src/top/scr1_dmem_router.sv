@@ -20,42 +20,42 @@ module scr1_dmem_router
     // Core interface
     output  logic                           dmem_req_ack,
     input   logic                           dmem_req,
-    input   type_scr1_mem_cmd_e             dmem_cmd,
-    input   type_scr1_mem_width_e           dmem_width,
+    input   logic                           dmem_cmd,
+    input   logic [1:0]                     dmem_width,
     input   logic [`SCR1_DMEM_AWIDTH-1:0]   dmem_addr,
     input   logic [`SCR1_DMEM_DWIDTH-1:0]   dmem_wdata,
     output  logic [`SCR1_DMEM_DWIDTH-1:0]   dmem_rdata,
-    output  type_scr1_mem_resp_e            dmem_resp,
+    output  logic [1:0]                     dmem_resp,
 
     // PORT0 interface
     input   logic                           port0_req_ack,
     output  logic                           port0_req,
-    output  type_scr1_mem_cmd_e             port0_cmd,
-    output  type_scr1_mem_width_e           port0_width,
+    output  logic                           port0_cmd,
+    output  logic [1:0]                     port0_width,
     output  logic [`SCR1_DMEM_AWIDTH-1:0]   port0_addr,
     output  logic [`SCR1_DMEM_DWIDTH-1:0]   port0_wdata,
     input   logic [`SCR1_DMEM_DWIDTH-1:0]   port0_rdata,
-    input   type_scr1_mem_resp_e            port0_resp,
+    input   logic [1:0]                     port0_resp,
 
     // PORT1 interface
     input   logic                           port1_req_ack,
     output  logic                           port1_req,
-    output  type_scr1_mem_cmd_e             port1_cmd,
-    output  type_scr1_mem_width_e           port1_width,
+    output  logic                           port1_cmd,
+    output  logic [1:0]                     port1_width,
     output  logic [`SCR1_DMEM_AWIDTH-1:0]   port1_addr,
     output  logic [`SCR1_DMEM_DWIDTH-1:0]   port1_wdata,
     input   logic [`SCR1_DMEM_DWIDTH-1:0]   port1_rdata,
-    input   type_scr1_mem_resp_e            port1_resp,
+    input   logic [1:0]                     port1_resp,
 
     // PORT2 interface
     input   logic                           port2_req_ack,
     output  logic                           port2_req,
-    output  type_scr1_mem_cmd_e             port2_cmd,
-    output  type_scr1_mem_width_e           port2_width,
+    output  logic                           port2_cmd,
+    output  logic [1:0]                     port2_width,
     output  logic [`SCR1_DMEM_AWIDTH-1:0]   port2_addr,
     output  logic [`SCR1_DMEM_DWIDTH-1:0]   port2_wdata,
     input   logic [`SCR1_DMEM_DWIDTH-1:0]   port2_rdata,
-    input   type_scr1_mem_resp_e            port2_resp
+    input   logic [1:0]                     port2_resp
 );
 
 //-------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ type_scr1_fsm_e                 fsm;
 type_scr1_sel_e                 port_sel;
 type_scr1_sel_e                 port_sel_r;
 logic [`SCR1_DMEM_DWIDTH-1:0]   sel_rdata;
-type_scr1_mem_resp_e            sel_resp;
+logic [1:0]                     sel_resp;
 logic                           sel_req_ack;
 
 //-------------------------------------------------------------------------------

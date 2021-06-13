@@ -18,7 +18,7 @@ module scr1_tracelog (
 `ifdef  SCR1_MPRF_RAM
     input   logic   [`SCR1_XLEN-1:0]            mprf2trace_int_i   [1:`SCR1_MPRF_SIZE-1], // MPRF registers content
 `else // SCR1_MPRF_RAM
-    input   type_scr1_mprf_v [1:`SCR1_MPRF_SIZE-1] mprf2trace_int_i,             // MPRF registers content
+    logic [`SCR1_XLEN-1:0]                      mprf2trace_int_i[1:`SCR1_MPRF_SIZE-1],             // MPRF registers content
 `endif // SCR1_MPRF_RAM
     input   logic                                 mprf2trace_wr_en_i,           // MPRF write enable
     input   logic [`SCR1_MPRF_AWIDTH-1:0]         mprf2trace_wr_addr_i,         // MPRF write address
@@ -48,7 +48,7 @@ module scr1_tracelog (
     input   logic [`SCR1_XLEN-1:2]                csr2trace_mepc_i,             // CSR MEPC register
  `endif // SCR1_RVC_EXT
     input   logic                                 csr2trace_mcause_irq_i,       // CSR MCAUSE.interrupt bit
-    input   type_scr1_exc_code_e                  csr2trace_mcause_ec_i,        // CSR MCAUSE.exception_code bit
+    input   [SCR1_EXC_CODE_WIDTH_E-1:0]           csr2trace_mcause_ec_i,        // CSR MCAUSE.exception_code bit
     input   logic [`SCR1_XLEN-1:0]                csr2trace_mtval_i,            // CSR MTVAL register
     input   logic                                 csr2trace_mstatus_mie_up_i,   // CSR MSTATUS.mie update flag
 
@@ -430,7 +430,7 @@ always_comb begin
 `else // SCR1_RVC_EXT
                               {csr2trace_mepc_i, 2'b00};
 `endif // SCR1_RVC_EXT
-    csr_trace1.mcause       = {csr2trace_mcause_irq_i, type_scr1_csr_mcause_ec_v'(csr2trace_mcause_ec_i)};
+    csr_trace1.mcause       = {csr2trace_mcause_irq_i, csr2trace_mcause_ec_i};
     csr_trace1.mtval        = csr2trace_mtval_i;
 
     csr_trace1.mstatus      = '0;

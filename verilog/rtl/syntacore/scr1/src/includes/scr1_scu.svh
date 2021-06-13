@@ -16,6 +16,7 @@
 localparam int unsigned         SCR1_SCU_DR_SYSCTRL_OP_WIDTH        = 2;
 localparam int unsigned         SCR1_SCU_DR_SYSCTRL_ADDR_WIDTH      = 2;
 localparam int unsigned         SCR1_SCU_DR_SYSCTRL_DATA_WIDTH      = 4;
+localparam int unsigned         SCR1_SCU_DR_SYSCTRL_WIDTH      = SCR1_SCU_DR_SYSCTRL_OP_WIDTH+SCR1_SCU_DR_SYSCTRL_ADDR_WIDTH+SCR1_SCU_DR_SYSCTRL_DATA_WIDTH; // cp.3
 
 //==============================================================================
 // Types
@@ -73,6 +74,7 @@ typedef struct packed {
     logic                                           dm_rst_bhv;
 } type_scr1_scu_sysctrl_mode_reg_s;
 
+localparam bit [31:0]    SCR1_SCU_SYSCTRL_STATUS_REG_WIDTH        = 4; // cp.3
 typedef struct packed {
     logic                                           hdu_reset;
     logic                                           dm_reset;

@@ -85,31 +85,46 @@ module spim_clkgen
     	      if(clk_cnt == sck_half_period) 
     	      begin
     		 spi_clk    <= 1'b0;
+    	      end // if (clk_cnt == sck_half_period)
+    	      else if(clk_cnt == cfg_sck_period) begin
+    		    spi_clk    <= 1'b1;
+    	      end 
+    	   end else begin
+    	      spi_clk    <= 1'b1;
+    	   end // else: !if(en)
+    	end // else: !if(!reset_n)
+    end // always @ (posedge clk or negedge reset_n)
+
+    // Generate Free runnng spi_fall and rise pulse
+    // after en is asserted
+    always @(posedge clk or negedge rstn) begin
+    	if(!rstn) begin
+    	   clk_cnt    <= 'h1;
+	   spi_fall   <= 1'b0;
+	   spi_rise   <= 1'b0;
+    	end // if (!reset_n)
+    	else 
+    	begin
+    	   if(clk_cnt == sck_half_period) 
+    	   begin
+	      spi_fall   <= 1'b0;
+	      spi_rise   <= 1'b1;
+    	      clk_cnt    <= clk_cnt + 1'b1;
+    	   end // if (clk_cnt == sck_half_period)
+    	   else begin
+    	      if(clk_cnt == cfg_sck_period) 
+    	      begin
 	         spi_fall   <= 1'b1;
 	         spi_rise   <= 1'b0;
-    		 clk_cnt    <= clk_cnt + 1'b1;
-    	      end // if (clk_cnt == sck_half_period)
-    	      else begin
-    		 if(clk_cnt == cfg_sck_period) 
-    		 begin
-    		    spi_clk    <= 1'b1;
-	            spi_fall   <= 1'b0;
-	            spi_rise   <= 1'b1;
-    		    clk_cnt    <= 'h1;
-    		 end // if (clk_cnt == cfg_sck_period)
-    		 else 
-    		 begin
-    		    clk_cnt    <= clk_cnt + 1'b1;
-	            spi_fall   <= 1'b0;
-	            spi_rise   <= 1'b0;
-    		  end // else: !if(clk_cnt == cfg_sck_period)
-    	      end // else: !if(clk_cnt == sck_half_period)
-    	   end // if (en)
-    	   else begin
-    	      clk_cnt    <= 'h1;
-	      spi_fall   <= 1'b0; 
-	      spi_rise   <= 1'b0;
-    	   end // else: !if(en)
+    	         clk_cnt    <= 'h1;
+    	      end // if (clk_cnt == cfg_sck_period)
+    	      else 
+    	      begin
+    	         clk_cnt    <= clk_cnt + 1'b1;
+	         spi_fall   <= 1'b0;
+	         spi_rise   <= 1'b0;
+    	       end // else: !if(clk_cnt == cfg_sck_period)
+    	   end // else: !if(clk_cnt == sck_half_period)
     	end // else: !if(!reset_n)
     end // always @ (posedge clk or negedge reset_n)
 

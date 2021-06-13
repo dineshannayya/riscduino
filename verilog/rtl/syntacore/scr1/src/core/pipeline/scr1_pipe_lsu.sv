@@ -51,31 +51,31 @@ module scr1_pipe_lsu (
 
     // LSU <-> DMEM interface
     output  logic                               lsu2dmem_req_o,             // Data memory request
-    output  type_scr1_mem_cmd_e                 lsu2dmem_cmd_o,             // Data memory command (READ/WRITE)
-    output  type_scr1_mem_width_e               lsu2dmem_width_o,           // Data memory data width
+    output  logic                               lsu2dmem_cmd_o,             // Data memory command (READ/WRITE)
+    output  logic [1:0]                         lsu2dmem_width_o,           // Data memory data width
     output  logic [`SCR1_DMEM_AWIDTH-1:0]       lsu2dmem_addr_o,            // Data memory address
     output  logic [`SCR1_DMEM_DWIDTH-1:0]       lsu2dmem_wdata_o,           // Data memory write data
     input   logic                               dmem2lsu_req_ack_i,         // Data memory request acknowledge
     input   logic [`SCR1_DMEM_DWIDTH-1:0]       dmem2lsu_rdata_i,           // Data memory read data
-    input   type_scr1_mem_resp_e                dmem2lsu_resp_i             // Data memory response
+    input   logic [1:0]                         dmem2lsu_resp_i             // Data memory response
 );
 
 //------------------------------------------------------------------------------
 // Local types declaration
 //------------------------------------------------------------------------------
 
-typedef enum logic {
-    SCR1_LSU_FSM_IDLE,
-    SCR1_LSU_FSM_BUSY
-} type_scr1_lsu_fsm_e;
+//typedef enum logic {
+parameter  SCR1_LSU_FSM_IDLE = 1'b0;
+parameter  SCR1_LSU_FSM_BUSY = 1'b1;
+//} type_scr1_lsu_fsm_e;
 
 //------------------------------------------------------------------------------
 // Local signals declaration
 //------------------------------------------------------------------------------
 
 // LSU FSM signals
-type_scr1_lsu_fsm_e         lsu_fsm_curr;       // LSU FSM current state
-type_scr1_lsu_fsm_e         lsu_fsm_next;       // LSU FSM next state
+logic                       lsu_fsm_curr;       // LSU FSM current state
+logic                       lsu_fsm_next;       // LSU FSM next state
 logic                       lsu_fsm_idle;       // LSU FSM is in IDLE state
 
 // LSU Command register signals

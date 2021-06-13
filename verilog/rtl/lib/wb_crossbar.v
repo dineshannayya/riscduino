@@ -361,8 +361,9 @@ always @(negedge rst_n or posedge clk) begin
       for(i = 0; i < WB_MASTER; i = i + 1) begin
          if(master_busy[i] == 0) begin
             if(wbd_stb_master[i] & slave_busy[wbd_taddr_master_t[i]] == 0) begin
-               slave_busy[wbd_taddr_master_t[i]]   <= 1;
-               master_busy[i]              <= 1;
+	       $display("Locking Master Id: %d for tar_master: %d, Total Master: %x ", i, wbd_taddr_master_t[i], wbd_taddr_master);
+               slave_busy[wbd_taddr_master_t[i]]   = 1;
+               master_busy[i]              = 1;
             end
          end else if(wbd_cyc_master[i] == 0) begin
             master_busy[i]            <= 0;
@@ -380,13 +381,13 @@ always @(posedge clk) begin
                master_mx_id[n] <= wbd_taddr_master_t[n];
                slave_mx_id [wbd_taddr_master_t[n]] <= n;
                // synopsys translate_off
-               // $display("%m:%t: Locking Master : %d with Slave : %d",$time,i,wbd_taddr_master_t[n]);
+                $display("%m:%t: Locking Master : %d with Slave : %d",$time,i,wbd_taddr_master_t[n]);
                // synopsys translate_on
             end
          end else if(wbd_cyc_master[n] == 0) begin
 	    if(master_busy[n] == 1) begin
             // synopsys translate_off
-            //  $display("%m:%t: Releasing Master : %d with Slave : %d",$time,i,wbd_taddr_master_t[n]);
+              $display("%m:%t: Releasing Master : %d with Slave : %d",$time,i,wbd_taddr_master_t[n]);
             // synopsys translate_on
             end
          end

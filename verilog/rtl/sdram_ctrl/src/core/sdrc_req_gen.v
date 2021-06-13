@@ -267,7 +267,7 @@ end
       r2b_req     = 1'b0;
       next_req_st = `REQ_IDLE;
 
-      case (req_st)      // synopsys full_case parallel_case
+      case (req_st)      
 
 	`REQ_IDLE : begin
 	   r2x_idle = ~req;

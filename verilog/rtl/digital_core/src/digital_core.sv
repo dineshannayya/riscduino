@@ -62,77 +62,44 @@ module digital_core
         parameter      SDR_BW   = 1,  // SDR Byte Width
 	parameter      WB_WIDTH = 32  // WB ADDRESS/DARA WIDTH
  ) (
-    input   logic                      clk,              // System clock
-    input   logic                      rtc_clk,          // Real-time clock
-    input   logic                      pwrup_rst_n,      // Power-Up Reset
-    input   logic                      cpu_rst_n,        // CPU Reset (Core Reset)
-    input logic                        rst_n,            // Regular Reset signal
+`ifdef USE_POWER_PINS
+    inout vdda1,	// User area 1 3.3V supply
+    inout vdda2,	// User area 2 3.3V supply
+    inout vssa1,	// User area 1 analog ground
+    inout vssa2,	// User area 2 analog ground
+    inout vccd1,	// User area 1 1.8V supply
+    inout vccd2,	// User area 2 1.8v supply
+    inout vssd1,	// User area 1 digital ground
+    inout vssd2,	// User area 2 digital ground
+`endif
+    input   logic                       clk             ,  // System clock
+    input   logic                       rtc_clk         ,  // Real-time clock
+    input   logic                       rst_n           ,  // Regular Reset signal
 
-`ifdef SCR1_DBG_EN
-    output  logic                      sys_rst_n_o,      // External System Reset output
-                                                         //   (for the processor cluster's components or
-                                                         //    external SOC (could be useful in small
-                                                         //    SCR-core-centric SOCs))
-    output  logic                      sys_rdc_qlfy_o,   // System-to-External SOC Reset Domain Crossing Qualifier
-`endif // SCR1_DBG_EN
-    // Fuses
-    input   logic [`SCR1_XLEN-1:0]     fuse_mhartid,     // Hart ID
+    input   logic                       wbd_ext_cyc_i   ,  // strobe/request
+    input   logic                       wbd_ext_stb_i   ,  // strobe/request
+    input   logic [WB_WIDTH-1:0]        wbd_ext_adr_i   ,  // address
+    input   logic                       wbd_ext_we_i    ,  // write
+    input   logic [WB_WIDTH-1:0]        wbd_ext_dat_i   ,  // data output
+    input   logic [3:0]                 wbd_ext_sel_i   ,  // byte enable
+    output  logic [WB_WIDTH-1:0]        wbd_ext_dat_o   ,  // data input
+    output  logic                       wbd_ext_ack_o   ,  // acknowlegement
+    output  logic                       wbd_ext_err_o   ,  // error
 
-`ifdef SCR1_DBG_EN
-    input   logic [31:0]               fuse_idcode,            // TAPC IDCODE
-`endif // SCR1_DBG_EN
-    // IRQ
-`ifdef SCR1_IPIC_EN
-    input   logic [SCR1_IRQ_LINES_NUM-1:0]          irq_lines,              // IRQ lines to IPIC
-`else // SCR1_IPIC_EN
-    input   logic                     ext_irq,                // External IRQ input
-`endif // SCR1_IPIC_EN
-    input   logic                     soft_irq,               // Software IRQ input
+ 
+    // Logic Analyzer Signals
+    input  logic [127:0]                la_data_in      ,
+    output logic [127:0]                la_data_out     ,
+    input  logic [127:0]                la_oenb         ,
+ 
 
-`ifdef SCR1_DBG_EN
-    // -- JTAG I/F
-    input   logic                       trst_n,
-    input   logic                       tck,
-    input   logic                       tms,
-    input   logic                       tdi,
-    output  logic                       tdo,
-    output  logic                       tdo_en,
-`endif // SCR1_DBG_EN
-    input   logic                       wbd_ext_stb_i, // strobe/request
-    input   logic [WB_WIDTH-1:0]        wbd_ext_adr_i, // address
-    input   logic                       wbd_ext_we_i,  // write
-    input   logic [WB_WIDTH-1:0]        wbd_ext_dat_i, // data output
-    input   logic [3:0]                 wbd_ext_sel_i, // byte enable
-    output  logic [WB_WIDTH-1:0]        wbd_ext_dat_o, // data input
-    output  logic                       wbd_ext_ack_o, // acknowlegement
-    output  logic                       wbd_ext_err_o,  // error
+    // IOs
+    input  logic  [37:0]                io_in           ,
+    output logic  [37:0]                io_out          ,
+    output logic  [37:0]                io_oeb          ,
 
-    /* Interface to SDRAMs */
-    output  logic                       sdr_cke,      // SDRAM CKE
-    output  logic			sdr_cs_n,     // SDRAM Chip Select
-    output  logic                       sdr_ras_n,    // SDRAM ras
-    output  logic                       sdr_cas_n,    // SDRAM cas
-    output  logic			sdr_we_n,     // SDRAM write enable
-    output  logic [SDR_BW-1:0] 	        sdr_dqm,      // SDRAM Data Mask
-    output  logic [1:0] 		sdr_ba,       // SDRAM Bank Enable
-    output  logic [12:0] 		sdr_addr,     // SDRAM Address
-    input   logic [SDR_DW-1:0] 	        pad_sdr_din,  // SDRA Data Input
-    output  logic [SDR_DW-1:0] 	        sdr_dout,     // SDRA Data output
-    output  logic [SDR_BW-1:0] 	        sdr_den_n,    // SDRAM Data Output enable
-    input                               sdram_pad_clk,// Sdram clock loop back from pad
+    output logic  [2:0]                 irq             
 
-    // SPI Master I/F
-    output logic                        spim_clk,
-    output logic                        spim_csn0,
-    output logic                        spim_csn1,
-    output logic                        spim_csn2,
-    output logic                        spim_csn3,
-    output logic       [1:0]            spim_mode,
-    input logic        [3:0]            spim_sdi, // SPI Master out
-    output logic       [3:0]            spim_sdo,  // SPI Master out
-    output logic                        spi_en_tx // SPI Pad directional control
-
-    //inout tri        [3:0]              spim_sdio // SPI Master in/out
 );
 
 //---------------------------------------------------
@@ -181,7 +148,7 @@ logic                           wbd_spim_err_i;  // error
 //    SPI Master Wishbone Interface
 //---------------------------------------------------------------------
 logic                           wbd_sdram_stb_o ;
-logic [WB_WIDTH-1:0]            wbd_sdram_addr_o;
+logic [WB_WIDTH-1:0]            wbd_sdram_adr_o ;
 logic                           wbd_sdram_we_o  ; // 1 - Write, 0 - Read
 logic [WB_WIDTH-1:0]            wbd_sdram_dat_o ;
 logic [WB_WIDTH/8-1:0]          wbd_sdram_sel_o ; // Byte enable
@@ -194,7 +161,7 @@ logic                           wbd_sdram_ack_i ;
 //    Global Register Wishbone Interface
 //---------------------------------------------------------------------
 logic                           wbd_glbl_stb_o; // strobe/request
-logic   [WB_WIDTH-1:0]          wbd_glbl_addr_o; // address
+logic   [WB_WIDTH-1:0]          wbd_glbl_adr_o; // address
 logic                           wbd_glbl_we_o;  // write
 logic   [WB_WIDTH-1:0]          wbd_glbl_dat_o; // data output
 logic   [3:0]                   wbd_glbl_sel_o; // byte enable
@@ -202,6 +169,19 @@ logic                           wbd_glbl_cyc_o ;
 logic   [WB_WIDTH-1:0]          wbd_glbl_dat_i; // data input
 logic                           wbd_glbl_ack_i; // acknowlegement
 logic                           wbd_glbl_err_i;  // error
+
+
+//----------------------------------------------------
+//  CPU Configuration
+//----------------------------------------------------
+logic                              cpu_rst_n     ;
+logic                              spi_rst_n     ;
+logic                              sdram_rst_n   ;
+
+logic [31:0]                       fuse_mhartid  ;
+logic [15:0]                       irq_lines     ;
+logic                              soft_irq      ;
+
 //------------------------------------------------
 // Configuration Parameter
 //------------------------------------------------
@@ -220,6 +200,50 @@ logic [3:0]                        cfg_sdr_twr_d       ; // Write recovery delay
 logic [`SDR_RFSH_TIMER_W-1 : 0]    cfg_sdr_rfsh        ;
 logic [`SDR_RFSH_ROW_CNT_W -1 : 0] cfg_sdr_rfmax       ;
 
+//----------------------------------------------------------------------
+// Interface to SDRAMs 
+//--------------------------------------------------------------------------
+logic                              sdr_cke             ;  // SDRAM CKE
+logic			           sdr_cs_n            ;  // SDRAM Chip Select
+logic                              sdr_ras_n           ;  // SDRAM ras
+logic                              sdr_cas_n           ;  // SDRAM cas
+logic			           sdr_we_n            ;  // SDRAM write enable
+logic [SDR_BW-1:0] 	           sdr_dqm             ;  // SDRAM Data Mask
+logic [1:0] 		           sdr_ba              ;  // SDRAM Bank Enable
+logic [12:0] 		           sdr_addr            ;  // SDRAM Address
+logic [SDR_DW-1:0] 	           pad_sdr_din         ;  // SDRA Data Input
+logic [SDR_DW-1:0] 	           sdr_dout            ;  // SDRA Data output
+logic [SDR_BW-1:0] 	           sdr_den_n           ;  // SDRAM Data Output enable
+logic                              sdram_clk           ;  // Sdram clock loop back from pad
+logic                              pad_sdram_clk       ;  // Sdram clock loop back from pad
+
+
+assign pad_sdr_din[7:0]      =      io_in[7:0]         ;
+assign io_out     [7:0]      =      sdr_dout[7:0]      ;
+assign io_out     [20:8]     =      sdr_addr[12:0]     ;
+assign io_out     [22:21]    =      sdr_ba[1:0]        ;
+assign io_out     [23]       =      sdr_dqm[0]         ;
+assign io_out     [24]       =      sdr_we_n           ;
+assign io_out     [25]       =      sdr_cas_n          ;
+assign io_out     [26]       =      sdr_ras_n          ;
+assign io_out     [27]       =      sdr_cs_n           ;
+assign io_out     [28]       =      sdr_cke            ;
+assign io_out     [29]       =      sdram_clk          ;
+assign pad_sdram_clk         =      io_in[29]          ;
+
+assign io_oeb     [7:0]      =      sdr_den_n         ;
+assign io_oeb     [20:8]     =      {(13) {1'b0}}      ;
+assign io_oeb     [22:21]    =      {(2) {1'b0}}       ;
+assign io_oeb     [23]       =      1'b0               ;
+assign io_oeb     [24]       =      1'b0               ;
+assign io_oeb     [25]       =      1'b0               ;
+assign io_oeb     [26]       =      1'b0               ;
+assign io_oeb     [27]       =      1'b0               ;
+assign io_oeb     [28]       =      1'b0               ;
+assign io_oeb     [29]       =      1'b0               ;
+
+
+
 //-----------------------------------------------------------
 //  SPI I/F
 //  ////////////////////////////////////////////////////
@@ -231,32 +255,42 @@ logic                          spim_sdi0               ; // SPI Master Data In[0
 logic                          spim_sdi1               ; // SPI Master Data In[1]
 logic                          spim_sdi2               ; // SPI Master Data In[2]
 logic                          spim_sdi3               ; // SPI Master Data In[3]
+logic                          spim_clk                ;
+logic                          spim_csn                ;
+logic                          spi_en_tx               ;
 
-//`ifdef VERILATOR // Verilator has limited support for bi-di pad
-   assign  spim_sdi0 =   spim_sdi[0];
-   assign  spim_sdi1 =   spim_sdi[1];
-   assign  spim_sdi2 =   spim_sdi[2];
-   assign  spim_sdi3 =   spim_sdi[3];
+assign  spim_sdi0  =  io_in[32];
+assign  spim_sdi1  =  io_in[33];
+assign  spim_sdi2  =  io_in[34];
+assign  spim_sdi3  =  io_in[35];
+
+assign  io_out[30] =  spim_clk;
+assign  io_out[31] =  spim_csn;
+assign  io_out[32] =  spim_sdo0;
+assign  io_out[33] =  spim_sdo1;
+assign  io_out[34] =  spim_sdo2;
+assign  io_out[35] =  spim_sdo3;
    
-   assign  spim_sdo  =   {spim_sdo3,spim_sdo2,spim_sdo1,spim_sdo0};
-//`else 
-//   assign  spim_sdi0 =   spim_sdio[0];
-//   assign  spim_sdi1 =   spim_sdio[1];
-//   assign  spim_sdi2 =   spim_sdio[2];
-//   assign  spim_sdi3 =   spim_sdio[3];
-//
-//   assign  spim_sdio[0]  =  (spi_en_tx) ? spim_sdo0 : 1'bz;
-//   assign  spim_sdio[1]  =  (spi_en_tx) ? spim_sdo1 : 1'bz;
-//   assign  spim_sdio[2]  =  (spi_en_tx) ? spim_sdo2 : 1'bz;
-//   assign  spim_sdio[3]  =  (spi_en_tx) ? spim_sdo3 : 1'bz;
-//
-//`endif
+assign  io_oeb[30] =  1'b0;         // spi_clk
+assign  io_oeb[31] =  1'b0;         // spi_csn
+assign  io_oeb[32] =  !spi_en_tx;   // spi_dio0
+assign  io_oeb[33] =  !spi_en_tx;   // spi_dio1
+assign  io_oeb[34] =  !spi_en_tx;   // spi_dio2
+assign  io_oeb[35] =  !spi_en_tx;   // spi_dio3
+
+
+// for uart
+assign  io_oeb[36] =  1'b1; // Unused
+assign  io_oeb[37] =  1'b1; // Unused
+
+
+
 //------------------------------------------------------------------------------
 // RISC V Core instance
 //------------------------------------------------------------------------------
 scr1_top_wb u_riscv_top (
     // Reset
-    .pwrup_rst_n            (pwrup_rst_n               ),
+    .pwrup_rst_n            (rst_n                     ),
     .rst_n                  (rst_n                     ),
     .cpu_rst_n              (cpu_rst_n                 ),
 `ifdef SCR1_DBG_EN
@@ -276,11 +310,11 @@ scr1_top_wb u_riscv_top (
 
     // IRQ
 `ifdef SCR1_IPIC_EN
-    .irq_lines              ('0                        ), // TODO - Interrupts
+    .irq_lines              (irq_lines                 ), 
 `else // SCR1_IPIC_EN
-    .ext_irq                ('0                        ), // TODO - Interrupts
+    .ext_irq                (ext_irq                   ), // TODO - Interrupts
 `endif // SCR1_IPIC_EN
-    .soft_irq               ('0                        ), // TODO - Interrupts
+    .soft_irq               (soft_irq                  ), // TODO - Interrupts
 
     // DFT
     .test_mode              (1'b0                      ),
@@ -332,7 +366,7 @@ spim_top
 ) u_spi_master
 (
     .mclk                   (clk                       ),
-    .rst_n                  (rst_n                     ),
+    .rst_n                  (spi_rst_n                 ),
 
     .wbd_stb_i              (wbd_spim_stb_o            ),
     .wbd_adr_i              (wbd_spim_adr_o            ),
@@ -346,11 +380,11 @@ spim_top
     .events_o               (                          ), // TODO - Need to connect to intr ?
 
     .spi_clk                (spim_clk                  ),
-    .spi_csn0               (spim_csn0                 ),
-    .spi_csn1               (spim_csn1                 ),
-    .spi_csn2               (spim_csn2                 ),
-    .spi_csn3               (spim_csn3                 ),
-    .spi_mode               (spim_mode                 ),
+    .spi_csn0               (spim_csn                  ),
+    .spi_csn1               (                          ),
+    .spi_csn2               (                          ),
+    .spi_csn3               (                          ),
+    .spi_mode               (                          ),
     .spi_sdo0               (spim_sdo0                 ),
     .spi_sdo1               (spim_sdo1                 ),
     .spi_sdo2               (spim_sdo2                 ),
@@ -373,11 +407,11 @@ sdrc_top  #(.APP_AW(WB_WIDTH),
     .cfg_colbits            (cfg_colbits               ),
                     
     // WB bus
-    .wb_rst_i               (rst_n                     ),
+    .wb_rst_i               (!rst_n                    ),
     .wb_clk_i               (clk                       ),
     
     .wb_stb_i               (wbd_sdram_stb_o            ),
-    .wb_addr_i              (wbd_sdram_addr_o           ),
+    .wb_addr_i              (wbd_sdram_adr_o            ),
     .wb_we_i                (wbd_sdram_we_o             ),
     .wb_dat_i               (wbd_sdram_dat_o            ),
     .wb_sel_i               (wbd_sdram_sel_o            ),
@@ -389,7 +423,7 @@ sdrc_top  #(.APP_AW(WB_WIDTH),
 		
     /* Interface to SDRAMs */
     .sdram_clk              (sdram_clk                 ),
-    .sdram_resetn           (sdram_resetn              ),
+    .sdram_resetn           (sdram_rst_n               ),
     .sdr_cs_n               (sdr_cs_n                  ),
     .sdr_cke                (sdr_cke                   ),
     .sdr_ras_n              (sdr_ras_n                 ),
@@ -401,7 +435,7 @@ sdrc_top  #(.APP_AW(WB_WIDTH),
     .pad_sdr_din            (pad_sdr_din               ), 
     .sdr_dout               (sdr_dout                  ), 
     .sdr_den_n              (sdr_den_n                 ),
-    .sdram_pad_clk          (sdram_pad_clk             ),
+    .sdram_pad_clk          (pad_sdram_clk             ),
                     
     /* Parameters */
     .sdr_init_done          (sdr_init_done             ),
@@ -427,94 +461,154 @@ sdrc_top  #(.APP_AW(WB_WIDTH),
 // 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
 //-----------------------------
 // 
-wire [3:0] wbd_riscv_imem_tar_id     = (wbd_riscv_imem_adr_i[31:28] == 4'b0000 ) ? 4'b0001 :
-                                       (wbd_riscv_imem_adr_i[31:28] == 4'b0001 ) ? 4'b0001 :
-                                       (wbd_riscv_imem_adr_i[31:28] == 4'b0010 ) ? 4'b0010 :
-                                       (wbd_riscv_imem_adr_i[31:28] == 4'b0011 ) ? 4'b0011 : 4'b0001;
+wire [3:0] wbd_riscv_imem_tar_id     = (wbd_riscv_imem_adr_i[31:16] == 16'h0000 ) ? 4'b0000 :
+                                       (wbd_riscv_imem_adr_i[31:16] == 16'h0041 ) ? 4'b0000 :
+                                       (wbd_riscv_imem_adr_i[31:16] == 16'h0048 ) ? 4'b0001 :// Todo: Temp fix for SDRAM
+                                       (wbd_riscv_imem_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 4'b0000;
 
-wire [3:0] wbd_riscv_dmem_tar_id     = (wbd_riscv_dmem_adr_i[31:28] == 4'b0000 ) ? 4'b0001 :
-                                       (wbd_riscv_dmem_adr_i[31:28] == 4'b0001 ) ? 4'b0001 :
-                                       (wbd_riscv_dmem_adr_i[31:28] == 4'b0010 ) ? 4'b0010 :
-                                       (wbd_riscv_dmem_adr_i[31:28] == 4'b0011 ) ? 4'b0011 : 4'b0001;
-
-wire [3:0] wbd_ext_tar_id            = (wbd_ext_adr_i[31:28] == 4'b0000 ) ? 4'b0001 :
-                                       (wbd_ext_adr_i[31:28] == 4'b0001 ) ? 4'b0001 :
-                                       (wbd_ext_adr_i[31:28] == 4'b0010 ) ? 4'b0010 :
-                                       (wbd_ext_adr_i[31:28] == 4'b0011 ) ? 4'b0011 : 4'b0001;
-wb_crossbar #(
-    .WB_SLAVE(3),
-    .WB_MASTER(3),
-    .D_WD(32),
-    .BE_WD(4),
-    .ADR_WD(32),
-    .TAR_WD(4)
-   ) u_wb_crossbar(
-
-    .rst_n               (rst_n               ), 
-    .clk                 (clk                 ),
+wire [3:0] wbd_riscv_dmem_tar_id     = (wbd_riscv_dmem_adr_i[31:16] == 16'h0000 ) ? 4'b0000 :
+                                       (wbd_riscv_dmem_adr_i[31:16] == 16'h0041 ) ? 4'b0000 :
+                                       (wbd_riscv_dmem_adr_i[31:16] == 16'h0048 ) ? 4'b0001 : // todo: Temp fix for SDRAM
+                                       (wbd_riscv_dmem_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 4'b0000;
 
 
-    // Master Interface Signal
-    .wbd_taddr_master    ({wbd_ext_tar_id,
-                           wbd_riscv_dmem_tar_id,
-	                   wbd_riscv_imem_tar_id}),
-    .wbd_din_master      ({wbd_ext_dat_i,
-                          wbd_riscv_dmem_dat_i,
-                          wbd_riscv_imem_dat_i}),
-    .wbd_dout_master     ({wbd_ext_dat_o,
-                          wbd_riscv_dmem_dat_o,
-                          wbd_riscv_imem_dat_o}),
-    .wbd_adr_master      ({wbd_ext_adr_i,
-                          wbd_riscv_dmem_adr_i,
-                          wbd_riscv_imem_adr_i}      ), 
-    .wbd_be_master       ({wbd_ext_sel_i,
-                          wbd_riscv_dmem_sel_i,
-                          wbd_riscv_imem_sel_i}), 
-    .wbd_we_master       ({wbd_ext_we_i,
-                          wbd_riscv_dmem_we_i,
-                          wbd_riscv_imem_we_i}), 
-    .wbd_ack_master      ({wbd_ext_ack_o,
-                          wbd_riscv_dmem_ack_o,
-                          wbd_riscv_imem_ack_o}),
-    .wbd_stb_master      ({wbd_ext_stb_i,
-                           wbd_riscv_dmem_stb_i,
-                           wbd_riscv_imem_stb_i}), 
-    .wbd_cyc_master      ({wbd_ext_stb_i,
-                          wbd_riscv_dmem_stb_i,
-	                  wbd_riscv_imem_stb_i}), 
-    .wbd_err_master      ({wbd_ext_err_o,
-                          wbd_riscv_dmem_err_o,
-                          wbd_riscv_imem_err_o}),
-    .wbd_rty_master      (                    ),
- 
-    // Slave Interface Signal
-    .wbd_din_slave       ({wbd_glbl_dat_o,
-	                  wbd_sdram_dat_o,
-                          wbd_spim_dat_o}     ), 
-    .wbd_dout_slave      ({wbd_glbl_dat_i,
-                          wbd_sdram_dat_i,
-                          wbd_spim_dat_i}     ),
-    .wbd_adr_slave       ({wbd_glbl_addr_o,
-                          wbd_sdram_addr_o,
-                          wbd_spim_adr_o}     ), 
-    .wbd_be_slave        ({wbd_glbl_sel_o,
-                          wbd_sdram_sel_o,
-                          wbd_spim_sel_o}     ), 
-    .wbd_we_slave        ({wbd_glbl_we_o,
-                          wbd_sdram_we_o,
-                          wbd_spim_we_o}      ), 
-    .wbd_ack_slave       ({wbd_glbl_ack_i,
-                          wbd_sdram_ack_i,
-                          wbd_spim_ack_i}     ),
-    .wbd_stb_slave       ({wbd_glbl_stb_o,
-                          wbd_sdram_stb_o,
-                          wbd_spim_stb_o}     ), 
-    .wbd_cyc_slave       ({wbd_glbl_cyc_o,
-                          wbd_sdram_cyc_o,
-                          wbd_spim_cyc_o}      ), 
-    .wbd_err_slave       (3'b0                ),
-    .wbd_rty_slave       (3'b0                )
-         );
+//-------------------------------------------------------------------
+// EXTERNAL MEMORY MAP
+// 0x3000_0000 to 0x3000_00FF -  GLOBAL REGISTER
+// 0x4000_0000 to 0x4FFF_FFFF -  SPI FLASH MEMORY
+// 0x5000_0000 to 0x5000_00FF -  SPI REGISTER
+// 0x6000_0000 to 0x6FFF_FFFF -  SDRAM
+//
+wire [3:0] wbd_ext_tar_id            = (wbd_ext_adr_i[31:28] == 4'b0100 ) ? 4'b0000 :
+                                       (wbd_ext_adr_i[31:28] == 4'b0101 ) ? 4'b0000 :
+                                       (wbd_ext_adr_i[31:28] == 4'b0110 ) ? 4'b0001 :
+                                       (wbd_ext_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
+wb_interconnect  u_intercon (
+         .clk_i         (clk), 
+         .rst_n         (rst_n),
+         
+         // Master 0 Interface
+         .m0_wbd_dat_i  (wbd_riscv_imem_dat_i  ),
+         .m0_wbd_adr_i  (wbd_riscv_imem_adr_i  ),
+         .m0_wbd_sel_i  (wbd_riscv_imem_sel_i  ),
+         .m0_wbd_we_i   (wbd_riscv_imem_we_i   ),
+         .m0_wbd_cyc_i  (wbd_riscv_imem_stb_i  ),
+         .m0_wbd_stb_i  (wbd_riscv_imem_stb_i  ),
+         .m0_wbd_tid_i  (wbd_riscv_imem_tar_id ), // target id
+         .m0_wbd_dat_o  (wbd_riscv_imem_dat_o  ),
+         .m0_wbd_ack_o  (wbd_riscv_imem_ack_o  ),
+         .m0_wbd_err_o  (wbd_riscv_imem_err_o  ),
+         
+         // Master 1 Interface
+         .m1_wbd_dat_i  (wbd_riscv_dmem_dat_i  ),
+         .m1_wbd_adr_i  (wbd_riscv_dmem_adr_i  ),
+         .m1_wbd_sel_i  (wbd_riscv_dmem_sel_i  ),
+         .m1_wbd_we_i   (wbd_riscv_dmem_we_i   ),
+         .m1_wbd_cyc_i  (wbd_riscv_dmem_stb_i  ),
+         .m1_wbd_stb_i  (wbd_riscv_dmem_stb_i  ),
+         .m1_wbd_tid_i  (wbd_riscv_dmem_tar_id ), // target id
+         .m1_wbd_dat_o  (wbd_riscv_dmem_dat_o  ),
+         .m1_wbd_ack_o  (wbd_riscv_dmem_ack_o  ),
+         .m1_wbd_err_o  (wbd_riscv_dmem_err_o  ),
+         
+         // Master 2 Interface
+         .m2_wbd_dat_i  (wbd_ext_dat_i  ),
+         .m2_wbd_adr_i  (wbd_ext_adr_i  ),
+         .m2_wbd_sel_i  (wbd_ext_sel_i  ),
+         .m2_wbd_we_i   (wbd_ext_we_i   ),
+         .m2_wbd_cyc_i  (wbd_ext_cyc_i  ),
+         .m2_wbd_stb_i  (wbd_ext_stb_i  ),
+         .m2_wbd_tid_i  (wbd_ext_tar_id ), // target id
+         .m2_wbd_dat_o  (wbd_ext_dat_o  ),
+         .m2_wbd_ack_o  (wbd_ext_ack_o  ),
+         .m2_wbd_err_o  (wbd_ext_err_o  ),
+         
+         
+         // Slave 0 Interface
+         .s0_wbd_err_i  (1'b0           ),
+         .s0_wbd_dat_i  (wbd_spim_dat_i ),
+         .s0_wbd_ack_i  (wbd_spim_ack_i ),
+         .s0_wbd_dat_o  (wbd_spim_dat_o ),
+         .s0_wbd_adr_o  (wbd_spim_adr_o ),
+         .s0_wbd_sel_o  (wbd_spim_sel_o ),
+         .s0_wbd_we_o   (wbd_spim_we_o  ),  
+         .s0_wbd_cyc_o  (wbd_spim_cyc_o ),
+         .s0_wbd_stb_o  (wbd_spim_stb_o ),
+         
+         // Slave 1 Interface
+         .s1_wbd_err_i  (1'b0           ),
+         .s1_wbd_dat_i  (wbd_sdram_dat_i ),
+         .s1_wbd_ack_i  (wbd_sdram_ack_i ),
+         .s1_wbd_dat_o  (wbd_sdram_dat_o ),
+         .s1_wbd_adr_o  (wbd_sdram_adr_o ),
+         .s1_wbd_sel_o  (wbd_sdram_sel_o ),
+         .s1_wbd_we_o   (wbd_sdram_we_o  ),  
+         .s1_wbd_cyc_o  (wbd_sdram_cyc_o ),
+         .s1_wbd_stb_o  (wbd_sdram_stb_o ),
+         
+         // Slave 2 Interface
+         .s2_wbd_err_i  (1'b0           ),
+         .s2_wbd_dat_i  (wbd_glbl_dat_i ),
+         .s2_wbd_ack_i  (wbd_glbl_ack_i ),
+         .s2_wbd_dat_o  (wbd_glbl_dat_o ),
+         .s2_wbd_adr_o  (wbd_glbl_adr_o ),
+         .s2_wbd_sel_o  (wbd_glbl_sel_o ),
+         .s2_wbd_we_o   (wbd_glbl_we_o  ),  
+         .s2_wbd_cyc_o  (wbd_glbl_cyc_o ),
+         .s2_wbd_stb_o  (wbd_glbl_stb_o )
+	);
+
+glbl_cfg   u_glbl_cfg (
+
+       .mclk                   (clk                       ),
+       .reset_n                (rst_n                     ),
+       .device_idcode          (                          ),
+
+        // Reg Bus Interface Signal
+       .reg_cs                 (wbd_glbl_stb_o            ),
+       .reg_wr                 (wbd_glbl_we_o             ),
+       .reg_addr               (wbd_glbl_adr_o[5:2]       ),
+       .reg_wdata              (wbd_glbl_dat_o            ),
+       .reg_be                 (wbd_glbl_sel_o            ),
+
+       // Outputs
+       .reg_rdata              (wbd_glbl_dat_i            ),
+       .reg_ack                (wbd_glbl_ack_i            ),
+
+       // SDRAM Clock
+
+       .sdram_clk              (sdram_clk                 ),
+
+       // reset
+       .cpu_rst_n              (cpu_rst_n                 ),
+       .spi_rst_n              (spi_rst_n                 ),
+       .sdram_rst_n            (sdram_rst_n               ),
+
+       // Risc configuration
+       .fuse_mhartid           (fuse_mhartid              ),
+       .irq_lines              (irq_lines                 ), 
+       .soft_irq               (soft_irq                  ),
+
+       // SDRAM Config
+       .cfg_sdr_width          (cfg_sdr_width             ),
+       .cfg_colbits            (cfg_colbits               ),
+
+	/* Parameters */
+       .sdr_init_done          (sdr_init_done             ),
+       .cfg_req_depth          (cfg_req_depth             ), //how many req. buffer should hold
+       .cfg_sdr_en             (cfg_sdr_en                ),
+       .cfg_sdr_mode_reg       (cfg_sdr_mode_reg          ),
+       .cfg_sdr_tras_d         (cfg_sdr_tras_d            ),
+       .cfg_sdr_trp_d          (cfg_sdr_trp_d             ),
+       .cfg_sdr_trcd_d         (cfg_sdr_trcd_d            ),
+       .cfg_sdr_cas            (cfg_sdr_cas               ),
+       .cfg_sdr_trcar_d        (cfg_sdr_trcar_d           ),
+       .cfg_sdr_twr_d          (cfg_sdr_twr_d             ),
+       .cfg_sdr_rfsh           (cfg_sdr_rfsh              ),
+       .cfg_sdr_rfmax          (cfg_sdr_rfmax             )
+
+
+        );
 
 
 

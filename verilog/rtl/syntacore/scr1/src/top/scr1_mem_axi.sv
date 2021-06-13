@@ -23,12 +23,12 @@ module scr1_mem_axi
     output  logic                           core_idle,
     output  logic                           core_req_ack,
     input   logic                           core_req,
-    input   type_scr1_mem_cmd_e             core_cmd,
-    input   type_scr1_mem_width_e           core_width,
+    input   logic                           core_cmd,
+    input   logic [1:0]                     core_width,
     input   logic [SCR1_ADDR_WIDTH-1:0]     core_addr,
     input   logic [31:0]                    core_wdata,
     output  logic [31:0]                    core_rdata,
-    output  type_scr1_mem_resp_e            core_resp,
+    output  logic [1:0]                     core_resp,
 
     // AXI
     output  logic [SCR1_AXI_IDWIDTH-1:0]    awid,
@@ -80,7 +80,7 @@ module scr1_mem_axi
 
 // Local functions
 function automatic logic [2:0] width2axsize (
-    input   type_scr1_mem_width_e    width );
+    input   logic [1:0]              width );
     logic [2:0] axsize;
 begin
     case (width)
@@ -95,7 +95,7 @@ end
 endfunction
 
 typedef struct packed {
-    type_scr1_mem_width_e                               axi_width;
+    logic [1:0]                                         axi_width;
     logic                    [SCR1_ADDR_WIDTH-1:0]      axi_addr;
     logic                                   [31:0]      axi_wdata;
 } type_scr1_request_s;
@@ -129,7 +129,7 @@ logic               [$clog2(SCR1_REQ_BUF_SIZE)-1:0]     req_proc_ptr;
 logic               [$clog2(SCR1_REQ_BUF_SIZE)-1:0]     req_done_ptr;
 logic                                                   rresp_err;
 logic                                       [31:0]      rcvd_rdata;
-type_scr1_mem_resp_e                                    rcvd_resp;
+logic [1:0]                                             rcvd_resp;
 logic                                                   force_read;
 logic                                                   force_write;
 
@@ -308,6 +308,8 @@ end
 assign wdata = (force_write)?                       core_wdata << (8*                       core_addr[1:0]) :
                               req_fifo_axi_wdata[req_proc_ptr] << (8* bShift1);
 
+wire [SCR1_ADDR_WIDTH-1:0] CurAddr2 = req_fifo_axi_addr[req_done_ptr];
+wire [1:0]  bShift2 = CurAddr2[1:0];
 
 // Read data adaptation
 always_comb begin
