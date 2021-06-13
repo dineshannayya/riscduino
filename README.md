@@ -95,10 +95,10 @@ The SOC flow follow the openlane methodology and SOC enviornment is compatible w
 
 project need following environmental variable
 
-export CARAVEL_ROOT=<Carvel Installed Path>
-export OPENLANE_ROOT=<OpenLane Installed Path>
-export PDK_ROOT=<PDK Installed Path>
-export IMAGE_NAME=efabless/openlane:rc7
+* export CARAVEL_ROOT=<Carvel Installed Path>
+* export OPENLANE_ROOT=<OpenLane Installed Path>
+* export PDK_ROOT=<PDK Installed Path>
+* export IMAGE_NAME=efabless/openlane:rc7
 
 
 #### Project Tools
@@ -122,14 +122,10 @@ The simulation package includes the following tests:
 
 ### Running Simuation
 
-``` make verify-wb_port  
-    make verify-risc_hello
-```
-
-
 Examples:
 ``` sh
     make verify-wb_port  
+``` sh
     make verify-risc_hello
 ```
 
