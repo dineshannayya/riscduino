@@ -125,7 +125,6 @@ The simulation package includes the following tests:
 Examples:
 ``` sh
     make verify-wb_port  
-``` sh
     make verify-risc_hello
 ```
 
