@@ -19,23 +19,22 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [Overview](#overview)
 - [YiFive Architecture](#yifive-architecture)
 - [Key Feature](#key-features)
-- [Repository contents](#Repository contents)
+- [Repository contents](#repository-contents)
 - [Prerequisites](#prerequisites)
-- [Project Tools](#project-tools)
 - [Tests preparation](#tests-preparation)
     - [Running Simuation](#running-simulation)
-- [Openlane Tools](#openlane-tools)
+- [Tool sets](#tool-sets)
 
 
 # Overview
 
-YiFive is is RISC V based SOC design targeted for efebless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC enviornment is compatible with efebless/carvel methodology.
+YiFive is a 32 bit RISC V based SOC design targeted for efebless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC enviornment is compatible with efebless/carvel methodology.
 
 # YiFive Architecture
 
 <table>
   <tr>
-    <td  align="center"><img src="./docs/_static/YiFive_Soc.png" ></td>
+    <td  align="center"><img src="./docs/source/_static/YiFive_Soc.png" ></td>
   </tr>
 
 </table>
@@ -128,16 +127,6 @@ export PDK_ROOT=<PDK Installed Path>
 export IMAGE_NAME=efabless/openlane:rc7
 
 
-# Project Tools
-
-Currently supported simulators:
-
-* Icarus Verilog version 12.0 (devel) (s20150603-1107-ga446c34d)
-* Yosys 0.9+4081 (git sha1 b6721aa9, clang 10.0.0-4ubuntu1 -fPIC -Os)
-* Rest of the tool are using openlane rc7 environment
-
-Please note that RTL simulator executables should be in your $PATH variable.
-
 # Tests preparation
 
 The simulation package includes the following tests:
@@ -155,7 +144,7 @@ Examples:
     make verify-risc_hello
 ```
 
-# Openlane Tools
+# Tool Sets
 
 Soc flow uses Openlane tool sets.
 
@@ -188,6 +177,13 @@ Soc flow uses Openlane tool sets.
     2. `Klayout` - Performs DRC Checks
     3. `Netgen` - Performs LVS Checks
     4. `CVC` - Performs Circuit Validity Checks
+
+
+## **importent Note**
+
+Following tools in openlane docker is older version, we need to update these tool set.
+* Icarus Verilog version 12.0 (devel) (s20150603-1107-ga446c34d)
+* Yosys 0.9+4081 (git sha1 b6721aa9, clang 10.0.0-4ubuntu1 -fPIC -Os)
 
 
 ## Contacts
