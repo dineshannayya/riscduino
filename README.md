@@ -42,22 +42,19 @@ YiFive is a 32 bit RISC V based SOC design targeted for efebless Shuttle program
 
 
 # Key features
-
-* Open sourced under SHL-license (see LICENSE file) - unrestricted commercial use allowed
-* industry-grade and silicon-proven RISC-V core from syntacore 
-    * Machine privilege mode only
-    * 2 to 4 stage pipeline
-    * Optional Integrated Programmable Interrupt Controller with 16 IRQ lines
-    * Optional RISC-V Debug subsystem with JTAG interface
-    * Optional on-chip Tightly-Coupled Memory
-    * 32-bit AXI4/AHB-Lite external interface
-* industry-graded 8 bit SDRAM controller
-* Written in SystemVerilog
-* Open source tool set
-   * similation - verilator
-   * synthesis  - yosys
-   * backend/sta - openlane tool set
-* Verification suite provided
+```
+    * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed
+    * industry-grade and silicon-proven Open Source RISC-V core from syntacore 
+    * industry-graded and silicon-proven 8 bit SDRAM controller
+    * Quad SPI Master
+    * Wishbone compatible design
+    * Written in SystemVerilog
+    * Open source tool set
+       * similation - iverilog
+       * synthesis  - yosys
+       * backend/sta - openlane tool set
+    * Verification suite provided
+```
 
 #Sub IP features
 
@@ -74,16 +71,17 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 </table>
 
 ### Key RISC V Core feature
-
+```
    * RV32I or RV32E ISA base + optional RVM and RVC standard extensions
    * Machine privilege mode only
    * 2 to 4 stage pipeline
    * Optional Integrated Programmable Interrupt Controller with 16 IRQ lines
    * Optional RISC-V Debug subsystem with JTAG interface
    * Optional on-chip Tightly-Coupled Memory
+```
 
 ### RISC V core changes in YiFive SOC
-   YiFive Soc Modified the Syntacore source which is written in high level system verilog to basic verilog to be able to compile in open source tool link simulator (iverilog) and synthesis (yosys).
+   YiFive Soc Modified the Syntacore RISCV source which is written in high level system verilog to basic verilog to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
   
 
 
@@ -99,6 +97,7 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
 </table>
 
 ### key SDRAM Controller Feature
+```
     * 8/16/32 Configurable SDRAM data width
     * Wish Bone compatible
     * Application clock and SDRAM clock can be async
@@ -112,7 +111,7 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
     * Data mask signals for partial write operations
     * Bank management architecture, which minimizes latency
     * Automatic controlled refresh
-
+```
 
 # Repository contents
 
@@ -168,19 +167,11 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
 ## Environment setting
 
 ```bash
-    export STD_CELL_LIBRARY=<Library name, i.e. sky130_fd_sc_ls>
     export CARAVEL_ROOT=<Carvel Installed Path>
     export OPENLANE_ROOT=<OpenLane Installed Path>
     export PDK_ROOT=<PDK Installed Path>
     export IMAGE_NAME=efabless/openlane:rc7
 ```
-
-
-export CARAVEL_ROOT=<Carvel Installed Path>
-export OPENLANE_ROOT=<OpenLane Installed Path>
-export PDK_ROOT=<PDK Installed Path>
-export IMAGE_NAME=efabless/openlane:rc7
-
 
 # Tests preparation
 
