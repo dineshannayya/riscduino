@@ -83,8 +83,7 @@ module spim_top
 
 
 
-    logic   [7:0] spi_clk_div;
-    logic         spi_clk_div_valid;
+    logic   [5:0] spi_clk_div;
     logic         spi_req;
     logic         spi_ack;
     logic  [31:0] spi_addr;
@@ -144,7 +143,6 @@ module spim_top
         .wbd_err_o                      (wbd_err_o                    ),  // error
 
         .spi_clk_div                    (spi_clk_div                  ),
-        .spi_clk_div_valid              (spi_clk_div_valid            ),
         .spi_status                     (spi_ctrl_status              ),
 
 
@@ -176,7 +174,6 @@ module spim_top
         .eot                            (                             ),
 
         .spi_clk_div                    (spi_clk_div                  ),
-        .spi_clk_div_valid              (spi_clk_div_valid            ),
         .spi_status                     (spi_ctrl_status              ),
 
         .spi_req                        (spi_req                      ),

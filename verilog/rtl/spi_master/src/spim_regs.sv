@@ -65,7 +65,6 @@ module spim_regs #( parameter WB_WIDTH = 32) (
     output logic                         wbd_err_o,  // error
 
     output logic                   [7:0] spi_clk_div,
-    output logic                         spi_clk_div_valid,
     input logic                    [8:0] spi_status,
 
     // Towards SPI TX/RX FSM
@@ -248,7 +247,6 @@ end
       reg2spi_dummy_wr_len  <=  'h0;
       reg2spi_csreg         <=  'h0;
       reg2spi_req           <=  'h0;
-      spi_clk_div_valid     <= 1'b0;
       spi_clk_div           <=  'h2;
       spi_init_done         <=  'h0;
       spi_init_state        <=  SPI_INIT_IDLE;
@@ -351,7 +349,6 @@ end
           if ( spim_wb_be[0] == 1 )
           begin
             spi_clk_div <= spim_wb_wdata[7:0];
-            spi_clk_div_valid <= 1'b1;
           end
         REG_SPICMD: begin
           if ( spim_wb_be[0] == 1 )

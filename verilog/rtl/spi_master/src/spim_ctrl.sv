@@ -50,7 +50,6 @@ module spim_ctrl
     output logic                          eot,
 
     input  logic                    [7:0] spi_clk_div,
-    input  logic                          spi_clk_div_valid,
     output logic                    [8:0] spi_status,
 
 
