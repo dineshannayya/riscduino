@@ -25,6 +25,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [Tests preparation](#tests-preparation)
     - [Running Simuation](#running-simulation)
 - [Tool sets](#tool-sets)
+- [Documentation](#documentation)
 
 
 # Overview
@@ -56,7 +57,7 @@ YiFive is a 32 bit RISC V based SOC design targeted for efebless Shuttle program
     * Verification suite provided
 ```
 
-#Sub IP features
+# Sub IP features
 
 ## RISC V Core
 
@@ -235,4 +236,12 @@ Following tools in openlane docker is older version, we need to update these too
 ## Contacts
 
 Report an issue: <https://github.com/dineshannayya/yifive_r0/issues>
+
+# Documentation
+```bash
+    * Syntacore Link: https://github.com/syntacore/scr1
+    * SDRAM Controller : https://opencores.org/projects/sdr_ctrl
+```
+
+
 
