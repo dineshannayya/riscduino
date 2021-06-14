@@ -84,10 +84,9 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 
 ### RISC V core customization YiFive SOC
   
-``` 
-1.Source code Update : Modified some of the system verilog syntax to basic verilog syntax to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
-2.Source code modification: Modified the AXI/AHB interface to wishbone interface towards instruction & data memory interface
-```
+
+* **1.Update**      : Modified some of the system verilog syntax to basic verilog syntax to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
+* **2.Modification**: Modified the AXI/AHB interface to wishbone interface towards instruction & data memory interface
 
 ## 8bit SDRAM Controller
 Due to number of pin limitation in carvel shuttle, YiFive SOC integrate 8bit SDRAM controller.
