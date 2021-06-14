@@ -344,8 +344,8 @@ Following tools in openlane docker is older version, we need to update these too
 Report an issue: <https://github.com/dineshannayya/yifive_r0/issues>
 
 # Documentation
-    * **Syntacore Link**: https://github.com/syntacore/scr1
-    * **SDRAM Controller**: https://opencores.org/projects/sdr_ctrl
+* **Syntacore Link** - https://github.com/syntacore/scr1
+* **SDRAM Controller** - https://opencores.org/projects/sdr_ctrl
 
 
 
