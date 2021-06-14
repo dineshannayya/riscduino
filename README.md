@@ -17,8 +17,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Table of contents
 - [Overview](#overview)
-- [YiFive Architecture](#yifive-architecture)
+- [YiFive Block Diagram](#yifive-block-diagram)
 - [Key Feature](#key-features)
+- [Sub IP Feature](#sub-ip-features)
 - [Repository contents](#repository-contents)
 - [Prerequisites](#prerequisites)
 - [Tests preparation](#tests-preparation)
@@ -30,7 +31,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 YiFive is a 32 bit RISC V based SOC design targeted for efebless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC enviornment is compatible with efebless/carvel methodology.
 
-# YiFive Architecture
+# YiFive Block Diagram
 
 <table>
   <tr>
@@ -57,6 +58,60 @@ YiFive is a 32 bit RISC V based SOC design targeted for efebless Shuttle program
    * synthesis  - yosys
    * backend/sta - openlane tool set
 * Verification suite provided
+
+#Sub IP features
+
+## RISC V Core
+
+YiFive SOC Integrated Syntacore SCR1 Open-source RISV-V compatible MCU-class core.
+It is industry-grade and silicon-proven IP. Git link: https://github.com/syntacore/scr1
+
+### Block Diagram
+<table>
+  <tr>
+    <td  align="center"><img src="./docs/source/_static/syntacore_blockdiagram.svg" ></td>
+  </tr>
+</table>
+
+### Key RISC V Core feature
+
+   * RV32I or RV32E ISA base + optional RVM and RVC standard extensions
+   * Machine privilege mode only
+   * 2 to 4 stage pipeline
+   * Optional Integrated Programmable Interrupt Controller with 16 IRQ lines
+   * Optional RISC-V Debug subsystem with JTAG interface
+   * Optional on-chip Tightly-Coupled Memory
+
+### RISC V core changes in YiFive SOC
+   YiFive Soc Modified the Syntacore source which is written in high level system verilog to basic verilog to be able to compile in open source tool link simulator (iverilog) and synthesis (yosys).
+  
+
+
+## 8bit SDRAM Controller
+Due to number of pin limitation in carvel shuttle, YiFive SOC integrate 8bit SDRAM controller.
+This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
+
+### Block Diagram
+<table>
+  <tr>
+    <td  align="center"><img src="./docs/source/_static/sdram_controller.jpg" ></td>
+  </tr>
+</table>
+
+### key SDRAM Controller Feature
+    * 8/16/32 Configurable SDRAM data width
+    * Wish Bone compatible
+    * Application clock and SDRAM clock can be async
+    * Programmable column address
+    * Support for industry-standard SDRAM devices and modules
+    * Supports all standard SDRAM functions
+    * Fully Synchronous; All signals registered on positive edge of system clock
+    * One chip-select signals
+    * Support SDRAM with four bank
+    * Programmable CAS latency
+    * Data mask signals for partial write operations
+    * Bank management architecture, which minimizes latency
+    * Automatic controlled refresh
 
 
 # Repository contents
