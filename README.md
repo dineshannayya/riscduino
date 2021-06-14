@@ -20,6 +20,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [YiFive Block Diagram](#yifive-block-diagram)
 - [Key Feature](#key-features)
 - [Sub IP Feature](#sub-ip-features)
+- [SOC Memory Map](#soc-memory-map)
 - [Pin Mapping](#soc-pin-mapping)
 - [Repository contents](#repository-contents)
 - [Prerequisites](#prerequisites)
@@ -116,6 +117,41 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
     * Automatic controlled refresh
 ```
 
+# SOC Memory Map
+
+<table>
+  <tr>
+    <td  align="center"> RISC IMEM</td> 
+    <td  align="center"> RISC DMEM</td>
+    <td  align="center"> EXT MAP</td>
+    <td  align="center"> Target IP</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF  </td> 
+    <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF  </td>
+    <td  align="center"> 0x4000_0000 to 0x4FFF_FFFF</td>
+    <td  align="center"> SPI FLASH MEMORY</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1000_0000 to 0x1000_00FF</td> 
+    <td  align="center"> 0x1000_0000 to 0x1000_00FF</td>
+    <td  align="center"> 0x5000_0000 to 0x5000_00FF</td>
+    <td  align="center"> SPI Config Reg</td>
+  </tr>
+
+  <tr>
+    <td  align="center"> 0x2000_0000 to 0x2FFF_FFFF  </td> 
+    <td  align="center"> 0x2000_0000 to 0x2FFF_FFFF  </td>
+    <td  align="center"> 0x6000_0000 to 0x6FFF_FFFF</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x3000_0000 to 0x3000_00FF</td> 
+    <td  align="center"> 0x3000_0000 to 0x3000_00FF</td>
+    <td  align="center"> 0x3000_0000 to 0x3000_00FF</td>
+    <td  align="center"> Global Register</td>
+  </tr>
+</table>
 
 # SOC Pin Mapping
 Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Mapping as follows
