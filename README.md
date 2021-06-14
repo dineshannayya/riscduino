@@ -20,6 +20,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [YiFive Block Diagram](#yifive-block-diagram)
 - [Key Feature](#key-features)
 - [Sub IP Feature](#sub-ip-features)
+- [Pin Mapping](#soc-pin-mapping)
 - [Repository contents](#repository-contents)
 - [Prerequisites](#prerequisites)
 - [Tests preparation](#tests-preparation)
@@ -113,6 +114,110 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
     * Bank management architecture, which minimizes latency
     * Automatic controlled refresh
 ```
+
+
+# SOC Pin Mapping
+Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Mapping as follows
+
+<table>
+  <tr>
+    <td  align="center"> GPIO Pin Number</td> 
+    <td  align="center"> Direction</td>
+    <td  align="center"> Pad Name</td>
+    <td  align="center"> Block Name</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[7:0]</td> 
+    <td  align="center"> Inout</td>
+    <td  align="center"> SDRAM Data [7:0]</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[20:8]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM Address [12:0]</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[22:21]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM Bank Select [1:0]</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[23]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM Byte Mask</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[24]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM Write Enable</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[25]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM CAS </td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[26]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM RAS </td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[27]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM Chip Select </td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[28]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SDRAM CKE </td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[29]</td> 
+    <td  align="center"> Inout</td>
+    <td  align="center"> SDRAM Clock</td>
+    <td  align="center"> SDRAM</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[30]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SPI Clock</td>
+    <td  align="center"> SPI</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[31]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> SPI Chip Select</td>
+    <td  align="center"> SPI</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[35:32]</td> 
+    <td  align="center"> Inout</td>
+    <td  align="center"> SPI Data</td>
+    <td  align="center"> SPI</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[36]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> Uart TX</td>
+    <td  align="center"> UART</td>
+  </tr>
+  <tr>
+    <td  align="center"> gpio[37]</td> 
+    <td  align="center"> Output</td>
+    <td  align="center"> Uart RX</td>
+    <td  align="center"> UART</td>
+  </tr>
+</table>
+
 
 # Repository contents
 
