@@ -85,8 +85,8 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 ### RISC V core customization YiFive SOC
   
 
-* **1.Update**      : Modified some of the system verilog syntax to basic verilog syntax to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
-* **2.Modification**: Modified the AXI/AHB interface to wishbone interface towards instruction & data memory interface
+* **Update**: Modified some of the system verilog syntax to basic verilog syntax to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
+* **Modification**: Modified the AXI/AHB interface to wishbone interface towards instruction & data memory interface
 
 ## 8bit SDRAM Controller
 Due to number of pin limitation in carvel shuttle, YiFive SOC integrate 8bit SDRAM controller.
@@ -106,13 +106,13 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
     * Application clock and SDRAM clock can be async
     * Programmable column address
     * Support for industry-standard SDRAM devices and modules
-    * Supports all standard SDRAM functions
-    * Fully Synchronous; All signals registered on positive edge of system clock
+    * Supports all standard SDRAM functions.
+    * Fully Synchronous; All signals registered on positive edge of system clock.
     * One chip-select signals
-    * Support SDRAM with four bank
+    * Support SDRAM with four banks
     * Programmable CAS latency
     * Data mask signals for partial write operations
-    * Bank management architecture, which minimizes latency
+    * Bank management architecture, which minimizes latency.
     * Automatic controlled refresh
 ```
 
@@ -269,7 +269,7 @@ Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Map
 
 
 # Prerequisites
-   - Docker (ensure docker daemon is running) -- tested with version 19.03.12, but any recent version should suffice
+   - Docker (ensure docker daemon is running) -- tested with version 19.03.12, but any recent version should suffice.
 
 ## Environment setting
 
@@ -289,7 +289,7 @@ The simulation package includes the following tests:
 * **user_risc_boot** - Standalone User Risc core boot
 
 
-# Running Simuation
+# Running Simulation
 
 Examples:
 ``` sh
@@ -299,7 +299,7 @@ Examples:
 
 # Tool Sets
 
-Soc flow uses Openlane tool sets.
+YiFive Soc flow uses Openlane tool sets.
 
 1. **Synthesis**
     1. `yosys` - Performs RTL synthesis
@@ -332,7 +332,7 @@ Soc flow uses Openlane tool sets.
     4. `CVC` - Performs Circuit Validity Checks
 
 
-## **importent Note**
+## **important Note**
 
 Following tools in openlane docker is older version, we need to update these tool set.
 * Icarus Verilog version 12.0 (devel) (s20150603-1107-ga446c34d)
@@ -344,8 +344,8 @@ Following tools in openlane docker is older version, we need to update these too
 Report an issue: <https://github.com/dineshannayya/yifive_r0/issues>
 
 # Documentation
-    * Syntacore Link: https://github.com/syntacore/scr1
-    * SDRAM Controller : https://opencores.org/projects/sdr_ctrl
+    * **Syntacore Link**: https://github.com/syntacore/scr1
+    * **SDRAM Controller**: https://opencores.org/projects/sdr_ctrl
 
 
 
