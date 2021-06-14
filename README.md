@@ -31,7 +31,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Overview
 
-YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC enviornment is compatible with efabless/carvel methodology.
+YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
 
 # YiFive Block Diagram
 
@@ -45,17 +45,17 @@ YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program
 
 # Key features
 ```
-    * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed
-    * industry-grade and silicon-proven Open Source RISC-V core from syntacore 
-    * industry-graded and silicon-proven 8 bit SDRAM controller
+    * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed.
+    * industry-grade and silicon-proven Open-Source RISC-V core from syntacore 
+    * industry-graded and silicon-proven 8-bit SDRAM controller
     * Quad SPI Master
     * Wishbone compatible design
-    * Written in SystemVerilog
-    * Open source tool set
-       * similation - iverilog
+    * Written in System Verilog
+    * Open-source tool set
+       * simulation - iverilog
        * synthesis  - yosys
        * backend/sta - openlane tool set
-    * Verification suite provided
+    * Verification suite provided.
 ```
 
 # Sub IP features
@@ -72,7 +72,7 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
   </tr>
 </table>
 
-### Key RISC V Core feature
+### RISC V Core Key feature
 ```
    * RV32I or RV32E ISA base + optional RVM and RVC standard extensions
    * Machine privilege mode only
@@ -82,10 +82,10 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
    * Optional on-chip Tightly-Coupled Memory
 ```
 
-### RISC V core changes in YiFive SOC
-   YiFive Soc Modified the Syntacore RISCV source which is written in high level system verilog to basic verilog to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
-  
-
+### RISC V core customization YiFive SOC
+   
+1.Source code Update : Modified some of the system verilog syntax to basic verilog syntax to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
+2.Source code modification: Modified the AXI/AHB interface to wishbone interface towards instruction & data memory interface
 
 ## 8bit SDRAM Controller
 Due to number of pin limitation in carvel shuttle, YiFive SOC integrate 8bit SDRAM controller.
@@ -98,7 +98,7 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
   </tr>
 </table>
 
-### key SDRAM Controller Feature
+### SDRAM Controller key Feature
 ```
     * 8/16/32 Configurable SDRAM data width
     * Wish Bone compatible
