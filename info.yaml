@@ -1,6 +1,6 @@
 ---
 project:
-  description: "A User SoC for Google sponsored Open MPW shuttles for SKY130."
+  description: "A Custom SoC for Google sponsored Open MPW shuttles for SKY130."
   foundry: "SkyWater"
   git_url: "https://github.com/dineshannayya/yifive_r0.git"
   organization: "None"
@@ -11,8 +11,8 @@ project:
   project_id: "00000000"
   tags:
     - "Open MPW"
-    - "Test Harness"
-  category: "Test Harness"
+    - "MPW-TWO"
+  category: "Processor"
   top_level_netlist: "caravel/verilog/gl/caravel.v"
   user_level_netlist: "verilog/gl/user_project_wrapper.v"
   version: "1.00"
