@@ -73,10 +73,7 @@ module spim_clkgen
     // after en is asserted
     always @(posedge clk or negedge rstn) begin
     	if(!rstn) begin
-    	   clk_cnt    <= 'h1;
     	   spi_clk    <= 1'b1;
-	   spi_fall   <= 1'b0;
-	   spi_rise   <= 1'b0;
     	end // if (!reset_n)
     	else 
     	begin
