@@ -1,0 +1,148 @@
+//----------------------------------------------------------------------
+// This logic create a holding register for Wishbone interface.
+// This is usefull to break timing issue at interconnect
+//
+// Limitation: Due to stagging FF, Continous Burst of Wishbone will have one
+// cycle break between each transaction
+//----------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+////  Wishbone Stagging FF                                        ////
+////                                                              ////
+////  This file is part of the YIFive cores project               ////
+////  http://www.opencores.org/cores/yifive/                      ////
+////                                                              ////
+////  Description                                                 ////
+////    This logic create a holding FF for Wishbone interface.    ////
+////    This is usefull to break timing issue at interconnect     ////
+////                                                              ////
+////  Limitation: Due to stagging FF, Continous Burst of          ////
+////  Wishbone will have one cycle break between each transaction ////
+////                                                              ////
+////  To Do:                                                      ////
+////    nothing                                                   ////
+////                                                              ////
+////  Author(s):                                                  ////
+////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////                                                              ////
+////  Revision :                                                  ////
+////    0.1 - 12th June 2021, Dinesh A                            ////
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+//// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
+////                                                              ////
+//// This source file may be used and distributed without         ////
+//// restriction provided that this copyright statement is not    ////
+//// removed from the file and that any derivative work contains  ////
+//// the original copyright notice and the associated disclaimer. ////
+////                                                              ////
+//// This source file is free software; you can redistribute it   ////
+//// and/or modify it under the terms of the GNU Lesser General   ////
+//// Public License as published by the Free Software Foundation; ////
+//// either version 2.1 of the License, or (at your option) any   ////
+//// later version.                                               ////
+////                                                              ////
+//// This source is distributed in the hope that it will be       ////
+//// useful, but WITHOUT ANY WARRANTY; without even the implied   ////
+//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR      ////
+//// PURPOSE.  See the GNU Lesser General Public License for more ////
+//// details.                                                     ////
+////                                                              ////
+//// You should have received a copy of the GNU Lesser General    ////
+//// Public License along with this source; if not, download it   ////
+//// from http://www.opencores.org/lgpl.shtml                     ////
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
+
+
+module wb_stagging (
+         input logic		clk_i, 
+         input logic            rst_n,
+         // WishBone Input master I/P
+         input   logic	[31:0]	m_wbd_dat_i,
+         input   logic  [31:0]	m_wbd_adr_i,
+         input   logic  [3:0]	m_wbd_sel_i,
+         input   logic  	m_wbd_we_i,
+         input   logic  	m_wbd_cyc_i,
+         input   logic  	m_wbd_stb_i,
+         output  logic	[31:0]	m_wbd_dat_o,
+         output  logic		m_wbd_ack_o,
+         output  logic		m_wbd_err_o,
+
+         // Slave Interface
+         input	logic [31:0]	s_wbd_dat_i,
+         input	logic 	        s_wbd_ack_i,
+         input	logic 	        s_wbd_err_i,
+         output	logic [31:0]	s_wbd_dat_o,
+         output	logic [31:0]	s_wbd_adr_o,
+         output	logic [3:0]	s_wbd_sel_o,
+         output	logic 	        s_wbd_we_o,
+         output	logic 	        s_wbd_cyc_o,
+         output	logic 	        s_wbd_stb_o
+
+);
+
+logic        holding_busy   ; // Indicate Stagging for Free or not
+logic [31:0] m_wbd_dat_i_ff ; // Flopped vesion of m_wbd_dat_i
+logic [31:0] m_wbd_adr_i_ff ; // Flopped vesion of m_wbd_adr_i
+logic [3:0]  m_wbd_sel_i_ff ; // Flopped vesion of m_wbd_sel_i
+logic        m_wbd_we_i_ff  ; // Flopped vesion of m_wbd_we_i
+logic        m_wbd_cyc_i_ff ; // Flopped vesion of m_wbd_cyc_i
+logic        m_wbd_stb_i_ff ; // Flopped vesion of m_wbd_stb_i
+logic [31:0] s_wbd_dat_i_ff ; // Flopped vesion of s_wbd_dat_i
+logic        s_wbd_ack_i_ff ; // Flopped vesion of s_wbd_ack_i
+logic        s_wbd_err_i_ff ; // Flopped vesion of s_wbd_err_i
+
+
+assign s_wbd_dat_o = m_wbd_dat_i_ff;
+assign s_wbd_adr_o = m_wbd_adr_i_ff;
+assign s_wbd_sel_o = m_wbd_sel_i_ff;
+assign s_wbd_we_o  = m_wbd_we_i_ff;
+assign s_wbd_cyc_o = m_wbd_cyc_i_ff;
+assign s_wbd_stb_o = m_wbd_stb_i_ff;
+
+assign m_wbd_dat_o = s_wbd_dat_i_ff;
+assign m_wbd_ack_o = s_wbd_ack_i_ff;
+assign m_wbd_err_o = s_wbd_err_i_ff;
+
+always @(negedge rst_n or posedge clk_i)
+begin
+   if(rst_n == 1'b0) begin
+       holding_busy   <= 1'b0;
+       m_wbd_dat_i_ff <= 'h0;
+       m_wbd_adr_i_ff <= 'h0;
+       m_wbd_sel_i_ff <= 'h0;
+       m_wbd_we_i_ff  <= 'h0;
+       m_wbd_cyc_i_ff <= 'h0;
+       m_wbd_stb_i_ff <= 'h0;
+       s_wbd_dat_i_ff <= 'h0;
+       s_wbd_ack_i_ff <= 'h0;
+       s_wbd_err_i_ff <= 'h0;
+   end begin
+       s_wbd_dat_i_ff <= s_wbd_dat_i;
+       s_wbd_ack_i_ff <= s_wbd_ack_i;
+       s_wbd_err_i_ff <= s_wbd_err_i;
+       if(m_wbd_stb_i && holding_busy == 0 && m_wbd_ack_o == 0) begin
+          holding_busy   <= 1'b1;
+          m_wbd_dat_i_ff <= m_wbd_dat_i;
+          m_wbd_adr_i_ff <= m_wbd_adr_i;
+          m_wbd_sel_i_ff <= m_wbd_sel_i;
+          m_wbd_we_i_ff  <= m_wbd_we_i;
+          m_wbd_cyc_i_ff <= m_wbd_cyc_i;
+          m_wbd_stb_i_ff <= m_wbd_stb_i;
+       end else if (holding_busy && s_wbd_ack_i) begin
+          holding_busy   <= 1'b0;
+          m_wbd_dat_i_ff <= 'h0;
+          m_wbd_adr_i_ff <= 'h0;
+          m_wbd_sel_i_ff <= 'h0;
+          m_wbd_we_i_ff  <= 'h0;
+          m_wbd_cyc_i_ff <= 'h0;
+          m_wbd_stb_i_ff <= 'h0;
+       end
+   end
+end
+
+
+endmodule
+

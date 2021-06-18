@@ -17,6 +17,9 @@
 ////                                                              ////
 ////  Revision :                                                  ////
 ////    0.1 - 12th June 2021, Dinesh A                            ////
+////    0.2 - 17th June 2021, Dinesh A                            ////
+////          Stagging FF added at Slave Interface to break       ////
+////          path                                                ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -238,43 +241,43 @@ assign m2_wbd_dat_o  =  m2_wb_rd.wbd_dat;
 assign m2_wbd_ack_o  =  m2_wb_rd.wbd_ack;
 assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
 
-assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
-assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
-assign s0_wb_rd.wbd_err  = s0_wbd_err_i ;
-
-assign s1_wb_rd.wbd_dat  = s1_wbd_dat_i ;
-assign s1_wb_rd.wbd_ack  = s1_wbd_ack_i ;
-assign s1_wb_rd.wbd_err  = s1_wbd_err_i ;
-
-assign s2_wb_rd.wbd_dat  = s2_wbd_dat_i ;
-assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
-assign s2_wb_rd.wbd_err  = s2_wbd_err_i ;
-
-
 //----------------------------------------
 // Slave Mapping
 // -------------------------------------
+// Masked Now and added stagging FF now
+// assign  s0_wbd_dat_o =  s0_wb_wr.wbd_dat ;
+// assign  s0_wbd_adr_o =  s0_wb_wr.wbd_adr ;
+// assign  s0_wbd_sel_o =  s0_wb_wr.wbd_sel ;
+// assign  s0_wbd_we_o  =  s0_wb_wr.wbd_we  ;
+// assign  s0_wbd_cyc_o =  s0_wb_wr.wbd_cyc ;
+// assign  s0_wbd_stb_o =  s0_wb_wr.wbd_stb ;
+//                      
+// assign  s1_wbd_dat_o =  s1_wb_wr.wbd_dat ;
+// assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr ;
+// assign  s1_wbd_sel_o =  s1_wb_wr.wbd_sel ;
+// assign  s1_wbd_we_o  =  s1_wb_wr.wbd_we  ;
+// assign  s1_wbd_cyc_o =  s1_wb_wr.wbd_cyc ;
+// assign  s1_wbd_stb_o =  s1_wb_wr.wbd_stb ;
+//                      
+// assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
+// assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr ;
+// assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
+// assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
+// assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
+// assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
+// 
+// assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
+// assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
+// assign s0_wb_rd.wbd_err  = s0_wbd_err_i ;
+// 
+// assign s1_wb_rd.wbd_dat  = s1_wbd_dat_i ;
+// assign s1_wb_rd.wbd_ack  = s1_wbd_ack_i ;
+// assign s1_wb_rd.wbd_err  = s1_wbd_err_i ;
+// 
+// assign s2_wb_rd.wbd_dat  = s2_wbd_dat_i ;
+// assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
+// assign s2_wb_rd.wbd_err  = s2_wbd_err_i ;
 
-assign  s0_wbd_dat_o =  s0_wb_wr.wbd_dat ;
-assign  s0_wbd_adr_o =  s0_wb_wr.wbd_adr ;
-assign  s0_wbd_sel_o =  s0_wb_wr.wbd_sel ;
-assign  s0_wbd_we_o  =  s0_wb_wr.wbd_we  ;
-assign  s0_wbd_cyc_o =  s0_wb_wr.wbd_cyc ;
-assign  s0_wbd_stb_o =  s0_wb_wr.wbd_stb ;
-                     
-assign  s1_wbd_dat_o =  s1_wb_wr.wbd_dat ;
-assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr ;
-assign  s1_wbd_sel_o =  s1_wb_wr.wbd_sel ;
-assign  s1_wbd_we_o  =  s1_wb_wr.wbd_we  ;
-assign  s1_wbd_cyc_o =  s1_wb_wr.wbd_cyc ;
-assign  s1_wbd_stb_o =  s1_wb_wr.wbd_stb ;
-                     
-assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
-assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr ;
-assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
-assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
-assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
-assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
 
 //
 // arbitor 
@@ -284,9 +287,9 @@ logic [1:0]  gnt;
 wb_arb	u_wb_arb(
 	.clk(clk_i), 
 	.rstn(rst_n),
-	.req({	m2_wbd_cyc_i,
-		m1_wbd_cyc_i,
-		m0_wbd_cyc_i}),
+	.req({	m2_wbd_stb_i & !m2_wbd_ack_o,
+		m1_wbd_stb_i & !m1_wbd_ack_o,
+		m0_wbd_stb_i & !m0_wbd_ack_o}),
 	.gnt(gnt)
 );
 
@@ -325,6 +328,90 @@ assign  m1_wb_rd = (gnt == 2'b01) ? i_bus_s : 'h0;
 assign  m2_wb_rd = (gnt == 2'b10) ? i_bus_s : 'h0;
 
 
+
+// Wishbone Stagging FF towards S0 to break timing path
+wb_stagging u_s0_wb_stage(
+         .clk_i            (clk_i              ), 
+         .rst_n            (rst_n              ),
+         // WishBone Input master I/P
+         .m_wbd_dat_i      (s0_wb_wr.wbd_dat   ),
+         .m_wbd_adr_i      (s0_wb_wr.wbd_adr   ),
+         .m_wbd_sel_i      (s0_wb_wr.wbd_sel   ),
+         .m_wbd_we_i       (s0_wb_wr.wbd_we    ),
+         .m_wbd_cyc_i      (s0_wb_wr.wbd_cyc   ),
+         .m_wbd_stb_i      (s0_wb_wr.wbd_stb   ),
+         .m_wbd_dat_o      (s0_wb_rd.wbd_dat   ),
+         .m_wbd_ack_o      (s0_wb_rd.wbd_ack   ),
+         .m_wbd_err_o      (s0_wb_rd.wbd_err   ),
+
+         // Slave Interface
+         .s_wbd_dat_i      (s0_wbd_dat_i       ),
+         .s_wbd_ack_i      (s0_wbd_ack_i       ),
+         .s_wbd_err_i      (s0_wbd_err_i       ),
+         .s_wbd_dat_o      (s0_wbd_dat_o       ),
+         .s_wbd_adr_o      (s0_wbd_adr_o       ),
+         .s_wbd_sel_o      (s0_wbd_sel_o       ),
+         .s_wbd_we_o       (s0_wbd_we_o        ),
+         .s_wbd_cyc_o      (s0_wbd_cyc_o       ),
+         .s_wbd_stb_o      (s0_wbd_stb_o       )
+
+);
+
+// Wishbone Stagging FF towards S1 to break timing path
+wb_stagging u_s1_wb_stage(
+         .clk_i            (clk_i              ), 
+         .rst_n            (rst_n              ),
+         // WishBone Input master I/P
+         .m_wbd_dat_i      (s1_wb_wr.wbd_dat   ),
+         .m_wbd_adr_i      (s1_wb_wr.wbd_adr   ),
+         .m_wbd_sel_i      (s1_wb_wr.wbd_sel   ),
+         .m_wbd_we_i       (s1_wb_wr.wbd_we    ),
+         .m_wbd_cyc_i      (s1_wb_wr.wbd_cyc   ),
+         .m_wbd_stb_i      (s1_wb_wr.wbd_stb   ),
+         .m_wbd_dat_o      (s1_wb_rd.wbd_dat   ),
+         .m_wbd_ack_o      (s1_wb_rd.wbd_ack   ),
+         .m_wbd_err_o      (s1_wb_rd.wbd_err   ),
+
+         // Slave Interface
+         .s_wbd_dat_i      (s1_wbd_dat_i       ),
+         .s_wbd_ack_i      (s1_wbd_ack_i       ),
+         .s_wbd_err_i      (s1_wbd_err_i       ),
+         .s_wbd_dat_o      (s1_wbd_dat_o       ),
+         .s_wbd_adr_o      (s1_wbd_adr_o       ),
+         .s_wbd_sel_o      (s1_wbd_sel_o       ),
+         .s_wbd_we_o       (s1_wbd_we_o        ),
+         .s_wbd_cyc_o      (s1_wbd_cyc_o       ),
+         .s_wbd_stb_o      (s1_wbd_stb_o       )
+
+);
+
+// Wishbone Stagging FF towards S1 to break timing path
+wb_stagging u_s2_wb_stage(
+         .clk_i            (clk_i              ), 
+         .rst_n            (rst_n              ),
+         // WishBone Input master I/P
+         .m_wbd_dat_i      (s2_wb_wr.wbd_dat   ),
+         .m_wbd_adr_i      (s2_wb_wr.wbd_adr   ),
+         .m_wbd_sel_i      (s2_wb_wr.wbd_sel   ),
+         .m_wbd_we_i       (s2_wb_wr.wbd_we    ),
+         .m_wbd_cyc_i      (s2_wb_wr.wbd_cyc   ),
+         .m_wbd_stb_i      (s2_wb_wr.wbd_stb   ),
+         .m_wbd_dat_o      (s2_wb_rd.wbd_dat   ),
+         .m_wbd_ack_o      (s2_wb_rd.wbd_ack   ),
+         .m_wbd_err_o      (s2_wb_rd.wbd_err   ),
+
+         // Slave Interface
+         .s_wbd_dat_i      (s2_wbd_dat_i       ),
+         .s_wbd_ack_i      (s2_wbd_ack_i       ),
+         .s_wbd_err_i      (s2_wbd_err_i       ),
+         .s_wbd_dat_o      (s2_wbd_dat_o       ),
+         .s_wbd_adr_o      (s2_wbd_adr_o       ),
+         .s_wbd_sel_o      (s2_wbd_sel_o       ),
+         .s_wbd_we_o       (s2_wbd_we_o        ),
+         .s_wbd_cyc_o      (s2_wbd_cyc_o       ),
+         .s_wbd_stb_o      (s2_wbd_stb_o       )
+
+);
 
 endmodule
 

@@ -46,6 +46,7 @@
      `include "digital_core/src/glbl_cfg.sv"
      `include "digital_core/src/digital_core.sv"
 
+     `include "lib/wb_stagging.sv"
      `include "wb_interconnect/src/wb_arb.sv"
      `include "wb_interconnect/src/wb_interconnect.sv"
 

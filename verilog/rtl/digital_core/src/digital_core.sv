@@ -73,7 +73,7 @@ module digital_core
     inout vssd2,	// User area 2 digital ground
 `endif
     input   logic                       wb_clk_i        ,  // System clock
-    input   logic                       rtc_clk         ,  // Real-time clock
+    input   logic                       user_clock2     ,  // user Clock
     input   logic                       wb_rst_i        ,  // Regular Reset signal
 
     input   logic                       wbd_ext_cyc_i   ,  // strobe/request
@@ -301,7 +301,7 @@ scr1_top_wb u_riscv_top (
 `endif // SCR1_DBG_EN
 
     // Clock
-    .clk                    (wb_clk_i                  ),
+    .core_clk               (cpu_clk                   ),
     .rtc_clk                (rtc_clk                   ),
 
     // Fuses
@@ -332,6 +332,9 @@ scr1_top_wb u_riscv_top (
     .tdo_en                 (tdo_en                    ),
 `endif // SCR1_DBG_EN
 
+    
+    .wb_rst_n               (wb_rst_n                  ),
+    .wb_clk                 (wb_clk_i                  ),
     // Instruction memory interface
     .wbd_imem_stb_o         (wbd_riscv_imem_stb_i      ),
     .wbd_imem_adr_o         (wbd_riscv_imem_adr_i      ),
@@ -534,6 +537,7 @@ glbl_cfg   u_glbl_cfg (
 
        .mclk                   (wb_clk_i                  ),
        .reset_n                (wb_rst_n                  ),
+       .user_clock2            (user_clock2               ),
        .device_idcode          (                          ),
 
         // Reg Bus Interface Signal
@@ -550,6 +554,8 @@ glbl_cfg   u_glbl_cfg (
        // SDRAM Clock
 
        .sdram_clk              (sdram_clk                 ),
+       .cpu_clk                (cpu_clk                   ),
+       .rtc_clk                (rtc_clk                   ),
 
        // reset
        .cpu_rst_n              (cpu_rst_n                 ),

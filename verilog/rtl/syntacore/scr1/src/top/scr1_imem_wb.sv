@@ -21,6 +21,9 @@
 ////              On power up, wishbone output are unkown as it   ////
 ////              driven from fifo output. To avoid unknown       ////
 ////              propgation, we are driving 'h0 when fifo empty  ////
+////     v2:    June 18, 2021, Dinesh A                           ////
+////            core and wishbone is made async and async fifo    ////
+////            added to take care of domain cross-over           ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -60,8 +63,8 @@
 
 module scr1_imem_wb (
     // Control Signals
-    input   logic                           rst_n,
-    input   logic                           clk,
+    input   logic                           core_rst_n, // core reset
+    input   logic                           core_clk,   // Core clock
 
     // Core Interface
     output  logic                           imem_req_ack,
@@ -71,6 +74,8 @@ module scr1_imem_wb (
     output  logic [1:0]                     imem_resp,
 
     // WB Interface
+    input   logic                           wb_rst_n,   // wishbone reset
+    input   logic                           wb_clk,     // wishbone clock
     output  logic                           wbd_stb_o, // strobe/request
     output  logic   [SCR1_WB_WIDTH-1:0]     wbd_adr_o, // address
     output  logic                           wbd_we_o,  // write
@@ -85,19 +90,10 @@ module scr1_imem_wb (
 //-------------------------------------------------------------------------------
 // Local parameters declaration
 //-------------------------------------------------------------------------------
-`ifndef SCR1_IMEM_WB_OUT_BP
-localparam  SCR1_FIFO_WIDTH = 2;
-localparam  SCR1_FIFO_CNT_WIDTH = $clog2(SCR1_FIFO_WIDTH+1);
-`endif // SCR1_IMEM_WB_OUT_BP
 
 //-------------------------------------------------------------------------------
 // Local types declaration
 //-------------------------------------------------------------------------------
-typedef enum logic {
-    SCR1_FSM_ADDR = 1'b0,
-    SCR1_FSM_DATA = 1'b1,
-    SCR1_FSM_ERR  = 1'bx
-} type_scr1_fsm_e;
 
 typedef struct packed {
     logic   [SCR1_WB_WIDTH-1:0]    haddr;
@@ -111,86 +107,57 @@ typedef struct packed {
 //-------------------------------------------------------------------------------
 // Local signal declaration
 //-------------------------------------------------------------------------------
-type_scr1_fsm_e                             fsm;
+
+//-------------------------------------------------------------------------------
+// Request FIFO
+// ------------------------------------------------------------------------------
 logic                                       req_fifo_rd;
 logic                                       req_fifo_wr;
-logic                                       req_fifo_up;
-`ifdef SCR1_IMEM_WB_OUT_BP
-type_scr1_req_fifo_s                        req_fifo_r;
-type_scr1_req_fifo_s [0:0]                  req_fifo;
-`else // SCR1_IMEM_WB_OUT_BP
-logic [SCR1_WB_WIDTH-1:0]                   req_fifo_dout;
-`endif // SCR1_IMEM_WB_OUT_BP
-
 logic                                       req_fifo_empty;
 logic                                       req_fifo_full;
 
-type_scr1_resp_fifo_s                       resp_fifo;
-logic                                       resp_fifo_hready;
 
-//-------------------------------------------------------------------------------
-// Interface to Core
-//-------------------------------------------------------------------------------
-assign imem_req_ack = ~req_fifo_full;
-assign req_fifo_wr  = ~req_fifo_full & imem_req;
+//-----------------------------------------------------
+// Response FIFO (READ PATH
+// ----------------------------------------------------
+logic                                      resp_fifo_empty;
+logic                                      resp_fifo_rd;
 
-assign imem_rdata = resp_fifo.hrdata;
 
-assign imem_resp = (resp_fifo_hready)
-                    ? (resp_fifo.hresp == 1'b1)
-                        ? SCR1_MEM_RESP_RDY_OK
-                        : SCR1_MEM_RESP_RDY_ER
-                    : SCR1_MEM_RESP_NOTRDY;
 
 //-------------------------------------------------------------------------------
 // REQ_FIFO
 //-------------------------------------------------------------------------------
-`ifdef SCR1_IMEM_WB_OUT_BP
-always_ff @(negedge rst_n, posedge clk) begin
-    if (~rst_n) begin
-        req_fifo_full <= 1'b0;
-    end else begin
-        if (~req_fifo_full) begin
-            req_fifo_full <= imem_req & ~req_fifo_rd;
-        end else begin
-            req_fifo_full <= ~req_fifo_rd;
-        end
-    end
-end
-assign req_fifo_empty = ~(req_fifo_full | imem_req);
+type_scr1_req_fifo_s    req_fifo_din;
+type_scr1_req_fifo_s    req_fifo_dout;
 
-assign req_fifo_up    = ~req_fifo_rd & req_fifo_wr;
-always_ff @(posedge clk) begin
-    if (req_fifo_up) begin
-        req_fifo_r.haddr <= imem_addr;
-    end
-end
+assign req_fifo_wr  = ~req_fifo_full & imem_req;
+assign imem_req_ack = ~req_fifo_full;
 
-assign req_fifo[0] = (req_fifo_full) ? req_fifo_r : imem_addr;
+assign req_fifo_din.haddr = imem_addr;
 
-`else // SCR1_IMEM_WB_OUT_BP
-
-
- sync_fifo #(
+ async_fifo #(
       .W(SCR1_WB_WIDTH), // Data Width
-      .D(2)    // FIFO DEPTH
+      .DP(4),            // FIFO DEPTH
+      .WR_FAST(1),       // We need FF'ed Full
+      .RD_FAST(1)        // We need FF'ed Empty
      )   u_req_fifo(
+     // Writc Clock
+	.wr_clk      (core_clk       ),
+        .wr_reset_n  (core_rst_n     ),
+        .wr_en       (req_fifo_wr    ),
+        .wr_data     (req_fifo_din   ),
+        .full        (req_fifo_full  ),
+        .afull       (               ),                 
 
-       .rd_data    (req_fifo_dout  ),
-
-       .reset_n   (rst_n          ),
-       .clk       (clk            ),
-       .wr_en     (req_fifo_wr    ), // Write
-       .rd_en     (req_fifo_rd    ), // Read
-       .wr_data   (imem_addr      ),
-       .full      (req_fifo_full  ),
-       .empty     (req_fifo_empty )
-);
-
-
-
-
-`endif // SCR1_IMEM_WB_OUT_BP
+    // RD Clock
+        .rd_clk     (wb_clk          ),
+        .rd_reset_n (wb_rst_n        ),
+        .rd_en      (req_fifo_rd     ),
+        .empty      (req_fifo_empty  ),                
+        .aempty     (                ),                
+        .rd_data    (req_fifo_dout   )
+      );
 
 
 always_comb begin
@@ -200,44 +167,53 @@ always_comb begin
     end
 end
 
-//-------------------------------------------------------------------------------
-// FIFO response
-//-------------------------------------------------------------------------------
-`ifdef SCR1_IMEM_WB_IN_BP
-assign resp_fifo_hready = wbd_ack_i;
-assign resp_fifo.hresp  = (wbd_err_i) ? 1'b0 : 1'b1;
-assign resp_fifo.hrdata = wbd_dat_i;
-assign wbd_stb_o        = ~req_fifo_empty;
-assign wbd_adr_o        = req_fifo[0];
-assign wbd_we_o         = 0; // Only Read supported
-assign wbd_dat_o        = 32'h0; // No Write
-assign wbd_sel_o        = 4'b1111; // Only Read allowed in imem i/f
-
-
-`else // SCR1_IMEM_WB_IN_BP
-always_ff @(negedge rst_n, posedge clk) begin
-    if (~rst_n) begin
-        resp_fifo_hready <= 1'b0;
-    end else begin
-        resp_fifo_hready <= wbd_ack_i ;
-    end
-end
-
-always_ff @(posedge clk) begin
-    if (wbd_ack_i) begin
-        resp_fifo.hresp  <= (wbd_err_i) ? 1'b0 : 1'b1;
-        resp_fifo.hrdata <= wbd_dat_i;
-    end
-end
-
 assign wbd_stb_o    = ~req_fifo_empty;
 // On Power, to avoid unknow propgating the value
-assign wbd_adr_o    = (req_fifo_empty) ? 'h0 : req_fifo_dout; 
+assign wbd_adr_o    = (req_fifo_empty) ? 'h0 : req_fifo_dout.haddr; 
 assign wbd_we_o     = 0; // Only Read supported
 assign wbd_dat_o    = 32'h0; // No Write
 assign wbd_sel_o    = 4'b1111; // Only Read allowed in imem i/f
-`endif // SCR1_IMEM_WB_IN_BP
+//-------------------------------------------------------------------------------
+// Response path - Used by Read path logic
+//-------------------------------------------------------------------------------
+type_scr1_resp_fifo_s                       resp_fifo_din;
+type_scr1_resp_fifo_s                       resp_fifo_dout;
 
+assign resp_fifo_din.hresp  = (wbd_err_i) ? 1'b0 : 1'b1;
+assign resp_fifo_din.hrdata = wbd_dat_i;
+
+ async_fifo #(
+      .W(SCR1_WB_WIDTH+1), // Data Width
+      .DP(4),            // FIFO DEPTH
+      .WR_FAST(1),       // We need FF'ed Full
+      .RD_FAST(1)        // We need FF'ed Empty
+     )   u_res_fifo(
+     // Writc Clock
+	.wr_clk      (wb_clk                 ),
+        .wr_reset_n  (wb_rst_n               ),
+        .wr_en       (wbd_ack_i              ),
+        .wr_data     (resp_fifo_din          ),
+        .full        (                       ), // Assmed FIFO will never be full as it's Response a Single Request
+        .afull       (                       ),                 
+
+    // RD Clock
+        .rd_clk     (core_clk                ),
+        .rd_reset_n (core_rst_n              ),
+        .rd_en      (resp_fifo_rd            ),
+        .empty      (resp_fifo_empty         ),                
+        .aempty     (                        ),                
+        .rd_data    (resp_fifo_dout          )
+      );
+
+
+assign resp_fifo_rd = !resp_fifo_empty;
+assign imem_rdata   = resp_fifo_dout.hrdata;
+
+assign imem_resp = (resp_fifo_rd)
+                    ? (resp_fifo_dout.hresp == 1'b1)
+                        ? SCR1_MEM_RESP_RDY_OK
+                        : SCR1_MEM_RESP_RDY_ER
+                    : SCR1_MEM_RESP_NOTRDY ;
 
 
 `ifdef SCR1_TRGT_SIMULATION

@@ -97,7 +97,7 @@ digital_core u_core (
 
     .wb_clk_i(wb_clk_i),
     .wb_rst_i(wb_rst_i),
-    .rtc_clk(user_clock2),
+    .user_clock2(user_clock2),
 
     // MGMT SoC Wishbone Slave
 
