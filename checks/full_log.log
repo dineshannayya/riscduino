@@ -1,0 +1,22 @@
+FULL RUN LOG:
+ Executing Step 0 of 8: Extracting GDS Files
+Step 0 done without fatal errors.
+ Executing Step 1 of 8: Project License Check
+{{LICENSE COMPLIANCE PASSED}} Apache-2.0 LICENSE file was found in project root
+ No third party libraries found.
+Step 1 done without fatal errors.
+{{SPDX COMPLIANCE WARNING}} Found 527 non-compliant files with the SPDX Standard. Check full log for more information
+SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/read.me', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/openlane/user_analog_project_wrapper_empty/or_ioplace.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/tbuart.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/spiflash.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/timer/timer_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/qspi/qspi_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/perf/perf_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/timer2/timer2_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/storage/storage_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/caravan/caravan_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/uart/uart_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/mem/mem_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/dv/caravel/mgmt_soc/gpio/gpio_tb.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/rtl/simpleuart.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/rtl/picorv32.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/rtl/mgmt_soc.v', '/home/dinesha/workarea/opencore/git/yifive_r0/caravel/verilog/rtl/spimemio.v', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/default.cvcrc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/config.1.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/config.tcl']
+ Executing Step 2 of 8: YAML File Check
+ YAML file valid!
+Step 2 done without fatal errors.
+ Detected Project Type is "digital"
+ Executing Step 3 of 8: Project Compliance Checks
+b'Going into /home/dinesha/workarea/efabless/caravel'
+b'Removing manifest'
+b'Fetching manifest'
+b'Running sha1sum checks'
+ Manifest Checks Failed. Please rebase your Repository to the latest Caravel master.
+verilog/rtl/mgmt_core.v: FAILED
+verilog/rtl/mgmt_soc.v: FAILED
+verilog/rtl/wb_intercon.v: FAILED
