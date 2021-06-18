@@ -58,7 +58,6 @@ module wb_interconnect(
          input   logic  	m0_wbd_we_i,
          input   logic  	m0_wbd_cyc_i,
          input   logic  	m0_wbd_stb_i,
-         input   logic [3:0] 	m0_wbd_tid_i, // target id
          output  logic	[31:0]	m0_wbd_dat_o,
          output  logic		m0_wbd_ack_o,
          output  logic		m0_wbd_err_o,
@@ -70,7 +69,6 @@ module wb_interconnect(
          input	logic 	        m1_wbd_we_i,
          input	logic 	        m1_wbd_cyc_i,
          input	logic 	        m1_wbd_stb_i,
-         input  logic [3:0] 	m1_wbd_tid_i, // target id
          output	logic [31:0]	m1_wbd_dat_o,
          output	logic 	        m1_wbd_ack_o,
          output	logic 	        m1_wbd_err_o,
@@ -82,7 +80,6 @@ module wb_interconnect(
          input	logic 	        m2_wbd_we_i,
          input	logic 	        m2_wbd_cyc_i,
          input	logic 	        m2_wbd_stb_i,
-         input  logic [3:0] 	m2_wbd_tid_i, // target id
          output	logic [31:0]	m2_wbd_dat_o,
          output	logic 	        m2_wbd_ack_o,
          output	logic 	        m2_wbd_err_o,
@@ -171,6 +168,36 @@ type_wb_rd_intf  s2_wb_rd;
 type_wb_wr_intf  i_bus_m;  // Multiplexed Master I/F
 type_wb_rd_intf  i_bus_s;  // Multiplexed Slave I/F
 
+//------------------------------
+// RISC Data Memory Map
+// 0x0000_0000 to 0x0FFF_FFFF  - SPI FLASH MEMORY
+// 0x1000_0000 to 0x1000_00FF  - SPI REGISTER
+// 0x2000_0000 to 0x2FFF_FFFF  - SDRAM
+// 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
+//-----------------------------
+// 
+wire [3:0] m0_wbd_tid_i     = (m0_wbd_adr_i[31:28] == 4'b0000 ) ? 4'b0000 :
+                              (m0_wbd_adr_i[31:28] == 4'b0001 ) ? 4'b0000 :
+                              (m0_wbd_adr_i[31:28] == 4'b0010 ) ? 4'b0001 :
+                              (m0_wbd_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
+
+wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] == 4'b0000 ) ? 4'b0000 :
+                              (m1_wbd_adr_i[31:28] == 4'b0001 ) ? 4'b0000 :
+                              (m1_wbd_adr_i[31:28] == 4'b0010 ) ? 4'b0001 : 
+                              (m1_wbd_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
+
+
+//-------------------------------------------------------------------
+// EXTERNAL MEMORY MAP
+// 0x3000_0000 to 0x3000_00FF -  GLOBAL REGISTER
+// 0x4000_0000 to 0x4FFF_FFFF -  SPI FLASH MEMORY
+// 0x5000_0000 to 0x5000_00FF -  SPI REGISTER
+// 0x6000_0000 to 0x6FFF_FFFF -  SDRAM
+//
+wire [3:0] m2_wbd_tid_i       = (m2_wbd_adr_i[31:28] == 4'b0100 ) ? 4'b0000 :
+                                (m2_wbd_adr_i[31:28] == 4'b0101 ) ? 4'b0000 :
+                                (m2_wbd_adr_i[31:28] == 4'b0110 ) ? 4'b0001 :
+                                (m2_wbd_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
 
 //----------------------------------------
 // Master Mapping

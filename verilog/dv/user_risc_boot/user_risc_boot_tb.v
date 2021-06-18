@@ -207,9 +207,9 @@ module user_risc_boot_tb;
     .vssd1(),	// User area 1 digital ground
     .vssd2(),	// User area 2 digital ground
 `endif
-    .clk             (clock),  // System clock
+    .wb_clk_i        (clock),  // System clock
     .rtc_clk         (1'b1),  // Real-time clock
-    .rst_n           (RSTB),  // Regular Reset signal
+    .wb_rst_i        (RSTB),  // Regular Reset signal
 
     .wbd_ext_cyc_i   (wbd_ext_cyc_i),  // strobe/request
     .wbd_ext_stb_i   (wbd_ext_stb_i),  // strobe/request
@@ -234,7 +234,7 @@ module user_risc_boot_tb;
     .io_out         (io_out) ,
     .io_oeb         (io_oeb) ,
 
-    .irq            () 
+    .user_irq       () 
 
 );
 

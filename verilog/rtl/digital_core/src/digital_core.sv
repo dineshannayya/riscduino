@@ -72,9 +72,9 @@ module digital_core
     inout vssd1,	// User area 1 digital ground
     inout vssd2,	// User area 2 digital ground
 `endif
-    input   logic                       clk             ,  // System clock
+    input   logic                       wb_clk_i        ,  // System clock
     input   logic                       rtc_clk         ,  // Real-time clock
-    input   logic                       rst_n           ,  // Regular Reset signal
+    input   logic                       wb_rst_i        ,  // Regular Reset signal
 
     input   logic                       wbd_ext_cyc_i   ,  // strobe/request
     input   logic                       wbd_ext_stb_i   ,  // strobe/request
@@ -98,7 +98,7 @@ module digital_core
     output logic  [37:0]                io_out          ,
     output logic  [37:0]                io_oeb          ,
 
-    output logic  [2:0]                 irq             
+    output logic  [2:0]                 user_irq             
 
 );
 
@@ -284,14 +284,16 @@ assign  io_oeb[36] =  1'b1; // Unused
 assign  io_oeb[37] =  1'b1; // Unused
 
 
+wire wb_rst_n = !wb_rst_i;
+
 
 //------------------------------------------------------------------------------
 // RISC V Core instance
 //------------------------------------------------------------------------------
 scr1_top_wb u_riscv_top (
     // Reset
-    .pwrup_rst_n            (rst_n                     ),
-    .rst_n                  (rst_n                     ),
+    .pwrup_rst_n            (wb_rst_n                  ),
+    .rst_n                  (wb_rst_n                  ),
     .cpu_rst_n              (cpu_rst_n                 ),
 `ifdef SCR1_DBG_EN
     .sys_rst_n_o            (sys_rst_n_o               ),
@@ -299,7 +301,7 @@ scr1_top_wb u_riscv_top (
 `endif // SCR1_DBG_EN
 
     // Clock
-    .clk                    (clk                       ),
+    .clk                    (wb_clk_i                  ),
     .rtc_clk                (rtc_clk                   ),
 
     // Fuses
@@ -365,7 +367,7 @@ spim_top
 `endif
 ) u_spi_master
 (
-    .mclk                   (clk                       ),
+    .mclk                   (wb_clk_i                  ),
     .rst_n                  (spi_rst_n                 ),
 
     .wbd_stb_i              (wbd_spim_stb_o            ),
@@ -397,18 +399,21 @@ spim_top
 );
 
 
-sdrc_top  #(.APP_AW(WB_WIDTH), 
+sdrc_top  
+    `ifndef SYNTHESIS
+    #(.APP_AW(WB_WIDTH), 
 	    .APP_DW(WB_WIDTH), 
 	    .APP_BW(4),
 	    .SDR_DW(8), 
 	    .SDR_BW(1))
+      `endif
      u_sdram_ctrl (
-    .cfg_sdr_width          (cfg_sdr_width             ),
-    .cfg_colbits            (cfg_colbits               ),
+    .cfg_sdr_width          (cfg_sdr_width              ),
+    .cfg_colbits            (cfg_colbits                ),
                     
     // WB bus
-    .wb_rst_i               (!rst_n                    ),
-    .wb_clk_i               (clk                       ),
+    .wb_rst_i               (wb_rst_i                   ),
+    .wb_clk_i               (wb_clk_i                   ),
     
     .wb_stb_i               (wbd_sdram_stb_o            ),
     .wb_addr_i              (wbd_sdram_adr_o            ),
@@ -453,39 +458,9 @@ sdrc_top  #(.APP_AW(WB_WIDTH),
    );
 
 
-//------------------------------
-// RISC Data Memory Map
-// 0x0000_0000 to 0x0FFF_FFFF  - SPI FLASH MEMORY
-// 0x1000_0000 to 0x1000_00FF  - SPI REGISTER
-// 0x2000_0000 to 0x2FFF_FFFF  - SDRAM
-// 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
-//-----------------------------
-// 
-wire [3:0] wbd_riscv_imem_tar_id     = (wbd_riscv_imem_adr_i[31:16] == 16'h0000 ) ? 4'b0000 :
-                                       (wbd_riscv_imem_adr_i[31:16] == 16'h0041 ) ? 4'b0000 :
-                                       (wbd_riscv_imem_adr_i[31:16] == 16'h0048 ) ? 4'b0001 :// Todo: Temp fix for SDRAM
-                                       (wbd_riscv_imem_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 4'b0000;
-
-wire [3:0] wbd_riscv_dmem_tar_id     = (wbd_riscv_dmem_adr_i[31:16] == 16'h0000 ) ? 4'b0000 :
-                                       (wbd_riscv_dmem_adr_i[31:16] == 16'h0041 ) ? 4'b0000 :
-                                       (wbd_riscv_dmem_adr_i[31:16] == 16'h0048 ) ? 4'b0001 : // todo: Temp fix for SDRAM
-                                       (wbd_riscv_dmem_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 4'b0000;
-
-
-//-------------------------------------------------------------------
-// EXTERNAL MEMORY MAP
-// 0x3000_0000 to 0x3000_00FF -  GLOBAL REGISTER
-// 0x4000_0000 to 0x4FFF_FFFF -  SPI FLASH MEMORY
-// 0x5000_0000 to 0x5000_00FF -  SPI REGISTER
-// 0x6000_0000 to 0x6FFF_FFFF -  SDRAM
-//
-wire [3:0] wbd_ext_tar_id            = (wbd_ext_adr_i[31:28] == 4'b0100 ) ? 4'b0000 :
-                                       (wbd_ext_adr_i[31:28] == 4'b0101 ) ? 4'b0000 :
-                                       (wbd_ext_adr_i[31:28] == 4'b0110 ) ? 4'b0001 :
-                                       (wbd_ext_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
 wb_interconnect  u_intercon (
-         .clk_i         (clk), 
-         .rst_n         (rst_n),
+         .clk_i         (wb_clk_i              ), 
+         .rst_n         (wb_rst_n              ),
          
          // Master 0 Interface
          .m0_wbd_dat_i  (wbd_riscv_imem_dat_i  ),
@@ -494,7 +469,6 @@ wb_interconnect  u_intercon (
          .m0_wbd_we_i   (wbd_riscv_imem_we_i   ),
          .m0_wbd_cyc_i  (wbd_riscv_imem_stb_i  ),
          .m0_wbd_stb_i  (wbd_riscv_imem_stb_i  ),
-         .m0_wbd_tid_i  (wbd_riscv_imem_tar_id ), // target id
          .m0_wbd_dat_o  (wbd_riscv_imem_dat_o  ),
          .m0_wbd_ack_o  (wbd_riscv_imem_ack_o  ),
          .m0_wbd_err_o  (wbd_riscv_imem_err_o  ),
@@ -506,7 +480,6 @@ wb_interconnect  u_intercon (
          .m1_wbd_we_i   (wbd_riscv_dmem_we_i   ),
          .m1_wbd_cyc_i  (wbd_riscv_dmem_stb_i  ),
          .m1_wbd_stb_i  (wbd_riscv_dmem_stb_i  ),
-         .m1_wbd_tid_i  (wbd_riscv_dmem_tar_id ), // target id
          .m1_wbd_dat_o  (wbd_riscv_dmem_dat_o  ),
          .m1_wbd_ack_o  (wbd_riscv_dmem_ack_o  ),
          .m1_wbd_err_o  (wbd_riscv_dmem_err_o  ),
@@ -518,7 +491,6 @@ wb_interconnect  u_intercon (
          .m2_wbd_we_i   (wbd_ext_we_i   ),
          .m2_wbd_cyc_i  (wbd_ext_cyc_i  ),
          .m2_wbd_stb_i  (wbd_ext_stb_i  ),
-         .m2_wbd_tid_i  (wbd_ext_tar_id ), // target id
          .m2_wbd_dat_o  (wbd_ext_dat_o  ),
          .m2_wbd_ack_o  (wbd_ext_ack_o  ),
          .m2_wbd_err_o  (wbd_ext_err_o  ),
@@ -560,8 +532,8 @@ wb_interconnect  u_intercon (
 
 glbl_cfg   u_glbl_cfg (
 
-       .mclk                   (clk                       ),
-       .reset_n                (rst_n                     ),
+       .mclk                   (wb_clk_i                  ),
+       .reset_n                (wb_rst_n                  ),
        .device_idcode          (                          ),
 
         // Reg Bus Interface Signal
@@ -588,6 +560,7 @@ glbl_cfg   u_glbl_cfg (
        .fuse_mhartid           (fuse_mhartid              ),
        .irq_lines              (irq_lines                 ), 
        .soft_irq               (soft_irq                  ),
+       .user_irq               (user_irq                  ),
 
        // SDRAM Config
        .cfg_sdr_width          (cfg_sdr_width             ),

@@ -95,8 +95,8 @@ digital_core u_core (
 	.vssd2(vssd2),	// User area 2 digital ground
     `endif
 
-    .clk(wb_clk_i),
-    .rst_n(!wb_rst_i),
+    .wb_clk_i(wb_clk_i),
+    .wb_rst_i(wb_rst_i),
     .rtc_clk(user_clock2),
 
     // MGMT SoC Wishbone Slave
@@ -124,7 +124,7 @@ digital_core u_core (
     .io_oeb(io_oeb),
 
     // IRQ
-    .irq(user_irq)
+    .user_irq(user_irq)
 );
 
 endmodule	// user_project_wrapper

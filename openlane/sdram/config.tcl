@@ -42,7 +42,7 @@ set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/sdram_ctrl/s
 
 
 # Need blackbox for cells
-set ::env(SYNTH_READ_BLACKBOX_LIB) 0
+set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 
 # Floorplanning
@@ -83,7 +83,7 @@ set ::env(GLB_RT_ALLOW_CONGESTION) 0
 set ::env(GLB_RT_MINLAYER) 1
 
 # | `GLB_RT_MAXLAYER` | The number of highest layer to be used in routing. <br> (Default: `6`)|
-set ::env(GLB_RT_MAXLAYER) 6
+set ::env(GLB_RT_MAXLAYER) 5
 
 # Obstructions
     # li1 over the SRAM areas

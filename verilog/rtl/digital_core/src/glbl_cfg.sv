@@ -75,6 +75,7 @@ module glbl_cfg (
        output logic [31:0]     fuse_mhartid,
        output logic [15:0]     irq_lines,
        output logic            soft_irq,
+       output logic [2:0]      user_irq,
 
        // SDRAM Config
        input logic             sdr_init_done       , // Indicate SDRAM Initialisation Done
@@ -404,6 +405,7 @@ generic_register #(.WD(8),.RESET_DEFAULT(8'hAA)  ) u_reg2_be3 (
 //-----------------------------------------------------------------
 assign  irq_lines     = reg_3[15:0]; 
 assign  soft_irq      = reg_3[16]; 
+assign  user_irq      = reg_3[19:17]; 
 
 generic_register #(8,0  ) u_reg3_be0 (
 	      .we            ({8{sw_wr_en_3 & 
@@ -426,18 +428,18 @@ generic_register #(8,0  ) u_reg3_be1 (
 	      //List of Outs
 	      .data_out      (reg_3[15:8]        )
           );
-generic_register #(1,0  ) u_reg3_be2 (
+generic_register #(4,0  ) u_reg3_be2 (
 	      .we            ({1{sw_wr_en_3 & 
                                  wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[16]    ),
+	      .data_in       (sw_reg_wdata[19:16]    ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_3[16]        )
+	      .data_out      (reg_3[19:16]        )
           );
 
-assign reg_3[31:17] = '0;
+assign reg_3[31:20] = '0;
 
 
 //-----------------------------------------------------------------------
