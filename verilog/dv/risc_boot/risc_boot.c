@@ -170,7 +170,6 @@ void main()
 
     // Add some delay for user core to boot
     for(i = 0; i < 40; i ++);
-    for(i = 0; i < 40; i ++);
 
     if(reg_mprj_globl_reg6  != 0x11223344) bFail = 1;
     if(reg_mprj_globl_reg7  != 0x22334455) bFail = 1;

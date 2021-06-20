@@ -58,25 +58,22 @@ module spim_clkgen
     input  logic                        clk,
     input  logic                        rstn,
     input  logic                        en,
-    input  logic          [7:0]         cfg_sck_period,
+    input  logic          [5:0]         cfg_sck_period,
     output logic                        spi_clk,
     output logic                        spi_fall,
     output logic                        spi_rise
 );
 
-	logic [7:0] sck_half_period;
-	logic [7:0] clk_cnt;
+	logic [5:0] sck_half_period;
+	logic [5:0] clk_cnt;
 
-    assign sck_half_period = {1'b0, cfg_sck_period[7:1]};
+    assign sck_half_period = {1'b0, cfg_sck_period[5:1]};
    
     // The first transition on the sck_toggle happens one SCK period
     // after en is asserted
     always @(posedge clk or negedge rstn) begin
     	if(!rstn) begin
-    	   clk_cnt    <= 'h1;
     	   spi_clk    <= 1'b1;
-	   spi_fall   <= 1'b0;
-	   spi_rise   <= 1'b0;
     	end // if (!reset_n)
     	else 
     	begin

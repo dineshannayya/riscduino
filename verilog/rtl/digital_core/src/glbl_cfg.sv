@@ -48,13 +48,14 @@
 module glbl_cfg (
 
         input logic             mclk,
+        input logic             user_clock2,
         input logic             reset_n,
         output logic [31:0]     device_idcode,
 
         // Reg Bus Interface Signal
         input logic             reg_cs,
         input logic             reg_wr,
-        input logic [3:0]       reg_addr,
+        input logic [7:0]       reg_addr,
         input logic [31:0]      reg_wdata,
         input logic [3:0]       reg_be,
 
@@ -65,6 +66,8 @@ module glbl_cfg (
        // SDRAM Clock
 
        output  logic           sdram_clk,
+       output  logic           cpu_clk,
+       output  logic           rtc_clk,
 
        // reset
        output  logic           cpu_rst_n,
@@ -75,6 +78,7 @@ module glbl_cfg (
        output logic [31:0]     fuse_mhartid,
        output logic [15:0]     irq_lines,
        output logic            soft_irq,
+       output logic [2:0]      user_irq,
 
        // SDRAM Config
        input logic             sdr_init_done       , // Indicate SDRAM Initialisation Done
@@ -109,7 +113,6 @@ logic  [31:0]   sw_reg_wdata;
 
 logic           reg_cs_l    ;
 logic           reg_cs_2l    ;
-logic           cfg_sdram_clk_div;
 
 
 logic [31:0]    reg_0;  // Software_Reg_0
@@ -149,7 +152,7 @@ begin
     reg_cs_l      <= '0;
     reg_cs_2l     <= '0;
   end else begin
-    sw_addr       <= reg_addr [3:0];
+    sw_addr       <= reg_addr [5:2];
     sw_rd_en      <= reg_cs & !reg_wr;
     sw_wr_en      <= reg_cs & reg_wr;
     sw_reg_wdata  <= reg_wdata;
@@ -251,12 +254,24 @@ end
 //   reg-0
 //   -----------------------------------------------------------------
 
-assign cpu_rst_n     = reg_0[0];
-assign spi_rst_n     = reg_0[1];
-assign sdram_rst_n   = reg_0[2];
-assign cfg_sdram_clk_div = reg_0[3];
+assign cpu_rst_n               = reg_0[0];
+assign spi_rst_n               = reg_0[1];
+assign sdram_rst_n             = reg_0[2];
 
+// SDRAM Clock source & div selection
+wire       cfg_sdram_clk_src_sel   = reg_0[4];
+wire       cfg_sdram_clk_div       = reg_0[5];
+wire [1:0] cfg_sdram_clk_ratio     = reg_0[7:6];
 
+// Core Clock source & div selection
+wire       cfg_cpu_clk_src_sel   = reg_0[8];
+wire       cfg_cpu_clk_div       = reg_0[9];
+wire [1:0] cfg_cpu_clk_ratio     = reg_0[11:10];
+
+// RTC Clock source & div selection
+wire       cfg_rtc_clk_src_sel   = reg_0[12];
+wire       cfg_rtc_clk_div       = reg_0[13];
+wire [1:0] cfg_rtc_clk_ratio     = reg_0[15:14];
 
 generic_register #(8,0  ) u_reg0_be0 (
 	      .we            ({8{sw_wr_en_0 & 
@@ -404,6 +419,7 @@ generic_register #(.WD(8),.RESET_DEFAULT(8'hAA)  ) u_reg2_be3 (
 //-----------------------------------------------------------------
 assign  irq_lines     = reg_3[15:0]; 
 assign  soft_irq      = reg_3[16]; 
+assign  user_irq      = reg_3[19:17]; 
 
 generic_register #(8,0  ) u_reg3_be0 (
 	      .we            ({8{sw_wr_en_3 & 
@@ -426,18 +442,18 @@ generic_register #(8,0  ) u_reg3_be1 (
 	      //List of Outs
 	      .data_out      (reg_3[15:8]        )
           );
-generic_register #(1,0  ) u_reg3_be2 (
-	      .we            ({1{sw_wr_en_3 & 
+generic_register #(4,0  ) u_reg3_be2 (
+	      .we            ({4{sw_wr_en_3 & 
                                  wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[16]    ),
+	      .data_in       (sw_reg_wdata[19:16]    ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_3[16]        )
+	      .data_out      (reg_3[19:16]        )
           );
 
-assign reg_3[31:17] = '0;
+assign reg_3[31:20] = '0;
 
 
 //-----------------------------------------------------------------------
@@ -1028,29 +1044,72 @@ generic_register #(8,0  ) u_reg15_be3 (
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_15[31:24]        )
+	      .data_out      (reg_15[31:24]     )
           );
 
 
 
 
 //----------------------------------
-// Generate SDRAM Div-2 Clock
+// Generate SDRAM Clock Generation
 //----------------------------------
-wire   sdram_clk_div2;
+wire   sdram_clk_div;
+wire   sdram_ref_clk;
 
-assign sdram_clk = (cfg_sdram_clk_div) ? sdram_clk_div2 : mclk;
+assign sdram_ref_clk = (cfg_sdram_clk_src_sel) ? user_clock2 : mclk;
+
+
+
+assign sdram_clk = (cfg_sdram_clk_div) ? sdram_clk_div : sdram_ref_clk;
 
 
 clk_ctl #(1) u_sdramclk (
    // Outputs
-       .clk_o         (sdram_clk_div2),
+       .clk_o         (sdram_clk_div      ),
    // Inputs
-       .mclk          (mclk),
-       .reset_n       (reset_n), 
-       .clk_div_ratio (2'b00)
+       .mclk          (sdram_ref_clk      ),
+       .reset_n       (reset_n            ), 
+       .clk_div_ratio (cfg_sdram_clk_ratio)
    );
 
+
+//----------------------------------
+// Generate CORE Clock Generation
+//----------------------------------
+wire   cpu_clk_div;
+wire   cpu_ref_clk;
+
+assign cpu_ref_clk = (cfg_cpu_clk_src_sel) ? user_clock2 : mclk;
+assign cpu_clk     = (cfg_cpu_clk_div)     ? cpu_clk_div : cpu_ref_clk;
+
+
+clk_ctl #(1) u_cpuclk (
+   // Outputs
+       .clk_o         (cpu_clk_div      ),
+   // Inputs
+       .mclk          (cpu_ref_clk      ),
+       .reset_n       (reset_n          ), 
+       .clk_div_ratio (cfg_cpu_clk_ratio)
+   );
+
+//----------------------------------
+// Generate RTC Clock Generation
+//----------------------------------
+wire   rtc_clk_div;
+wire   rtc_ref_clk;
+
+assign rtc_ref_clk = (cfg_rtc_clk_src_sel) ? user_clock2 : mclk;
+assign rtc_clk     = (cfg_rtc_clk_div)     ? rtc_clk_div : rtc_ref_clk;
+
+
+clk_ctl #(1) u_rtcclk (
+   // Outputs
+       .clk_o         (rtc_clk_div      ),
+   // Inputs
+       .mclk          (rtc_ref_clk      ),
+       .reset_n       (reset_n          ), 
+       .clk_div_ratio (cfg_rtc_clk_ratio)
+   );
 
 
 endmodule

@@ -91,7 +91,7 @@ module risc_boot_tb;
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
            //$dumpvars(2,risc_boot_tb.uut);
-           $dumpvars(1,risc_boot_tb.uut.mprj.u_core);
+           $dumpvars(4,risc_boot_tb.uut.mprj.u_core);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");
         end
@@ -100,7 +100,7 @@ module risc_boot_tb;
 	initial begin
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (600) begin
+		repeat (200) begin
 			repeat (1000) @(posedge clock);
 			// $display("+1000 cycles");
 		end

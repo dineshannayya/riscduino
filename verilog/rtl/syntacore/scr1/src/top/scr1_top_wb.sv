@@ -17,6 +17,9 @@
 ////  Revision :                                                  ////
 ////     v0:    June 7, 2021, Dinesh A                            ////
 ////             wishbone integration                             ////
+////     v1:    June 17, 2021, Dinesh A                           ////
+////             core and wishbone clock domain are seperated     ////
+////             Async fifo added in imem and dmem path           ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -69,7 +72,7 @@ module scr1_top_wb (
     input   logic                                   cpu_rst_n,              // CPU Reset (Core Reset)
     input   logic                                   test_mode,              // Test mode
     input   logic                                   test_rst_n,             // Test mode's reset
-    input   logic                                   clk,                    // System clock
+    input   logic                                   core_clk,               // Core clock
     input   logic                                   rtc_clk,                // Real-time clock
 `ifdef SCR1_DBG_EN
     output  logic                                   sys_rst_n_o,            // External System Reset output
@@ -103,6 +106,8 @@ module scr1_top_wb (
     output  logic                                   tdo_en,
 `endif // SCR1_DBG_EN
 
+    input   logic                           wb_rst_n,       // Wish bone reset
+    input   logic                           wb_clk,         // wish bone clock
     // Instruction Memory Interface
     output  logic                           wbd_imem_stb_o, // strobe/request
     output  logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_adr_o, // address
@@ -219,7 +224,7 @@ scr1_reset_sync_cell #(
     .STAGES_AMOUNT       (SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM)
 ) i_pwrup_rstn_reset_sync (
     .rst_n          (pwrup_rst_n     ),
-    .clk            (clk             ),
+    .clk            (core_clk        ),
     .test_rst_n     (test_rst_n      ),
     .test_mode      (test_mode       ),
     .rst_n_in       (1'b1            ),
@@ -231,7 +236,7 @@ scr1_reset_sync_cell #(
     .STAGES_AMOUNT       (SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM)
 ) i_rstn_reset_sync (
     .rst_n          (pwrup_rst_n     ),
-    .clk            (clk             ),
+    .clk            (core_clk        ),
     .test_rst_n     (test_rst_n      ),
     .test_mode      (test_mode       ),
     .rst_n_in       (rst_n           ),
@@ -243,7 +248,7 @@ scr1_reset_sync_cell #(
     .STAGES_AMOUNT       (SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM)
 ) i_cpu_rstn_reset_sync (
     .rst_n          (pwrup_rst_n     ),
-    .clk            (clk             ),
+    .clk            (core_clk        ),
     .test_rst_n     (test_rst_n      ),
     .test_mode      (test_mode       ),
     .rst_n_in       (cpu_rst_n       ),
@@ -270,7 +275,7 @@ scr1_core_top i_core_top (
     .cpu_rst_n                  (cpu_rst_n_sync   ),
     .test_mode                  (test_mode        ),
     .test_rst_n                 (test_rst_n       ),
-    .clk                        (clk              ),
+    .clk                        (core_clk         ),
     .core_rst_n_o               (core_rst_n_local ),
     .core_rdc_qlfy_o            (                 ),
 `ifdef SCR1_DBG_EN
@@ -333,7 +338,7 @@ scr1_core_top i_core_top (
 scr1_tcm #(
     .SCR1_TCM_SIZE  (`SCR1_DMEM_AWIDTH'(~SCR1_TCM_ADDR_MASK + 1'b1))
 ) i_tcm (
-    .clk            (clk             ),
+    .clk            (core_clk        ),
     .rst_n          (core_rst_n_local),
 
     // Instruction interface to TCM
@@ -362,7 +367,7 @@ scr1_tcm #(
 scr1_timer i_timer (
     // Common
     .rst_n          (core_rst_n_local  ),
-    .clk            (clk               ),
+    .clk            (core_clk          ),
     .rtc_clk        (rtc_clk           ),
 
     // Memory interface
@@ -392,7 +397,7 @@ scr1_imem_router #(
  `endif // SCR1_TCM_EN
 ) i_imem_router (
     .rst_n          (core_rst_n_local ),
-    .clk            (clk              ),
+    .clk            (core_clk         ),
     // Interface to core
     .imem_req_ack   (core_imem_req_ack),
     .imem_req       (core_imem_req    ),
@@ -447,7 +452,7 @@ scr1_dmem_router #(
 
 ) i_dmem_router (
     .rst_n          (core_rst_n_local    ),
-    .clk            (clk                 ),
+    .clk            (core_clk            ),
     // Interface to core
     .dmem_req_ack   (core_dmem_req_ack   ),
     .dmem_req       (core_dmem_req       ),
@@ -502,8 +507,8 @@ scr1_dmem_router #(
 // Instruction memory WB bridge
 //-------------------------------------------------------------------------------
 scr1_imem_wb i_imem_wb (
-    .rst_n          (core_rst_n_local   ),
-    .clk            (clk                ),
+    .core_rst_n     (core_rst_n_local   ),
+    .core_clk       (core_clk           ),
     // Interface to imem router
     .imem_req_ack   (wb_imem_req_ack   ),
     .imem_req       (wb_imem_req       ),
@@ -511,6 +516,8 @@ scr1_imem_wb i_imem_wb (
     .imem_rdata     (wb_imem_rdata     ),
     .imem_resp      (wb_imem_resp      ),
     // WB interface
+    .wb_rst_n       (wb_rst_n          ),
+    .wb_clk         (wb_clk            ),
     .wbd_stb_o      (wbd_imem_stb_o    ), 
     .wbd_adr_o      (wbd_imem_adr_o    ), 
     .wbd_we_o       (wbd_imem_we_o     ),  
@@ -526,8 +533,8 @@ scr1_imem_wb i_imem_wb (
 // Data memory WB bridge
 //-------------------------------------------------------------------------------
 scr1_dmem_wb i_dmem_wb (
-    .rst_n          (core_rst_n_local   ),
-    .clk            (clk                ),
+    .core_rst_n     (core_rst_n_local   ),
+    .core_clk       (core_clk           ),
     // Interface to dmem router
     .dmem_req_ack   (wb_dmem_req_ack   ),
     .dmem_req       (wb_dmem_req       ),
@@ -538,6 +545,8 @@ scr1_dmem_wb i_dmem_wb (
     .dmem_rdata     (wb_dmem_rdata     ),
     .dmem_resp      (wb_dmem_resp      ),
     // WB interface
+    .wb_rst_n       (wb_rst_n          ),
+    .wb_clk         (wb_clk            ),
     .wbd_stb_o      (wbd_dmem_stb_o    ), 
     .wbd_adr_o      (wbd_dmem_adr_o    ), 
     .wbd_we_o       (wbd_dmem_we_o     ),  

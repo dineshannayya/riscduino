@@ -49,7 +49,7 @@ module spim_ctrl
     input  logic                          rstn,
     output logic                          eot,
 
-    input  logic                    [7:0] spi_clk_div,
+    input  logic                    [5:0] spi_clk_div,
     output logic                    [8:0] spi_status,
 
 

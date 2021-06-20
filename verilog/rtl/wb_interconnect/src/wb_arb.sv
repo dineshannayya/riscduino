@@ -107,7 +107,7 @@ always@(state or req )
          grant2:
       	// if this req is dropped or next is asserted, check for other req's
       	if(!req[2] ) begin
-      	   if(req[0])	next_state = grant0;
+      	   if(req[0])	        next_state = grant0;
       	   else if(req[1])	next_state = grant1;
       	end
       endcase
