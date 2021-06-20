@@ -44,6 +44,10 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(FP_SIZING) "absolute"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
 
+set ::env(SDC_FILE) "$script_dir/base.sdc"
+set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+
+
 ### Black-box verilog and views
 set ::env(VERILOG_FILES_BLACKBOX) "\
         $script_dir/../../verilog/rtl/spi_master/src/spim_top.sv \
@@ -79,19 +83,22 @@ set ::env(FP_PDN_CHECK_NODES) 0
 
 # The following is because there are no std cells in the example wrapper project.
 #set ::env(SYNTH_TOP_LEVEL) 1
-#set ::env(PL_RANDOM_GLB_PLACEMENT) 1
+set ::env(PL_BASIC_PLACEMENT) 1
 
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) 0
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) 0
 
-set ::env(DIODE_INSERTION_STRATEGY) 0
-set ::env(FILL_INSERTION) 0
-set ::env(TAP_DECAP_INSERTION) 0
-set ::env(CLOCK_TREE_SYNTH) 0
+set ::env(DIODE_INSERTION_STRATEGY) 4
+set ::env(FILL_INSERTION) 1
+set ::env(TAP_DECAP_INSERTION) 1
+#set ::env(CLOCK_TREE_SYNTH) 1
 
 # Important for large macro placement
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "400"
 set ::env(ROUTING_OPT_ITERS) "20"
+
+set ::env(GLB_RT_OBS) "met5 0.0 0.0 2920.0 3520.0"
+
 

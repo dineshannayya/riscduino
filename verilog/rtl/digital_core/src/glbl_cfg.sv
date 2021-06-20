@@ -55,7 +55,7 @@ module glbl_cfg (
         // Reg Bus Interface Signal
         input logic             reg_cs,
         input logic             reg_wr,
-        input logic [3:0]       reg_addr,
+        input logic [7:0]       reg_addr,
         input logic [31:0]      reg_wdata,
         input logic [3:0]       reg_be,
 
@@ -152,7 +152,7 @@ begin
     reg_cs_l      <= '0;
     reg_cs_2l     <= '0;
   end else begin
-    sw_addr       <= reg_addr [3:0];
+    sw_addr       <= reg_addr [5:2];
     sw_rd_en      <= reg_cs & !reg_wr;
     sw_wr_en      <= reg_cs & reg_wr;
     sw_reg_wdata  <= reg_wdata;

@@ -1,4 +1,4 @@
-module scr1_top_wb (clk,
+module scr1_top_wb (core_clk,
     cpu_rst_n,
     pwrup_rst_n,
     rst_n,
@@ -6,6 +6,8 @@ module scr1_top_wb (clk,
     soft_irq,
     test_mode,
     test_rst_n,
+    wb_clk,
+    wb_rst_n,
     wbd_dmem_ack_i,
     wbd_dmem_err_i,
     wbd_dmem_stb_o,
@@ -26,7 +28,7 @@ module scr1_top_wb (clk,
     wbd_imem_dat_i,
     wbd_imem_dat_o,
     wbd_imem_sel_o);
- input clk;
+ input core_clk;
  input cpu_rst_n;
  input pwrup_rst_n;
  input rst_n;
@@ -34,6 +36,8 @@ module scr1_top_wb (clk,
  input soft_irq;
  input test_mode;
  input test_rst_n;
+ input wb_clk;
+ input wb_rst_n;
  input wbd_dmem_ack_i;
  input wbd_dmem_err_i;
  output wbd_dmem_stb_o;

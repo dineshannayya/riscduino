@@ -22,6 +22,24 @@
 ////    0.1 - 16th Feb 2021, Dinesh A                             ////
 ////          Initial integration with Risc-V core +              ////
 ////          Wishbone Cross Bar + SPI  Master                    ////
+////    0.2 - 17th June 2021, Dinesh A                            ////
+////        1. In risc core, wishbone and core domain is          ////
+////           created                                            ////
+////        2. cpu and rtc clock are generated in glbl reg block  ////
+////        3. in wishbone interconnect:- Stagging flop are added ////
+////           at interface to break wishbone timing path         ////
+////        4. buswidth warning are fixed inside spi_master       ////
+////        modified rtl files are                                ////
+////           verilog/rtl/digital_core/src/digital_core.sv       ////
+///            verilog/rtl/digital_core/src/glbl_cfg.sv           ////
+///            verilog/rtl/lib/wb_stagging.sv                     ////
+///            verilog/rtl/syntacore/scr1/src/top/scr1_dmem_wb.sv ////
+///            verilog/rtl/syntacore/scr1/src/top/scr1_imem_wb.sv ////
+///            verilog/rtl/syntacore/scr1/src/top/scr1_top_wb.sv  ////
+///            verilog/rtl/user_project_wrapper.v                 ////
+///            verilog/rtl/wb_interconnect/src/wb_interconnect.sv ////
+///            verilog/rtl/spi_master/src/spim_clkgen.sv          ////
+///            verilog/rtl/spi_master/src/spim_ctrl.sv            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -161,7 +179,7 @@ logic                           wbd_sdram_ack_i ;
 //    Global Register Wishbone Interface
 //---------------------------------------------------------------------
 logic                           wbd_glbl_stb_o; // strobe/request
-logic   [WB_WIDTH-1:0]          wbd_glbl_adr_o; // address
+logic   [7:0]                   wbd_glbl_adr_o; // address
 logic                           wbd_glbl_we_o;  // write
 logic   [WB_WIDTH-1:0]          wbd_glbl_dat_o; // data output
 logic   [3:0]                   wbd_glbl_sel_o; // byte enable
@@ -543,7 +561,7 @@ glbl_cfg   u_glbl_cfg (
         // Reg Bus Interface Signal
        .reg_cs                 (wbd_glbl_stb_o            ),
        .reg_wr                 (wbd_glbl_we_o             ),
-       .reg_addr               (wbd_glbl_adr_o[5:2]       ),
+       .reg_addr               (wbd_glbl_adr_o            ),
        .reg_wdata              (wbd_glbl_dat_o            ),
        .reg_be                 (wbd_glbl_sel_o            ),
 

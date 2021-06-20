@@ -227,6 +227,7 @@ always_ff @(negedge rst_n or posedge mclk) begin
    end
 end
 
+  wire [3:0] reg_addr = spim_wb_addr[5:2];
   integer byte_index;
   always_ff @(negedge rst_n or posedge mclk) begin
     if ( rst_n == 1'b0 ) begin
@@ -328,7 +329,7 @@ end
        endcase
     end else if (spim_reg_req & spim_wb_we )
     begin
-      case(spim_wb_addr[7:4])
+      case(reg_addr)
         REG_CTRL:
         begin
           if ( spim_wb_be[0] == 1 )
@@ -397,8 +398,6 @@ end
   end 
 
 
-
-  wire [3:0] reg_addr = spim_wb_addr[7:4];
 
   // implement slave model register read mux
   always_comb

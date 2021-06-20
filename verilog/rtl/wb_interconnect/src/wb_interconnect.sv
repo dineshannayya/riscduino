@@ -115,7 +115,7 @@ module wb_interconnect(
          input	logic 	        s2_wbd_ack_i,
          input	logic 	        s2_wbd_err_i,
          output	logic [31:0]	s2_wbd_dat_o,
-         output	logic [31:0]	s2_wbd_adr_o,
+         output	logic [7:0]	s2_wbd_adr_o, // glbl reg need only 8 bits
          output	logic [3:0]	s2_wbd_sel_o,
          output	logic 	        s2_wbd_we_o,
          output	logic 	        s2_wbd_cyc_o,
@@ -168,9 +168,11 @@ type_wb_rd_intf  s1_wb_rd;
 type_wb_rd_intf  s2_wb_rd;
 
 
-type_wb_wr_intf  i_bus_m;  // Multiplexed Master I/F
-type_wb_rd_intf  i_bus_s;  // Multiplexed Slave I/F
+type_wb_wr_intf  m_bus_wr;  // Multiplexed Master I/F
+type_wb_rd_intf  m_bus_rd;  // Multiplexed Slave I/F
 
+type_wb_wr_intf  s_bus_wr;  // Multiplexed Master I/F
+type_wb_rd_intf  s_bus_rd;  // Multiplexed Slave I/F
 //------------------------------
 // RISC Data Memory Map
 // 0x0000_0000 to 0x0FFF_FFFF  - SPI FLASH MEMORY
@@ -245,38 +247,38 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
 // Slave Mapping
 // -------------------------------------
 // Masked Now and added stagging FF now
-// assign  s0_wbd_dat_o =  s0_wb_wr.wbd_dat ;
-// assign  s0_wbd_adr_o =  s0_wb_wr.wbd_adr ;
-// assign  s0_wbd_sel_o =  s0_wb_wr.wbd_sel ;
-// assign  s0_wbd_we_o  =  s0_wb_wr.wbd_we  ;
-// assign  s0_wbd_cyc_o =  s0_wb_wr.wbd_cyc ;
-// assign  s0_wbd_stb_o =  s0_wb_wr.wbd_stb ;
-//                      
-// assign  s1_wbd_dat_o =  s1_wb_wr.wbd_dat ;
-// assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr ;
-// assign  s1_wbd_sel_o =  s1_wb_wr.wbd_sel ;
-// assign  s1_wbd_we_o  =  s1_wb_wr.wbd_we  ;
-// assign  s1_wbd_cyc_o =  s1_wb_wr.wbd_cyc ;
-// assign  s1_wbd_stb_o =  s1_wb_wr.wbd_stb ;
-//                      
-// assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
-// assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr ;
-// assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
-// assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
-// assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
-// assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
-// 
-// assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
-// assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
-// assign s0_wb_rd.wbd_err  = s0_wbd_err_i ;
-// 
-// assign s1_wb_rd.wbd_dat  = s1_wbd_dat_i ;
-// assign s1_wb_rd.wbd_ack  = s1_wbd_ack_i ;
-// assign s1_wb_rd.wbd_err  = s1_wbd_err_i ;
-// 
-// assign s2_wb_rd.wbd_dat  = s2_wbd_dat_i ;
-// assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
-// assign s2_wb_rd.wbd_err  = s2_wbd_err_i ;
+ assign  s0_wbd_dat_o =  s0_wb_wr.wbd_dat ;
+ assign  s0_wbd_adr_o =  s0_wb_wr.wbd_adr ;
+ assign  s0_wbd_sel_o =  s0_wb_wr.wbd_sel ;
+ assign  s0_wbd_we_o  =  s0_wb_wr.wbd_we  ;
+ assign  s0_wbd_cyc_o =  s0_wb_wr.wbd_cyc ;
+ assign  s0_wbd_stb_o =  s0_wb_wr.wbd_stb ;
+                      
+ assign  s1_wbd_dat_o =  s1_wb_wr.wbd_dat ;
+ assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr ;
+ assign  s1_wbd_sel_o =  s1_wb_wr.wbd_sel ;
+ assign  s1_wbd_we_o  =  s1_wb_wr.wbd_we  ;
+ assign  s1_wbd_cyc_o =  s1_wb_wr.wbd_cyc ;
+ assign  s1_wbd_stb_o =  s1_wb_wr.wbd_stb ;
+                      
+ assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
+ assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr[7:0] ; // Global Reg Need 8 bit
+ assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
+ assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
+ assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
+ assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
+ 
+ assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
+ assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
+ assign s0_wb_rd.wbd_err  = s0_wbd_err_i ;
+ 
+ assign s1_wb_rd.wbd_dat  = s1_wbd_dat_i ;
+ assign s1_wb_rd.wbd_ack  = s1_wbd_ack_i ;
+ assign s1_wb_rd.wbd_err  = s1_wbd_err_i ;
+ 
+ assign s2_wb_rd.wbd_dat  = s2_wbd_dat_i ;
+ assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
+ assign s2_wb_rd.wbd_err  = s2_wbd_err_i ;
 
 
 //
@@ -297,121 +299,67 @@ wb_arb	u_wb_arb(
 // Generate Multiplexed Master Interface based on grant
 always_comb begin
      case(gnt)
-        3'h0:	   i_bus_m = m0_wb_wr;
-        3'h1:	   i_bus_m = m1_wb_wr;
-        3'h2:	   i_bus_m = m2_wb_wr;
-        default:   i_bus_m = m0_wb_wr;
+        3'h0:	   m_bus_wr = m0_wb_wr;
+        3'h1:	   m_bus_wr = m1_wb_wr;
+        3'h2:	   m_bus_wr = m2_wb_wr;
+        default:   m_bus_wr = m0_wb_wr;
      endcase			
 end
 
 
 // Generate Multiplexed Slave Interface based on target Id
-wire [3:0] wbd_tid =  i_bus_m.wbd_tid; // to fix iverilog warning
+wire [3:0] s_wbd_tid =  s_bus_wr.wbd_tid; // to fix iverilog warning
 always_comb begin
-     case(wbd_tid)
-        3'h0:	   i_bus_s = s0_wb_rd;
-        3'h1:	   i_bus_s = s1_wb_rd;
-        3'h2:	   i_bus_s = s2_wb_rd;
-        default:   i_bus_s = s0_wb_rd;
+     case(s_wbd_tid)
+        3'h0:	   s_bus_rd = s0_wb_rd;
+        3'h1:	   s_bus_rd = s1_wb_rd;
+        3'h2:	   s_bus_rd = s2_wb_rd;
+        default:   s_bus_rd = s0_wb_rd;
      endcase			
 end
 
 
 // Connect Master => Slave
-assign  s0_wb_wr = (i_bus_m.wbd_tid == 2'b00) ? i_bus_m : 'h0;
-assign  s1_wb_wr = (i_bus_m.wbd_tid == 2'b01) ? i_bus_m : 'h0;
-assign  s2_wb_wr = (i_bus_m.wbd_tid == 2'b10) ? i_bus_m : 'h0;
+assign  s0_wb_wr = (s_wbd_tid == 2'b00) ? s_bus_wr : 'h0;
+assign  s1_wb_wr = (s_wbd_tid == 2'b01) ? s_bus_wr : 'h0;
+assign  s2_wb_wr = (s_wbd_tid == 2'b10) ? s_bus_wr : 'h0;
 
 // Connect Slave to Master
-assign  m0_wb_rd = (gnt == 2'b00) ? i_bus_s : 'h0;
-assign  m1_wb_rd = (gnt == 2'b01) ? i_bus_s : 'h0;
-assign  m2_wb_rd = (gnt == 2'b10) ? i_bus_s : 'h0;
+assign  m0_wb_rd = (gnt == 2'b00) ? m_bus_rd : 'h0;
+assign  m1_wb_rd = (gnt == 2'b01) ? m_bus_rd : 'h0;
+assign  m2_wb_rd = (gnt == 2'b10) ? m_bus_rd : 'h0;
 
 
-
-// Wishbone Stagging FF towards S0 to break timing path
-wb_stagging u_s0_wb_stage(
+// Stagging FF to break write and read timing path
+wb_stagging u_m_wb_stage(
          .clk_i            (clk_i              ), 
          .rst_n            (rst_n              ),
          // WishBone Input master I/P
-         .m_wbd_dat_i      (s0_wb_wr.wbd_dat   ),
-         .m_wbd_adr_i      (s0_wb_wr.wbd_adr   ),
-         .m_wbd_sel_i      (s0_wb_wr.wbd_sel   ),
-         .m_wbd_we_i       (s0_wb_wr.wbd_we    ),
-         .m_wbd_cyc_i      (s0_wb_wr.wbd_cyc   ),
-         .m_wbd_stb_i      (s0_wb_wr.wbd_stb   ),
-         .m_wbd_dat_o      (s0_wb_rd.wbd_dat   ),
-         .m_wbd_ack_o      (s0_wb_rd.wbd_ack   ),
-         .m_wbd_err_o      (s0_wb_rd.wbd_err   ),
+         .m_wbd_dat_i      (m_bus_wr.wbd_dat   ),
+         .m_wbd_adr_i      (m_bus_wr.wbd_adr   ),
+         .m_wbd_sel_i      (m_bus_wr.wbd_sel   ),
+         .m_wbd_we_i       (m_bus_wr.wbd_we    ),
+         .m_wbd_cyc_i      (m_bus_wr.wbd_cyc   ),
+         .m_wbd_stb_i      (m_bus_wr.wbd_stb   ),
+         .m_wbd_tid_i      (m_bus_wr.wbd_tid   ),
+         .m_wbd_dat_o      (m_bus_rd.wbd_dat   ),
+         .m_wbd_ack_o      (m_bus_rd.wbd_ack   ),
+         .m_wbd_err_o      (m_bus_rd.wbd_err   ),
 
          // Slave Interface
-         .s_wbd_dat_i      (s0_wbd_dat_i       ),
-         .s_wbd_ack_i      (s0_wbd_ack_i       ),
-         .s_wbd_err_i      (s0_wbd_err_i       ),
-         .s_wbd_dat_o      (s0_wbd_dat_o       ),
-         .s_wbd_adr_o      (s0_wbd_adr_o       ),
-         .s_wbd_sel_o      (s0_wbd_sel_o       ),
-         .s_wbd_we_o       (s0_wbd_we_o        ),
-         .s_wbd_cyc_o      (s0_wbd_cyc_o       ),
-         .s_wbd_stb_o      (s0_wbd_stb_o       )
+         .s_wbd_dat_i      (s_bus_rd.wbd_dat   ),
+         .s_wbd_ack_i      (s_bus_rd.wbd_ack   ),
+         .s_wbd_err_i      (s_bus_rd.wbd_err   ),
+         .s_wbd_dat_o      (s_bus_wr.wbd_dat    ),
+         .s_wbd_adr_o      (s_bus_wr.wbd_adr    ),
+         .s_wbd_sel_o      (s_bus_wr.wbd_sel    ),
+         .s_wbd_we_o       (s_bus_wr.wbd_we     ),
+         .s_wbd_cyc_o      (s_bus_wr.wbd_cyc    ),
+         .s_wbd_stb_o      (s_bus_wr.wbd_stb    ),
+         .s_wbd_tid_o      (s_bus_wr.wbd_tid    )
 
 );
 
-// Wishbone Stagging FF towards S1 to break timing path
-wb_stagging u_s1_wb_stage(
-         .clk_i            (clk_i              ), 
-         .rst_n            (rst_n              ),
-         // WishBone Input master I/P
-         .m_wbd_dat_i      (s1_wb_wr.wbd_dat   ),
-         .m_wbd_adr_i      (s1_wb_wr.wbd_adr   ),
-         .m_wbd_sel_i      (s1_wb_wr.wbd_sel   ),
-         .m_wbd_we_i       (s1_wb_wr.wbd_we    ),
-         .m_wbd_cyc_i      (s1_wb_wr.wbd_cyc   ),
-         .m_wbd_stb_i      (s1_wb_wr.wbd_stb   ),
-         .m_wbd_dat_o      (s1_wb_rd.wbd_dat   ),
-         .m_wbd_ack_o      (s1_wb_rd.wbd_ack   ),
-         .m_wbd_err_o      (s1_wb_rd.wbd_err   ),
-
-         // Slave Interface
-         .s_wbd_dat_i      (s1_wbd_dat_i       ),
-         .s_wbd_ack_i      (s1_wbd_ack_i       ),
-         .s_wbd_err_i      (s1_wbd_err_i       ),
-         .s_wbd_dat_o      (s1_wbd_dat_o       ),
-         .s_wbd_adr_o      (s1_wbd_adr_o       ),
-         .s_wbd_sel_o      (s1_wbd_sel_o       ),
-         .s_wbd_we_o       (s1_wbd_we_o        ),
-         .s_wbd_cyc_o      (s1_wbd_cyc_o       ),
-         .s_wbd_stb_o      (s1_wbd_stb_o       )
-
-);
-
-// Wishbone Stagging FF towards S1 to break timing path
-wb_stagging u_s2_wb_stage(
-         .clk_i            (clk_i              ), 
-         .rst_n            (rst_n              ),
-         // WishBone Input master I/P
-         .m_wbd_dat_i      (s2_wb_wr.wbd_dat   ),
-         .m_wbd_adr_i      (s2_wb_wr.wbd_adr   ),
-         .m_wbd_sel_i      (s2_wb_wr.wbd_sel   ),
-         .m_wbd_we_i       (s2_wb_wr.wbd_we    ),
-         .m_wbd_cyc_i      (s2_wb_wr.wbd_cyc   ),
-         .m_wbd_stb_i      (s2_wb_wr.wbd_stb   ),
-         .m_wbd_dat_o      (s2_wb_rd.wbd_dat   ),
-         .m_wbd_ack_o      (s2_wb_rd.wbd_ack   ),
-         .m_wbd_err_o      (s2_wb_rd.wbd_err   ),
-
-         // Slave Interface
-         .s_wbd_dat_i      (s2_wbd_dat_i       ),
-         .s_wbd_ack_i      (s2_wbd_ack_i       ),
-         .s_wbd_err_i      (s2_wbd_err_i       ),
-         .s_wbd_dat_o      (s2_wbd_dat_o       ),
-         .s_wbd_adr_o      (s2_wbd_adr_o       ),
-         .s_wbd_sel_o      (s2_wbd_sel_o       ),
-         .s_wbd_we_o       (s2_wbd_we_o        ),
-         .s_wbd_cyc_o      (s2_wbd_cyc_o       ),
-         .s_wbd_stb_o      (s2_wbd_stb_o       )
-
-);
 
 endmodule
 

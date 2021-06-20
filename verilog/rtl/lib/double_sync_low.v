@@ -1,13 +1,12 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Wishbone Arbitor                                            ////
+////  OMS 8051 cores common library Module                        ////
 ////                                                              ////
-////  This file is part of the YIFive cores project               ////
-////  http://www.opencores.org/cores/yifive/                      ////
+////  This file is part of the OMS 8051 cores project             ////
+////  http://www.opencores.org/cores/oms8051mini/                 ////
 ////                                                              ////
 ////  Description                                                 ////
-////      This block implement simple round robine request        ////
-//        arbitor for wishbone interface.                         ////
+////  OMS 8051 definitions.                                       ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -15,8 +14,7 @@
 ////  Author(s):                                                  ////
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
-////  Revision :                                                  ////
-////    0.1 - 12th June 2021, Dinesh A                            ////
+////  Revision : Nov 26, 2016                                     //// 
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -44,74 +42,47 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
+//----------------------------------------------------------------------------
+// Simple Double sync logic with Reset value = 1
+// This double signal should be used for signal transiting from low to high
+//----------------------------------------------------------------------------
+
+module double_sync_low   (
+              in_data    ,
+              out_clk    ,
+              out_rst_n  ,
+              out_data   
+          );
+
+parameter WIDTH = 1;
+
+input [WIDTH-1:0]    in_data    ; // Input from Different clock domain
+input                out_clk    ; // Output clock
+input                out_rst_n  ; // Active low Reset
+output[WIDTH-1:0]    out_data   ; // Output Data
 
 
-module wb_arb(clk, rstn, req, gnt);
+reg [WIDTH-1:0]     in_data_s  ; // One   Cycle sync 
+reg [WIDTH-1:0]     in_data_2s ; // two   Cycle sync 
+reg [WIDTH-1:0]     in_data_3s ; // three Cycle sync 
 
-input		clk;
-input		rstn;
-input	[2:0]	req;	// Req input
-output	[1:0]	gnt; 	// Grant output
+assign out_data =  in_data_3s;
 
-///////////////////////////////////////////////////////////////////////
-//
-// Parameters
-//
-
-
-parameter	[1:0]
-                grant0 = 3'h0,
-                grant1 = 3'h1,
-                grant2 = 3'h2;
-
-///////////////////////////////////////////////////////////////////////
-// Local Registers and Wires
-//////////////////////////////////////////////////////////////////////
-
-reg [1:0]	state, next_state;
-
-///////////////////////////////////////////////////////////////////////
-//  Misc Logic 
-//////////////////////////////////////////////////////////////////////
-
-assign	gnt = state;
-
-always@(posedge clk or negedge rstn)
-	if(!rstn)       state <= grant0;
-	else		state <= next_state;
-
-///////////////////////////////////////////////////////////////////////
-//
-// Next State Logic 
-//   - implements round robin arbitration algorithm
-//   - switches grant if current req is dropped or next is asserted
-//   - parks at last grant
-//////////////////////////////////////////////////////////////////////
-
-always@(state or req )
+always @(negedge out_rst_n or posedge out_clk)
+begin
+   if(out_rst_n == 1'b0)
    begin
-      next_state = state;	// Default Keep State
-      case(state)		
-         grant0:
-      	// if this req is dropped or next is asserted, check for other req's
-      	if(!req[0] ) begin
-      		if(req[1])	next_state = grant1;
-      		else if(req[2])	next_state = grant2;
-      	end
-         grant1:
-      	// if this req is dropped or next is asserted, check for other req's
-      	if(!req[1] ) begin
-      		if(req[2])	next_state = grant2;
-      		else if(req[0])	next_state = grant0;
-      	end
-         grant2:
-      	// if this req is dropped or next is asserted, check for other req's
-      	if(!req[2] ) begin
-      	   if(req[0])	        next_state = grant0;
-      	   else if(req[1])	next_state = grant1;
-      	end
-      endcase
+      in_data_s  <= {WIDTH{1'b1}};
+      in_data_2s <= {WIDTH{1'b1}};
+      in_data_3s <= {WIDTH{1'b1}};
    end
+   else
+   begin
+      in_data_s  <= in_data;
+      in_data_2s <= in_data_s;
+      in_data_3s <= in_data_2s;
+   end
+end
 
-endmodule 
 
+endmodule
