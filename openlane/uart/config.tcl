@@ -23,6 +23,9 @@ set ::env(VERILOG_FILES) "\
     $script_dir/../../verilog/rtl/uart/src/uart_txfsm.sv \
     $script_dir/../../verilog/rtl/lib/async_fifo_th.sv   \
     $script_dir/../../verilog/rtl/lib/reset_sync.sv      \
+    $script_dir/../../verilog/rtl/lib/double_sync_low.v  \
+    $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
+    $script_dir/../../verilog/rtl/lib/registers.v        \
     "
 
 #set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/sdram_ctrl/src/defs ]
@@ -36,7 +39,7 @@ set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
-set ::env(DIE_AREA) [list 0.0 0.0 100.0 100.0]
+set ::env(DIE_AREA) [list 0.0 0.0 400.0 300.0]
 
 
 

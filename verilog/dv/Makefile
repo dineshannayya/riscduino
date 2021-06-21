@@ -19,7 +19,7 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = io_ports la_test1 la_test2 wb_port mprj_stimulus risc_boot user_risc_boot
+PATTERNS = io_ports la_test1 la_test2 wb_port mprj_stimulus risc_boot user_risc_boot user_uart
 
 all:  ${PATTERNS}
 	for i in ${PATTERNS}; do \
