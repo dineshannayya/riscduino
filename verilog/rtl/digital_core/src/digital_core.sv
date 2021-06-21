@@ -31,15 +31,18 @@
 ////        4. buswidth warning are fixed inside spi_master       ////
 ////        modified rtl files are                                ////
 ////           verilog/rtl/digital_core/src/digital_core.sv       ////
-///            verilog/rtl/digital_core/src/glbl_cfg.sv           ////
-///            verilog/rtl/lib/wb_stagging.sv                     ////
-///            verilog/rtl/syntacore/scr1/src/top/scr1_dmem_wb.sv ////
-///            verilog/rtl/syntacore/scr1/src/top/scr1_imem_wb.sv ////
-///            verilog/rtl/syntacore/scr1/src/top/scr1_top_wb.sv  ////
-///            verilog/rtl/user_project_wrapper.v                 ////
-///            verilog/rtl/wb_interconnect/src/wb_interconnect.sv ////
-///            verilog/rtl/spi_master/src/spim_clkgen.sv          ////
-///            verilog/rtl/spi_master/src/spim_ctrl.sv            ////
+////           verilog/rtl/digital_core/src/glbl_cfg.sv           ////
+////           verilog/rtl/lib/wb_stagging.sv                     ////
+////           verilog/rtl/syntacore/scr1/src/top/scr1_dmem_wb.sv ////
+////           verilog/rtl/syntacore/scr1/src/top/scr1_imem_wb.sv ////
+////           verilog/rtl/syntacore/scr1/src/top/scr1_top_wb.sv  ////
+////           verilog/rtl/user_project_wrapper.v                 ////
+////           verilog/rtl/wb_interconnect/src/wb_interconnect.sv ////
+////           verilog/rtl/spi_master/src/spim_clkgen.sv          ////
+////           verilog/rtl/spi_master/src/spim_ctrl.sv            ////
+////    0.3 - 20th June 2021, Dinesh A                            ////
+////           1. uart core is integrated                         ////
+////           2. 3rd Slave ported added to wishbone interconnect ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -188,6 +191,18 @@ logic   [WB_WIDTH-1:0]          wbd_glbl_dat_i; // data input
 logic                           wbd_glbl_ack_i; // acknowlegement
 logic                           wbd_glbl_err_i;  // error
 
+//---------------------------------------------------------------------
+//    Global Register Wishbone Interface
+//---------------------------------------------------------------------
+logic                           wbd_uart_stb_o; // strobe/request
+logic   [7:0]                   wbd_uart_adr_o; // address
+logic                           wbd_uart_we_o;  // write
+logic   [7:0]                   wbd_uart_dat_o; // data output
+logic                           wbd_uart_sel_o; // byte enable
+logic                           wbd_uart_cyc_o ;
+logic   7:0]                    wbd_uart_dat_i; // data input
+logic                           wbd_uart_ack_i; // acknowlegement
+logic                           wbd_uart_err_i;  // error
 
 //----------------------------------------------------
 //  CPU Configuration
@@ -200,6 +215,8 @@ logic [31:0]                       fuse_mhartid  ;
 logic [15:0]                       irq_lines     ;
 logic                              soft_irq      ;
 
+        .si                    ( uart_rx                 ),
+        .so                    ( uart_tx                 )
 //------------------------------------------------
 // Configuration Parameter
 //------------------------------------------------
@@ -296,12 +313,25 @@ assign  io_oeb[33] =  !spi_en_tx;   // spi_dio1
 assign  io_oeb[34] =  !spi_en_tx;   // spi_dio2
 assign  io_oeb[35] =  !spi_en_tx;   // spi_dio3
 
+/////////////////////////////////////////////////////////
+// uart interface
+///////////////////////////////////////////////////////
+
+logic                         uart_rx                  ; 
+logic                         uart_tx                  ;
 
 // for uart
-assign  io_oeb[36] =  1'b1; // Unused
-assign  io_oeb[37] =  1'b1; // Unused
+assign  io_oeb[36] =  1'b1; // Uart RX
+assign  uart_rx    =  io_in[36];
+
+assign  io_oeb[37] =  1'b0; // Uart TX
+assign  io_out[37] =  uart_tx;
 
 
+
+/////////////////////////////////////////////////////////
+// Generating acive low wishbone reset                 
+// //////////////////////////////////////////////////////
 wire wb_rst_n = !wb_rst_i;
 
 
@@ -549,6 +579,17 @@ wb_interconnect  u_intercon (
          .s2_wbd_we_o   (wbd_glbl_we_o  ),  
          .s2_wbd_cyc_o  (wbd_glbl_cyc_o ),
          .s2_wbd_stb_o  (wbd_glbl_stb_o )
+
+         // Slave 3 Interface
+         .s2_wbd_err_i  (1'b0           ),
+         .s2_wbd_dat_i  (wbd_uart_dat_i ),
+         .s2_wbd_ack_i  (wbd_uart_ack_i ),
+         .s2_wbd_dat_o  (wbd_uart_dat_o ),
+         .s2_wbd_adr_o  (wbd_uart_adr_o ),
+         .s2_wbd_sel_o  (wbd_uart_sel_o ),
+         .s2_wbd_we_o   (wbd_uart_we_o  ),  
+         .s2_wbd_cyc_o  (wbd_uart_cyc_o ),
+         .s2_wbd_stb_o  (wbd_uart_stb_o )
 	);
 
 glbl_cfg   u_glbl_cfg (
@@ -607,6 +648,26 @@ glbl_cfg   u_glbl_cfg (
 
         );
 
+uart_core   u_uart_core (
+        arst_n                 (wb_rst_n                  ), // async reset
+        app_clk                (wb_clk_i                  ),
+
+        // Reg Bus Interface Signal
+       .reg_cs                 (wbd_uart_stb_o            ),
+       .reg_wr                 (wbd_uart_we_o             ),
+       .reg_addr               (wbd_uart_adr_o[5:2]       ),
+       .reg_wdata              (wbd_uart_dat_o[7:0]       ),
+       .reg_be                 (wbd_uart_sel_o            ),
+
+       // Outputs
+       .reg_rdata              (wbd_uart_dat_i[7:0]       ),
+       .reg_ack                (wbd_uart_ack_i            ),
+
+       // Line Interface
+        .si                    ( uart_rx                 ),
+        .so                    ( uart_tx                 )
+
+     );
 
 
 endmodule : digital_core

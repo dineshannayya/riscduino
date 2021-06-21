@@ -20,6 +20,8 @@
 ////    0.2 - 17th June 2021, Dinesh A                            ////
 ////          Stagging FF added at Slave Interface to break       ////
 ////          path                                                ////
+////    0.3 - 21th June 2021, Dinesh A                            ////
+////          slave port 3 added for uart                         ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -120,6 +122,18 @@ module wb_interconnect(
          output	logic 	        s2_wbd_we_o,
          output	logic 	        s2_wbd_cyc_o,
          output	logic 	        s2_wbd_stb_o
+
+         // Slave 3 Interface
+	 // Uart is 8bit interface 
+         input	logic [7:0]	s3_wbd_dat_i,
+         input	logic 	        s3_wbd_ack_i,
+         input	logic 	        s3_wbd_err_i,
+         output	logic [7:0]	s3_wbd_dat_o,
+         output	logic [7:0]	s3_wbd_adr_o, 
+         output	logic    	s3_wbd_sel_o,
+         output	logic 	        s3_wbd_we_o,
+         output	logic 	        s3_wbd_cyc_o,
+         output	logic 	        s3_wbd_stb_o
 	);
 
 ////////////////////////////////////////////////////////////////////
@@ -161,11 +175,13 @@ type_wb_rd_intf  m2_wb_rd;
 type_wb_wr_intf  s0_wb_wr;
 type_wb_wr_intf  s1_wb_wr;
 type_wb_wr_intf  s2_wb_wr;
+type_wb_wr_intf  s3_wb_wr;
 
 // Slave Read Interface
 type_wb_rd_intf  s0_wb_rd;
 type_wb_rd_intf  s1_wb_rd;
 type_wb_rd_intf  s2_wb_rd;
+type_wb_rd_intf  s3_wb_rd;
 
 
 type_wb_wr_intf  m_bus_wr;  // Multiplexed Master I/F
@@ -179,22 +195,26 @@ type_wb_rd_intf  s_bus_rd;  // Multiplexed Slave I/F
 // 0x1000_0000 to 0x1000_00FF  - SPI REGISTER
 // 0x2000_0000 to 0x2FFF_FFFF  - SDRAM
 // 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
+// 0x3000_0000 to 0x3001_00FF  - UART Register
 //-----------------------------
 // 
-wire [3:0] m0_wbd_tid_i     = (m0_wbd_adr_i[31:28] == 4'b0000 ) ? 4'b0000 :
-                              (m0_wbd_adr_i[31:28] == 4'b0001 ) ? 4'b0000 :
-                              (m0_wbd_adr_i[31:28] == 4'b0010 ) ? 4'b0001 :
-                              (m0_wbd_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
+wire [3:0] m0_wbd_tid_i     = (m0_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
+                              (m0_wbd_adr_i[31:28] ==  4'b0001 ) ? 4'b0000 :
+                              (m0_wbd_adr_i[31:28] ==  4'b0010 ) ? 4'b0001 :
+                              (m0_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
+                              (m0_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 
-wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] == 4'b0000 ) ? 4'b0000 :
-                              (m1_wbd_adr_i[31:28] == 4'b0001 ) ? 4'b0000 :
-                              (m1_wbd_adr_i[31:28] == 4'b0010 ) ? 4'b0001 : 
-                              (m1_wbd_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
+wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
+                              (m1_wbd_adr_i[31:28] ==  4'b0001 ) ? 4'b0000 :
+                              (m1_wbd_adr_i[31:28] ==  4'b0010 ) ? 4'b0001 : 
+                              (m1_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
+                              (m1_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 
 
 //-------------------------------------------------------------------
 // EXTERNAL MEMORY MAP
 // 0x3000_0000 to 0x3000_00FF -  GLOBAL REGISTER
+// 0x3000_0000 to 0x3001_00FF  - UART Register
 // 0x4000_0000 to 0x4FFF_FFFF -  SPI FLASH MEMORY
 // 0x5000_0000 to 0x5000_00FF -  SPI REGISTER
 // 0x6000_0000 to 0x6FFF_FFFF -  SDRAM
@@ -202,7 +222,8 @@ wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] == 4'b0000 ) ? 4'b0000 :
 wire [3:0] m2_wbd_tid_i       = (m2_wbd_adr_i[31:28] == 4'b0100 ) ? 4'b0000 :
                                 (m2_wbd_adr_i[31:28] == 4'b0101 ) ? 4'b0000 :
                                 (m2_wbd_adr_i[31:28] == 4'b0110 ) ? 4'b0001 :
-                                (m2_wbd_adr_i[31:28] == 4'b0011 ) ? 4'b0010 : 4'b0000;
+                                (m2_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
+                                (m2_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 
 //----------------------------------------
 // Master Mapping
@@ -267,6 +288,13 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
  assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
  assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
  assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
+
+ assign  s3_wbd_dat_o =  s3_wb_wr.wbd_dat[7:0] ;
+ assign  s3_wbd_adr_o =  s3_wb_wr.wbd_adr[7:0] ; // Global Reg Need 8 bit
+ assign  s3_wbd_sel_o =  s3_wb_wr.wbd_sel[0] ;
+ assign  s3_wbd_we_o  =  s3_wb_wr.wbd_we  ;
+ assign  s3_wbd_cyc_o =  s3_wb_wr.wbd_cyc ;
+ assign  s3_wbd_stb_o =  s3_wb_wr.wbd_stb ;
  
  assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
  assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
@@ -280,6 +308,9 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
  assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
  assign s2_wb_rd.wbd_err  = s2_wbd_err_i ;
 
+ assign s3_wb_rd.wbd_dat  = {24'h0,s3_wbd_dat_i} ;
+ assign s3_wb_rd.wbd_ack  = s3_wbd_ack_i ;
+ assign s3_wb_rd.wbd_err  = s3_wbd_err_i ;
 
 //
 // arbitor 
@@ -314,6 +345,7 @@ always_comb begin
         3'h0:	   s_bus_rd = s0_wb_rd;
         3'h1:	   s_bus_rd = s1_wb_rd;
         3'h2:	   s_bus_rd = s2_wb_rd;
+        3'h3:	   s_bus_rd = s3_wb_rd;
         default:   s_bus_rd = s0_wb_rd;
      endcase			
 end
@@ -323,6 +355,7 @@ end
 assign  s0_wb_wr = (s_wbd_tid == 2'b00) ? s_bus_wr : 'h0;
 assign  s1_wb_wr = (s_wbd_tid == 2'b01) ? s_bus_wr : 'h0;
 assign  s2_wb_wr = (s_wbd_tid == 2'b10) ? s_bus_wr : 'h0;
+assign  s3_wb_wr = (s_wbd_tid == 2'b11) ? s_bus_wr : 'h0;
 
 // Connect Slave to Master
 assign  m0_wb_rd = (gnt == 2'b00) ? m_bus_rd : 'h0;

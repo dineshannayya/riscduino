@@ -14,29 +14,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Include caravel global defines for the number of the user project IO pads 
-`include "defines.v"
 `define USE_POWER_PINS
 
-`ifdef GL
-    // Assume default net type to be wire because GL netlists don't have the wire definitions
-    `default_nettype wire
-    `include "gl/user_project_wrapper.v"
-    `include "gl/user_proj_example.v"
-`else
-    `include "user_project_wrapper.v"
-    `include "spi_master/src/spim_top.sv"
-    `include "spi_master/src/spim_regs.sv"
-    `include "spi_master/src/spim_clkgen.sv"
-    `include "spi_master/src/spim_ctrl.sv"
-    `include "spi_master/src/spim_rx.sv"
-    `include "spi_master/src/spim_tx.sv"
+     `include "spi_master/src/spim_top.sv"
+     `include "spi_master/src/spim_regs.sv"
+     `include "spi_master/src/spim_clkgen.sv"
+     `include "spi_master/src/spim_ctrl.sv"
+     `include "spi_master/src/spim_rx.sv"
+     `include "spi_master/src/spim_tx.sv"
 
-    `include "uart/src/uart_core.sv"
-    `include "uart/src/uart_cfg.sv"
-    `include "uart/src/uart_rxfsm.sv"
-    `include "uart/src/uart_txfsm.sv"
-    `include "lib/async_fifo_th.sv"  
-    `include "lib/reset_sync.sv"  
+     `include "uart/src/uart_core.sv"
+     `include "uart/src/uart_cfg.sv"
+     `include "uart/src/uart_rxfsm.sv"
+     `include "uart/src/uart_txfsm.sv"
+     `include "lib/async_fifo_th.sv"  
+     `include "lib/reset_sync.sv"  
 
      `include "sdram_ctrl/src/top/sdrc_top.v" 
      `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 
@@ -56,6 +48,7 @@
      `include "lib/wb_stagging.sv"
      `include "wb_interconnect/src/wb_arb.sv"
      `include "wb_interconnect/src/wb_interconnect.sv"
+
 
      `include "syntacore/scr1/src/core/pipeline/scr1_pipe_hdu.sv"
      `include "syntacore/scr1/src/core/pipeline/scr1_pipe_tdu.sv"
@@ -87,5 +80,3 @@
      `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
      `include "syntacore/scr1/src/top/scr1_top_wb.sv"
      `include "lib/sync_fifo.sv"
-
-`endif
