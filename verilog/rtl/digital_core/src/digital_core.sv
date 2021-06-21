@@ -200,7 +200,7 @@ logic                           wbd_uart_we_o;  // write
 logic   [7:0]                   wbd_uart_dat_o; // data output
 logic                           wbd_uart_sel_o; // byte enable
 logic                           wbd_uart_cyc_o ;
-logic   7:0]                    wbd_uart_dat_i; // data input
+logic   [7:0]                   wbd_uart_dat_i; // data input
 logic                           wbd_uart_ack_i; // acknowlegement
 logic                           wbd_uart_err_i;  // error
 
@@ -210,13 +210,13 @@ logic                           wbd_uart_err_i;  // error
 logic                              cpu_rst_n     ;
 logic                              spi_rst_n     ;
 logic                              sdram_rst_n   ;
+logic                              cpu_clk       ;
+logic                              rtc_clk       ;
 
 logic [31:0]                       fuse_mhartid  ;
 logic [15:0]                       irq_lines     ;
 logic                              soft_irq      ;
 
-        .si                    ( uart_rx                 ),
-        .so                    ( uart_tx                 )
 //------------------------------------------------
 // Configuration Parameter
 //------------------------------------------------
@@ -578,18 +578,18 @@ wb_interconnect  u_intercon (
          .s2_wbd_sel_o  (wbd_glbl_sel_o ),
          .s2_wbd_we_o   (wbd_glbl_we_o  ),  
          .s2_wbd_cyc_o  (wbd_glbl_cyc_o ),
-         .s2_wbd_stb_o  (wbd_glbl_stb_o )
+         .s2_wbd_stb_o  (wbd_glbl_stb_o ),
 
          // Slave 3 Interface
-         .s2_wbd_err_i  (1'b0           ),
-         .s2_wbd_dat_i  (wbd_uart_dat_i ),
-         .s2_wbd_ack_i  (wbd_uart_ack_i ),
-         .s2_wbd_dat_o  (wbd_uart_dat_o ),
-         .s2_wbd_adr_o  (wbd_uart_adr_o ),
-         .s2_wbd_sel_o  (wbd_uart_sel_o ),
-         .s2_wbd_we_o   (wbd_uart_we_o  ),  
-         .s2_wbd_cyc_o  (wbd_uart_cyc_o ),
-         .s2_wbd_stb_o  (wbd_uart_stb_o )
+         .s3_wbd_err_i  (1'b0           ),
+         .s3_wbd_dat_i  (wbd_uart_dat_i ),
+         .s3_wbd_ack_i  (wbd_uart_ack_i ),
+         .s3_wbd_dat_o  (wbd_uart_dat_o ),
+         .s3_wbd_adr_o  (wbd_uart_adr_o ),
+         .s3_wbd_sel_o  (wbd_uart_sel_o ),
+         .s3_wbd_we_o   (wbd_uart_we_o  ),  
+         .s3_wbd_cyc_o  (wbd_uart_cyc_o ),
+         .s3_wbd_stb_o  (wbd_uart_stb_o )
 	);
 
 glbl_cfg   u_glbl_cfg (
@@ -649,8 +649,8 @@ glbl_cfg   u_glbl_cfg (
         );
 
 uart_core   u_uart_core (
-        arst_n                 (wb_rst_n                  ), // async reset
-        app_clk                (wb_clk_i                  ),
+        .arst_n                 (wb_rst_n                  ), // async reset
+        .app_clk                (wb_clk_i                  ),
 
         // Reg Bus Interface Signal
        .reg_cs                 (wbd_uart_stb_o            ),

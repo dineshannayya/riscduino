@@ -121,7 +121,7 @@ module wb_interconnect(
          output	logic [3:0]	s2_wbd_sel_o,
          output	logic 	        s2_wbd_we_o,
          output	logic 	        s2_wbd_cyc_o,
-         output	logic 	        s2_wbd_stb_o
+         output	logic 	        s2_wbd_stb_o,
 
          // Slave 3 Interface
 	 // Uart is 8bit interface 

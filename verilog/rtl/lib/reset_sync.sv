@@ -57,7 +57,7 @@ parameter WIDTH = 1;
 input    scan_mode  ; // test mode
 input    dclk       ; // Destination clock
 input    arst_n     ; // Async Reset
-input    srst_n     ; // Sync Reset w.r.t dclk
+output   srst_n     ; // Sync Reset w.r.t dclk
 
 
 reg      in_data_s  ; // One   Cycle sync 

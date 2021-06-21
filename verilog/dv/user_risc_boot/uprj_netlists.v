@@ -16,12 +16,20 @@
 // Include caravel global defines for the number of the user project IO pads 
 `define USE_POWER_PINS
 
-    `include "spi_master/src/spim_top.sv"
-    `include "spi_master/src/spim_regs.sv"
-    `include "spi_master/src/spim_clkgen.sv"
-    `include "spi_master/src/spim_ctrl.sv"
-    `include "spi_master/src/spim_rx.sv"
-    `include "spi_master/src/spim_tx.sv"
+     `include "spi_master/src/spim_top.sv"
+     `include "spi_master/src/spim_regs.sv"
+     `include "spi_master/src/spim_clkgen.sv"
+     `include "spi_master/src/spim_ctrl.sv"
+     `include "spi_master/src/spim_rx.sv"
+     `include "spi_master/src/spim_tx.sv"
+
+     `include "uart/src/uart_core.sv"
+     `include "uart/src/uart_cfg.sv"
+     `include "uart/src/uart_rxfsm.sv"
+     `include "uart/src/uart_txfsm.sv"
+     `include "lib/async_fifo_th.sv"  
+     `include "lib/reset_sync.sv"  
+     `include "lib/double_sync_low.v"  
 
      `include "sdram_ctrl/src/top/sdrc_top.v" 
      `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 

@@ -55,7 +55,7 @@
 
 `default_nettype none
 
-`timescale 1 ns / 1 ps
+`timescale 1 ns / 1 ns
 
 `include "uprj_netlists.v"
 `include "spiflash.v"
@@ -63,26 +63,26 @@
 `include "uart_agent.v"
 
 
-`define ADDR_SPACE_UART = 32'h3001_0000;
+`define ADDR_SPACE_UART  32'h3001_0000
 
 
-task user_uart_tb;
+module user_uart_tb;
 
 reg            clock         ;
-reg            RSTB          ;
+reg            wb_rst_i      ;
 reg            power1, power2;
 reg            power3, power4;
 
-reg            wbd_ext_cyc_i ;  // strobe/request
-reg            wbd_ext_stb_i ;  // strobe/request
-reg [31:0]     wbd_ext_adr_i ;  // address
-reg            wbd_ext_we_i  ;  // write
-reg [31:0]     wbd_ext_dat_i ;  // data output
-reg [3:0]      wbd_ext_sel_i ;  // byte enable
+reg            wbd_ext_cyc_i;  // strobe/request
+reg            wbd_ext_stb_i;  // strobe/request
+reg [31:0]     wbd_ext_adr_i;  // address
+reg            wbd_ext_we_i;  // write
+reg [31:0]     wbd_ext_dat_i;  // data output
+reg [3:0]      wbd_ext_sel_i;  // byte enable
 
-wire [31:0]    wbd_ext_dat_o ;  // data input
-wire           wbd_ext_ack_o ;  // acknowlegement
-wire           wbd_ext_err_o ;  // error
+wire [31:0]    wbd_ext_dat_o;  // data input
+wire           wbd_ext_ack_o;  // acknowlegement
+wire           wbd_ext_err_o;  // error
 
 // User I/O
 wire [37:0]    io_oeb        ;
@@ -113,8 +113,34 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 
 integer i,j;
 
+	// External clock is used by default.  Make this artificially fast for the
+	// simulation.  Normally this would be a slow clock and the digital PLL
+	// would be the fast clock.
 
+	always #12.5 clock <= (clock === 1'b0);
 
+	initial begin
+		clock = 0;
+                wbd_ext_cyc_i ='h0;  // strobe/request
+                wbd_ext_stb_i ='h0;  // strobe/request
+                wbd_ext_adr_i ='h0;  // address
+                wbd_ext_we_i  ='h0;  // write
+                wbd_ext_dat_i ='h0;  // data output
+                wbd_ext_sel_i ='h0;  // byte enable
+	end
+
+	`ifdef WFDUMP
+	   initial begin
+	   	$dumpfile("risc_boot.vcd");
+	   	$dumpvars(4, user_uart_tb);
+	   end
+       `endif
+
+	initial begin
+		wb_rst_i <= 1'b1;
+		#100;
+		wb_rst_i <= 1'b0;	    	// Release reset
+	end
 initial
 begin
    uart_data_bit           = 2'b11;
@@ -128,7 +154,7 @@ begin
 
    #200; // Wait for reset removal
    repeat (10) @(posedge clock);
-   $display("Monitor: Standalone User Risc Boot Test Started");
+   $display("Monitor: Standalone User Uart Test Started");
    
    #1;
    //------------ SDRAM Config - 2
@@ -144,48 +170,47 @@ begin
    // Remove all the reset
    wb_user_core_write('h3000_0000,'h7);
 
-   repeat (2000) @(posedge app_clk);  // wait for Processor Get Ready
+   repeat (20000) @(posedge clock);  // wait for Processor Get Ready
    tb_uart.uart_init;
    wb_user_core_write(`ADDR_SPACE_UART+8'h0,{3'h0,2'b00,1'b1,1'b1,1'b1});  
    
+   tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+	                          uart_stick_parity, uart_timeout, uart_divisor);
    
    for (i=0; i<40; i=i+1)
    	uart_write_data[i] = $random;
    
    
-     tb_top.tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
-	                          uart_stick_parity, uart_timeout, uart_divisor, uart_fifo_enable);
    
-      fork
+   fork
       begin
          for (i=0; i<40; i=i+1)
          begin
-           $display ("\n... UART Agent Writing char %x ...", write_data[i]);
-            tb_top.tb_uart.write_char (uart_write_data[i]);
+           $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
+            user_uart_tb.tb_uart.write_char (uart_write_data[i]);
          end
       end
    
       begin
          for (j=0; j<40; j=j+1)
          begin
-           tb_top.tb_uart.read_char_chk(uart_write_data[j]);
+           user_uart_tb.tb_uart.read_char_chk(uart_write_data[j]);
          end
       end
       join
    
       #100
-      tb_top.tb_uart.report_status(rx_nu, tx_nu);
+      tb_uart.report_status(uart_rx_nu, uart_tx_nu);
    
       test_fail = 0;
-      wb_user_core_read(32'h30000018,read_data);
 
       // Check 
       // if all the 40 byte transmitted
       // if all the 40 byte received
       // if no error 
-      if(tx_nu != 40) test_fail = 1;
-      if(rx_nu != 40) test_fail = 1;
-      if(tb_top.tb_uart.err_cnt != 0) test_fail = 1;
+      if(uart_tx_nu != 40) test_fail = 1;
+      if(uart_rx_nu != 40) test_fail = 1;
+      if(tb_uart.err_cnt != 0) test_fail = 1;
 
       $display("###################################################");
       if(test_fail == 0) begin
@@ -219,8 +244,8 @@ digital_core u_core(
     .vssd2(),	// User area 2 digital ground
 `endif
     .wb_clk_i        (clock),  // System clock
-    .rtc_clk         (1'b1),  // Real-time clock
-    .wb_rst_i        (RSTB),  // Regular Reset signal
+    .user_clock2     (1'b1),  // Real-time clock
+    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
 
     .wbd_ext_cyc_i   (wbd_ext_cyc_i),  // strobe/request
     .wbd_ext_stb_i   (wbd_ext_stb_i),  // strobe/request

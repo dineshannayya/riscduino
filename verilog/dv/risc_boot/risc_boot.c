@@ -39,6 +39,15 @@
 #define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30000038)
 #define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3000003C)
 
+#define reg_mprj_uart_reg0 (*(volatile uint32_t*)0x30010000)
+#define reg_mprj_uart_reg1 (*(volatile uint32_t*)0x30010004)
+#define reg_mprj_uart_reg2 (*(volatile uint32_t*)0x30010008)
+#define reg_mprj_uart_reg3 (*(volatile uint32_t*)0x3001000C)
+#define reg_mprj_uart_reg4 (*(volatile uint32_t*)0x30010010)
+#define reg_mprj_uart_reg5 (*(volatile uint32_t*)0x30010014)
+#define reg_mprj_uart_reg6 (*(volatile uint32_t*)0x30010018)
+#define reg_mprj_uart_reg7 (*(volatile uint32_t*)0x3001001C)
+#define reg_mprj_uart_reg8 (*(volatile uint32_t*)0x30010020)
 
 #define GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP   0x1C00
 
@@ -168,45 +177,7 @@ void main()
     // Wake Up CPU Core
     reg_mprj_globl_reg0  = 0x07; 
 
-    // Add some delay for user core to boot
-    for(i = 0; i < 40; i ++);
+    // configure the user uart
+    reg_mprj_uart_reg0  = 0x7;
 
-    if(reg_mprj_globl_reg6  != 0x11223344) bFail = 1;
-    if(reg_mprj_globl_reg7  != 0x22334455) bFail = 1;
-    if(reg_mprj_globl_reg8  != 0x33445566) bFail = 1;
-    if(reg_mprj_globl_reg9  != 0x44556677) bFail = 1;
-    if(reg_mprj_globl_reg10 != 0x55667788) bFail = 1;
-    if(reg_mprj_globl_reg11 != 0x66778899) bFail = 1;
-
-
-    if(bFail == 0) {
-        reg_mprj_datal = 0xAB610000;
-    } else {
-        reg_mprj_datal = 0xAB600000;
-    }
-
-	// Connect the housekeeping SPI to the SPI master
-	// so that the CSB line is not left floating.  This allows
-	// all of the GPIO pins to be used for user functions.
-        reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-
-     /* Apply configuration */
-    reg_mprj_xfer = 1;
-    while (reg_mprj_xfer == 1);
 }

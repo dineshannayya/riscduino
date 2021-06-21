@@ -58,6 +58,7 @@
 `include "caravel_netlists.v"
 `include "spiflash.v"
 `include "mt48lc8m8a2.v"
+`include "uart_agent.v"
 
 module risc_boot_tb;
 	reg clock;
@@ -71,6 +72,28 @@ module risc_boot_tb;
 	wire [7:0] mprj_io_0;
 	wire [15:0] checkbits;
 
+        //----------------------------------
+        // Uart Configuration
+        // ---------------------------------
+        reg [1:0]      uart_data_bit        ;
+        reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
+        reg	       uart_stick_parity    ; // 1: force even parity
+        reg	       uart_parity_en       ; // parity enable
+        reg	       uart_even_odd_parity ; // 0: odd parity; 1: even parity
+        
+        reg [7:0]      uart_data            ;
+        reg [15:0]     uart_divisor         ;	// divided by n * 16
+        reg [15:0]     uart_timeout         ;// wait time limit
+        
+        reg [15:0]     uart_rx_nu           ;
+        reg [15:0]     uart_tx_nu           ;
+        reg [7:0]      uart_write_data [0:39];
+        reg 	       uart_fifo_enable     ;	// fifo mode disable
+	reg            test_fail            ;
+        
+        integer i,j;
+	//---------------------------------
+	
 	assign checkbits = mprj_io[31:16];
 
 	assign mprj_io[3] = (CSB == 1'b1) ? 1'b1 : 1'bz;
@@ -97,36 +120,84 @@ module risc_boot_tb;
         end
         `endif
 
-	initial begin
 
-		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (200) begin
-			repeat (1000) @(posedge clock);
-			// $display("+1000 cycles");
-		end
-		$display("%c[1;31m",27);
-		`ifdef GL
-			$display ("Monitor: Timeout, Test user Risc Boot (GL) Failed");
-		`else
-			$display ("Monitor: Timeout, Test user Risc Boot (RTL) Failed");
-		`endif
-		$display("%c[0m",27);
-		$finish;
-	end
-
-	initial begin
+        initial
+        begin
+           uart_data_bit           = 2'b11;
+           uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
+           uart_stick_parity       = 0; // 1: force even parity
+           uart_parity_en          = 0; // parity enable
+           uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
+           uart_divisor            = 15;// divided by n * 16
+           uart_timeout            = 500;// wait time limit
+           uart_fifo_enable        = 0;	// fifo mode disable
+        
+           #200; // Wait for reset removal
+          
+	   // Wait for Managment core to boot up 
 	   wait(checkbits == 16'h AB60);
-		$display("Monitor: Test User Risc Boot Started");
-		wait(checkbits == 16'h AB61);
-	    	$display("#############################################");
-		`ifdef GL
-	    	$display("Monitor: Test User Risc Boot (GL) Passed");
-		`else
-		    $display("Monitor: Test User Risc Boot (RTL) Passed");
-		`endif
-	    	$display("#############################################");
-	    $finish;
-	end
+	   $display("Monitor: Test User Risc Boot Started");
+       
+	   // Wait for user risc core to boot up 
+           repeat (35000) @(posedge clock);  
+           tb_uart.uart_init;
+           tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+        	                          uart_stick_parity, uart_timeout, uart_divisor);
+           
+           for (i=0; i<40; i=i+1)
+           	uart_write_data[i] = $random;
+           
+           
+           
+           fork
+              begin
+                 for (i=0; i<40; i=i+1)
+                 begin
+                   $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
+                    tb_uart.write_char (uart_write_data[i]);
+                 end
+              end
+           
+              begin
+                 for (j=0; j<40; j=j+1)
+                 begin
+                   tb_uart.read_char_chk(uart_write_data[j]);
+                 end
+              end
+              join
+           
+              #100
+              tb_uart.report_status(uart_rx_nu, uart_tx_nu);
+           
+              test_fail = 0;
+        
+              // Check 
+              // if all the 40 byte transmitted
+              // if all the 40 byte received
+              // if no error 
+              if(uart_tx_nu != 40) test_fail = 1;
+              if(uart_rx_nu != 40) test_fail = 1;
+              if(tb_uart.err_cnt != 0) test_fail = 1;
+        
+              $display("###################################################");
+              if(test_fail == 0) begin
+                 `ifdef GL
+                     $display("Monitor: Standalone User UART Test (GL) Passed");
+                 `else
+                     $display("Monitor: Standalone User UART Test (RTL) Passed");
+                 `endif
+              end else begin
+                  `ifdef GL
+                      $display("Monitor: Standalone User UART Test (GL) Failed");
+                  `else
+                      $display("Monitor: Standalone User UART Test (RTL) Failed");
+                  `endif
+               end
+              $display("###################################################");
+              #100
+              $finish;
+        end
+
 
 	initial begin
 		RSTB <= 1'b0;
@@ -216,7 +287,7 @@ module risc_boot_tb;
 
    // Quard flash
 	spiflash #(
-		.FILENAME("user_risc_boot.hex")
+		.FILENAME("user_uart.hex")
 	) u_user_spiflash (
 		.csb(user_flash_csb),
 		.clk(user_flash_clk),
@@ -269,6 +340,22 @@ mt48lc8m8a2 #(.data_bits(8)) u_sdram8 (
           .We_n               (sdr_we_n           ), 
           .Dqm                (sdr_dqm            )
      );
+
+
+//---------------------------
+//  UART Agent integration
+// --------------------------
+wire uart_txd,uart_rxd;
+
+assign uart_txd   = mprj_io[37];
+assign mprj_io[36]  = uart_rxd ;
+ 
+uart_agent tb_uart(
+	.mclk                (clock              ),
+	.txd                 (uart_rxd           ),
+	.rxd                 (uart_txd           )
+	);
+
 
 
 

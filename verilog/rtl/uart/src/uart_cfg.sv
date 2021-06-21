@@ -105,7 +105,7 @@ output [7:0]     tx_fifo_data;
 // Uart Rx fifo interface
 //--------------------------------
 input            rx_fifo_empty;
-wire [4:0]       rx_fifo_dval          ; // Total Rx fifo Data Available
+input [4:0]      rx_fifo_dval          ; // Total Rx fifo Data Available
 output           rx_fifo_rd_en;
 input [7:0]      rx_fifo_data;
 

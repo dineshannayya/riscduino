@@ -127,10 +127,16 @@ wire            rx_fifo_full_err_o   ; // rx fifo full error
 
 wire   [11:0]   cfg_baud_16x         ; // 16x Baud clock generation
 wire            rx_fifo_wr_full      ;
+wire            tx_fifo_rd_empty     ;
+wire            tx_fifo_rd           ;
 wire           app_rxfifo_empty      ;
-
+wire           app_rxfifo_rd_en      ;
+wire           app_tx_fifo_full      ;
+wire           rx_fifo_wr            ;
+wire           tx_fifo_wr_en         ;
 wire [AW:0]    tx_fifo_fspace        ; // Total Tx fifo Free Space
 wire [AW:0]    rx_fifo_dval          ; // Total Rx fifo Data Available
+wire           si_ss                 ;
 
 uart_cfg u_cfg (
 
@@ -163,7 +169,7 @@ uart_cfg u_cfg (
             . tx_fifo_data        (app_txfifo_data),
 
             . rx_fifo_empty       (app_rxfifo_empty),
-             .rd_fifo_dval        (rx_fifo_dval   ),
+             .rx_fifo_dval        (rx_fifo_dval   ),
             . rx_fifo_rd_en       (app_rxfifo_rd_en),
             . rx_fifo_data        (app_rxfifo_data) ,
 

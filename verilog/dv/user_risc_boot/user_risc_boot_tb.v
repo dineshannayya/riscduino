@@ -62,7 +62,7 @@
 
 module user_risc_boot_tb;
 	reg clock;
-	reg RSTB;
+	reg wb_rst_i;
 	reg power1, power2;
 	reg power3, power4;
 
@@ -190,9 +190,9 @@ module user_risc_boot_tb;
 	end
 
 	initial begin
-		RSTB <= 1'b0;
+		wb_rst_i <= 1'b1;
 		#100;
-		RSTB <= 1'b1;	    	// Release reset
+		wb_rst_i <= 1'b0;	    	// Release reset
 	end
 
 
@@ -208,8 +208,8 @@ module user_risc_boot_tb;
     .vssd2(),	// User area 2 digital ground
 `endif
     .wb_clk_i        (clock),  // System clock
-    .rtc_clk         (1'b1),  // Real-time clock
-    .wb_rst_i        (RSTB),  // Regular Reset signal
+    .user_clock2     (1'b1),  // Real-time clock
+    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
 
     .wbd_ext_cyc_i   (wbd_ext_cyc_i),  // strobe/request
     .wbd_ext_stb_i   (wbd_ext_stb_i),  // strobe/request

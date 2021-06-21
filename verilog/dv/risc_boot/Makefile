@@ -22,13 +22,18 @@ CARAVEL_VERILOG_PATH  = $(CARAVEL_PATH)/verilog
 CARAVEL_RTL_PATH = $(CARAVEL_VERILOG_PATH)/rtl
 CARAVEL_BEHAVIOURAL_MODELS = $(CARAVEL_VERILOG_PATH)/dv/caravel
 
+
 ## User Project Pointers
 UPRJ_VERILOG_PATH ?= ../../../verilog
 UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
 UPRJ_BEHAVIOURAL_MODELS = ../model
+UPRJ_BEHAVIOURAL_AGENTS = ../agents
 UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/syntacore/scr1/src/includes
 UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
-UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
+
+## SYNTACORE FIRMWARE
+SYNTACORE_FIRMWARE_PATH = $(UPRJ_VERILOG_PATH)/rtl/syntacore/scr1/sim/tests/common
+GCC64_PREFIX?=riscv64-unknown-elf
 
 ## RISCV GCC 
 GCC_PATH?=/ef/apps/bin
@@ -49,16 +54,24 @@ hex:  ${PATTERN:=.hex}
 vvp:  ${PATTERN:=.vvp}
 
 %.vvp: %_tb.v %.hex
+	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I$(SYNTACORE_FIRMWARE_PATH)  user_uart.c -o user_uart.o
+	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I$(SYNTACORE_FIRMWARE_PATH)  $(SYNTACORE_FIRMWARE_PATH)/crt_tcm.S -o crt_tcm.o
+	${GCC64_PREFIX}-gcc -march=rv32imc -mabi=ilp32 -T $(SYNTACORE_FIRMWARE_PATH)/link_tcm.ld user_uart.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -o user_uart.elf
+	${GCC64_PREFIX}-objcopy -O verilog user_uart.elf user_uart.hex
+	${GCC64_PREFIX}-objdump -D user_uart.elf > user_uart.dump
+	rm crt_tcm.o user_uart.o
 ifeq ($(SIM),RTL)
 	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
 	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
 	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) \
+	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
 	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) \
 	$< -o $@ 
 else  
 	iverilog -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \
 	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) -I $(CARAVEL_VERILOG_PATH) \
 	-I $(UPRJ_BEHAVIOURAL_MODELS) -I$(UPRJ_RTL_PATH)   -I $(UPRJ_VERILOG_PATH) \
+	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
 	$< -o $@ 
 endif
 
@@ -79,6 +92,6 @@ endif
 # ---- Clean ----
 
 clean:
-	rm -f *.elf *.hex *.bin *.vvp *.vcd *.log
+	rm -f *.elf *.hex *.bin *.vvp *.vcd *.log *.dump
 
 .PHONY: clean hex all

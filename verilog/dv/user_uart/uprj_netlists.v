@@ -29,6 +29,7 @@
      `include "uart/src/uart_txfsm.sv"
      `include "lib/async_fifo_th.sv"  
      `include "lib/reset_sync.sv"  
+     `include "lib/double_sync_low.v"  
 
      `include "sdram_ctrl/src/top/sdrc_top.v" 
      `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 
