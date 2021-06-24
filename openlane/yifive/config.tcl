@@ -40,8 +40,14 @@ set ::env(FP_VERTICAL_HALO) 6
 set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
 
 
-set ::env(DESIGN_IS_CORE) "0"
+set ::env(DESIGN_IS_CORE) 0
+set ::env(FP_PDN_CORE_RING) 0
+set ::env(GLB_RT_MAXLAYER) 5
 
+
+set ::env(VDD_NETS) [list {vccd1} {vccd2} {vdda1} {vdda2}]
+set ::env(GND_NETS) [list {vssd1} {vssd2} {vssa1} {vssa2}]
+set ::env(SYNTH_USE_PG_PINS_DEFINES) "USE_POWER_PINS"
 
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -53,6 +59,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/glbl_cfg.lef \
 	$lef_root/wb_interconnect.lef \
 	$lef_root/sdram.lef \
+	$lef_root/uart.lef \
 	$lef_root/syntacore.lef \
 	"
 
@@ -61,21 +68,24 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/glbl_cfg.gds \
 	$gds_root/wb_interconnect.gds \
 	$gds_root/sdram.gds \
+	$gds_root/uart.gds \
 	$gds_root/syntacore.gds \
         "
 
 set ::env(VERILOG_FILES_BLACKBOX) "\
-        $script_dir/../../verilog/rtl/spi_master/src/spim_top.sv \
-        $script_dir/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
-        $script_dir/../../verilog/rtl/digital_core/src/glbl_cfg.sv     \
-	$script_dir/macro/bb/sdram.v \
-	$script_dir/macro/bb/syntacore.v \
+        $script_dir/../../verilog/gl/spi_master.v \
+        $script_dir/../../verilog/gl/wb_interconnect.v  \
+        $script_dir/../../verilog/gl/glbl_cfg.v     \
+        $script_dir/../../verilog/gl/uart.v     \
+	$script_dir/../../verilog/gl/sdram.v \
+	$script_dir/../../verilog/gl/syntacore.v \
 	"
 
 
 set ::env(FP_SIZING) relative
-set ::env(DIE_AREA) "0 0 3000 3000"
+set ::env(DIE_AREA) "0 0 2500 3500"
 
+set ::env(LEC_ENABLE) 0
 
 
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
@@ -92,7 +102,6 @@ set ::env(GLB_RT_L4_ADJUSTMENT) 0.2
 set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
 set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
 set ::env(GLB_RT_TILES) 14
-set ::env(GLB_RT_MAXLAYER) 4
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "400"
 
 set ::env(DIODE_INSERTION_STRATEGY) 4

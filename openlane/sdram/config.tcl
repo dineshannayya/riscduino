@@ -32,13 +32,14 @@ set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/sdram_ctrl/s
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
+set ::env(LEC_ENABLE) 0
 
 # Floorplanning
 # -------------
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
-set ::env(DIE_AREA) [list 0.0 0.0 900.0 300.0]
+set ::env(DIE_AREA) [list 0.0 0.0 700.0 500.0]
 
 
 

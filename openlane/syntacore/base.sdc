@@ -41,6 +41,8 @@ set_input_delay $wb_input_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)]
 set_input_delay 5.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {wb_rst_n}
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] $all_outputs_wb
 
+#### Clock Async Defination
+set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks $::env(WB_CLOCK_PORT)] -group [get_clocks $::env(CORE_CLOCK_PORT)]
 
 # TODO set this as parameter
 set_driving_cell -lib_cell $::env(SYNTH_DRIVING_CELL) -pin $::env(SYNTH_DRIVING_CELL_PIN) [all_inputs]

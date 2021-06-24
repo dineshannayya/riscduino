@@ -53,13 +53,14 @@ set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 #set ::env(SYNTH_DEFINES) [list SCR1_DBG_EN ]
 
+set ::env(LEC_ENABLE) 0
 
 # --------
 # Floorplanning
 # -------------
 
-set ::env(FP_DEF_TEMPLATE) $script_dir/floorplan.def
-#set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
+#set ::env(FP_DEF_TEMPLATE) $script_dir/floorplan.def
+set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) [list 0.0 0.0 1500.0 1200.0]

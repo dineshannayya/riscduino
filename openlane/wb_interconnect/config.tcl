@@ -28,7 +28,7 @@ set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/syntacore/sc
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
-
+set ::env(LEC_ENABLE) 0
 
 # Floorplanning
 # -------------
@@ -38,7 +38,7 @@ set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 2400 150"
+set ::env(DIE_AREA) "0 0 2300 200"
 
 
 

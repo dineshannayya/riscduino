@@ -16,6 +16,20 @@
 // Include caravel global defines for the number of the user project IO pads 
 `define USE_POWER_PINS
 
+`ifdef GL
+      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
+      `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
+      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
+      `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
+
+      `include "digital_core/src/digital_core.sv"
+      `include "glbl_cfg.v"
+      `include "sdram.v"
+      `include "spi_master.v"
+      `include "syntacore.v"
+      `include "uart.v"
+      `include "wb_interconnect.v"
+`else
      `include "spi_master/src/spim_top.sv"
      `include "spi_master/src/spim_regs.sv"
      `include "spi_master/src/spim_clkgen.sv"
@@ -81,3 +95,4 @@
      `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
      `include "syntacore/scr1/src/top/scr1_top_wb.sv"
      `include "lib/sync_fifo.sv"
+`endif

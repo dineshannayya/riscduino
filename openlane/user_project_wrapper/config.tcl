@@ -30,7 +30,7 @@ set gds_root $script_dir/../../gds/
 ## Source Verilog Files
 set ::env(VERILOG_FILES) "\
 	$script_dir/../../caravel/verilog/rtl/defines.v \
-        $script_dir/../../verilog/rtl/digital_core/src/digital_core.sv \
+	$script_dir/../../verilog/gl/digital_core.v \
 	$script_dir/../../verilog/rtl/user_project_wrapper.v"
 
 ## Clock configurations
@@ -47,14 +47,16 @@ set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
+set ::env(SYNTH_READ_BLACKBOX_LIB) "1"
 
 ### Black-box verilog and views
 set ::env(VERILOG_FILES_BLACKBOX) "\
-        $script_dir/../../verilog/rtl/spi_master/src/spim_top.sv \
-        $script_dir/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
-        $script_dir/../../verilog/rtl/digital_core/src/glbl_cfg.sv     \
-	$script_dir/macro/bb/sdram.v \
-	$script_dir/macro/bb/syntacore.v \
+        $script_dir/../../verilog/gl/spi_master.v \
+        $script_dir/../../verilog/gl/wb_interconnect.v \
+        $script_dir/../../verilog/gl/glbl_cfg.v     \
+        $script_dir/../../verilog/gl/uart.v     \
+	$script_dir/../../verilog/gl/sdram.v \
+	$script_dir/../../verilog/gl/syntacore.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
@@ -62,6 +64,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/glbl_cfg.lef \
 	$lef_root/wb_interconnect.lef \
 	$lef_root/sdram.lef \
+	$lef_root/uart.lef \
 	$lef_root/syntacore.lef \
 	"
 
@@ -69,6 +72,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/spi_master.gds \
 	$gds_root/glbl_cfg.gds \
 	$gds_root/wb_interconnect.gds \
+	$gds_root/uart.gds \
 	$gds_root/sdram.gds \
 	$gds_root/syntacore.gds \
 	"
@@ -81,24 +85,20 @@ set ::env(GLB_RT_MAXLAYER) 5
 
 set ::env(FP_PDN_CHECK_NODES) 0
 
+set ::env(GLB_RT_OBS) "met1 0 0 $::env(DIE_AREA),\
+					   met2 0 0 $::env(DIE_AREA),\
+					   met3 0 0 $::env(DIE_AREA),\
+					   met4 0 0 $::env(DIE_AREA),\
+					   met5 0 0 $::env(DIE_AREA)"
+
+
 # The following is because there are no std cells in the example wrapper project.
 #set ::env(SYNTH_TOP_LEVEL) 1
 set ::env(PL_BASIC_PLACEMENT) 1
-
-set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
-set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
-set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) 0
-set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) 0
-
-set ::env(DIODE_INSERTION_STRATEGY) 4
-set ::env(FILL_INSERTION) 1
-set ::env(TAP_DECAP_INSERTION) 1
-#set ::env(CLOCK_TREE_SYNTH) 1
 
 # Important for large macro placement
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "400"
 set ::env(ROUTING_OPT_ITERS) "20"
 
-set ::env(GLB_RT_OBS) "met5 0.0 0.0 2920.0 3520.0"
 
 
