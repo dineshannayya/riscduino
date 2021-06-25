@@ -21,7 +21,7 @@ set_input_delay 2.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {wb_rst_i}
 
 set_input_delay  3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_stb_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_addr_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_we_i*]
+set_input_delay  5.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_we_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_dat_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_sel_i*]
 set_input_delay  3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_cyc_i*]
