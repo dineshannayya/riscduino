@@ -38,7 +38,7 @@ set ::env(LEC_ENABLE) 0
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 2300 200"
+set ::env(DIE_AREA) "0 0 2000 200"
 
 
 
