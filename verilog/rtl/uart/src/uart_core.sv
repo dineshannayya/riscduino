@@ -17,6 +17,9 @@
 ////    0.1 - 20th June 2021, Dinesh A                            ////
 ////        1. initial version picked from                        ////
 ////          http://www.opencores.org/cores/oms8051mini          ////
+////    0.2 - 25th June 2021, Dinesh A                            ////
+////        Pad logic moved inside core to avoid combo logic at   ////
+////        soc digital core level                                ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -49,23 +52,24 @@ module uart_core
 
      (  
 
-        arst_n  , // async reset
-        app_clk ,
+   input logic         arst_n  , // async reset
+   input logic         app_clk ,
 
         // Reg Bus Interface Signal
-        reg_cs,
-        reg_wr,
-        reg_addr,
-        reg_wdata,
-        reg_be,
+   input logic         reg_cs,
+   input logic         reg_wr,
+   input logic [3:0]   reg_addr,
+   input logic [7:0]   reg_wdata,
+   input logic         reg_be,
 
         // Outputs
-        reg_rdata,
-        reg_ack,
+   output logic [7:0]  reg_rdata,
+   output logic        reg_ack,
 
-       // Line Interface
-        si,
-        so
+       // Pad Control
+   input  logic [1:0]  io_in,
+   output logic [1:0]  io_out,
+   output logic [1:0]  io_oeb
 
      );
 
@@ -84,26 +88,6 @@ parameter AW = (DP == 2)   ? 1 :
                (DP == 256) ? 8 : 0;
 
 
-
-input        arst_n               ; // async reset
-input        app_clk              ; // application clock
-
-//---------------------------------
-// Reg Bus Interface Signal
-//---------------------------------
-input             reg_cs         ;
-input             reg_wr         ;
-input [3:0]       reg_addr       ;
-input [7:0]       reg_wdata      ;
-input             reg_be         ;
-
-// Outputs
-output [7:0]      reg_rdata      ;
-output            reg_ack        ;
-
-// Line Interface
-input         si                  ; // uart si
-output        so                  ; // uart so
 
 // Wire Declaration
 wire            app_reset_n       ;
@@ -137,6 +121,22 @@ wire           tx_fifo_wr_en         ;
 wire [AW:0]    tx_fifo_fspace        ; // Total Tx fifo Free Space
 wire [AW:0]    rx_fifo_dval          ; // Total Rx fifo Data Available
 wire           si_ss                 ;
+
+
+/////////////////////////////////////////////////////////
+// uart interface
+///////////////////////////////////////////////////////
+
+wire            si                  ; 
+wire            so                  ;
+
+// for uart
+assign  io_oeb[0] =  1'b1; // Uart RX
+assign  si        =  io_in[0];
+assign  io_out[0] =  1'b0;
+
+assign  io_oeb[1] =  1'b0; // Uart TX
+assign  io_out[1]  =  so;
 
 uart_cfg u_cfg (
 

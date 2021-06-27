@@ -70,8 +70,8 @@ module scr1_top_wb (
     input   logic                                   pwrup_rst_n,            // Power-Up Reset
     input   logic                                   rst_n,                  // Regular Reset signal
     input   logic                                   cpu_rst_n,              // CPU Reset (Core Reset)
-    input   logic                                   test_mode,              // Test mode
-    input   logic                                   test_rst_n,             // Test mode's reset
+    // input   logic                                   test_mode,              // Test mode - unused
+    // input   logic                                   test_rst_n,             // Test mode's reset - unused
     input   logic                                   core_clk,               // Core clock
     input   logic                                   rtc_clk,                // Real-time clock
 `ifdef SCR1_DBG_EN
@@ -138,6 +138,8 @@ localparam int unsigned SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM            = 2;
 // Local signal declaration
 //-------------------------------------------------------------------------------
 // Reset logic
+logic                                               test_mode;              // Test mode - unused
+logic                                               test_rst_n;             // Test mode's reset - unused
 logic                                               pwrup_rst_n_sync;
 logic                                               rst_n_sync;
 logic                                               cpu_rst_n_sync;
@@ -216,6 +218,12 @@ logic                                               timer_irq;
 logic [63:0]                                        timer_val;
 
 
+//---------------------------------------------------------------------------------
+// To avoid core level power hook up, we have brought this signal inside, to
+// avoid any cell at digital core level
+// --------------------------------------------------------------------------------
+assign test_mode = 1'b0;
+assign test_rst_n = 1'b0;
 //-------------------------------------------------------------------------------
 // Reset logic
 //-------------------------------------------------------------------------------

@@ -14,6 +14,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Include caravel global defines for the number of the user project IO pads 
+`include "defines.v"
 `define USE_POWER_PINS
 
 `ifdef GL
@@ -26,9 +27,44 @@
       `include "glbl_cfg.v"
       `include "sdram.v"
       `include "spi_master.v"
-      `include "syntacore.v"
       `include "uart.v"
       `include "wb_interconnect.v"
+
+     `include "wb_host/src/wb_host.sv"
+     `include "lib/async_wb.sv"
+     `include "lib/registers.v"
+
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_hdu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_tdu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_ipic.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_csr.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_exu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_ialu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_idu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_ifu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_lsu.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_mprf.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_top.sv"
+     `include "syntacore/scr1/src/core/primitives/scr1_reset_cells.sv"
+     `include "syntacore/scr1/src/core/primitives/scr1_cg.sv"
+     `include "syntacore/scr1/src/core/scr1_clk_ctrl.sv"
+     `include "syntacore/scr1/src/core/scr1_tapc_shift_reg.sv"
+     `include "syntacore/scr1/src/core/scr1_tapc.sv"
+     `include "syntacore/scr1/src/core/scr1_tapc_synchronizer.sv"
+     `include "syntacore/scr1/src/core/scr1_core_top.sv"
+     `include "syntacore/scr1/src/core/scr1_dm.sv"
+     `include "syntacore/scr1/src/core/scr1_dmi.sv"
+     `include "syntacore/scr1/src/core/scr1_scu.sv"
+      
+     `include "syntacore/scr1/src/top/scr1_dmem_router.sv"
+     `include "syntacore/scr1/src/top/scr1_dp_memory.sv"
+     `include "syntacore/scr1/src/top/scr1_tcm.sv"
+     `include "syntacore/scr1/src/top/scr1_timer.sv"
+     `include "syntacore/scr1/src/top/scr1_dmem_wb.sv"
+     `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
+     `include "syntacore/scr1/src/top/scr1_top_wb.sv"
+     `include "lib/sync_fifo.sv"
+     `include "lib/async_fifo.sv"  
 `else
      `include "spi_master/src/spim_top.sv"
      `include "spi_master/src/spim_regs.sv"
@@ -59,6 +95,9 @@
      `include "lib/clk_ctl.v"
      `include "digital_core/src/glbl_cfg.sv"
      `include "digital_core/src/digital_core.sv"
+
+     `include "wb_host/src/wb_host.sv"
+     `include "lib/async_wb.sv"
 
      `include "lib/wb_stagging.sv"
      `include "wb_interconnect/src/wb_arb.sv"
@@ -95,4 +134,6 @@
      `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
      `include "syntacore/scr1/src/top/scr1_top_wb.sv"
      `include "lib/sync_fifo.sv"
+
+     `include "user_project_wrapper.v"
 `endif

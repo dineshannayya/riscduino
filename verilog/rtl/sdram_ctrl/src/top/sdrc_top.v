@@ -31,6 +31,11 @@
 	         sdram_dq and sdram_pad_clk are internally generated
 	     0.3 - 26th April 2013
                   Sdram Address witdh is increased from 12 to 13bits
+	     0.3 - 25th June 2021
+                  Move the Pad logic inside the sdram to avoid combo logic
+		  at digital core level
+             0.4 - 27th June 2021
+	          Unused port wb_cti_i removed
 
                                                              
  Copyright (C) 2000 Authors and OPENCORES.ORG                
@@ -66,7 +71,7 @@ module sdrc_top
                     cfg_colbits         ,
                     
                 // WB bus
-                    wb_rst_i            ,
+                    wb_rst_n            ,
                     wb_clk_i            ,
                     
                     wb_stb_i            ,
@@ -77,25 +82,18 @@ module sdrc_top
                     wb_sel_i            ,
                     wb_dat_o            ,
                     wb_cyc_i            ,
-                    wb_cti_i            , 
 
 		
 		/* Interface to SDRAMs */
                     sdram_clk           ,
                     sdram_resetn        ,
-                    sdr_cs_n            ,
-                    sdr_cke             ,
-                    sdr_ras_n           ,
-                    sdr_cas_n           ,
-                    sdr_we_n            ,
-                    sdr_dqm             ,
-                    sdr_ba              ,
-                    sdr_addr            , 
-                    pad_sdr_din         , 
-                    sdr_dout            , 
-                    sdr_den_n           ,
-		    sdram_pad_clk       ,
+
                     
+		/** Pad Interface       **/
+		     io_in              ,
+		     io_oeb             ,
+	             io_out             ,
+
 		/* Parameters */
                     sdr_init_done       ,
                     cfg_req_depth       ,	        //how many req. buffer should hold
@@ -134,7 +132,7 @@ input [1:0]             cfg_colbits        ; // 2'b00 - 8 Bit column address,
 //--------------------------------------
 // Wish Bone Interface
 // -------------------------------------      
-input                   wb_rst_i           ;
+input                   wb_rst_n           ;
 input                   wb_clk_i           ;
 
 input                   wb_stb_i           ;
@@ -145,23 +143,28 @@ input [APP_DW-1:0]      wb_dat_i           ;
 input [APP_DW/8-1:0]    wb_sel_i           ; // Byte enable
 output [APP_DW-1:0]     wb_dat_o           ;
 input                   wb_cyc_i           ;
-input  [2:0]            wb_cti_i           ;
 
+//--------------------------------------
+// Pad Interface
+// -------------------------------------      
+input [29:0]	        io_in              ;
+output [29:0]		io_oeb             ;
+output [29:0]		io_out             ;
 //------------------------------------------------
 // Interface to SDRAMs
 //------------------------------------------------
-output                  sdr_cke             ; // SDRAM CKE
-output 			sdr_cs_n            ; // SDRAM Chip Select
-output                  sdr_ras_n           ; // SDRAM ras
-output                  sdr_cas_n           ; // SDRAM cas
-output			sdr_we_n            ; // SDRAM write enable
-output [SDR_BW-1:0] 	sdr_dqm             ; // SDRAM Data Mask
-output [1:0] 		sdr_ba              ; // SDRAM Bank Enable
-output [12:0] 		sdr_addr            ; // SDRAM Address
-input                   sdram_pad_clk       ; // Sdram clock loop back from pad
-input  [SDR_DW-1:0]     pad_sdr_din         ; // SDRA Data Input
-output  [SDR_DW-1:0]    sdr_dout            ; // SDRAM Data Output
-output  [SDR_BW-1:0]    sdr_den_n           ; // SDRAM Data Output enable
+wire                  sdram_pad_clk       ; // Sdram clock loop back from pad
+wire                  sdr_cke             ; // SDRAM CKE
+wire 		      sdr_cs_n            ; // SDRAM Chip Select
+wire                  sdr_ras_n           ; // SDRAM ras
+wire                  sdr_cas_n           ; // SDRAM cas
+wire		      sdr_we_n            ; // SDRAM write enable
+wire [SDR_BW-1:0]     sdr_dqm             ; // SDRAM Data Mask
+wire [1:0] 	      sdr_ba              ; // SDRAM Bank Enable
+wire [12:0] 	      sdr_addr            ; // SDRAM Address
+wire [SDR_DW-1:0]     pad_sdr_din         ; // SDRA Data Input
+wire  [SDR_DW-1:0]    sdr_dout            ; // SDRAM Data Output
+wire  [SDR_BW-1:0]    sdr_den_n           ; // SDRAM Data Output enable
 
 //------------------------------------------------
 // Configuration Parameter
@@ -196,13 +199,33 @@ wire                  app_last_wr        ; // Indicate last Write of Burst Trans
 wire [APP_DW-1:0]     app_wr_data        ; // sdr write data
 wire  [APP_DW-1:0]    app_rd_data        ; // sdr read data
 
-/****************************************
-*  These logic has to be implemented using Pads
-*  **************************************/
-wire  [SDR_DW-1:0]    pad_sdr_din         ; // SDRA Data Input
-wire  [SDR_DW-1:0]    sdr_dout            ; // SDRAM Data Output
-wire  [SDR_BW-1:0]    sdr_den_n           ; // SDRAM Data Output enable
+//-----------------------------------------------------------------
+// To avoid the logic at digital core, pad control are brought inside the
+// block to support efabless/carvel soc enviornmental support
+// -----------------------------------------------------------------
+assign pad_sdr_din[7:0]      =      io_in[7:0]         ;
+assign io_out     [7:0]      =      sdr_dout[7:0]      ;
+assign io_out     [20:8]     =      sdr_addr[12:0]     ;
+assign io_out     [22:21]    =      sdr_ba[1:0]        ;
+assign io_out     [23]       =      sdr_dqm[0]         ;
+assign io_out     [24]       =      sdr_we_n           ;
+assign io_out     [25]       =      sdr_cas_n          ;
+assign io_out     [26]       =      sdr_ras_n          ;
+assign io_out     [27]       =      sdr_cs_n           ;
+assign io_out     [28]       =      sdr_cke            ;
+assign io_out     [29]       =      sdram_clk          ;
+assign sdram_pad_clk         =      io_in[29]          ;
 
+assign io_oeb     [7:0]      =      sdr_den_n         ;
+assign io_oeb     [20:8]     =      {(13) {1'b0}}      ;
+assign io_oeb     [22:21]    =      {(2) {1'b0}}       ;
+assign io_oeb     [23]       =      1'b0               ;
+assign io_oeb     [24]       =      1'b0               ;
+assign io_oeb     [25]       =      1'b0               ;
+assign io_oeb     [26]       =      1'b0               ;
+assign io_oeb     [27]       =      1'b0               ;
+assign io_oeb     [28]       =      1'b0               ;
+assign io_oeb     [29]       =      1'b0               ;
 
 //assign   sdr_dq = (&sdr_den_n == 1'b0) ? sdr_dout :  {SDR_DW{1'bz}}; 
 //assign   pad_sdr_din = sdr_dq;
@@ -214,7 +237,7 @@ wire  [SDR_BW-1:0]    sdr_den_n           ; // SDRAM Data Output enable
 /************** Ends Here **************************/
 wb2sdrc #(.dw(APP_DW),.tw(tw),.bl(bl),.APP_AW(APP_AW)) u_wb2sdrc (
       // WB bus
-          .wb_rst_i           (wb_rst_i           ) ,
+          .wb_rst_n           (wb_rst_n           ) ,
           .wb_clk_i           (wb_clk_i           ) ,
 
           .wb_stb_i           (wb_stb_i           ) ,
@@ -225,7 +248,6 @@ wb2sdrc #(.dw(APP_DW),.tw(tw),.bl(bl),.APP_AW(APP_AW)) u_wb2sdrc (
           .wb_sel_i           (wb_sel_i           ) ,
           .wb_dat_o           (wb_dat_o           ) ,
           .wb_cyc_i           (wb_cyc_i           ) ,
-          .wb_cti_i           (wb_cti_i           ) , 
 
 
       //SDRAM Controller Hand-Shake Signal 

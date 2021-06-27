@@ -6,7 +6,7 @@ set ::env(SDRAM_CLOCK_PERIOD) "20"
 set ::env(SDRAM_CLOCK_PORT)   "sdram_clk"
 
 set ::env(PAD_SDRAM_CLOCK_PERIOD) "20"
-set ::env(PAD_SDRAM_CLOCK_PORT)   "sdram_pad_clk"
+set ::env(PAD_SDRAM_CLOCK_PORT)   "io_in\[29\]"
 ######################################
 # WB Clock domain input output
 ######################################
@@ -17,7 +17,7 @@ puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
 puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 
 
-set_input_delay 2.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {wb_rst_i}
+set_input_delay 2.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {wb_rst_n}
 
 set_input_delay  3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_stb_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_addr_i*]
@@ -52,16 +52,8 @@ set sdram_output_delay_value [expr $::env(SDRAM_CLOCK_PERIOD) * 0.6]
 puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
 puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_cke*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_cs_n*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_ras_n*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_cas_n*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_we_n*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_dqm*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_ba*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_addr*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_dout*]
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port sdr_den_n*]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out*]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_oeb*]
 
 ################################################
 # PAD SDRAM Clock domain input output
@@ -70,7 +62,7 @@ set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOC
 ################################################
 
 create_clock [get_ports $::env(PAD_SDRAM_CLOCK_PORT)]  -name $::env(PAD_SDRAM_CLOCK_PORT)  -period $::env(SDRAM_CLOCK_PERIOD)
-set_input_delay  $sdram_input_delay_value   -clock [get_clocks $::env(PAD_SDRAM_CLOCK_PORT)] [get_port pad_sdr_din*]
+set_input_delay  $sdram_input_delay_value   -clock [get_clocks $::env(PAD_SDRAM_CLOCK_PORT)] [get_port io_in*]
 
 
 set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks $::env(WB_CLOCK_PORT)] -group [get_clocks $::env(SDRAM_CLOCK_PORT)]

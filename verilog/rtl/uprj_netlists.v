@@ -54,6 +54,9 @@
      `include "digital_core/src/glbl_cfg.sv"
      `include "digital_core/src/digital_core.sv"
 
+     `include "wb_host/src/wb_host.sv"
+     `include "lib/async_wb.sv"
+
      `include "lib/wb_stagging.sv"
      `include "wb_interconnect/src/wb_arb.sv"
      `include "wb_interconnect/src/wb_interconnect.sv"

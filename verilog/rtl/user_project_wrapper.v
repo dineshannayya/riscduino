@@ -103,7 +103,6 @@ digital_core u_core (
     .wbd_ext_dat_i(wbs_dat_i),
     .wbd_ext_ack_o(wbs_ack_o),
     .wbd_ext_dat_o(wbs_dat_o),
-    .wbd_ext_err_o(),
 
     // Logic Analyzer
 

@@ -132,7 +132,8 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("risc_boot.vcd");
-	   	$dumpvars(4, user_uart_tb);
+	   	$dumpvars(2, user_uart_tb);
+	   	$dumpvars(4, user_uart_tb.u_top.u_core);
 	   end
        `endif
 
@@ -156,6 +157,9 @@ begin
    repeat (10) @(posedge clock);
    $display("Monitor: Standalone User Uart Test Started");
    
+   // Remove Wb Reset
+   wb_user_core_write('h3080_0000,'h1);
+
    #1;
    //------------ SDRAM Config - 2
    wb_user_core_write('h3000_0014,'h100_019E);
@@ -168,7 +172,7 @@ begin
    repeat (2) @(posedge clock);
    #1;
    // Remove all the reset
-   wb_user_core_write('h3000_0000,'h7);
+   wb_user_core_write('h3080_0000,'hF);
 
    repeat (20000) @(posedge clock);  // wait for Processor Get Ready
    tb_uart.uart_init;
@@ -232,31 +236,28 @@ begin
 end
 
 
-digital_core u_core(
+wire USER_VDD1V8 = 1'b1;
+wire VSS = 1'b0;
+
+
+user_project_wrapper u_top(
 `ifdef USE_POWER_PINS
-    .vdda1(),	// User area 1 3.3V supply
-    .vdda2(),	// User area 2 3.3V supply
-    .vssa1(),	// User area 1 analog ground
-    .vssa2(),	// User area 2 analog ground
-    .vccd1(),	// User area 1 1.8V supply
-    .vccd2(),	// User area 2 1.8v supply
-    .vssd1(),	// User area 1 digital ground
-    .vssd2(),	// User area 2 digital ground
+    .vccd1(USER_VDD1V8),	// User area 1 1.8V supply
+    .vssd1(VSS),	// User area 1 digital ground
 `endif
     .wb_clk_i        (clock),  // System clock
     .user_clock2     (1'b1),  // Real-time clock
     .wb_rst_i        (wb_rst_i),  // Regular Reset signal
 
-    .wbd_ext_cyc_i   (wbd_ext_cyc_i),  // strobe/request
-    .wbd_ext_stb_i   (wbd_ext_stb_i),  // strobe/request
-    .wbd_ext_adr_i   (wbd_ext_adr_i),  // address
-    .wbd_ext_we_i    (wbd_ext_we_i),  // write
-    .wbd_ext_dat_i   (wbd_ext_dat_i),  // data output
-    .wbd_ext_sel_i   (wbd_ext_sel_i),  // byte enable
+    .wbs_cyc_i   (wbd_ext_cyc_i),  // strobe/request
+    .wbs_stb_i   (wbd_ext_stb_i),  // strobe/request
+    .wbs_adr_i   (wbd_ext_adr_i),  // address
+    .wbs_we_i    (wbd_ext_we_i),  // write
+    .wbs_dat_i   (wbd_ext_dat_i),  // data output
+    .wbs_sel_i   (wbd_ext_sel_i),  // byte enable
 
-    .wbd_ext_dat_o   (wbd_ext_dat_o),  // data input
-    .wbd_ext_ack_o   (wbd_ext_ack_o),  // acknowlegement
-    .wbd_ext_err_o   (wbd_ext_err_o),  // error
+    .wbs_dat_o   (wbd_ext_dat_o),  // data input
+    .wbs_ack_o   (wbd_ext_ack_o),  // acknowlegement
 
  
     // Logic Analyzer Signals
@@ -371,6 +372,7 @@ input [31:0] address;
 input [31:0] data;
 begin
   repeat (1) @(posedge clock);
+  #1;
   wbd_ext_adr_i =address;  // address
   wbd_ext_we_i  ='h1;  // write
   wbd_ext_dat_i =data;  // data output
@@ -379,6 +381,7 @@ begin
   wbd_ext_stb_i ='h1;  // strobe/request
   wait(wbd_ext_ack_o == 1);
   repeat (1) @(posedge clock);
+  #1;
   wbd_ext_cyc_i ='h0;  // strobe/request
   wbd_ext_stb_i ='h0;  // strobe/request
   wbd_ext_adr_i ='h0;  // address
@@ -396,6 +399,7 @@ output [31:0] data;
 reg    [31:0] data;
 begin
   repeat (1) @(posedge clock);
+  #1;
   wbd_ext_adr_i =address;  // address
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='0;  // data output
@@ -405,6 +409,7 @@ begin
   wait(wbd_ext_ack_o == 1);
   data  = wbd_ext_dat_o;  
   repeat (1) @(posedge clock);
+  #1;
   wbd_ext_cyc_i ='h0;  // strobe/request
   wbd_ext_stb_i ='h0;  // strobe/request
   wbd_ext_adr_i ='h0;  // address
@@ -419,30 +424,22 @@ endtask
 
 
 
-////-----------------------------------------------------------------------------
-//// RISC IMEM amd DMEM Monitoring TASK
-////-----------------------------------------------------------------------------
-//logic [`SCR1_DMEM_AWIDTH-1:0]           core2imem_addr_o_r;           // DMEM address
-//logic [`SCR1_DMEM_AWIDTH-1:0]           core2dmem_addr_o_r;           // DMEM address
-//logic                                   core2dmem_cmd_o_r;
-//
-//`define RISC_CORE  user_uart_tb.u_core.u_riscv_top.i_core_top
-//
-//always@(posedge `RISC_CORE.clk) begin
-//    if(`RISC_CORE.imem2core_req_ack_i && `RISC_CORE.core2imem_req_o)
-//          core2imem_addr_o_r <= `RISC_CORE.core2imem_addr_o;
-//
-//    if(`RISC_CORE.dmem2core_req_ack_i && `RISC_CORE.core2dmem_req_o) begin
-//          core2dmem_addr_o_r <= `RISC_CORE.core2dmem_addr_o;
-//          core2dmem_cmd_o_r  <= `RISC_CORE.core2dmem_cmd_o;
-//    end
-//
-//    if(`RISC_CORE.imem2core_resp_i !=0)
-//          $display("RISCV-DEBUG => IMEM ADDRESS: %x Read Data : %x Resonse: %x", core2imem_addr_o_r,`RISC_CORE.imem2core_rdata_i,`RISC_CORE.imem2core_resp_i);
-//    if((`RISC_CORE.dmem2core_resp_i !=0) && core2dmem_cmd_o_r)
-//          $display("RISCV-DEBUG => DMEM ADDRESS: %x Write Data: %x Resonse: %x", core2dmem_addr_o_r,`RISC_CORE.core2dmem_wdata_o,`RISC_CORE.dmem2core_resp_i);
-//    if((`RISC_CORE.dmem2core_resp_i !=0) && !core2dmem_cmd_o_r)
-//          $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", core2dmem_addr_o_r,`RISC_CORE.dmem2core_rdata_i,`RISC_CORE.dmem2core_resp_i);
-//end
+`ifdef GL
+//-----------------------------------------------------------------------------
+// RISC IMEM amd DMEM Monitoring TASK
+//-----------------------------------------------------------------------------
+
+`define RISC_CORE  user_uart_tb.u_top.u_core.u_riscv_top
+
+always@(posedge `RISC_CORE.wb_clk) begin
+    if(`RISC_CORE.wbd_imem_ack_i)
+          $display("RISCV-DEBUG => IMEM ADDRESS: %x Read Data : %x", `RISC_CORE.wbd_imem_adr_o,`RISC_CORE.wbd_imem_dat_i);
+    if(`RISC_CORE.wbd_dmem_ack_i && `RISC_CORE.wbd_dmem_we_o)
+          $display("RISCV-DEBUG => DMEM ADDRESS: %x Write Data: %x Resonse: %x", `RISC_CORE.wbd_dmem_adr_o,`RISC_CORE.wbd_dmem_dat_o);
+    if(`RISC_CORE.wbd_dmem_ack_i && !`RISC_CORE.wbd_dmem_we_o)
+          $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", `RISC_CORE.wbd_dmem_adr_o,`RISC_CORE.wbd_dmem_dat_i);
+end
+
+`endif
 endmodule
 `default_nettype wire

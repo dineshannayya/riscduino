@@ -22,6 +22,7 @@
 // User Project Slaves (0x3000_0000)
 #define reg_mprj_slave (*(volatile uint32_t*)0x30000000)
 
+#define reg_mprj_wbhost_reg0 (*(volatile uint32_t*)0x30800000)
 #define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30000000)
 #define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30000004)
 #define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30000008)
@@ -101,6 +102,9 @@ void main()
 
     // Flag start of the test
 	reg_mprj_datal = 0xAB600000;
+
+    // Remove Wishbone Reset
+    reg_mprj_wbhost_reg0 = 0x1;
 
     if (reg_mprj_globl_reg1 != 0xA55AA55A) bFail = 1;
     if (reg_mprj_globl_reg2 != 0xAABBCCDD) bFail = 1;

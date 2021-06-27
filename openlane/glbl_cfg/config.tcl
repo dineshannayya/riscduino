@@ -29,6 +29,10 @@ set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
 set ::env(LEC_ENABLE) 0
 
+set ::env(VDD_PIN) [list {vccd1}]
+set ::env(GND_PIN) [list {vssd1}]
+
+
 
 # Floorplanning
 # -------------
@@ -41,7 +45,7 @@ set ::env(DIE_AREA) "0 0 300 400"
 
 
 set ::env(FP_PDN_VPITCH) 50
-set ::env(PDN_CFG) $script_dir/pdn.tcl
+#set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 set ::env(FP_VERTICAL_HALO) 6
 set ::env(PL_TARGET_DENSITY) 0.52

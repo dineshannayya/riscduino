@@ -20,7 +20,8 @@
 #include "verilog/dv/caravel/stub.c"
 
 // User Project Slaves (0x3000_0000)
-#define reg_mprj_slave (*(volatile uint32_t*)0x30000000)
+
+#define reg_mprj_wbhost_reg0 (*(volatile uint32_t*)0x30800000)
 
 #define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30000000)
 #define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30000004)
@@ -167,6 +168,10 @@ void main()
      /* Apply configuration */
     reg_mprj_xfer = 1;
     while (reg_mprj_xfer == 1);
+
+    // Remove Wishbone Reset
+    reg_mprj_wbhost_reg0 = 0x1;
+
     // SDRAM Config-2
     reg_mprj_globl_reg5  = 0x100019E; 
 
@@ -174,8 +179,9 @@ void main()
     // SDRAM Config-1
     reg_mprj_globl_reg4  = 0x2F172242;
 
-    // Wake Up CPU Core
-    reg_mprj_globl_reg0  = 0x07; 
+    // Remove All Reset
+    reg_mprj_wbhost_reg0 = 0xF;
+
 
     // configure the user uart
     reg_mprj_uart_reg0  = 0x7;
