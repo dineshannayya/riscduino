@@ -69,10 +69,6 @@ module glbl_cfg (
        output  logic           cpu_clk,
        output  logic           rtc_clk,
 
-       // reset
-       output  logic           cpu_rst_n,
-       output  logic           spi_rst_n,
-       output  logic           sdram_rst_n,
 
        // Risc configuration
        output logic [31:0]     fuse_mhartid,
@@ -254,9 +250,6 @@ end
 //   reg-0
 //   -----------------------------------------------------------------
 
-assign cpu_rst_n               = reg_0[0];
-assign spi_rst_n               = reg_0[1];
-assign sdram_rst_n             = reg_0[2];
 
 // SDRAM Clock source & div selection
 wire       cfg_sdram_clk_src_sel   = reg_0[4];

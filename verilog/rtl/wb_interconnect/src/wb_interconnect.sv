@@ -22,6 +22,12 @@
 ////          path                                                ////
 ////    0.3 - 21th June 2021, Dinesh A                            ////
 ////          slave port 3 added for uart                         ////
+////    0.4 - 25th June 2021, Dinesh A                            ////
+////          External Memory Map changed and made same as        ////
+////          internal memory map                                 ////
+////    0.4 - 27th June 2021, Dinesh A                            ////
+////          unused tie off at digital core level brought inside ////
+////          to avoid core level power hook up                   ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -93,7 +99,7 @@ module wb_interconnect(
          // Slave 0 Interface
          input	logic [31:0]	s0_wbd_dat_i,
          input	logic 	        s0_wbd_ack_i,
-         input	logic 	        s0_wbd_err_i,
+         //input	logic 	s0_wbd_err_i, - unused
          output	logic [31:0]	s0_wbd_dat_o,
          output	logic [31:0]	s0_wbd_adr_o,
          output	logic [3:0]	s0_wbd_sel_o,
@@ -104,7 +110,7 @@ module wb_interconnect(
          // Slave 1 Interface
          input	logic [31:0]	s1_wbd_dat_i,
          input	logic 	        s1_wbd_ack_i,
-         input	logic 	        s1_wbd_err_i,
+         // input	logic 	s1_wbd_err_i, - unused
          output	logic [31:0]	s1_wbd_dat_o,
          output	logic [31:0]	s1_wbd_adr_o,
          output	logic [3:0]	s1_wbd_sel_o,
@@ -115,7 +121,7 @@ module wb_interconnect(
          // Slave 2 Interface
          input	logic [31:0]	s2_wbd_dat_i,
          input	logic 	        s2_wbd_ack_i,
-         input	logic 	        s2_wbd_err_i,
+         // input	logic 	s2_wbd_err_i, - unused
          output	logic [31:0]	s2_wbd_dat_o,
          output	logic [7:0]	s2_wbd_adr_o, // glbl reg need only 8 bits
          output	logic [3:0]	s2_wbd_sel_o,
@@ -127,7 +133,7 @@ module wb_interconnect(
 	 // Uart is 8bit interface 
          input	logic [7:0]	s3_wbd_dat_i,
          input	logic 	        s3_wbd_ack_i,
-         input	logic 	        s3_wbd_err_i,
+         // input	logic 	s3_wbd_err_i,
          output	logic [7:0]	s3_wbd_dat_o,
          output	logic [7:0]	s3_wbd_adr_o, 
          output	logic    	s3_wbd_sel_o,
@@ -213,15 +219,17 @@ wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
 
 //-------------------------------------------------------------------
 // EXTERNAL MEMORY MAP
-// 0x3000_0000 to 0x3000_00FF -  GLOBAL REGISTER
+// 0x0000_0000 to 0x0FFF_FFFF  - SPI FLASH MEMORY
+// 0x1000_0000 to 0x1000_00FF  - SPI REGISTER
+// 0x2000_0000 to 0x2FFF_FFFF  - SDRAM
+// 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
 // 0x3000_0000 to 0x3001_00FF  - UART Register
-// 0x4000_0000 to 0x4FFF_FFFF -  SPI FLASH MEMORY
-// 0x5000_0000 to 0x5000_00FF -  SPI REGISTER
-// 0x6000_0000 to 0x6FFF_FFFF -  SDRAM
+// 0x3080_0000 to 0x3080_00FF  - WB HOST (This decoding happens at wb_host block)
+// ---------------------------------------------------------------------------
 //
-wire [3:0] m2_wbd_tid_i       = (m2_wbd_adr_i[31:28] == 4'b0100 ) ? 4'b0000 :
-                                (m2_wbd_adr_i[31:28] == 4'b0101 ) ? 4'b0000 :
-                                (m2_wbd_adr_i[31:28] == 4'b0110 ) ? 4'b0001 :
+wire [3:0] m2_wbd_tid_i       = (m2_wbd_adr_i[31:28] == 4'b0000  ) ? 4'b0000 :
+                                (m2_wbd_adr_i[31:28] == 4'b0001  ) ? 4'b0000 :
+                                (m2_wbd_adr_i[31:28] == 4'b0010  ) ? 4'b0001 :
                                 (m2_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
                                 (m2_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 
@@ -298,19 +306,19 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
  
  assign s0_wb_rd.wbd_dat  = s0_wbd_dat_i ;
  assign s0_wb_rd.wbd_ack  = s0_wbd_ack_i ;
- assign s0_wb_rd.wbd_err  = s0_wbd_err_i ;
+ assign s0_wb_rd.wbd_err  = 1'b0; // s0_wbd_err_i ; - unused
  
  assign s1_wb_rd.wbd_dat  = s1_wbd_dat_i ;
  assign s1_wb_rd.wbd_ack  = s1_wbd_ack_i ;
- assign s1_wb_rd.wbd_err  = s1_wbd_err_i ;
+ assign s1_wb_rd.wbd_err  = 1'b0; // s1_wbd_err_i ; - unused
  
  assign s2_wb_rd.wbd_dat  = s2_wbd_dat_i ;
  assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
- assign s2_wb_rd.wbd_err  = s2_wbd_err_i ;
+ assign s2_wb_rd.wbd_err  = 1'b0; // s2_wbd_err_i ; - unused
 
  assign s3_wb_rd.wbd_dat  = {24'h0,s3_wbd_dat_i} ;
  assign s3_wb_rd.wbd_ack  = s3_wbd_ack_i ;
- assign s3_wb_rd.wbd_err  = s3_wbd_err_i ;
+ assign s3_wb_rd.wbd_err  = 1'b0; // s3_wbd_err_i ; - unused
 
 //
 // arbitor 

@@ -54,12 +54,12 @@ hex:  ${PATTERN:=.hex}
 vvp:  ${PATTERN:=.vvp}
 
 %.vvp: %_tb.v
-	riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common  user_uart.c -o user_uart.o
+	riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common  user_risc_boot.c -o user_risc_boot.o
 	riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common/  ../../rtl/syntacore/scr1/sim/tests/common/crt_tcm.S -o crt_tcm.o
-	riscv64-unknown-elf-gcc -o user_uart.elf -T ../../rtl/syntacore/scr1/sim/tests/common/link_tcm.ld user_uart.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32
-	riscv64-unknown-elf-objcopy -O verilog user_uart.elf user_uart.hex
-	riscv64-unknown-elf-objdump -D user_uart.elf > user_uart.dump
-	rm crt_tcm.o user_uart.o
+	riscv64-unknown-elf-gcc -o user_risc_boot.elf -T ../../rtl/syntacore/scr1/sim/tests/common/link_tcm.ld user_risc_boot.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32
+	riscv64-unknown-elf-objcopy -O verilog user_risc_boot.elf user_risc_boot.hex
+	riscv64-unknown-elf-objdump -D user_risc_boot.elf > user_risc_boot.dump
+	rm crt_tcm.o user_risc_boot.o
 ifeq ($(SIM),RTL)
 	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
 	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \

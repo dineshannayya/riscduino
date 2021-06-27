@@ -48,7 +48,7 @@ later version.
 
 module wb2sdrc (
       // WB bus
-                    wb_rst_i            ,
+                    wb_rst_n            ,
                     wb_clk_i            ,
 
                     wb_stb_i            ,
@@ -59,7 +59,6 @@ module wb2sdrc (
                     wb_sel_i            ,
                     wb_dat_o            ,
                     wb_cyc_i            ,
-                    wb_cti_i            , 
 
 
       //SDRAM Controller Hand-Shake Signal 
@@ -87,7 +86,7 @@ parameter      APP_AW          = 26;  // Application Address Width
 //--------------------------------------
 // Wish Bone Interface
 // -------------------------------------      
-input                   wb_rst_i           ;
+input                   wb_rst_n           ;
 input                   wb_clk_i           ;
 
 input                   wb_stb_i           ;
@@ -98,7 +97,6 @@ input [dw-1:0]          wb_dat_i           ;
 input [dw/8-1:0]        wb_sel_i           ; // Byte enable
 output [dw-1:0]         wb_dat_o           ;
 input                   wb_cyc_i           ;
-input  [2:0]            wb_cti_i           ;
 /***************************************************
 The Cycle Type Idenfier [CTI_IO()] Address Tag provides 
 additional information about the current cycle. 
@@ -199,8 +197,8 @@ wire [bl-1:0]  burst_length  = 1;  // 0 Mean 1 Transfer
 //     set - with Read Request 
 //     reset - with Read Request + Ack
 // ----------------------------------------------------------------------------
-always @(posedge wb_rst_i or posedge wb_clk_i) begin
-   if(wb_rst_i) begin
+always @(negedge wb_rst_n or posedge wb_clk_i) begin
+   if(!wb_rst_n) begin
        pending_read <= 1'b0;
    end else begin
       //pending_read <=  wb_stb_i & wb_cyc_i & !wb_we_i & !wb_ack_o;
@@ -217,7 +215,7 @@ end
     async_fifo #(.W(APP_AW+bl+1),.DP(4),.WR_FAST(1'b0), .RD_FAST(1'b0)) u_cmdfifo (
      // Write Path Sys CLock Domain
           .wr_clk             (wb_clk_i           ),
-          .wr_reset_n         (!wb_rst_i          ),
+          .wr_reset_n         (wb_rst_n           ),
           .wr_en              (cmdfifo_wr         ),
           .wr_data            ({burst_length, 
 	                        !wb_we_i, 
@@ -275,7 +273,7 @@ wire  wrdatafifo_rd  = sdr_wr_next;
     async_fifo #(.W(dw+(dw/8)), .DP(8), .WR_FAST(1'b0), .RD_FAST(1'b1)) u_wrdatafifo (
        // Write Path , System clock domain
           .wr_clk             (wb_clk_i           ),
-          .wr_reset_n         (!wb_rst_i          ),
+          .wr_reset_n         (wb_rst_n           ),
           .wr_en              (wrdatafifo_wr      ),
           .wr_data            ({~wb_sel_i, 
 	                         wb_dat_i}        ),
@@ -345,7 +343,7 @@ wire    rddatafifo_rd = wb_ack_o & !wb_we_i;
 
        // Read Path , SYS clock domain
           .rd_clk             (wb_clk_i           ),
-          .rd_reset_n         (!wb_rst_i          ),
+          .rd_reset_n         (wb_rst_n           ),
           .empty              (rddatafifo_empty   ),
           .aempty             (                   ),
           .rd_en              (rddatafifo_rd      ),

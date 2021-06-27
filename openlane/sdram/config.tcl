@@ -9,7 +9,7 @@ set ::env(DESIGN_NAME) sdrc_top
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "wb_clk_i sdram_clk sdram_pad_clk"
+set ::env(CLOCK_PORT) "wb_clk_i sdram_clk"
 
 
 # Sources
@@ -34,6 +34,10 @@ set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
 set ::env(LEC_ENABLE) 0
 
+set ::env(VDD_PIN) [list {vccd1}]
+set ::env(GND_PIN) [list {vssd1}]
+
+
 # Floorplanning
 # -------------
 
@@ -45,7 +49,7 @@ set ::env(DIE_AREA) [list 0.0 0.0 700.0 500.0]
 
 
 set ::env(FP_PDN_VPITCH) 50
-set ::env(PDN_CFG) $script_dir/pdn.tcl
+#set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 set ::env(FP_VERTICAL_HALO) 6
 set ::env(PL_TARGET_DENSITY) 0.52

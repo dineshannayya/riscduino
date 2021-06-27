@@ -16,6 +16,9 @@
 ////                                                              ////
 ////  Revision :                                                  ////
 ////     V.0  -  June 8, 2021                                     //// 
+////     V.1  - June 25, 2021                                     ////
+////            Pad logic is brought inside the block to avoid    ////
+////            logic at digital core level for caravel project   ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -62,23 +65,13 @@ module spim_top
     output logic                         wbd_ack_o, // acknowlegement
     output logic                         wbd_err_o,  // error
 
-    output logic                    [1:0] events_o,
+    output logic                   [1:0] events_o,
 
-    output logic                          spi_clk,
-    output logic                          spi_csn0,
-    output logic                          spi_csn1,
-    output logic                          spi_csn2,
-    output logic                          spi_csn3,
-    output logic                    [1:0] spi_mode,
-    output logic                          spi_sdo0,
-    output logic                          spi_sdo1,
-    output logic                          spi_sdo2,
-    output logic                          spi_sdo3,
-    input  logic                          spi_sdi0,
-    input  logic                          spi_sdi1,
-    input  logic                          spi_sdi2,
-    input  logic                          spi_sdi3,
-    output logic                          spi_en_tx
+    // PAD I/f
+    input  [5:0]                         io_in    ,
+    output  [5:0]                        io_out   ,
+    output  [5:0]                        io_oeb
+
 );
 
 
@@ -121,6 +114,45 @@ module spim_top
     logic         s_eot;
 
 
+//-------------------------------------------------------
+// SPI Interface moved inside to support carvel IO pad 
+// -------------------------------------------------------
+
+logic                          spi_clk;
+logic                          spi_csn0;
+logic                          spi_csn1;
+logic                          spi_csn2;
+logic                          spi_csn3;
+logic                    [1:0] spi_mode;
+logic                          spi_sdo0;
+logic                          spi_sdo1;
+logic                          spi_sdo2;
+logic                          spi_sdo3;
+logic                          spi_sdi0;
+logic                          spi_sdi1;
+logic                          spi_sdi2;
+logic                          spi_sdi3;
+logic                          spi_en_tx;
+
+
+assign  spi_sdi0  =  io_in[2];
+assign  spi_sdi1  =  io_in[3];
+assign  spi_sdi2  =  io_in[4];
+assign  spi_sdi3  =  io_in[5];
+
+assign  io_out[0] =  spi_clk;
+assign  io_out[1] =  spi_csn0;
+assign  io_out[2] =  spi_sdo0;
+assign  io_out[3] =  spi_sdo1;
+assign  io_out[4] =  spi_sdo2;
+assign  io_out[5] =  spi_sdo3;
+   
+assign  io_oeb[0] =  1'b0;         // spi_clk
+assign  io_oeb[1] =  1'b0;         // spi_csn
+assign  io_oeb[2] =  !spi_en_tx;   // spi_dio0
+assign  io_oeb[3] =  !spi_en_tx;   // spi_dio1
+assign  io_oeb[4] =  !spi_en_tx;   // spi_dio2
+assign  io_oeb[5] =  !spi_en_tx;   // spi_dio3
 
 
 
