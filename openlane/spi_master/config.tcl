@@ -42,25 +42,18 @@ set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 400 600"
 
 
+# If you're going to use multiple power domains, then keep this disabled.
+set ::env(RUN_CVC) 0
 
-set ::env(FP_PDN_VPITCH) 50
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
-set ::env(FP_VERTICAL_HALO) 6
-set ::env(PL_TARGET_DENSITY) 0.52
-set ::env(PL_TARGET_DENSITY_CELLS) 0.38
-set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 1
-set ::env(CELL_PAD) 4
 
-set ::env(GLB_RT_ADJUSTMENT) 0
-set ::env(GLB_RT_L2_ADJUSTMENT) 0.2
-set ::env(GLB_RT_L3_ADJUSTMENT) 0.25
-set ::env(GLB_RT_L4_ADJUSTMENT) 0.2
-set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
-set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
-set ::env(GLB_RT_TILES) 14
-set ::env(GLB_RT_MAXLAYER) 5
+set ::env(PL_ROUTABILITY_DRIVEN) 1
 
-set ::env(DIODE_INSERTION_STRATEGY) 4
+set ::env(FP_IO_VEXTEND) 4
+set ::env(FP_IO_HEXTEND) 4
 
+
+set ::env(GLB_RT_MAXLAYER) 4
+set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 

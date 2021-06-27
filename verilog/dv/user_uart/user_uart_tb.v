@@ -132,8 +132,10 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("risc_boot.vcd");
-	   	$dumpvars(2, user_uart_tb);
-	   	$dumpvars(4, user_uart_tb.u_top.u_core);
+	   	$dumpvars(4, user_uart_tb);
+
+		#1000;
+		$finish;
 	   end
        `endif
 
@@ -423,7 +425,7 @@ endtask
 
 
 
-
+/**
 `ifdef GL
 //-----------------------------------------------------------------------------
 // RISC IMEM amd DMEM Monitoring TASK
@@ -441,5 +443,6 @@ always@(posedge `RISC_CORE.wb_clk) begin
 end
 
 `endif
+**/
 endmodule
 `default_nettype wire
