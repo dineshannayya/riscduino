@@ -5,7 +5,6 @@ set script_dir [file dirname [file normalize [info script]]]
 # Name
 set ::env(DESIGN_NAME) scr1_top_wb
 
-set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
@@ -63,32 +62,25 @@ set ::env(GND_PIN) [list {vssd1}]
 # Floorplanning
 # -------------
 
-#set ::env(FP_DEF_TEMPLATE) $script_dir/floorplan.def
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) [list 0.0 0.0 1500.0 1200.0]
 
 
+# If you're going to use multiple power domains, then keep this disabled.
+set ::env(RUN_CVC) 0
 
-set ::env(FP_PDN_VPITCH) 50
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
-set ::env(FP_VERTICAL_HALO) 6
-set ::env(PL_TARGET_DENSITY) 0.52
-set ::env(PL_TARGET_DENSITY_CELLS) 0.38
-set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 1
-set ::env(CELL_PAD) 4
 
-set ::env(GLB_RT_ADJUSTMENT) 0
-set ::env(GLB_RT_L2_ADJUSTMENT) 0.2
-set ::env(GLB_RT_L3_ADJUSTMENT) 0.25
-set ::env(GLB_RT_L4_ADJUSTMENT) 0.2
-set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
-set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
-set ::env(GLB_RT_TILES) 14
+set ::env(PL_ROUTABILITY_DRIVEN) 1
+#set ::env(PL_BASIC_PLACEMENT) "1"
+
+set ::env(FP_IO_VEXTEND) 4
+set ::env(FP_IO_HEXTEND) 4
+
+
 set ::env(GLB_RT_MAXLAYER) 5
-
-set ::env(DIODE_INSERTION_STRATEGY) 4
-
+set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
