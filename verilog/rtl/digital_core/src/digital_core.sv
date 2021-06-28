@@ -59,6 +59,12 @@
 ////          u_risc_top - test_mode & test_rst_n                 ////
 ////          u_intercon - s*_wbd_err_i                           ////
 ////          unused wb_cti_i is removed from u_sdram_ctrl        ////
+////    0.7 - 28th June 2021, Dinesh A                            ////
+////          wb_interconnect master port are interchanged for    ////
+////          better physical placement.                          ////
+////          m0 - External HOST                                  ////
+////          m1 - RISC IMEM                                      ////
+////          m2 - RISC DMEM                                      ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -288,6 +294,7 @@ wb_host u_wb_host(
        .wbm_err_o        (                     ),  
 
     // Slave Port
+       .wbs_clk_out      (wbd_clk_int          ),  
        .wbs_clk_i        (wbd_clk_int          ),  
        .wbs_cyc_o        (wbd_int_cyc_i        ),  
        .wbs_stb_o        (wbd_int_stb_i        ),  
@@ -450,39 +457,39 @@ sdrc_top
 wb_interconnect  u_intercon (
          .clk_i         (wbd_clk_int           ), 
          .rst_n         (wbd_int_rst_n         ),
+
+         // Master 0 Interface
+         .m0_wbd_dat_i  (wbd_int_dat_i         ),
+         .m0_wbd_adr_i  (wbd_int_adr_i         ),
+         .m0_wbd_sel_i  (wbd_int_sel_i         ),
+         .m0_wbd_we_i   (wbd_int_we_i          ),
+         .m0_wbd_cyc_i  (wbd_int_cyc_i         ),
+         .m0_wbd_stb_i  (wbd_int_stb_i         ),
+         .m0_wbd_dat_o  (wbd_int_dat_o         ),
+         .m0_wbd_ack_o  (wbd_int_ack_o         ),
+         .m0_wbd_err_o  (wbd_int_err_o         ),
          
          // Master 0 Interface
-         .m0_wbd_dat_i  (wbd_riscv_imem_dat_i  ),
-         .m0_wbd_adr_i  (wbd_riscv_imem_adr_i  ),
-         .m0_wbd_sel_i  (wbd_riscv_imem_sel_i  ),
-         .m0_wbd_we_i   (wbd_riscv_imem_we_i   ),
-         .m0_wbd_cyc_i  (wbd_riscv_imem_stb_i  ),
-         .m0_wbd_stb_i  (wbd_riscv_imem_stb_i  ),
-         .m0_wbd_dat_o  (wbd_riscv_imem_dat_o  ),
-         .m0_wbd_ack_o  (wbd_riscv_imem_ack_o  ),
-         .m0_wbd_err_o  (wbd_riscv_imem_err_o  ),
+         .m1_wbd_dat_i  (wbd_riscv_imem_dat_i  ),
+         .m1_wbd_adr_i  (wbd_riscv_imem_adr_i  ),
+         .m1_wbd_sel_i  (wbd_riscv_imem_sel_i  ),
+         .m1_wbd_we_i   (wbd_riscv_imem_we_i   ),
+         .m1_wbd_cyc_i  (wbd_riscv_imem_stb_i  ),
+         .m1_wbd_stb_i  (wbd_riscv_imem_stb_i  ),
+         .m1_wbd_dat_o  (wbd_riscv_imem_dat_o  ),
+         .m1_wbd_ack_o  (wbd_riscv_imem_ack_o  ),
+         .m1_wbd_err_o  (wbd_riscv_imem_err_o  ),
          
          // Master 1 Interface
-         .m1_wbd_dat_i  (wbd_riscv_dmem_dat_i  ),
-         .m1_wbd_adr_i  (wbd_riscv_dmem_adr_i  ),
-         .m1_wbd_sel_i  (wbd_riscv_dmem_sel_i  ),
-         .m1_wbd_we_i   (wbd_riscv_dmem_we_i   ),
-         .m1_wbd_cyc_i  (wbd_riscv_dmem_stb_i  ),
-         .m1_wbd_stb_i  (wbd_riscv_dmem_stb_i  ),
-         .m1_wbd_dat_o  (wbd_riscv_dmem_dat_o  ),
-         .m1_wbd_ack_o  (wbd_riscv_dmem_ack_o  ),
-         .m1_wbd_err_o  (wbd_riscv_dmem_err_o  ),
-         
-         // Master 2 Interface
-         .m2_wbd_dat_i  (wbd_int_dat_i  ),
-         .m2_wbd_adr_i  (wbd_int_adr_i  ),
-         .m2_wbd_sel_i  (wbd_int_sel_i  ),
-         .m2_wbd_we_i   (wbd_int_we_i   ),
-         .m2_wbd_cyc_i  (wbd_int_cyc_i  ),
-         .m2_wbd_stb_i  (wbd_int_stb_i  ),
-         .m2_wbd_dat_o  (wbd_int_dat_o  ),
-         .m2_wbd_ack_o  (wbd_int_ack_o  ),
-         .m2_wbd_err_o  (wbd_int_err_o  ),
+         .m2_wbd_dat_i  (wbd_riscv_dmem_dat_i  ),
+         .m2_wbd_adr_i  (wbd_riscv_dmem_adr_i  ),
+         .m2_wbd_sel_i  (wbd_riscv_dmem_sel_i  ),
+         .m2_wbd_we_i   (wbd_riscv_dmem_we_i   ),
+         .m2_wbd_cyc_i  (wbd_riscv_dmem_stb_i  ),
+         .m2_wbd_stb_i  (wbd_riscv_dmem_stb_i  ),
+         .m2_wbd_dat_o  (wbd_riscv_dmem_dat_o  ),
+         .m2_wbd_ack_o  (wbd_riscv_dmem_ack_o  ),
+         .m2_wbd_err_o  (wbd_riscv_dmem_err_o  ),
          
          
          // Slave 0 Interface

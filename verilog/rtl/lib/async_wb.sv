@@ -18,6 +18,11 @@
 ////  Revision :                                                  ////
 ////    0.1 - 25th Feb 2021, Dinesh A                             ////
 ////          initial version                                     ////
+////    0.2 - 28th Feb 2021, Dinesh A                             ////
+////          reduced the response FIFO path depth to 2 as        ////
+////          return path used by only read logic and read is     ////
+////          blocking request and expect only one location will  ////
+////          be used                                             ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -165,7 +170,10 @@ async_fifo #(.W(71), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_cmd_if (
                    .rd_data       (s_cmd_rd_data     )
 	     );
 
-async_fifo #(.W(33), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_resp_if (
+
+// Response used only read path, read is blocking access, expect
+// only one location used in return path - reduced the depth to 2
+async_fifo #(.W(33), .DP(2), .WR_FAST(1), .RD_FAST(1)) u_resp_if (
 	           // Sync w.r.t WR clock
 	           .wr_clk        (wbs_clk_i          ),
                    .wr_reset_n    (wbs_rst_n          ),

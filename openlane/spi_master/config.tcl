@@ -6,6 +6,9 @@ set script_dir [file dirname [file normalize [info script]]]
 
 set ::env(DESIGN_NAME) spim_top
 
+set ::env(DESIGN_IS_CORE) "0"
+set ::env(FP_PDN_CORE_RING) "0"
+
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "mclk"

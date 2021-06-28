@@ -66,7 +66,8 @@ module wb_host (
        output  logic               wbm_err_o        ,  // error
 
     // Slave Port
-       output  logic               wbs_clk_i        ,  // System clock
+       output  logic               wbs_clk_out      ,  // System clock
+       input   logic               wbs_clk_i        ,  // System clock
        output  logic               wbs_cyc_o        ,  // strobe/request
        output  logic               wbs_stb_o        ,  // strobe/request
        output  logic [31:0]        wbs_adr_o        ,  // address
@@ -120,7 +121,7 @@ logic               wbm_stb_int;
 assign wbm_rst_n = !wbm_rst_i;
 assign wbs_rst_n = !wbm_rst_i;
 
-assign wbs_clk_i =  wbm_clk_i;
+assign wbs_clk_out =  wbm_clk_i;
 
 assign  wbm_dat_o   = (reg_sel) ? reg_rdata : wbm_dat_int;  // data input
 assign  wbm_ack_o   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegement
