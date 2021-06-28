@@ -5,6 +5,8 @@ set script_dir [file dirname [file normalize [info script]]]
 # Name
 set ::env(DESIGN_NAME) scr1_top_wb
 
+set ::env(DESIGN_IS_CORE) "0"
+set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
@@ -75,7 +77,6 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_ROUTABILITY_DRIVEN) 1
-#set ::env(PL_BASIC_PLACEMENT) "1"
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4

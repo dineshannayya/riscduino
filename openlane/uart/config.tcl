@@ -6,11 +6,14 @@ set script_dir [file dirname [file normalize [info script]]]
 set ::env(DESIGN_NAME) uart_core
 
 
+set ::env(DESIGN_IS_CORE) "0"
+set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "app_clk"
 
+set ::env(SYNTH_MAX_FANOUT) 4
 
 # Sources
 # -------
@@ -62,4 +65,6 @@ set ::env(FP_IO_HEXTEND) 4
 
 set ::env(GLB_RT_MAXLAYER) 4
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+
+set ::env(DIODE_INSERTION_STRATEGY) 4
 

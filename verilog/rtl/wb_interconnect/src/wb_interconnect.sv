@@ -28,6 +28,12 @@
 ////    0.4 - 27th June 2021, Dinesh A                            ////
 ////          unused tie off at digital core level brought inside ////
 ////          to avoid core level power hook up                   ////
+////    0.5 - 28th June 2021, Dinesh A                            ////
+////          interchange the Master port for better physical     ////
+////          placement                                           ////
+////          m0: external host                                   ////
+////          m1: risc imem                                       ////
+////          m2: risc dmem                                       ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -195,26 +201,6 @@ type_wb_rd_intf  m_bus_rd;  // Multiplexed Slave I/F
 
 type_wb_wr_intf  s_bus_wr;  // Multiplexed Master I/F
 type_wb_rd_intf  s_bus_rd;  // Multiplexed Slave I/F
-//------------------------------
-// RISC Data Memory Map
-// 0x0000_0000 to 0x0FFF_FFFF  - SPI FLASH MEMORY
-// 0x1000_0000 to 0x1000_00FF  - SPI REGISTER
-// 0x2000_0000 to 0x2FFF_FFFF  - SDRAM
-// 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
-// 0x3000_0000 to 0x3001_00FF  - UART Register
-//-----------------------------
-// 
-wire [3:0] m0_wbd_tid_i     = (m0_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
-                              (m0_wbd_adr_i[31:28] ==  4'b0001 ) ? 4'b0000 :
-                              (m0_wbd_adr_i[31:28] ==  4'b0010 ) ? 4'b0001 :
-                              (m0_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
-                              (m0_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
-
-wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
-                              (m1_wbd_adr_i[31:28] ==  4'b0001 ) ? 4'b0000 :
-                              (m1_wbd_adr_i[31:28] ==  4'b0010 ) ? 4'b0001 : 
-                              (m1_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
-                              (m1_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 
 
 //-------------------------------------------------------------------
@@ -227,12 +213,32 @@ wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
 // 0x3080_0000 to 0x3080_00FF  - WB HOST (This decoding happens at wb_host block)
 // ---------------------------------------------------------------------------
 //
-wire [3:0] m2_wbd_tid_i       = (m2_wbd_adr_i[31:28] == 4'b0000  ) ? 4'b0000 :
-                                (m2_wbd_adr_i[31:28] == 4'b0001  ) ? 4'b0000 :
-                                (m2_wbd_adr_i[31:28] == 4'b0010  ) ? 4'b0001 :
-                                (m2_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
-                                (m2_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
+wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[31:28] == 4'b0000  ) ? 4'b0000 :
+                                (m0_wbd_adr_i[31:28] == 4'b0001  ) ? 4'b0000 :
+                                (m0_wbd_adr_i[31:28] == 4'b0010  ) ? 4'b0001 :
+                                (m0_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
+                                (m0_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 
+//------------------------------
+// RISC Data Memory Map
+// 0x0000_0000 to 0x0FFF_FFFF  - SPI FLASH MEMORY
+// 0x1000_0000 to 0x1000_00FF  - SPI REGISTER
+// 0x2000_0000 to 0x2FFF_FFFF  - SDRAM
+// 0x3000_0000 to 0x3000_00FF  - GLOBAL REGISTER
+// 0x3000_0000 to 0x3001_00FF  - UART Register
+//-----------------------------
+// 
+wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
+                              (m1_wbd_adr_i[31:28] ==  4'b0001 ) ? 4'b0000 :
+                              (m1_wbd_adr_i[31:28] ==  4'b0010 ) ? 4'b0001 :
+                              (m1_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
+                              (m1_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
+
+wire [3:0] m2_wbd_tid_i     = (m2_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
+                              (m2_wbd_adr_i[31:28] ==  4'b0001 ) ? 4'b0000 :
+                              (m2_wbd_adr_i[31:28] ==  4'b0010 ) ? 4'b0001 : 
+                              (m2_wbd_adr_i[31:16] == 16'h3000 ) ? 4'b0010 : 
+                              (m2_wbd_adr_i[31:16] == 16'h3001 ) ? 4'b0011 : 4'b0000; 
 //----------------------------------------
 // Master Mapping
 // -------------------------------------
