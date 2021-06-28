@@ -1,20 +1,37 @@
+////////////////////////////////////////////////////////////////////////////
+// SPDX-FileCopyrightText:  2021 , Dinesh Annayya
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileContributor: Modified by Dinesh Annayya <dinesha@opencores.org>
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  Standalone User validation Test bench                       ////
 ////                                                              ////
 ////  This file is part of the YIFive cores project               ////
+////  https://github.com/dineshannayya/yifive_r0.git              ////
 ////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
 ////  Description                                                 ////
-//     This is a standalone test bench to validate the            ////
-//     Digital core.                                              ////
-//     1. User Risc core is booted using  compiled code of        ////
-//        user_risc_boot.c                                        ////
-//     2. User Risc core uses Serial Flash and SDRAM to boot      ////
-//     3. After successful boot, Risc core will  write signature  ////
-//        in to  user register from 0x3000_0018 to 0x3000_002C    ////
-//     4. Through the External Wishbone Interface we read back    ////
-//         and validate the user register to declared pass fail   ////
+////   This is a standalone test bench to validate the            ////
+////   Digital core.                                              ////
+////   1. User Risc core is booted using  compiled code of        ////
+////      user_risc_boot.c                                        ////
+////   2. User Risc core uses Serial Flash and SDRAM to boot      ////
+////   3. After successful boot, Risc core will  write signature  ////
+////      in to  user register from 0x3000_0018 to 0x3000_002C    ////
+////   4. Through the External Wishbone Interface we read back    ////
+////       and validate the user register to declared pass fail   ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
