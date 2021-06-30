@@ -16,10 +16,10 @@
 // Include caravel global defines for the number of the user project IO pads 
 `include "defines.v"
 `define USE_POWER_PINS
+`define UNIT_DELAY #1
 
 `ifdef GL
     // Assume default net type to be wire because GL netlists don't have the wire definitions
-    `default_nettype wire
     `include "gl/user_project_wrapper.v"
     `include "gl/user_proj_example.v"
 `else
@@ -91,5 +91,8 @@
      `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
      `include "syntacore/scr1/src/top/scr1_top_wb.sv"
      `include "lib/sync_fifo.sv"
-
+     // we are using netlist file for clk_skew_adjust as it has 
+     // standard cell + power pin
+     `include "gl/clk_skew_adjust.v"
 `endif
+

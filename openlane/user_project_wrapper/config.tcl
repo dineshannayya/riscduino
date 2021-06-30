@@ -60,6 +60,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $script_dir/../../verilog/gl/uart.v     \
 	$script_dir/../../verilog/gl/sdram.v \
 	$script_dir/../../verilog/gl/wb_host.v \
+	$script_dir/../../verilog/gl/clk_skew_adjust.v \
 	$script_dir/../../verilog/gl/syntacore.v \
 	"
 
@@ -70,6 +71,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/sdram.lef \
 	$lef_root/uart.lef \
 	$lef_root/wb_host.lef \
+	$lef_root/clk_skew_adjust.lef \
 	$lef_root/syntacore.lef \
 	"
 
@@ -80,6 +82,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/uart.gds \
 	$gds_root/sdram.gds \
 	$gds_root/wb_host.gds \
+	$gds_root/clk_skew_adjust.gds \
 	$gds_root/syntacore.gds \
 	"
 
@@ -87,7 +90,7 @@ set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/syntacore/scr1/src/includes $script_dir/../../verilog/rtl/sdram_ctrl/src/defs ]
 
-set ::env(GLB_RT_MAXLAYER) 6
+set ::env(GLB_RT_MAXLAYER) 5
 
 set ::env(FP_PDN_CHECK_NODES) 0
 
@@ -110,6 +113,9 @@ set ::env(DIODE_INSERTION_STRATEGY) 0
 set ::env(FILL_INSERTION) 0
 set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
+
+set ::env(MAGIC_EXT_USE_GDS) "1"
+
 
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "250"
 

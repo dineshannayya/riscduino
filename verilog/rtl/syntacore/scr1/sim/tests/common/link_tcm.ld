@@ -1,3 +1,4 @@
+/*
 //////////////////////////////////////////////////////////////////////////////
 // SPDX-FileCopyrightText: Syntacore LLC © 2016-2021
 // 
@@ -15,6 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileContributor: Syntacore LLC
 // //////////////////////////////////////////////////////////////////////////
+*/
 /*
 * @file       <link.ld>
 * @brief      bare metal tests' linker script

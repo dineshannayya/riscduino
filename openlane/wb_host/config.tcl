@@ -37,8 +37,9 @@ set ::env(SYNTH_MAX_FANOUT) 4
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/wb_host/src/wb_host.sv \
-     $script_dir/../../verilog/rtl/lib/async_fifo.sv \
-     $script_dir/../../verilog/rtl/lib/async_wb.sv \
+     $script_dir/../../verilog/rtl/lib/async_fifo.sv      \
+     $script_dir/../../verilog/rtl/lib/async_wb.sv        \
+     $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
      $script_dir/../../verilog/rtl/lib/registers.v"
 
 #set ::env(SDC_FILE) "$script_dir/base.sdc"

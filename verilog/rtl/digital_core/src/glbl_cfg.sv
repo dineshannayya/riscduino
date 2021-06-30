@@ -66,6 +66,7 @@
 module glbl_cfg (
 
         input logic             mclk,
+        input logic             user_clock1,
         input logic             user_clock2,
         input logic             reset_n,
         output logic [31:0]     device_idcode,
@@ -1067,7 +1068,7 @@ generic_register #(8,0  ) u_reg15_be3 (
 wire   sdram_clk_div;
 wire   sdram_ref_clk;
 
-assign sdram_ref_clk = (cfg_sdram_clk_src_sel) ? user_clock2 : mclk;
+assign sdram_ref_clk = (cfg_sdram_clk_src_sel) ? user_clock2 :user_clock1;
 
 
 
@@ -1090,7 +1091,7 @@ clk_ctl #(1) u_sdramclk (
 wire   cpu_clk_div;
 wire   cpu_ref_clk;
 
-assign cpu_ref_clk = (cfg_cpu_clk_src_sel) ? user_clock2 : mclk;
+assign cpu_ref_clk = (cfg_cpu_clk_src_sel) ? user_clock2 : user_clock1;
 assign cpu_clk     = (cfg_cpu_clk_div)     ? cpu_clk_div : cpu_ref_clk;
 
 
@@ -1109,7 +1110,7 @@ clk_ctl #(1) u_cpuclk (
 wire   rtc_clk_div;
 wire   rtc_ref_clk;
 
-assign rtc_ref_clk = (cfg_rtc_clk_src_sel) ? user_clock2 : mclk;
+assign rtc_ref_clk = (cfg_rtc_clk_src_sel) ? user_clock2 : user_clock1;
 assign rtc_clk     = (cfg_rtc_clk_div)     ? rtc_clk_div : rtc_ref_clk;
 
 

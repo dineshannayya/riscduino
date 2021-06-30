@@ -101,3 +101,5 @@ set ::env(FP_IO_HEXTEND) 4
 set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
+#set ::env(LVS_CONNECT_BY_LABEL) 1
+

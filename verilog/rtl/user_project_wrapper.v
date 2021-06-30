@@ -85,8 +85,14 @@ module user_project_wrapper #(
 
 digital_core u_core (
     `ifdef USE_POWER_PINS
-	.vccd1(vccd1),	// User area 1 1.8V power
-	.vssd1(vssd1),	// User area 1 digital ground
+        .vdda1(vdda1),	// User area 1 3.3V supply
+        .vdda2(vdda2),	// User area 2 3.3V supply
+        .vssa1(vssa1),	// User area 1 analog ground
+        .vssa2(vssa2),	// User area 2 analog ground
+        .vccd1(vccd1),	// User area 1 1.8V supply
+        .vccd2(vccd2),	// User area 2 1.8v supply
+        .vssd1(vssd1),	// User area 1 digital ground
+        .vssd2(vssd2),	// User area 2 digital ground
     `endif
 
     .wb_clk_i(wb_clk_i),
@@ -95,14 +101,14 @@ digital_core u_core (
 
     // MGMT SoC Wishbone Slave
 
-    .wbd_ext_cyc_i(wbs_cyc_i),
-    .wbd_ext_stb_i(wbs_stb_i),
-    .wbd_ext_we_i(wbs_we_i),
-    .wbd_ext_sel_i(wbs_sel_i),
-    .wbd_ext_adr_i(wbs_adr_i),
-    .wbd_ext_dat_i(wbs_dat_i),
-    .wbd_ext_ack_o(wbs_ack_o),
-    .wbd_ext_dat_o(wbs_dat_o),
+    .wbs_cyc_i(wbs_cyc_i),
+    .wbs_stb_i(wbs_stb_i),
+    .wbs_we_i(wbs_we_i),
+    .wbs_sel_i(wbs_sel_i),
+    .wbs_adr_i(wbs_adr_i),
+    .wbs_dat_i(wbs_dat_i),
+    .wbs_ack_o(wbs_ack_o),
+    .wbs_dat_o(wbs_dat_o),
 
     // Logic Analyzer
 

@@ -150,9 +150,6 @@ integer i,j;
 	   initial begin
 	   	$dumpfile("risc_boot.vcd");
 	   	$dumpvars(4, user_uart_tb);
-
-		#1000;
-		$finish;
 	   end
        `endif
 

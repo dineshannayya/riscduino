@@ -135,11 +135,12 @@ logic [7:0]         cfg_bank_sel;
 logic [31:0]        wbm_adr_int;
 logic               wbm_stb_int;
 
+logic [2:0]         cfg_wb_clk_ctr;
+
 
 assign wbm_rst_n = !wbm_rst_i;
 assign wbs_rst_n = !wbm_rst_i;
 
-assign wbs_clk_out =  wbm_clk_i;
 
 assign  wbm_dat_o   = (reg_sel) ? reg_rdata : wbm_dat_int;  // data input
 assign  wbm_ack_o   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegement
@@ -194,7 +195,7 @@ begin
   reg_out [31:0] = 8'd0;
 
   case (sw_addr [1:0])
-    2'b00 :   reg_out [31:0] = {24'h0,cfg_glb_ctrl [7:0]};     
+    2'b00 :   reg_out [31:0] = {21'h0,cfg_wb_clk_ctr[2:0],cfg_glb_ctrl [7:0]};     
     2'b01 :   reg_out [31:0] = {24'h0,cfg_bank_sel [7:0]};     
     2'b10 :   reg_out [31:0] = cfg_clk_ctrl1 [31:0];    
     2'b11 :   reg_out [31:0] = cfg_clk_ctrl2 [31:0];     
@@ -204,14 +205,15 @@ end
 
 
 
-generic_register #(8,0  ) u_glb_ctrl (
-	      .we            ({8{sw_wr_en_0}}   ),		 
-	      .data_in       (wbm_dat_i[7:0]    ),
+generic_register #(11,0  ) u_glb_ctrl (
+	      .we            ({11{sw_wr_en_0}}   ),		 
+	      .data_in       (wbm_dat_i[10:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
-	      .data_out      (cfg_glb_ctrl[7:0] )
+	      .data_out      ({cfg_wb_clk_ctr[2:0],
+		               cfg_glb_ctrl[7:0]} )
           );
 
 generic_register #(8,8'h30 ) u_bank_sel (
@@ -282,6 +284,28 @@ async_wb u_async_wb(
     );
 
 
+//----------------------------------
+// Generate Internal WishBone Clock
+//----------------------------------
+logic       wb_clk_div;
+logic       cfg_wb_clk_div;
+logic [1:0] cfg_wb_clk_ratio;
+
+assign    cfg_wb_clk_ratio =  cfg_wb_clk_ctr[1:0];
+assign    cfg_wb_clk_div   =  cfg_wb_clk_ctr[2];
+
+
+assign wbs_clk_out  = (cfg_wb_clk_div)  ? wb_clk_div : wbm_clk_i;
+
+
+clk_ctl #(1) u_wbclk (
+   // Outputs
+       .clk_o         (wb_clk_div      ),
+   // Inputs
+       .mclk          (wbm_clk_i       ),
+       .reset_n       (wbm_rst_n        ), 
+       .clk_div_ratio (cfg_wb_clk_ratio )
+   );
 
 
 endmodule
