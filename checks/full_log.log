@@ -3,8 +3,8 @@ FULL RUN LOG:
 Step 0 done without fatal errors.
  Executing Step 1 of 8: Project License Check
 {{LICENSE COMPLIANCE PASSED}} Apache-2.0 LICENSE file was found in project root
- SPDX COMPLIANCE Found 2 non-compliant files with the SPDX Standard. Check full log for more information
-SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/README.md', '/home/dinesha/workarea/opencore/git/yifive_r0/verilog/rtl/syntacore/scr1/README.md']
+ SPDX COMPLIANCE Found 503 non-compliant files with the SPDX Standard. Check full log for more information
+SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/a', '/home/dinesha/workarea/opencore/git/yifive_r0/README.md', '/home/dinesha/workarea/opencore/git/yifive_r0/test.v', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/default.cvcrc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/config.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/magic_spice.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/opt.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/trimmed.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/tracks_copy.info', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/synthesis/hierarchy.dot', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/synthesis/yosys.sdc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/20-fastroute_4.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/24-tritonRoute.param', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/17-fastroute.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/21-fastroute_5.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/24-tritonRoute.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/19-fastroute_3.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/18-fastroute_2.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/magic/sky130_fd_sc_hd__conb_1.ext']
  Executing Step 2 of 8: YAML File Check
  YAML file valid!
 Step 2 done without fatal errors.
@@ -16,3 +16,27 @@ b'Fetching manifest'
 b'Running sha1sum checks'
  Manifest Checks Passed. Caravel Version Matches.
  Makefile Checks Passed.
+ Documentation Checks Passed.
+ Executing Step 4 of 8: Fuzzy Consistency Checks
+instance caravel found
+instance user_project_wrapper found
+Design is complex and contains: 47 modules
+Design is complex and contains: 18 modules
+verilog Consistency Checks Passed.
+ Basic Hierarchy Checks Passed.
+{PROGRESS} Running Pins and Power Checks...
+Pins check passed
+Internal Power Checks Passed!
+Power Checks Passed
+ Fuzzy Consistency Checks Passed!
+Step 4 done without fatal errors.
+ Executing Step 5 of 8: XOR Consistency Checks
+ Running XOR Checks...
+Total XOR differences = 0
+ XOR Checks on User Project GDS Passed!
+Step 5 done without fatal errors.
+ Executing Step 6 of 8: DRC Violations Checks
+ Running Magic DRC Checks...
+ DRC Checks on User Project GDS Passed!
+Step 6 done without fatal errors.
+ All Checks PASSED !!!
