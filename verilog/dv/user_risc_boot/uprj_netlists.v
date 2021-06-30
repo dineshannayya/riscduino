@@ -16,14 +16,17 @@
 // Include caravel global defines for the number of the user project IO pads 
 `include "defines.v"
 `define USE_POWER_PINS
+`define UNIT_DELAY #1
 
 `ifdef GL
-      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
-      `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
-      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
-      `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
 
-      `include "digital_core/src/digital_core.sv"
+       `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
+       `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
+       `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
+       `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
+
+
+
       `include "glbl_cfg.v"
       `include "sdram.v"
       `include "spi_master.v"
@@ -66,6 +69,11 @@
      `include "lib/sync_fifo.sv"
      `include "lib/async_fifo.sv"  
 `else
+     `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
+     `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
+     `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
+     `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
+
      `include "spi_master/src/spim_top.sv"
      `include "spi_master/src/spim_regs.sv"
      `include "spi_master/src/spim_clkgen.sv"
@@ -136,4 +144,7 @@
      `include "lib/sync_fifo.sv"
 
      `include "user_project_wrapper.v"
+     // we are using netlist file for clk_skew_adjust as it has 
+     // standard cell + power pin
+     `include "gl/clk_skew_adjust.v"
 `endif

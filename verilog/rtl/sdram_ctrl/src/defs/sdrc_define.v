@@ -14,8 +14,8 @@
 // limitations under the License.
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
-//
-/*********************************************************************
+///////////////////////////////////////////////////////////////////////////
+
 `define SDR_REQ_ID_W       4
 
 `define SDR_RFSH_TIMER_W    12

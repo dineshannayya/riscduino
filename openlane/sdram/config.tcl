@@ -39,6 +39,7 @@ set ::env(VERILOG_FILES) "\
          $script_dir/../../verilog/rtl/sdram_ctrl/src/top/sdrc_top.v \
          $script_dir/../../verilog/rtl/sdram_ctrl/src/wb2sdrc/wb2sdrc.v \
          $script_dir/../../verilog/rtl/lib/async_fifo.sv  \
+         $script_dir/../../verilog/rtl/lib/wb_stagging.sv \
          $script_dir/../../verilog/rtl/sdram_ctrl/src/core/sdrc_core.v \
          $script_dir/../../verilog/rtl/sdram_ctrl/src/core/sdrc_bank_ctl.v \
          $script_dir/../../verilog/rtl/sdram_ctrl/src/core/sdrc_bank_fsm.v \

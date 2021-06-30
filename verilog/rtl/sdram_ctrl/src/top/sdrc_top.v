@@ -55,6 +55,8 @@
 		  at digital core level
              0.4 - 27th June 2021
 	          Unused port wb_cti_i removed
+             0.5 - 29th June 2021
+	          Wishbone Stagging FF added to break timing path
 
                                                              
  Copyright (C) 2000 Authors and OPENCORES.ORG                
@@ -218,6 +220,17 @@ wire                  app_last_wr        ; // Indicate last Write of Burst Trans
 wire [APP_DW-1:0]     app_wr_data        ; // sdr write data
 wire  [APP_DW-1:0]    app_rd_data        ; // sdr read data
 
+//--------------------------------------------------
+//  WishBone Stagging FF
+//--------------------------------------------------
+wire                   wb_stag_stb_i     ;
+wire                   wb_stag_ack_o     ;
+wire [APP_AW-1:0]      wb_stag_addr_i    ;
+wire                   wb_stag_we_i      ; // 1 - Write, 0 - Read
+wire [APP_DW-1:0]      wb_stag_dat_i     ;
+wire [APP_DW/8-1:0]    wb_stag_sel_i     ; // Byte enable
+wire  [APP_DW-1:0]     wb_stag_dat_o     ;
+wire                   wb_stag_cyc_i     ;
 //-----------------------------------------------------------------
 // To avoid the logic at digital core, pad control are brought inside the
 // block to support efabless/carvel soc enviornmental support
@@ -254,19 +267,52 @@ assign io_oeb     [29]       =      1'b0               ;
 //wire #(1.0) sdram_pad_clk = sdram_clk;
 
 /************** Ends Here **************************/
+
+// Adding Wishbone stagging FF to break timing path
+//
+wb_stagging u_wb_stage (
+         .clk_i                 (wb_clk_i         ), 
+         .rst_n                 (wb_rst_n         ),
+         // WishBone Input master I/P
+         .m_wbd_dat_i           (wb_dat_i         ),
+         .m_wbd_adr_i           (wb_addr_i        ),
+         .m_wbd_sel_i           (wb_sel_i         ),
+         .m_wbd_we_i            (wb_we_i          ),
+         .m_wbd_cyc_i           (wb_cyc_i         ),
+         .m_wbd_stb_i           (wb_stb_i         ),
+         .m_wbd_tid_i           ('h0              ),
+         .m_wbd_dat_o           (wb_dat_o         ),
+         .m_wbd_ack_o           (wb_ack_o         ),
+         .m_wbd_err_o           (                 ),
+
+         // Slave Interface
+         .s_wbd_dat_i          (wb_stag_dat_o     ),
+         .s_wbd_ack_i          (wb_stag_ack_o     ),
+         .s_wbd_err_i          (1'b0              ),
+         .s_wbd_dat_o          (wb_stag_dat_i     ),
+         .s_wbd_adr_o          (wb_stag_addr_i    ),
+         .s_wbd_sel_o          (wb_stag_sel_i     ),
+         .s_wbd_we_o           (wb_stag_we_i      ),
+         .s_wbd_cyc_o          (wb_stag_cyc_i     ),
+         .s_wbd_stb_o          (wb_stag_stb_i     ),
+         .s_wbd_tid_o          (                  )
+
+);
+
+
 wb2sdrc #(.dw(APP_DW),.tw(tw),.bl(bl),.APP_AW(APP_AW)) u_wb2sdrc (
       // WB bus
           .wb_rst_n           (wb_rst_n           ) ,
           .wb_clk_i           (wb_clk_i           ) ,
 
-          .wb_stb_i           (wb_stb_i           ) ,
-          .wb_ack_o           (wb_ack_o           ) ,
-          .wb_addr_i          (wb_addr_i          ) ,
-          .wb_we_i            (wb_we_i            ) ,
-          .wb_dat_i           (wb_dat_i           ) ,
-          .wb_sel_i           (wb_sel_i           ) ,
-          .wb_dat_o           (wb_dat_o           ) ,
-          .wb_cyc_i           (wb_cyc_i           ) ,
+          .wb_stb_i           (wb_stag_stb_i      ) ,
+          .wb_ack_o           (wb_stag_ack_o      ) ,
+          .wb_addr_i          (wb_stag_addr_i     ) ,
+          .wb_we_i            (wb_stag_we_i       ) ,
+          .wb_dat_i           (wb_stag_dat_i      ) ,
+          .wb_sel_i           (wb_stag_sel_i      ) ,
+          .wb_dat_o           (wb_stag_dat_o      ) ,
+          .wb_cyc_i           (wb_stag_cyc_i      ) ,
 
 
       //SDRAM Controller Hand-Shake Signal 

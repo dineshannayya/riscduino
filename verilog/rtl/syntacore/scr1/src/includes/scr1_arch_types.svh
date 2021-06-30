@@ -87,3 +87,4 @@ typedef enum logic [1:0] {
 } type_scr1_op_width_e;
 
 `endif //SCR1_ARCH_TYPES_SVH
+

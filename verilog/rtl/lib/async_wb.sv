@@ -15,7 +15,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
 //
-/*********************************************************************
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 ////  Async Wishbone Interface                                    ////
