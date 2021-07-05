@@ -77,7 +77,7 @@
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 
-module user_risc_boot_tb;
+module user_spi_tb;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -102,7 +102,7 @@ module user_risc_boot_tb;
 	wire gpio;
 	wire [37:0] mprj_io;
 	wire [7:0] mprj_io_0;
-	reg         test_fail;
+	reg        test_fail;
 	reg [31:0] read_data;
 
 
@@ -125,8 +125,8 @@ module user_risc_boot_tb;
 
 	`ifdef WFDUMP
 	   initial begin
-	   	$dumpfile("risc_boot.vcd");
-	   	$dumpvars(2, user_risc_boot_tb);
+	   	$dumpfile("user_spi.vcd");
+	   	$dumpvars(5, user_spi_tb);
 	   end
        `endif
 
@@ -136,77 +136,211 @@ module user_risc_boot_tb;
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
-		   // Remove Wb Reset
-		   wb_user_core_write('h3080_0000,'h1);
-
-		#1;
-		//------------ SDRAM Config - 2
-                wb_user_core_write('h3000_0014,'h100_019E);
+		// Remove Wb Reset
+		wb_user_core_write('h3080_0000,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
-		//------------ SDRAM Config - 1
-                wb_user_core_write('h3000_0010,'h2F17_2242);
+		// Remove WB and SPI Reset, Keep SDARM and CORE under Reset
+                wb_user_core_write('h3080_0000,'h5);
 
-	        repeat (2) @(posedge clock);
-		#1;
-		// Remove all the reset
-                wb_user_core_write('h3080_0000,'hF);
+                wb_user_core_write('h3080_0004,'h0); // Change the Bank Sel 0
 
 
-		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (30) begin
-			repeat (1000) @(posedge clock);
+		test_fail = 0;
+	        repeat (200) @(posedge clock);
+		$display("#############################################");
+		$display("  Testing Direct SPI Memory Read             ");
+		$display("#############################################");
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("  Testing Single Word Indirect SPI Memory Read");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h4,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
+		wb_user_core_write(32'h10000014,32'h00000204);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
+		wb_user_core_write(32'h10000014,32'h00000208);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
+		wb_user_core_write(32'h10000014,32'h0000020C);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
+		wb_user_core_write(32'h10000014,32'h00000210);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
+		wb_user_core_write(32'h10000014,32'h00000214);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
+		wb_user_core_write(32'h10000014,32'h00000218);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
+		wb_user_core_write(32'h10000014,32'h0000021C);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
+		wb_user_core_write(32'h10000014,32'h00000400);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h11223737);
+		wb_user_core_write(32'h10000014,32'h00000404);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h300007b7);
+		wb_user_core_write(32'h10000014,32'h00000408);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h34470293);
+		wb_user_core_write(32'h10000014,32'h0000040C);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h22334337);
+		wb_user_core_write(32'h10000014,32'h00000410);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0057ac23);
+		wb_user_core_write(32'h10000014,32'h00000414);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h45530393);
+		wb_user_core_write(32'h10000014,32'h00000418);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h33445537);
+		wb_user_core_write(32'h10000014,32'h0000041C);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0077ae23);
+		repeat (100) @(posedge clock);
+		$display("#############################################");
+		$display("  Testing Two Word Indirect SPI Memory Read");
+		$display("#############################################");
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h8,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
+		wb_user_core_write(32'h10000014,32'h00000208);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
+		wb_user_core_write(32'h10000014,32'h00000210);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
+		wb_user_core_write(32'h10000014,32'h00000218);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
+		wb_user_core_write(32'h10000014,32'h00000400);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h11223737);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h300007b7);
+		wb_user_core_write(32'h10000014,32'h00000408);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h34470293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h22334337);
+		wb_user_core_write(32'h10000014,32'h00000410);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h45530393);
+		wb_user_core_write(32'h10000014,32'h00000418);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h33445537);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0077ae23);
+		repeat (100) @(posedge clock);
+		$display("#############################################");
+		$display("  Testing Three Word Indirect SPI Memory Read");
+		$display("#############################################");
+		wb_user_core_write(32'h10000010,{8'hC,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
+		wb_user_core_write(32'h10000014,32'h0000020C);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
+		wb_user_core_write(32'h10000014,32'h00000400);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h11223737);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h34470293);
+		wb_user_core_write(32'h10000014,32'h0000040C);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h45530393);
+		repeat (100) @(posedge clock);
+		$display("#############################################");
+		$display("  Testing Four Word Indirect SPI Memory Read");
+		$display("#############################################");
+		wb_user_core_write(32'h10000010,{8'h10,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
+		wb_user_core_write(32'h10000014,32'h00000210);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
+		wb_user_core_write(32'h10000014,32'h00000400);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h11223737);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h34470293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h22334337);
+		wb_user_core_write(32'h10000014,32'h00000410);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h45530393);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h33445537);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0077ae23);
+		repeat (100) @(posedge clock);
+		$display("#############################################");
+		$display("  Testing Five Word Indirect SPI Memory Read");
+		$display("#############################################");
+		wb_user_core_write(32'h10000010,{8'h14,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
+		wb_user_core_write(32'h10000014,32'h00000400);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h11223737);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h34470293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0057ac23);
+		$display("#############################################");
+		$display("  Testing Eight Word Indirect SPI Memory Read");
+		$display("#############################################");
+		wb_user_core_write(32'h10000010,{8'h20,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
+		wb_user_core_write(32'h10000014,32'h00000400);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h11223737);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h34470293);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h45530393);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h33445537);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h0077ae23);
+		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
-		end
 
-
-		$display("Monitor: Reading Back the expected value");
-		// User RISC core expect to write these value in global
-		// register, read back and decide on pass fail
-		// 0x30000018  = 0x11223344; 
-                // 0x3000001C  = 0x22334455; 
-                // 0x30000020  = 0x33445566; 
-                // 0x30000024  = 0x44556677; 
-                // 0x30000028 = 0x55667788; 
-                // 0x3000002C = 0x66778899; 
-
-                test_fail = 0;
-		wb_user_core_read(32'h30000018,read_data);
-		if(read_data != 32'h11223344) test_fail = 1;
-
-		wb_user_core_read(32'h3000001C,read_data);
-		if(read_data != 32'h22334455) test_fail = 1;
-
-		wb_user_core_read(32'h30000020,read_data);
-	        if(read_data != 32'h33445566) test_fail = 1;
-
-		wb_user_core_read(32'h30000024,read_data);
-                if(read_data!= 32'h44556677) test_fail = 1;
-
-		wb_user_core_read(32'h30000028,read_data);
-                if(read_data!= 32'h55667788) test_fail = 1;
-
-		wb_user_core_read(32'h3000002C,read_data) ;
-	        if(read_data != 32'h66778899) test_fail = 1;
-
-	   
-	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: Standalone User Risc Boot (GL) Passed");
+	    	       $display("Monitor: SPI Master Mode (GL) Passed");
 		   `else
-		       $display("Monitor: Standalone User Risc Boot (RTL) Passed");
+		       $display("Monitor: SPI Master Mode (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: Standalone User Risc Boot (GL) Failed");
+	    	        $display("Monitor: SPI Master Mode (GL) Failed");
 		    `else
-		        $display("Monitor: Standalone User Risc Boot (RTL) Failed");
+		        $display("Monitor: SPI Master Mode (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");
-	    $finish;
+	        $finish;
 	end
 
 	initial begin
@@ -338,7 +472,6 @@ mt48lc8m8a2 #(.data_bits(8)) u_sdram8 (
           .Dqm                (sdr_dqm            )
      );
 
-
 task wb_user_core_write;
 input [31:0] address;
 input [31:0] data;
@@ -360,7 +493,7 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
+  $display("STATUS: WB USER ACCESS WRITE Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
@@ -388,10 +521,45 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
+
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     user_spi_tb.test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
+  repeat (2) @(posedge clock);
+end
+endtask
+
 
 `ifdef GL
 

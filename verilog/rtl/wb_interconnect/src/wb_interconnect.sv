@@ -308,7 +308,7 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
  assign  s0_wbd_stb_o =  s0_wb_wr.wbd_stb ;
                       
  assign  s1_wbd_dat_o =  s1_wb_wr.wbd_dat ;
- assign  s1_wbd_adr_o =  s1_wb_wr.wbd_adr ;
+ assign  s1_wbd_adr_o =  {4'b0,s1_wb_wr.wbd_adr[27:0]} ;
  assign  s1_wbd_sel_o =  s1_wb_wr.wbd_sel ;
  assign  s1_wbd_we_o  =  s1_wb_wr.wbd_we  ;
  assign  s1_wbd_cyc_o =  s1_wb_wr.wbd_cyc ;

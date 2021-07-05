@@ -16,7 +16,7 @@
 // Include caravel global defines for the number of the user project IO pads 
 `include "defines.v"
 `define USE_POWER_PINS
-`define UNIT_DELAY #1
+`define UNIT_DELAY #0.1
 
 `ifdef GL
 
@@ -24,57 +24,29 @@
        `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
        `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
        `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
+       `include "libs.ref//sky130_fd_sc_hd/verilog/sky130_ef_sc_hd__fakediode_2.v"
 
+        `include "glbl_cfg.v"
+        `include "sdram.v"
+        `include "spi_master.v"
+        `include "uart.v"
+        `include "wb_interconnect.v"
+        `include "user_project_wrapper.v"
+        `include "syntacore.v"
+        `include "wb_host.v"
+	`include "clk_skew_adjust.v"
 
-
-      `include "glbl_cfg.v"
-      `include "sdram.v"
-      `include "spi_master.v"
-      `include "uart.v"
-      `include "wb_interconnect.v"
-
-     `include "wb_host/src/wb_host.sv"
-     `include "lib/async_wb.sv"
-     `include "lib/registers.v"
-
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_hdu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_tdu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_ipic.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_csr.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_exu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_ialu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_idu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_ifu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_lsu.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_mprf.sv"
-     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_top.sv"
-     `include "syntacore/scr1/src/core/primitives/scr1_reset_cells.sv"
-     `include "syntacore/scr1/src/core/primitives/scr1_cg.sv"
-     `include "syntacore/scr1/src/core/scr1_clk_ctrl.sv"
-     `include "syntacore/scr1/src/core/scr1_tapc_shift_reg.sv"
-     `include "syntacore/scr1/src/core/scr1_tapc.sv"
-     `include "syntacore/scr1/src/core/scr1_tapc_synchronizer.sv"
-     `include "syntacore/scr1/src/core/scr1_core_top.sv"
-     `include "syntacore/scr1/src/core/scr1_dm.sv"
-     `include "syntacore/scr1/src/core/scr1_dmi.sv"
-     `include "syntacore/scr1/src/core/scr1_scu.sv"
-      
-     `include "syntacore/scr1/src/top/scr1_dmem_router.sv"
-     `include "syntacore/scr1/src/top/scr1_dp_memory.sv"
-     `include "syntacore/scr1/src/top/scr1_tcm.sv"
-     `include "syntacore/scr1/src/top/scr1_timer.sv"
-     `include "syntacore/scr1/src/top/scr1_dmem_wb.sv"
-     `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
-     `include "syntacore/scr1/src/top/scr1_top_wb.sv"
-     `include "lib/sync_fifo.sv"
-     `include "lib/async_fifo.sv"  
 `else
+
      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
      `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
      `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
 
+
      `include "spi_master/src/spim_top.sv"
+     `include "spi_master/src/spim_if.sv"
+     `include "spi_master/src/spim_fifo.sv"
      `include "spi_master/src/spim_regs.sv"
      `include "spi_master/src/spim_clkgen.sv"
      `include "spi_master/src/spim_ctrl.sv"
@@ -102,7 +74,6 @@
      `include "lib/registers.v"
      `include "lib/clk_ctl.v"
      `include "digital_core/src/glbl_cfg.sv"
-     `include "digital_core/src/digital_core.sv"
 
      `include "wb_host/src/wb_host.sv"
      `include "lib/async_wb.sv"

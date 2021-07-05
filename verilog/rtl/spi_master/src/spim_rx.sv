@@ -69,6 +69,7 @@ module spim_rx #(
 (
     input  logic        clk,
     input  logic        rstn,
+    input  logic        flush,
     input  logic        en,
     input  logic        rx_edge,
     output logic        rx_done,
@@ -91,20 +92,19 @@ module spim_rx #(
   logic [15:0] counter_trgt;
   logic [15:0] counter_next;
   logic        reg_done;
+  logic        data_valid_i;
   enum logic [1:0] { IDLE, RECEIVE, WAIT_FIFO, WAIT_FIFO_DONE } rx_CS, rx_NS;
 
 
   assign reg_done  = (!en_quad_in && (counter[4:0] == 5'b11111)) || (en_quad_in && (counter[2:0] == 3'b111));
 
-  // RISV is little endian, so data is converted to little endian format
-  assign data = (ENDIEAN) ? data_int_next : {data_int_next[7:0],data_int_next[15:8],data_int_next[23:16],data_int_next[31:24]};
 
 
   always_comb
   begin
     rx_NS         = rx_CS;
     data_int_next = data_int;
-    data_valid    = 1'b0;
+    data_valid_i    = 1'b0;
     counter_next  = counter;
 
     case (rx_CS)
@@ -127,14 +127,14 @@ module spim_rx #(
 
           if (rx_done) begin
             counter_next = 0;
-            data_valid   = 1'b1;
+            data_valid_i   = 1'b1;
 
             if (data_ready)
               rx_NS = IDLE;
             else
               rx_NS = WAIT_FIFO_DONE;
           end else if (reg_done) begin
-            data_valid = 1'b1;
+            data_valid_i = 1'b1;
 
             if (~data_ready) begin
               // no space in the FIFO, wait for free space
@@ -145,13 +145,13 @@ module spim_rx #(
       end
 
       WAIT_FIFO_DONE: begin
-        data_valid = 1'b1;
+        data_valid_i = 1'b1;
         if (data_ready)
           rx_NS = IDLE;
       end
 
       WAIT_FIFO: begin
-        data_valid = 1'b1;
+        data_valid_i = 1'b1;
         if (data_ready)
           rx_NS = RECEIVE;
       end
@@ -168,20 +168,31 @@ module spim_rx #(
       data_int     <= '0;
       rx_done      <= '0;
       clk_en_o     <= '0;
+      data         <= 'b0;
+      data_valid   <= 1'b0;
       rx_CS        <= IDLE;
-    end
-    else
-    begin
-      if (rx_edge) begin
-         counter      <= counter_next;
-         data_int     <= data_int_next;
-         rx_CS        <= rx_NS;
-         rx_done      <= (counter_next == (counter_trgt-1)) && (rx_NS == RECEIVE);
-         clk_en_o     <= (rx_NS == RECEIVE);
-      end
+    end else if(flush) begin
+        counter      <= 0;
+        counter_trgt <= 'h8;
+        data_int     <= '0;
+        rx_done      <= '0;
+        clk_en_o     <= '0;
+        data         <= 'b0;
+        data_valid   <= 1'b0;
+        rx_CS        <= IDLE;
+    end else begin
+       data_valid <= data_valid_i;
+       data <= (ENDIEAN) ? data_int_next : {data_int_next[7:0],data_int_next[15:8],data_int_next[23:16],data_int_next[31:24]};
+       if (rx_edge) begin
+          counter      <= counter_next;
+          data_int     <= data_int_next;
+          rx_CS        <= rx_NS;
+          rx_done      <= (counter_next == (counter_trgt-1)) && (rx_NS == RECEIVE);
+          clk_en_o     <= (rx_NS == RECEIVE);
+       end
        if (en && counter_in_upd) begin
-          counter_trgt <= (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
-	end
+           counter_trgt <= (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
+       end
     end
   end
 
