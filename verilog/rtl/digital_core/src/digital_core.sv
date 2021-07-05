@@ -450,7 +450,7 @@ spim_top
     .wbd_ack_o              (wbd_spim_ack_i            ),
     .wbd_err_o              (wbd_spim_err_i            ),
 
-    .events_o               (                          ), // TODO - Need to connect to intr ?
+    .spi_debug              (spi_debug                 ),
 
     // Pad Interface
     .io_in                  (io_in[35:30]              ),

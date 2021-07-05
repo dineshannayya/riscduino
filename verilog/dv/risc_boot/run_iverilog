@@ -18,7 +18,7 @@
 #add -DWFDUMP to enable waveform dump
 iverilog -DWFDUMP -g2005-sv -DFUNCTIONAL -DSIM -I $PDK_PATH \
 -I $CARAVEL_ROOT/verilog/dv/caravel -I $CARAVEL_ROOT/verilog/rtl \
--I ../model  -I ../agents  -I ../../../verilog/rtl \
+-I ../model  -I ../agents  -I ../../../verilog/rtl -I ../../../verilog \
 -I ../../../verilog/rtl/syntacore/scr1/src/includes    -I ../../../verilog/rtl/sdram_ctrl/src/defs \
 risc_boot_tb.v -o risc_boot.vvp 
 

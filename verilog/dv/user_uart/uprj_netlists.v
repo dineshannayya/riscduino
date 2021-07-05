@@ -16,7 +16,7 @@
 // Include caravel global defines for the number of the user project IO pads 
 `include "defines.v"
 `define USE_POWER_PINS
-`define UNIT_DELAY #1
+`define UNIT_DELAY #0.1
 
 `ifdef GL
 
@@ -24,18 +24,17 @@
        `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
        `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
        `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
+       `include "libs.ref//sky130_fd_sc_hd/verilog/sky130_ef_sc_hd__fakediode_2.v"
 
-
-
-      `include "glbl_cfg.v"
-      `include "sdram.v"
-      `include "spi_master.v"
-      `include "uart.v"
-      `include "wb_interconnect.v"
-      `include "user_project_wrapper.v"
-
-     `include "syntacore.v"
-     `include "wb_host.v"
+        `include "glbl_cfg.v"
+        `include "sdram.v"
+        `include "spi_master.v"
+        `include "uart.v"
+        `include "wb_interconnect.v"
+        `include "user_project_wrapper.v"
+        `include "syntacore.v"
+        `include "wb_host.v"
+	`include "clk_skew_adjust.v"
 
 `else
 
@@ -46,6 +45,8 @@
 
 
      `include "spi_master/src/spim_top.sv"
+     `include "spi_master/src/spim_if.sv"
+     `include "spi_master/src/spim_fifo.sv"
      `include "spi_master/src/spim_regs.sv"
      `include "spi_master/src/spim_clkgen.sv"
      `include "spi_master/src/spim_ctrl.sv"
@@ -73,7 +74,6 @@
      `include "lib/registers.v"
      `include "lib/clk_ctl.v"
      `include "digital_core/src/glbl_cfg.sv"
-     `include "digital_core/src/digital_core.sv"
 
      `include "wb_host/src/wb_host.sv"
      `include "lib/async_wb.sv"

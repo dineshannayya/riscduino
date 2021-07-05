@@ -34,7 +34,6 @@ set ::env(FP_PDN_CORE_RING) 1
 ## Source Verilog Files
 set ::env(VERILOG_FILES) "\
 	$script_dir/../../caravel/verilog/rtl/defines.v \
-	$script_dir/../../verilog/rtl/digital_core/src/digital_core.sv \
 	$script_dir/../../verilog/rtl/user_project_wrapper.v"
 
 ## Clock configurations
@@ -114,7 +113,7 @@ set ::env(FILL_INSERTION) 0
 set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
 
-set ::env(MAGIC_EXT_USE_GDS) "1"
+#set ::env(MAGIC_EXT_USE_GDS) "1"
 
 
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "250"

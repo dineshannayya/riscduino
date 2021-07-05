@@ -25,9 +25,23 @@
 ////                                                              ////
 ////  Description                                                 ////
 ////     SPI Master Top module                                    ////
+////     There are two seperate Data path managed here            ////
+////     with seperate command and response memory                ////
+////     Master-0 : This is targetted for CORE IMEM request       ////
+////                and expect only Read access                   ////
+////     Master-1: This is targetted to CORE DMEM or              ////
+////               Indirect Memory access, Both Write and Read    ////
+////               accesss are supported.                         ////
+////               Upto 255 Byte Read/Write Burst supported       ////
+////    Limitation:                                               ////
+////       1.  Write/Read FIFO Abort case not managed, expect     ////
+////               user to clearly close the busrt request        ////
+////       2.  Wishbone Request abort not yet supported.          ////
+////       3.  Write access through M0 Port not supported         ////
 ////                                                              ////
 ////  To Do:                                                      ////
-////    nothing                                                   ////
+////    1. Add support for WishBone request timout                ////
+////    2. Add Pre-fetch feature for M0 Port                      ////
 ////                                                              ////
 ////  Author(s):                                                  ////
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
@@ -83,54 +97,95 @@ module spim_top
     output logic                         wbd_ack_o, // acknowlegement
     output logic                         wbd_err_o,  // error
 
-    output logic                   [1:0] events_o,
+    output logic                 [31:0]  spi_debug,
 
     // PAD I/f
-    input  [5:0]                         io_in    ,
-    output  [5:0]                        io_out   ,
-    output  [5:0]                        io_oeb
+    input  logic [5:0]                   io_in    ,
+    output logic  [5:0]                  io_out   ,
+    output logic  [5:0]                  io_oeb
 
 );
 
 
+   
+    logic                   [7:0] spi_clk_div      ;
 
-    logic   [5:0] spi_clk_div;
-    logic         spi_req;
-    logic         spi_ack;
-    logic  [31:0] spi_addr;
-    logic   [5:0] spi_addr_len;
-    logic  [7:0]  spi_cmd;
-    logic   [5:0] spi_cmd_len;
-    logic  [7:0]  spi_mode_cmd;
-    logic         spi_mode_cmd_enb;
-    logic  [15:0] spi_data_len;
-    logic  [15:0] spi_dummy_rd_len;
-    logic  [15:0] spi_dummy_wr_len;
-    logic         spi_swrst;
-    logic         spi_rd;
-    logic         spi_wr;
-    logic         spi_qrd;
-    logic         spi_qwr;
-    logic [31:0]  spi_wdata;
-    logic [31:0]  spi_rdata;
-    logic   [3:0] spi_csreg;
-    logic  [31:0] spi_data_tx;
-    logic         spi_data_tx_valid;
-    logic         spi_data_tx_ready;
-    logic  [31:0] spi_data_rx;
-    logic         spi_data_rx_valid;
-    logic         spi_data_rx_ready;
-    logic   [8:0] spi_ctrl_status;
-    logic  [31:0] spi_ctrl_data_tx;
-    logic         spi_ctrl_data_tx_valid;
-    logic         spi_ctrl_data_tx_ready;
-    logic  [31:0] spi_ctrl_data_rx;
-    logic         spi_ctrl_data_rx_valid;
-    logic         spi_ctrl_data_rx_ready;
-    logic  [31:0] reg2spi_wdata;
+    // Master 0 Configuration
+    logic                         cfg_m0_fsm_reset ;
+    logic [3:0]                   cfg_m0_cs_reg    ;  // Chip select
+    logic [1:0]                   cfg_m0_spi_mode  ;  // Final SPI Mode 
+    logic [1:0]                   cfg_m0_spi_switch;  // SPI Mode Switching Place
+    logic [3:0]                   cfg_m0_spi_seq   ;  // SPI SEQUENCE
+    logic [1:0]                   cfg_m0_addr_cnt  ;  // SPI Addr Count
+    logic [1:0]                   cfg_m0_dummy_cnt ;  // SPI Dummy Count
+    logic [7:0]                   cfg_m0_data_cnt  ;  // SPI Read Count
+    logic [7:0]                   cfg_m0_cmd_reg   ;  // SPI MEM COMMAND
+    logic [7:0]                   cfg_m0_mode_reg  ;  // SPI MODE REG
 
-    logic         s_eot;
+    logic [3:0]                   cfg_m1_cs_reg    ;  // Chip select
+    logic [1:0]                   cfg_m1_spi_mode  ;  // Final SPI Mode 
+    logic [1:0]                   cfg_m1_spi_switch;  // SPI Mode Switching Place
 
+    logic [1:0]                   cfg_cs_early     ;  // Amount of cycle early CS asserted
+    logic [1:0]                   cfg_cs_late      ;  // Amount of cycle late CS de-asserted
+
+    // Towards Reg I/F
+    logic                         spim_reg_req     ;   // Reg Request
+    logic [3:0]                   spim_reg_addr    ;   // Reg Address
+    logic                         spim_reg_we      ;   // Reg Write/Read Command
+    logic [3:0]                   spim_reg_be      ;   // Reg Byte Enable
+    logic [31:0]                  spim_reg_wdata   ;   // Reg Write Data
+    logic                         spim_reg_ack     ;   // Read Ack
+    logic [31:0]                  spim_reg_rdata   ;   // Read Read Data
+
+    // Towards m0 Command FIFO
+    logic                         m0_cmd_fifo_full    ;   // Command FIFO full
+    logic                         m0_cmd_fifo_empty   ;   // Command FIFO empty
+    logic                         m0_cmd_fifo_wr      ;   // Command FIFO Write
+    logic                         m0_cmd_fifo_rd      ;   // Command FIFO read
+    logic [33:0]                  m0_cmd_fifo_wdata   ;   // Command FIFO WData
+    logic [33:0]                  m0_cmd_fifo_rdata   ;   // Command FIFO RData
+    
+    // Towards m0 Response FIFO
+    logic                         m0_res_fifo_full    ;   // Response FIFO Empty
+    logic                         m0_res_fifo_empty   ;   // Response FIFO Empty
+    logic                         m0_res_fifo_wr      ;   // Response FIFO Write
+    logic                         m0_res_fifo_rd      ;   // Response FIFO Read
+    logic [31:0]                  m0_res_fifo_wdata   ;   // Response FIFO WData
+    logic [31:0]                  m0_res_fifo_rdata   ;   // Response FIFO RData
+
+    // Towards m1 Command FIFO
+    logic                         m1_cmd_fifo_full    ;   // Command FIFO full
+    logic                         m1_cmd_fifo_empty   ;   // Command FIFO empty
+    logic                         m1_cmd_fifo_wr      ;   // Command FIFO Write
+    logic                         m1_cmd_fifo_rd      ;   // Command FIFO Write
+    logic [33:0]                  m1_cmd_fifo_wdata   ;   // Command FIFO WData
+    logic [33:0]                  m1_cmd_fifo_rdata   ;   // Command FIFO RData
+    
+    // Towards m0 Response FIFO
+    logic                         m1_res_fifo_full    ;   // Response FIFO Empty
+    logic                         m1_res_fifo_empty   ;   // Response FIFO Empty
+    logic                         m1_res_fifo_wr      ;   // Response FIFO Read
+    logic                         m1_res_fifo_rd      ;   // Response FIFO Read
+    logic [31:0]                  m1_res_fifo_wdata   ;   // Response FIFO WData
+    logic [31:0]                  m1_res_fifo_rdata   ;   // Response FIFO RData
+
+    logic                         m0_res_fifo_flush   ;   // m0 response fifo flush
+    logic                         m1_res_fifo_flush   ;   // m0 response fifo flush
+
+//-----------------------------------------------------
+// SPI Debug monitoring
+// ----------------------------------------------------
+    logic [8:0]   spi_ctrl_status       ;
+    logic [3:0]   m0_state         ;
+    logic [3:0]   m1_state         ;
+    logic [3:0]   ctrl_state        ;
+
+
+    assign spi_debug  =   {3'h0,
+		          m0_cmd_fifo_full,m0_cmd_fifo_empty,m0_res_fifo_full,m0_res_fifo_empty,
+		          m1_cmd_fifo_full,m1_cmd_fifo_empty,m1_res_fifo_full,m1_res_fifo_empty,
+		          ctrl_state[3:0], m0_state[3:0],m1_state[3:0],spi_ctrl_status};
 
 //-------------------------------------------------------
 // SPI Interface moved inside to support carvel IO pad 
@@ -151,6 +206,7 @@ logic                          spi_sdi1;
 logic                          spi_sdi2;
 logic                          spi_sdi3;
 logic                          spi_en_tx;
+logic                          spi_init_done;
 
 
 assign  spi_sdi0  =  io_in[2];
@@ -169,17 +225,10 @@ assign  io_oeb[0] =  1'b0;         // spi_clk
 assign  io_oeb[1] =  1'b0;         // spi_csn
 assign  io_oeb[2] =  !spi_en_tx;   // spi_dio0
 assign  io_oeb[3] =  !spi_en_tx;   // spi_dio1
-assign  io_oeb[4] =  !spi_en_tx;   // spi_dio2
-assign  io_oeb[5] =  !spi_en_tx;   // spi_dio3
+assign  io_oeb[4] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio2
+assign  io_oeb[5] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio3
 
-
-
-    spim_regs
-    #(
-        .WB_WIDTH(WB_WIDTH)
-    )
-    u_spim_regs
-    (
+spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .mclk                           (mclk                         ),
         .rst_n                          (rst_n                        ),
 
@@ -192,59 +241,199 @@ assign  io_oeb[5] =  !spi_en_tx;   // spi_dio3
         .wbd_ack_o                      (wbd_ack_o                    ), // acknowlegement
         .wbd_err_o                      (wbd_err_o                    ),  // error
 
-        .spi_clk_div                    (spi_clk_div                  ),
-        .spi_status                     (spi_ctrl_status              ),
+    // Configuration
+        .cfg_fsm_reset                  (cfg_m0_fsm_reset             ),
+        .cfg_mem_seq                    (cfg_m0_spi_seq               ), // SPI MEM SEQUENCE
+        .cfg_addr_cnt                   (cfg_m0_addr_cnt              ), // SPI Addr Count
+        .cfg_dummy_cnt                  (cfg_m0_dummy_cnt             ), // SPI Dummy Count
+        .cfg_data_cnt                   (cfg_m0_data_cnt              ), // SPI Read Count
+        .cfg_cmd_reg                    (cfg_m0_cmd_reg               ), // SPI MEM COMMAND
+        .cfg_mode_reg                   (cfg_m0_mode_reg              ), // SPI MODE REG
 
+        .spi_init_done                  (spi_init_done                ), // SPI internal Init completed
 
-        .spi_req                        (spi_req                     ),
-        .spi_addr                       (spi_addr                     ),
-        .spi_addr_len                   (spi_addr_len                 ),
-        .spi_cmd                        (spi_cmd                      ),
-        .spi_cmd_len                    (spi_cmd_len                  ),
-        .spi_mode_cmd                   (spi_mode_cmd                 ),
-        .spi_mode_cmd_enb               (spi_mode_cmd_enb             ),
-        .spi_csreg                      (spi_csreg                    ),
-        .spi_data_len                   (spi_data_len                 ),
-        .spi_dummy_rd_len               (spi_dummy_rd_len             ),
-        .spi_dummy_wr_len               (spi_dummy_wr_len             ),
-        .spi_swrst                      (spi_swrst                    ),
-        .spi_rd                         (spi_rd                       ),
-        .spi_wr                         (spi_wr                       ),
-        .spi_qrd                        (spi_qrd                      ),
-        .spi_qwr                        (spi_qwr                      ),
-        .spi_wdata                      (spi_wdata                    ),
-        .spi_rdata                      (spi_rdata                    ),
-        .spi_ack                        (spi_ack                      )
+    // Towards Reg I/F
+        .spim_reg_req                   (spim_reg_req                 ), // Reg Request
+        .spim_reg_addr                  (spim_reg_addr                ), // Reg Address
+        .spim_reg_we                    (spim_reg_we                  ), // Reg Write/Read Command
+        .spim_reg_be                    (spim_reg_be                  ), // Reg Byte Enable
+        .spim_reg_wdata                 (spim_reg_wdata               ), // Reg Write Data
+        .spim_reg_ack                   (spim_reg_ack                 ), // Read Ack
+        .spim_reg_rdata                 (spim_reg_rdata               ), // Read Read Data
+
+    // Towards Command FIFO
+        .cmd_fifo_empty                 (m0_cmd_fifo_empty            ), // Command FIFO empty
+        .cmd_fifo_wr                    (m0_cmd_fifo_wr               ), // Command FIFO Write
+        .cmd_fifo_wdata                 (m0_cmd_fifo_wdata            ), // Command FIFO WData
+    
+    // Towards Response FIFO
+        .res_fifo_empty                 (m0_res_fifo_empty            ), // Response FIFO Empty
+        .res_fifo_rd                    (m0_res_fifo_rd               ), // Response FIFO Read
+        .res_fifo_rdata                 (m0_res_fifo_rdata            ), // Response FIFO Data
+
+	.state                          (m0_state                     )
+
     );
+
+
+    spim_regs
+    #(
+        .WB_WIDTH(WB_WIDTH)
+    )
+    u_spim_regs
+    (
+        .mclk                           (mclk                         ),
+        .rst_n                          (rst_n                        ),
+	.fast_sim_mode                  (1'b0                         ),
+
+        .spi_clk_div                    (spi_clk_div                  ),
+	.spi_init_done                  (spi_init_done                ),
+
+        .spi_debug                      (spi_debug                    ),
+
+        .cfg_m0_fsm_reset               (cfg_m0_fsm_reset             ),
+        .cfg_m0_cs_reg                  (cfg_m0_cs_reg                ), // Chip select
+        .cfg_m0_spi_mode                (cfg_m0_spi_mode              ), // Final SPI Mode 
+        .cfg_m0_spi_switch              (cfg_m0_spi_switch            ), // SPI Mode Switching Place
+        .cfg_m0_spi_seq                 (cfg_m0_spi_seq               ), // SPI SEQUENCE
+        .cfg_m0_addr_cnt                (cfg_m0_addr_cnt              ), // SPI Addr Count
+        .cfg_m0_dummy_cnt               (cfg_m0_dummy_cnt             ), // SPI Dummy Count
+        .cfg_m0_data_cnt                (cfg_m0_data_cnt              ), // SPI Read Count
+        .cfg_m0_cmd_reg                 (cfg_m0_cmd_reg               ), // SPI MEM COMMAND
+        .cfg_m0_mode_reg                (cfg_m0_mode_reg              ), // SPI MODE REG
+
+        .cfg_m1_cs_reg                  (cfg_m1_cs_reg                ), // Chip select
+        .cfg_m1_spi_mode                (cfg_m1_spi_mode              ), // Final SPI Mode 
+        .cfg_m1_spi_switch              (cfg_m1_spi_switch            ), // SPI Mode Switching Place
+
+	.cfg_cs_early                   (cfg_cs_early                 ),
+	.cfg_cs_late                    (cfg_cs_late                  ),
+
+    // Towards Reg I/F
+        .spim_reg_req                   (spim_reg_req                 ), // Reg Request
+        .spim_reg_addr                  (spim_reg_addr                ), // Reg Address
+        .spim_reg_we                    (spim_reg_we                  ), // Reg Write/Read Command
+        .spim_reg_be                    (spim_reg_be                  ), // Reg Byte Enable
+        .spim_reg_wdata                 (spim_reg_wdata               ), // Reg Write Data
+        .spim_reg_ack                   (spim_reg_ack                 ), // Read Ack
+        .spim_reg_rdata                 (spim_reg_rdata               ), // Read Read Data
+
+    // Towards Command FIFO
+        .cmd_fifo_full                  (m1_cmd_fifo_full             ), // Command FIFO empty
+        .cmd_fifo_empty                 (m1_cmd_fifo_empty            ), // Command FIFO empty
+        .cmd_fifo_wr                    (m1_cmd_fifo_wr               ), // Command FIFO Write
+        .cmd_fifo_wdata                 (m1_cmd_fifo_wdata            ), // Command FIFO WData
+    
+    // Towards Response FIFO
+        .res_fifo_full                  (m1_res_fifo_full             ), // Response FIFO Empty
+        .res_fifo_empty                 (m1_res_fifo_empty            ), // Response FIFO Empty
+        .res_fifo_rd                    (m1_res_fifo_rd               ), // Response FIFO Read
+        .res_fifo_rdata                 (m1_res_fifo_rdata            ),  // Response FIFO Data
+
+	.state                          (m1_state                     )
+
+    );
+
+ // Master 0 Command FIFO
+ spim_fifo #(.W(34), .DP(2)) u_m0_cmd_fifo (
+	 .clk                           (mclk                        ),
+         .reset_n                       (rst_n                       ),
+	 .flush                         (1'b0                        ),
+         .wr_en                         (m0_cmd_fifo_wr              ),
+         .wr_data                       (m0_cmd_fifo_wdata           ),
+         .full                          (m0_cmd_fifo_full            ),                 
+         .afull                         (                            ),                 
+         .rd_en                         (m0_cmd_fifo_rd              ),
+         .empty                         (m0_cmd_fifo_empty           ),                
+         .aempty                        (                            ),                
+         .rd_data                       (m0_cmd_fifo_rdata           )
+   );
+
+ // Master 0 Response FIFO
+ spim_fifo #(.W(32), .DP(4)) u_m0_res_fifo (
+	 .clk                           (mclk                        ),
+         .reset_n                       (rst_n                       ),
+	 .flush                         (m0_res_fifo_flush           ),
+         .wr_en                         (m0_res_fifo_wr              ),
+         .wr_data                       (m0_res_fifo_wdata           ),
+         .full                          (m0_res_fifo_full            ),                 
+         .afull                         (                            ),                 
+         .rd_en                         (m0_res_fifo_rd              ),
+         .empty                         (m0_res_fifo_empty           ),                
+         .aempty                        (                            ),                
+         .rd_data                       (m0_res_fifo_rdata           )
+   );
+
+ // Master 1 Command FIFO
+ spim_fifo #(.W(34), .DP(4)) u_m1_cmd_fifo (
+	 .clk                           (mclk                        ),
+         .reset_n                       (rst_n                       ),
+	 .flush                         (1'b0                        ),
+         .wr_en                         (m1_cmd_fifo_wr              ),
+         .wr_data                       (m1_cmd_fifo_wdata           ),
+         .full                          (m1_cmd_fifo_full            ),                 
+         .afull                         (                            ),                 
+         .rd_en                         (m1_cmd_fifo_rd              ),
+         .empty                         (m1_cmd_fifo_empty           ),                
+         .aempty                        (                            ),                
+         .rd_data                       (m1_cmd_fifo_rdata           )
+   );
+ // Master 1 Response FIFO
+ spim_fifo #(.W(32), .DP(2)) u_m1_res_fifo (
+	 .clk                           (mclk                        ),
+         .reset_n                       (rst_n                       ),
+	 .flush                         (m1_res_fifo_flush           ),
+         .wr_en                         (m1_res_fifo_wr              ),
+         .wr_data                       (m1_res_fifo_wdata           ),
+         .full                          (m1_res_fifo_full            ),                 
+         .afull                         (                            ),                 
+         .rd_en                         (m1_res_fifo_rd              ),
+         .empty                         (m1_res_fifo_empty           ),                
+         .aempty                        (                            ),                
+         .rd_data                       (m1_res_fifo_rdata           )
+   );
+
 
     spim_ctrl u_spictrl
     (
         .clk                            (mclk                         ),
         .rstn                           (rst_n                        ),
-        .eot                            (                             ),
 
         .spi_clk_div                    (spi_clk_div                  ),
         .spi_status                     (spi_ctrl_status              ),
 
-        .spi_req                        (spi_req                      ),
-        .spi_addr                       (spi_addr                     ),
-        .spi_addr_len                   (spi_addr_len                 ),
-        .spi_cmd                        (spi_cmd                      ),
-        .spi_cmd_len                    (spi_cmd_len                  ),
-        .spi_mode_cmd                   (spi_mode_cmd                 ),
-        .spi_mode_cmd_enb               (spi_mode_cmd_enb             ),
-        .spi_csreg                      (spi_csreg                    ),
-        .spi_data_len                   (spi_data_len                 ),
-        .spi_dummy_rd_len               (spi_dummy_rd_len             ),
-        .spi_dummy_wr_len               (spi_dummy_wr_len             ),
-        .spi_swrst                      (spi_swrst                    ),
-        .spi_rd                         (spi_rd                       ),
-        .spi_wr                         (spi_wr                       ),
-        .spi_qrd                        (spi_qrd                      ),
-        .spi_qwr                        (spi_qwr                      ),
-        .spi_wdata                      (spi_wdata                    ),
-        .spi_rdata                      (spi_rdata                    ),
-        .spi_ack                        (spi_ack                      ),
+        .cfg_m0_cs_reg                  (cfg_m0_cs_reg                ), // Chip select
+        .cfg_m0_spi_mode                (cfg_m0_spi_mode              ), // Final SPI Mode 
+        .cfg_m0_spi_switch              (cfg_m0_spi_switch            ), // SPI Mode Switching Place
+
+        .cfg_m1_cs_reg                  (cfg_m1_cs_reg                ), // Chip select
+        .cfg_m1_spi_mode                (cfg_m1_spi_mode              ), // Final SPI Mode 
+        .cfg_m1_spi_switch              (cfg_m1_spi_switch            ), // SPI Mode Switching Place
+
+	.cfg_cs_early                   (cfg_cs_early                 ),
+	.cfg_cs_late                    (cfg_cs_late                  ),
+
+	.m0_cmd_fifo_empty              (m0_cmd_fifo_empty            ),
+        .m0_cmd_fifo_rd                 (m0_cmd_fifo_rd               ),
+	.m0_cmd_fifo_rdata              (m0_cmd_fifo_rdata            ),
+
+	.m0_res_fifo_flush              (m0_res_fifo_flush            ),
+	.m0_res_fifo_empty              (m0_res_fifo_empty            ),
+	.m0_res_fifo_full               (m0_res_fifo_full             ),
+	.m0_res_fifo_wr                 (m0_res_fifo_wr               ),
+	.m0_res_fifo_wdata              (m0_res_fifo_wdata            ),
+
+	.m1_cmd_fifo_empty              (m1_cmd_fifo_empty            ),
+        .m1_cmd_fifo_rd                 (m1_cmd_fifo_rd               ),
+	.m1_cmd_fifo_rdata              (m1_cmd_fifo_rdata            ),
+
+	.m1_res_fifo_flush              (m1_res_fifo_flush            ),
+	.m1_res_fifo_empty              (m1_res_fifo_empty            ),
+	.m1_res_fifo_full               (m1_res_fifo_full             ),
+	.m1_res_fifo_wr                 (m1_res_fifo_wr               ),
+	.m1_res_fifo_wdata              (m1_res_fifo_wdata            ),
+
+	.ctrl_state                     (ctrl_state                   ),
 
         .spi_clk                        (spi_clk                      ),
         .spi_csn0                       (spi_csn0                     ),

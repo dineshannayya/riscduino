@@ -70,349 +70,472 @@
 
 
 module spim_regs #( parameter WB_WIDTH = 32) (
-    input  logic                         mclk,
-    input  logic                         rst_n,
+    input  logic                         mclk             ,
+    input  logic                         rst_n            ,
+    input logic                          fast_sim_mode    , // Set 1 for simulation
 
-    input  logic                         wbd_stb_i, // strobe/request
-    input  logic   [WB_WIDTH-1:0]        wbd_adr_i, // address
-    input  logic                         wbd_we_i,  // write
-    input  logic   [WB_WIDTH-1:0]        wbd_dat_i, // data output
-    input  logic   [3:0]                 wbd_sel_i, // byte enable
-    output logic   [WB_WIDTH-1:0]        wbd_dat_o, // data input
-    output logic                         wbd_ack_o, // acknowlegement
-    output logic                         wbd_err_o,  // error
+    output logic                   [7:0] spi_clk_div      ,
+    output logic                         spi_init_done    , // SPI internal Init completed
 
-    output logic                   [7:0] spi_clk_div,
-    input logic                    [8:0] spi_status,
+    // Status Monitoring
+    input logic                    [31:0] spi_debug       ,
 
-    // Towards SPI TX/RX FSM
+    // Master 0 Configuration
+    output logic                         cfg_m0_fsm_reset ,
+    output logic [3:0]                   cfg_m0_cs_reg    ,  // Chip select
+    output logic [1:0]                   cfg_m0_spi_mode  ,  // Final SPI Mode 
+    output logic [1:0]                   cfg_m0_spi_switch,  // SPI Mode Switching Place
+    output logic [3:0]                   cfg_m0_spi_seq   ,  // SPI SEQUENCE
+    output logic [1:0]                   cfg_m0_addr_cnt  ,  // SPI Addr Count
+    output logic [1:0]                   cfg_m0_dummy_cnt ,  // SPI Dummy Count
+    output logic [7:0]                   cfg_m0_data_cnt  ,  // SPI Read Count
+    output logic [7:0]                   cfg_m0_cmd_reg   ,  // SPI MEM COMMAND
+    output logic [7:0]                   cfg_m0_mode_reg  ,  // SPI MODE REG
 
+    output logic [3:0]                   cfg_m1_cs_reg    ,  // Chip select
+    output logic [1:0]                   cfg_m1_spi_mode  ,  // Final SPI Mode 
+    output logic [1:0]                   cfg_m1_spi_switch,  // SPI Mode Switching Place
 
-    output logic                          spi_req,
-    output logic                   [31:0] spi_addr,
-    output logic                    [5:0] spi_addr_len,
-    output logic                   [7:0]  spi_cmd,
-    output logic                    [5:0] spi_cmd_len,
-    output logic                   [7:0]  spi_mode_cmd,
-    output logic                          spi_mode_cmd_enb,
-    output logic                    [3:0] spi_csreg,
-    output logic                   [15:0] spi_data_len,
-    output logic                   [15:0] spi_dummy_rd_len,
-    output logic                   [15:0] spi_dummy_wr_len,
-    output logic                          spi_swrst,
-    output logic                          spi_rd,
-    output logic                          spi_wr,
-    output logic                          spi_qrd,
-    output logic                          spi_qwr,
-    output logic                   [31:0] spi_wdata,
-    input logic                   [31:0]  spi_rdata,
-    input logic                           spi_ack
+    output logic [1:0]                   cfg_cs_early     ,  // Amount of cycle early CS asserted
+    output logic [1:0]                   cfg_cs_late      ,  // Amount of cycle late CS de-asserted
 
+    // Towards Reg I/F
+    input  logic                         spim_reg_req     ,   // Reg Request
+    input  logic [3:0]                   spim_reg_addr    ,   // Reg Address
+    input  logic                         spim_reg_we      ,   // Reg Write/Read Command
+    input  logic [3:0]                   spim_reg_be      ,   // Reg Byte Enable
+    input  logic [31:0]                  spim_reg_wdata   ,   // Reg Write Data
+    output  logic                        spim_reg_ack     ,   // Read Ack
+    output  logic [31:0]                 spim_reg_rdata    ,   // Read Read Data
+
+    // Towards Command FIFO
+    input  logic                         cmd_fifo_full    ,   // Command FIFO full
+    input  logic                         cmd_fifo_empty   ,   // Command FIFO empty
+    output logic                         cmd_fifo_wr      ,   // Command FIFO Write
+    output logic [33:0]                  cmd_fifo_wdata   ,   // Command FIFO WData
+    
+    // Towards Response FIFO
+    input  logic                         res_fifo_full    ,   // Response FIFO Empty
+    input  logic                         res_fifo_empty   ,   // Response FIFO Empty
+    output logic                         res_fifo_rd      ,   // Response FIFO Read
+    input  logic [31:0]                  res_fifo_rdata   ,   // Response FIFO Data
+
+    output logic [3:0]                   state           
     );
+//------------------------------------------------
+// Parameter Decleration
+// -----------------------------------------------
+parameter SOC = 1'b1;    // START of COMMAND
+parameter EOC = 1'b1;    // END of COMMAND
+parameter NOC = 1'b0;    // NORMAL COMMAND
+
+parameter BTYPE = 1'b0;  // Count is Byte Type
+parameter WTYPE = 1'b1;  // Count is Word Type
+
+parameter CNT1 = 2'b00; // BYTE/WORD Count1
+parameter CNT2 = 2'b01; // BYTE/WORD Count2
+parameter CNT3 = 2'b10; // BYTE/WORD Count3
+parameter CNT4 = 2'b11; // BYTE/WORD Count4
+
+
+// Type of command
+parameter NWRITE = 2'b00; // Normal Write
+parameter NREAD  = 2'b01; // Normal Read
+parameter DWRITE = 2'b10; // Dummy Write
+parameter DREAD  = 2'b11; // Dummy Read
+
+// State Machine state
+parameter FSM_IDLE        = 3'b000;
+parameter FSM_ADR_PHASE   = 3'b001;
+parameter FSM_WRITE_PHASE = 3'b010;
+parameter FSM_READ_PHASE  = 3'b011;
+parameter FSM_READ_BUSY   = 3'b100;
+parameter FSM_WRITE_BUSY  = 3'b101;
+parameter FSM_ACK_PHASE   = 3'b110;
 
 //----------------------------
 // Register Decoding
 // ---------------------------
-parameter REG_CTRL     = 4'b0000;
-parameter REG_CLKDIV   = 4'b0001;
-parameter REG_SPICMD   = 4'b0010;
-parameter REG_SPIADR   = 4'b0011;
-parameter REG_SPILEN   = 4'b0100;
-parameter REG_SPIDUM   = 4'b0101;
+parameter GLBL_CTRL    = 4'b0000;
+parameter MEM_CTRL1    = 4'b0001;
+parameter MEM_CTRL2    = 4'b0010;
+parameter REG_CTRL1    = 4'b0011;
+parameter REG_CTRL2    = 4'b0100;
+parameter REG_SPIADR   = 4'b0101;
 parameter REG_SPIWDATA = 4'b0110;
 parameter REG_SPIRDATA = 4'b0111;
 parameter REG_STATUS   = 4'b1000;
 
 // Init FSM
-parameter SPI_INIT_IDLE      = 3'b000;
-parameter SPI_INIT_CMD_WAIT  = 3'b001;
-parameter SPI_INIT_WREN_CMD  = 3'b010;
-parameter SPI_INIT_WREN_WAIT = 3'b011;
-parameter SPI_INIT_WRR_CMD   = 3'b100;
-parameter SPI_INIT_WRR_WAIT  = 3'b101;
+parameter SPI_INIT_PWUP      = 3'b000;
+parameter SPI_INIT_IDLE      = 3'b001;
+parameter SPI_INIT_CMD_WAIT  = 3'b010;
+parameter SPI_INIT_WREN_CMD  = 3'b011;
+parameter SPI_INIT_WREN_WAIT = 3'b100;
+parameter SPI_INIT_WRR_CMD   = 3'b101;
+parameter SPI_INIT_WRR_WAIT  = 3'b110;
+parameter SPI_INIT_WAIT      = 3'b111;
 
+/*************************************************************
+*  SPI FSM State Control
+*
+*   OPERATION   COMMAND                   SEQUENCE 
+*
+*    ERASE       P4E(0x20)           ->  COMMAND + ADDRESS
+*    ERASE       P8E(0x40)           ->  COMMAND + ADDRESS
+*    ERASE       SE(0xD8)            ->  COMMAND + ADDRESS
+*    ERASE       BE(0x60)            ->  COMMAND + ADDRESS
+*    ERASE       BE(0xC7)            ->  COMMAND 
+*    PROGRAM     PP(0x02)            ->  COMMAND + ADDRESS + Write DATA
+*    PROGRAM     QPP(0x32)           ->  COMMAND + ADDRESS + Write DATA
+*    READ        READ(0x3)           ->  COMMAND + ADDRESS + READ DATA
+*    READ        FAST_READ(0xB)      ->  COMMAND + ADDRESS + DUMMY + READ DATA
+*    READ        DOR (0x3B)          ->  COMMAND + ADDRESS + DUMMY + READ DATA
+*    READ        QOR (0x6B)          ->  COMMAND + ADDRESS + DUMMY + READ DATA
+*    READ        DIOR (0xBB)         ->  COMMAND + ADDRESS + MODE  + READ DATA
+*    READ        QIOR (0xEB)         ->  COMMAND + ADDRESS + MODE  + DUMMY + READ DATA
+*    READ        RDID (0x9F)         ->  COMMAND + READ DATA
+*    READ        READ_ID (0x90)      ->  COMMAND + ADDRESS + READ DATA
+*    WRITE       WREN(0x6)           ->  COMMAND
+*    WRITE       WRDI                ->  COMMAND
+*    STATUS      RDSR(0x05)          ->  COMMAND + READ DATA
+*    STATUS      RCR(0x35)           ->  COMMAND + READ DATA
+*    CONFIG      WRR(0x01)           ->  COMMAND + WRITE DATA
+*    CONFIG      CLSR(0x30)          ->  COMMAND
+*    Power Saving DP(0xB9)           ->  COMMAND
+*    Power Saving RES(0xAB)          ->  COMMAND + READ DATA
+*    OTP          OTPP(0x42)         ->  COMMAND + ADDR+ WRITE DATA
+*    OTP          OTPR(0x4B)         ->  COMMAND + ADDR + DUMMY + READ DATA
+*    ********************************************************************/
+parameter P_FSM_C      = 4'b0000; // Command Phase Only
+parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
+parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
+
+parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
+parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
+parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
+parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
+
+parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
+parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
+
+parameter P_FSM_CDR    = 4'b1001; // COMMAND -> DUMMY -> READ
+parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
+//---------------------------------------------------------
+  parameter P_CS0 = 4'b0001;
+  parameter P_CS1 = 4'b0010;
+  parameter P_CS2 = 4'b0100;
+  parameter P_CS3 = 4'b1000;
+
+  parameter P_SINGLE = 2'b00;
+  parameter P_DOUBLE = 2'b01;
+  parameter P_QUAD   = 2'b10;
+
+  parameter P_MODE_SWITCH_IDLE     = 2'b00;
+  parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
+  parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
+
+  parameter P_QOR = 8'h6B;
+  parameter P_QIOR = 8'hEB;
+  parameter P_RES = 8'hAB;
+  parameter P_WEN = 8'h06;
+  parameter P_WRR = 8'h01;
+
+  parameter P_8BIT   = 2'b00;
+  parameter P_16BIT  = 2'b01;
+  parameter P_24BIT  = 2'b10;
+  parameter P_32BIT  = 2'b11;
 //---------------------------------------------------------
 // Variable declartion
 // -------------------------------------------------------
-logic                 spi_init_done  ;
-logic   [2:0]         spi_init_state ;
-logic                spim_mem_req   ;
-logic                spim_reg_req   ;
+logic   [2:0]        spi_init_state ;
+logic                spim_reg_req_f ; 
+
+logic [1:0]          cfg_m1_fsm_reset ;
+logic [3:0]          cfg_m1_spi_seq   ; // SPI SEQUENCE
+logic [1:0]          cfg_m1_addr_cnt  ; // SPI Addr Count
+logic [1:0]          cfg_m1_dummy_cnt ; // SPI Dummy Count
+logic [7:0]          cfg_m1_data_cnt  ; // SPI Read Count
+logic [7:0]          cfg_m1_cmd_reg   ; // SPI MEM COMMAND
+logic [7:0]          cfg_m1_mode_reg  ; // SPI MODE REG
+logic [31:0]         cfg_m1_addr      ;
+logic [31:0]         cfg_m1_wdata     ;
+logic [31:0]         cfg_m1_rdata     ;
+logic                cfg_m1_wrdy      ;
+logic                cfg_m1_req       ;
+
+logic [31:0]         reg_rdata        ;
 
 
-logic                 spim_wb_req    ;
-logic                 spim_wb_req_l  ;
-logic [WB_WIDTH-1:0]  spim_wb_wdata  ;
-logic [WB_WIDTH-1:0]  spim_wb_addr   ;
-logic                 spim_wb_ack    ;
-logic                 spim_wb_we     ;
-logic [3:0]           spim_wb_be     ;
-logic [WB_WIDTH-1:0]  spim_reg_rdata ;
-logic [WB_WIDTH-1:0]  spim_wb_rdata  ;
-logic  [WB_WIDTH-1:0] reg_rdata      ;
-
-// Control Signal Generated from Reg to SPI Access
-logic                 reg2spi_req;
-logic         [31:0]  reg2spi_addr;
-logic          [5:0]  reg2spi_addr_len;
-logic         [31:0]  reg2spi_cmd;
-logic          [5:0]  reg2spi_cmd_len;
-logic          [3:0]  reg2spi_csreg;
-logic         [15:0]  reg2spi_data_len;
-logic                 reg2spi_mode_enb; // mode enable
-logic         [7:0]   reg2spi_mode;     // mode 
-logic         [15:0]  reg2spi_dummy_rd_len;
-logic         [15:0]  reg2spi_dummy_wr_len;
-logic                 reg2spi_swrst;
-logic                 reg2spi_rd;
-logic                 reg2spi_wr;
-logic                 reg2spi_qrd;
-logic                 reg2spi_qwr;
-logic         [31:0]  reg2spi_wdata;
-//------------------------------------------------------------------   
-// Priority given to mem2spi request over Reg2Spi
-
-    assign  spi_req           =  (spim_mem_req && !spim_wb_we) ? 1'b1                           : reg2spi_req;      
-    assign  spi_addr          =  (spim_mem_req && !spim_wb_we) ? {spim_wb_addr[23:0],8'h0}      : reg2spi_addr;      
-    assign  spi_addr_len      =  (spim_mem_req && !spim_wb_we) ? 24                             : reg2spi_addr_len;  
-    assign  spi_cmd           =  (spim_mem_req && !spim_wb_we) ? 8'hEB                          : reg2spi_cmd;       
-    assign  spi_cmd_len       =  (spim_mem_req && !spim_wb_we) ? 8                              : reg2spi_cmd_len;   
-    assign  spi_mode_cmd      =  (spim_mem_req && !spim_wb_we) ? 8'h00                          : reg2spi_mode;       
-    assign  spi_mode_cmd_enb  =  (spim_mem_req && !spim_wb_we) ? 1                              : reg2spi_mode_enb;   
-    assign  spi_csreg         =  (spim_mem_req && !spim_wb_we) ? '1                             : reg2spi_csreg;     
-    assign  spi_data_len      =  (spim_mem_req && !spim_wb_we) ? 'h20                           : reg2spi_data_len;  
-    assign  spi_dummy_rd_len  =  (spim_mem_req && !spim_wb_we) ? 'h20                           : reg2spi_dummy_rd_len;  
-    assign  spi_dummy_wr_len  =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_dummy_wr_len;  
-    assign  spi_swrst         =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_swrst;     
-    assign  spi_rd            =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_rd;        
-    assign  spi_wr            =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_wr;        
-    assign  spi_qrd           =  (spim_mem_req && !spim_wb_we) ? 1                              : reg2spi_qrd;       
-    assign  spi_qwr           =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_qwr;       
-    assign  spi_wdata         =  (spim_mem_req && !spim_wb_we) ? 0                              : reg2spi_wdata;       
+logic [5:0]           cur_cnt         ;
+logic [5:0]           next_cnt        ;
+logic [3:0]           next_state      ;
 
 
+logic [31:0]          spim_m1_rdata   ;
+logic                 spim_m1_ack     ;
+logic                 spim_m1_rrdy    ;
+logic                 spim_m1_wrdy    ;
+logic  [9:0]          spi_delay_cnt  ;
+logic                 spim_fifo_rdata_req  ;
+logic                 spim_fifo_wdata_req  ;
 
 
-  //---------------------------------------------------------------
-  // Address Decoding
-  // 0x0000_0000 - 0x0FFF_FFFF  - SPI FLASH MEMORY ACCESS - 256MB
-  // 0x1000_0000 -              - SPI Register Access
-  // --------------------------------------------------------------
+//----------------------------------------------
+// Consolidated Register Ack handling
+//   1. Handles Normal Register Read
+//   2. Indirect Memory Write
+//   3. Indirect Memory Read
+//----------------------------------------------
+//
+assign spim_fifo_rdata_req = spim_reg_req && spim_reg_we == 0 && (spim_reg_addr== REG_SPIRDATA);
+assign spim_fifo_wdata_req = spim_reg_req && spim_reg_we == 1 && (spim_reg_addr== REG_SPIWDATA);
 
-  assign spim_mem_req = ((spim_wb_req) && spim_wb_addr[31:28] == 4'b0000);
-  assign spim_reg_req = ((spim_wb_req) && spim_wb_addr[31:28] == 4'b0001);
-
-
-  assign wbd_dat_o  =  spim_wb_rdata;
-  assign wbd_ack_o  =  spim_wb_ack;
-  assign wbd_err_o  =  1'b0;
-
-  // To reduce the load/Timing Wishbone I/F, all the variable are registered
 always_ff @(negedge rst_n or posedge mclk) begin
-    if ( rst_n == 1'b0 ) begin
-        spim_wb_req   <= '0;
-        spim_wb_req_l <= '0;
-        spim_wb_wdata <= '0;
-        spim_wb_rdata <= '0;
-        spim_wb_addr  <= '0;
-        spim_wb_be    <= '0;
-        spim_wb_we    <= '0;
-        spim_wb_ack   <= '0;
+   if ( rst_n == 1'b0 ) begin
+       spim_reg_ack  <= 1'b0;
+       spim_reg_rdata <= 'h0;
    end else begin
-	if(spi_init_done) begin // Wait for internal SPI Init Done
-            spim_wb_req   <= wbd_stb_i && (spi_ack == 0) && (spim_wb_ack==0);
-            spim_wb_req_l <= spim_wb_req;
-            spim_wb_wdata <= wbd_dat_i;
-            spim_wb_addr  <= wbd_adr_i;
-            spim_wb_be    <= wbd_sel_i;
-            spim_wb_we    <= wbd_we_i;
-    
-    
-    	// If there is Reg2Spi read Access, Register the Read Data
-    	if(reg2spi_req && (reg2spi_rd || reg2spi_qrd ) && spi_ack) 
-                 spim_reg_rdata <= spi_rdata;
-    
-    	if(!spim_wb_we && spim_wb_req && spi_ack) 
-               spim_wb_rdata <= spi_rdata;
-            else if (spim_reg_req)
-               spim_wb_rdata <= reg_rdata;
-    
-        // For safer design, we have generated ack after 2 cycle latter to 
-    	// cross-check current request is towards SPI or not
-            spim_wb_ack   <= (spi_req && spim_wb_req) ? spi_ack :
-    		         ((spim_wb_ack==0) && spim_wb_req && spim_wb_req_l) ;
-       end
+      if(spi_init_done && spim_reg_ack == 0) begin
+         if (spim_fifo_wdata_req && (spim_m1_wrdy == 1)) begin // Indirect Memory Write
+	     // If FIFO Write DATA case, Make sure that there no previous pending
+	     // need to processed
+             spim_reg_ack  <= 1'b1;
+	 end else if (spim_reg_req && spim_reg_we && (spim_reg_addr != REG_SPIWDATA)) begin // Indirect memory Write
+             spim_reg_ack  <= 1'b1;
+	 end else if (spim_fifo_rdata_req && (spim_m1_rrdy == 1)) begin // Indirect mem Read
+	     // If FIFO Read DATA case, Make sure that there Data is read from
+             // External SPI Memory
+             spim_reg_ack  <= 1'b1;
+             spim_reg_rdata <= reg_rdata;
+	end else if (spim_reg_req && spim_reg_we == 0 && (spim_reg_addr != REG_SPIRDATA)) begin // Normal Read
+	     // Read other than FIFO Read Data case
+             spim_reg_ack  <= 1'b1;
+             spim_reg_rdata <= reg_rdata;
+	end
+      end else begin
+         spim_reg_ack <= 1'b0;
+      end
    end
 end
 
-  wire [3:0] reg_addr = spim_wb_addr[5:2];
+  //---------------------------------------------
+  // Manges the initial Config Phase of SPI Memory
+  // 1. Power Up Command -  RES(0xAB) 
+  // 2. Write Enable Command - WEN (0x06)
+  // 3. WRITE CONFIG Reg - WRR (0x01) - Set Qaud Mode
+  // --------------------------------------------
+  
+  logic  [9:0]          cfg_exit_cnt  ;
+  assign cfg_exit_cnt = (fast_sim_mode) ? 100: 1000;
+
   integer byte_index;
   always_ff @(negedge rst_n or posedge mclk) begin
     if ( rst_n == 1'b0 ) begin
-      reg2spi_swrst         <= 1'b0;
-      reg2spi_rd            <= 1'b0;
-      reg2spi_wr            <= 1'b0;
-      reg2spi_qrd           <= 1'b0;
-      reg2spi_qwr           <= 1'b0;
-      reg2spi_cmd           <=  'h0;
-      reg2spi_addr          <=  'h0;
-      reg2spi_cmd_len       <=  'h0;
-      reg2spi_addr_len      <=  'h0;
-      reg2spi_data_len      <=  'h0;
-      reg2spi_wdata         <=  'h0;
-      reg2spi_mode_enb      <=  'h0;
-      reg2spi_mode          <=  'h0;
-      reg2spi_dummy_rd_len  <=  'h0;
-      reg2spi_dummy_wr_len  <=  'h0;
-      reg2spi_csreg         <=  'h0;
-      reg2spi_req           <=  'h0;
-      spi_clk_div           <=  'h2;
+      cfg_m0_fsm_reset      <= 'h0;
+      cfg_m0_cs_reg         <= P_CS0;
+      cfg_m0_spi_mode       <= P_QUAD;
+      cfg_m0_spi_switch     <= P_MODE_SWITCH_AT_ADDR;
+      cfg_m0_cmd_reg        <= P_QIOR;
+      cfg_m0_mode_reg       <= 'h0;
+      cfg_m0_spi_seq[3:0]   <= P_FSM_CAMDR;
+      cfg_m0_addr_cnt[1:0]  <= P_24BIT;
+      cfg_m0_dummy_cnt[1:0] <= P_16BIT;
+      cfg_m0_data_cnt[7:0]  <= 4; // 4 Byte
+
+      cfg_m1_fsm_reset      <= 'h0;
+      cfg_m1_cs_reg         <= P_CS0;
+      cfg_m1_spi_mode       <= P_QUAD;
+      cfg_m1_spi_switch     <= P_MODE_SWITCH_AT_DATA;
+      cfg_m1_cmd_reg        <= P_QOR;
+      cfg_m1_mode_reg       <= 'h0;
+      cfg_m1_spi_seq[3:0]   <= P_FSM_CADR;
+      cfg_m1_addr_cnt[1:0]  <= P_24BIT;
+      cfg_m1_dummy_cnt[1:0] <= P_8BIT;
+      cfg_m1_data_cnt[7:0]  <= 0;
+      cfg_m1_req            <= 0; 
+      cfg_m1_wrdy           <= 1'b0;
+      cfg_m1_wdata          <= 'h0; // Not Used
+
+      cfg_cs_early         <= 'h1;
+      cfg_cs_late          <= 'h1;
+      spi_clk_div          <= 'h2;
+
       spi_init_done         <=  'h0;
-      spi_init_state        <=  SPI_INIT_IDLE;
-    end
-    else if (spi_init_done == 0) begin
-       case(spi_init_state)
-	   SPI_INIT_IDLE:
-	   begin
-              reg2spi_rd        <= 'h0;
-              reg2spi_wr        <= 'h1; // SPI Write Req
-              reg2spi_qrd       <= 'h0;
-              reg2spi_qwr       <= 'h0;
-              reg2spi_swrst     <= 'h0;
-              reg2spi_csreg     <= 'h1;
-              reg2spi_cmd[7:0]  <= 'hAB; // POWER UP command
-              reg2spi_mode[7:0] <= 'h0;
-              reg2spi_cmd_len   <= 'h8;
-              reg2spi_addr_len  <= 'h0;
-              reg2spi_data_len  <= 'h0;
-              reg2spi_wdata     <= 'h0;
-	      reg2spi_req       <= 'h1;
-              spi_init_state    <=  SPI_INIT_CMD_WAIT;
-	   end
-	   SPI_INIT_CMD_WAIT:
-	   begin
-	      if(spi_ack)   begin
-	         reg2spi_req      <= 1'b0;
-                 spi_init_state    <=  SPI_INIT_WREN_CMD;
-	      end
-           end
-	   SPI_INIT_WREN_CMD:
-	   begin
-              reg2spi_rd        <= 'h0;
-              reg2spi_wr        <= 'h1; // SPI Write Req
-              reg2spi_qrd       <= 'h0;
-              reg2spi_qwr       <= 'h0;
-              reg2spi_swrst     <= 'h0;
-              reg2spi_csreg     <= 'h1;
-              reg2spi_cmd[7:0]  <= 'h6; // WREN command
-              reg2spi_mode[7:0] <= 'h0;
-              reg2spi_cmd_len   <= 'h8;
-              reg2spi_addr_len  <= 'h0;
-              reg2spi_data_len  <= 'h0;
-              reg2spi_wdata     <= 'h0;
-	      reg2spi_req       <= 'h1;
-              spi_init_state    <=  SPI_INIT_WREN_WAIT;
-	   end
-	   SPI_INIT_WREN_WAIT:
-	   begin
-	      if(spi_ack)   begin
-	         reg2spi_req      <= 1'b0;
-                 spi_init_state    <=  SPI_INIT_WRR_CMD;
-	      end
-	   end
-	   SPI_INIT_WRR_CMD:
-	   begin
-              reg2spi_rd        <= 'h0;
-              reg2spi_wr        <= 'h1; // SPI Write Req
-              reg2spi_qrd       <= 'h0;
-              reg2spi_qwr       <= 'h0;
-              reg2spi_swrst     <= 'h0;
-              reg2spi_csreg     <= 'h1;
-              reg2spi_cmd[7:0]  <= 'h1; // WRR command
-              reg2spi_mode[7:0] <= 'h0;
-              reg2spi_cmd_len   <= 'h8;
-              reg2spi_addr_len  <= 'h0;
-              reg2spi_data_len  <= 'h10;
-              reg2spi_wdata     <= {8'h0,8'h2,16'h0}; // <sr1[7:0]><<cr1[7:0]><16'h0> cr1[1] = 1 indicate quad mode
-	      reg2spi_req       <= 'h1;
-              spi_init_state    <=  SPI_INIT_WRR_WAIT;
-	   end
-	   SPI_INIT_WRR_WAIT:
-	   begin
-	      if(spi_ack)   begin
-	         reg2spi_req      <= 1'b0;
-                 spi_init_done    <=  'h1;
-	      end
-	   end
-       endcase
-    end else if (spim_reg_req & spim_wb_we )
-    begin
-      case(reg_addr)
-        REG_CTRL:
-        begin
-          if ( spim_wb_be[0] == 1 )
-          begin
-            reg2spi_rd    <= spim_wb_wdata[0];
-            reg2spi_wr    <= spim_wb_wdata[1];
-            reg2spi_qrd   <= spim_wb_wdata[2];
-            reg2spi_qwr   <= spim_wb_wdata[3];
-            reg2spi_swrst <= spim_wb_wdata[4];
-	    reg2spi_req   <= 1'b1;
-          end
-          if ( spim_wb_be[1] == 1 )
-          begin
-            reg2spi_csreg <= spim_wb_wdata[11:8];
-          end
-        end
-        REG_CLKDIV:
-          if ( spim_wb_be[0] == 1 )
-          begin
-            spi_clk_div <= spim_wb_wdata[7:0];
-          end
-        REG_SPICMD: begin
-          if ( spim_wb_be[0] == 1 )
-              reg2spi_cmd[7:0] <= spim_wb_wdata[7:0];
-          if ( spim_wb_be[1] == 1 )
-              reg2spi_mode[7:0] <= spim_wb_wdata[15:8];
-          end
-        REG_SPIADR:
-          for (byte_index = 0; byte_index < 4; byte_index = byte_index+1 )
-            if ( spim_wb_be[byte_index] == 1 )
-              reg2spi_addr[byte_index*8 +: 8] <= spim_wb_wdata[(byte_index*8) +: 8];
-        REG_SPILEN:
-        begin
-          if ( spim_wb_be[0] == 1 ) begin
-               reg2spi_mode_enb <= spim_wb_wdata[6];
-               reg2spi_cmd_len  <= spim_wb_wdata[5:0];
-          end
-          if ( spim_wb_be[1] == 1 )
-            reg2spi_addr_len <= spim_wb_wdata[13:8];
-          if ( spim_wb_be[2] == 1 )
-            reg2spi_data_len[7:0] <= spim_wb_wdata[23:16];
-          if ( spim_wb_be[3] == 1 )
-            reg2spi_data_len[15:8] <= spim_wb_wdata[31:24];
-        end
-        REG_SPIDUM:
-        begin
-          if ( spim_wb_be[0] == 1 )
-            reg2spi_dummy_rd_len[7:0]  <= spim_wb_wdata[7:0];
-          if ( spim_wb_be[1] == 1 )
-            reg2spi_dummy_rd_len[15:8] <= spim_wb_wdata[15:8];
-          if ( spim_wb_be[2] == 1 )
-            reg2spi_dummy_wr_len[7:0]  <= spim_wb_wdata[23:16];
-          if ( spim_wb_be[3] == 1 )
-            reg2spi_dummy_wr_len[15:8] <= spim_wb_wdata[31:24];
-        end
-	REG_SPIWDATA: begin
-           reg2spi_wdata     <= spim_wb_wdata;
-	end
-      endcase
-    end
-    else
-    begin
-      if(spi_ack && spim_reg_req)   
-	 reg2spi_req <= 1'b0;
-    end
+      spi_delay_cnt         <= 'h0;
+      spim_reg_req_f        <= 1'b0;
+      spi_init_state        <=  SPI_INIT_PWUP;
+    end else begin 
+        spim_reg_req_f        <= spim_reg_req; // Needed for finding Req Edge
+        if (spi_init_done == 0) begin
+          case(spi_init_state)
+
+              //----------------------------------------------
+              // SPI MEMORY Need minimum 5Us after power up
+              // With 100Mhz, 10ns translated to 500 cycle
+              // We are waiting 1000 cycle
+              // ---------------------------------------------
+              SPI_INIT_PWUP:begin
+                   if(spi_delay_cnt == cfg_exit_cnt) begin
+                       spi_init_state   <=  SPI_INIT_IDLE;
+           	end else begin
+           	    spi_delay_cnt <= spi_delay_cnt+1;
+           	end
+              end
+
+              SPI_INIT_IDLE:
+              begin
+                 cfg_m1_cs_reg        <= P_CS0;
+                 cfg_m1_spi_mode      <= P_SINGLE;
+                 cfg_m1_spi_seq[3:0]  <= P_FSM_C;
+                 cfg_m1_spi_switch    <= '0;
+                 cfg_m1_cmd_reg       <= P_RES;
+                 cfg_m1_mode_reg      <= 'h0; // Not Used
+                 cfg_m1_addr_cnt[1:0] <= 'h0; // Not Used
+                 cfg_m1_dummy_cnt[1:0]<= 'h0; // Not Used
+                 cfg_m1_data_cnt[7:0] <= 'h0; // Not Used
+                 cfg_m1_addr          <= 'h0; // Not Used
+                 cfg_m1_wdata         <= 'h0; // Not Used
+                 cfg_m1_req           <= 'h1;
+                 spi_init_state       <=  SPI_INIT_CMD_WAIT;
+              end
+              SPI_INIT_CMD_WAIT:
+              begin
+                 if(spim_m1_ack)   begin
+                    cfg_m1_req       <= 1'b0;
+                    spi_init_state   <=  SPI_INIT_WREN_CMD;
+                 end
+              end
+              SPI_INIT_WREN_CMD:
+              begin
+                 cfg_m1_cs_reg        <= P_CS0;
+                 cfg_m1_spi_mode      <= P_SINGLE;
+                 cfg_m1_spi_seq[3:0]  <= P_FSM_C;
+                 cfg_m1_spi_switch    <= '0;
+                 cfg_m1_cmd_reg       <= P_WEN;
+                 cfg_m1_mode_reg      <= 'h0; // Not Used
+                 cfg_m1_addr_cnt[1:0] <= 'h0; // Not Used
+                 cfg_m1_dummy_cnt[1:0]<= 'h0; // Not Used
+                 cfg_m1_data_cnt[7:0] <= 'h0; // Not Used
+                 cfg_m1_addr          <= 'h0; // Not Used
+                 cfg_m1_wdata         <= 'h0; // Not Used
+                 cfg_m1_req           <= 'h1;
+                 spi_init_state       <=  SPI_INIT_WREN_WAIT;
+              end
+              SPI_INIT_WREN_WAIT:
+              begin
+                 if(spim_m1_ack)   begin
+                    cfg_m1_req      <= 1'b0;
+                    spi_init_state    <=  SPI_INIT_WRR_CMD;
+                 end
+              end
+              SPI_INIT_WRR_CMD:
+              begin
+                 cfg_m1_cs_reg        <= P_CS0;
+                 cfg_m1_spi_mode      <= P_SINGLE;
+                 cfg_m1_spi_seq[3:0]  <= P_FSM_CW;
+                 cfg_m1_spi_switch    <= '0;
+                 cfg_m1_cmd_reg       <= P_WRR;
+                 cfg_m1_mode_reg      <= 'h0; 
+                 cfg_m1_addr_cnt[1:0] <= 'h0; 
+                 cfg_m1_dummy_cnt[1:0]<= 'h0; 
+                 cfg_m1_data_cnt[7:0] <= 'h2; // 2 Bytes
+                 cfg_m1_addr          <= 'h0; 
+                 cfg_m1_wrdy          <= 1'b1;
+                 cfg_m1_wdata         <= {16'h0,8'h2,8'h0}; // <<cr1[7:0]><sr1[7:0]>> cr1[1] = 1 indicate quad mode
+                 cfg_m1_req           <= 'h1;
+                 spi_init_state       <=  SPI_INIT_WRR_WAIT;
+              end
+              SPI_INIT_WRR_WAIT:
+              begin
+                 if(spim_m1_ack)   begin
+		    spi_delay_cnt    <= 'h0;
+                    cfg_m1_wrdy      <= 1'b0;
+                    cfg_m1_req       <= 1'b0;
+                    spi_init_state   <=  SPI_INIT_WAIT;
+                 end
+              end
+              SPI_INIT_WAIT:
+              begin // SPI MEMORY need 5us after WRR Command
+                   if(spi_delay_cnt == cfg_exit_cnt) begin
+                       spi_init_done    <=  'h1;
+           	end else begin
+           	    spi_delay_cnt <= spi_delay_cnt+1;
+           	end
+              end
+          endcase
+       end else if (spim_reg_req && spim_reg_we && spi_init_done )
+       begin
+         case(spim_reg_addr)
+         GLBL_CTRL: begin
+             if ( spim_reg_be[0] == 1 ) begin
+                cfg_cs_early  <= spim_reg_wdata[1:0];
+                cfg_cs_late   <= spim_reg_wdata[3:2];
+             end
+             if ( spim_reg_be[1] == 1 ) begin
+                spi_clk_div <= spim_reg_wdata[15:8];
+             end
+         end
+        MEM_CTRL1: begin // This register control Direct Memory Access Type
+             if ( spim_reg_be[0] == 1 ) begin
+               cfg_m0_cs_reg    <= spim_reg_wdata[3:0]; // Chip Select for Memory Interface
+               cfg_m0_spi_mode  <= spim_reg_wdata[5:4]; // SPI Mode, 0 - Normal, 1- Double, 2 - Qard
+               cfg_m0_spi_switch<= spim_reg_wdata[7:6]; // Phase where to switch the SPI Mode
+             end
+             if ( spim_reg_be[1] == 1 ) begin
+               cfg_m0_fsm_reset <= spim_reg_wdata[8];
+             end
+         end
+         MEM_CTRL2: begin // This register control Direct Memory Access Type
+             if ( spim_reg_be[0] == 1 ) begin
+                cfg_m0_cmd_reg <= spim_reg_wdata[7:0];
+             end
+             if ( spim_reg_be[1] == 1 ) begin
+                cfg_m0_mode_reg <= spim_reg_wdata[15:8];
+             end
+             if ( spim_reg_be[2] == 1 ) begin
+                cfg_m0_spi_seq[3:0]  <= spim_reg_wdata[19:16];
+                cfg_m0_addr_cnt[1:0] <= spim_reg_wdata[21:20];
+                cfg_m0_dummy_cnt[1:0]<= spim_reg_wdata[23:22];
+             end
+             if ( spim_reg_be[3] == 1 ) begin
+               cfg_m0_data_cnt[7:0]  <= spim_reg_wdata[31:24];
+             end
+         end
+         REG_CTRL1: begin
+             if ( spim_reg_be[0] == 1 ) begin
+               cfg_m1_cs_reg    <= spim_reg_wdata[3:0]; // Chip Select for Memory Interface
+               cfg_m1_spi_mode  <= spim_reg_wdata[5:4]; // SPI Mode, 0 - Normal, 1- Double, 2 - Qard
+               cfg_m1_spi_switch<= spim_reg_wdata[7:6]; // Phase where to switch the SPI Mode
+             end
+             if ( spim_reg_be[0] == 1 ) begin
+               cfg_m1_fsm_reset <= spim_reg_wdata[8];
+             end
+         end
+         REG_CTRL2: begin // This register control Direct Memory Access Type
+             if ( spim_reg_be[0] == 1 ) begin
+                cfg_m1_cmd_reg <= spim_reg_wdata[7:0];
+             end
+             if ( spim_reg_be[1] == 1 ) begin
+                cfg_m1_mode_reg <= spim_reg_wdata[15:8];
+             end
+             if ( spim_reg_be[2] == 1 ) begin
+                cfg_m1_spi_seq[3:0]  <= spim_reg_wdata[19:16];
+                cfg_m1_addr_cnt[1:0] <= spim_reg_wdata[21:20];
+                cfg_m1_dummy_cnt[1:0]<= spim_reg_wdata[23:22];
+             end
+             if ( spim_reg_be[3] == 1 ) begin
+                cfg_m1_data_cnt[7:0]  <= spim_reg_wdata[31:24];
+             end
+         end
+         REG_SPIADR: begin
+           for (byte_index = 0; byte_index < 4; byte_index = byte_index+1 )
+               if ( spim_reg_be[byte_index] == 1 )
+                 cfg_m1_addr[byte_index*8 +: 8] <= spim_reg_wdata[(byte_index*8) +: 8];
+         end
+         endcase
+         end 
+     end 
   end 
 
 
@@ -422,36 +545,254 @@ end
     begin
       reg_rdata = '0;
       if(spim_reg_req) begin
-          case(reg_addr)
-            REG_CTRL:
-                    reg_rdata[31:0] =  { 20'h0, 
-            	                     reg2spi_csreg,
-            	                     3'b0,
-            	                     reg2spi_swrst,
-            	                     reg2spi_qwr,
-            	                     reg2spi_qrd,
-            	                     reg2spi_wr,
-            	                     reg2spi_rd};
-
-            REG_CLKDIV:
-                    reg_rdata[31:0] = {24'h0,spi_clk_div};
-            REG_SPICMD:
-                    reg_rdata[31:0] = {16'h0,reg2spi_mode,reg2spi_cmd};
-            REG_SPIADR:
-                    reg_rdata[31:0] = reg2spi_addr;
-            REG_SPILEN:
-                    reg_rdata[31:0] = {reg2spi_data_len,2'b00,reg2spi_addr_len,1'b0,reg2spi_mode_enb,reg2spi_cmd_len};
-            REG_SPIDUM:
-                    reg_rdata[31:0] = {reg2spi_dummy_wr_len,reg2spi_dummy_rd_len};
-            REG_SPIWDATA:
-                    reg_rdata[31:0] = reg2spi_wdata;
-            REG_SPIRDATA:
-                    reg_rdata[31:0] = spim_reg_rdata;
-            REG_STATUS:
-                    reg_rdata[31:0] = {23'h0,spi_status};
+          case(spim_reg_addr)
+            GLBL_CTRL:   reg_rdata[31:0] = {16'h0,spi_clk_div,4'h0,cfg_cs_late,cfg_cs_early};
+	    MEM_CTRL1:    reg_rdata[31:0] =  {23'h0,cfg_m0_fsm_reset,cfg_m0_spi_switch,cfg_m0_spi_mode,cfg_m0_cs_reg};
+	    MEM_CTRL2:    reg_rdata[31:0] =  {cfg_m0_data_cnt,cfg_m0_dummy_cnt,cfg_m0_addr_cnt,cfg_m0_spi_seq,cfg_m0_mode_reg,cfg_m0_cmd_reg};
+            REG_CTRL1:    reg_rdata[31:0] =  {23'h0, cfg_m1_fsm_reset,cfg_m1_spi_switch,cfg_m1_spi_mode,cfg_m1_cs_reg};
+	    REG_CTRL2:    reg_rdata[31:0] =  {cfg_m1_data_cnt,cfg_m1_dummy_cnt,cfg_m1_addr_cnt,cfg_m1_spi_seq,cfg_m1_mode_reg,cfg_m1_cmd_reg};
+            REG_SPIADR:   reg_rdata[31:0] = cfg_m1_addr;
+            REG_SPIWDATA: reg_rdata[31:0] = cfg_m1_wdata;
+            REG_SPIRDATA: reg_rdata[31:0] = cfg_m1_rdata;
+            REG_STATUS:   reg_rdata[31:0] = spi_debug;
           endcase
        end
     end 
 
+// FSM
+
+always_ff @(negedge rst_n or posedge mclk) begin
+    if ( rst_n == 1'b0 ) begin
+	cur_cnt <= 'h0;
+	state    <= FSM_IDLE;
+    end else begin
+       if(cfg_m1_fsm_reset) begin
+          cur_cnt <= 'h0;
+	  state    <= FSM_IDLE;
+       end else begin
+           cur_cnt <= next_cnt;
+       	   state <= next_state;
+       end
+    end
+end
+
+/***********************************************************************************
+* This block interface with WishBone Request and Write Command & Read Response FIFO
+* **********************************************************************************/
+
+logic [7:0] cfg_data_cnt;
+logic [31:0] spim_fifo_wdata;
+logic       spim_fifo_req;
+assign cfg_data_cnt = cfg_m1_data_cnt-1;
+
+assign spim_fifo_req = cfg_m1_req || spim_fifo_rdata_req || spim_fifo_wdata_req;
+
+assign spim_fifo_wdata = (cfg_m1_req) ?  cfg_m1_wdata :  spim_reg_wdata;
+
+always_comb
+begin
+   cmd_fifo_wr    = '0;
+   cmd_fifo_wdata = '0;
+
+   res_fifo_rd    = 0;
+   spim_m1_rdata   = '0;
+
+   spim_m1_ack    = 0;
+   spim_m1_rrdy   = 0;
+   next_cnt      = cur_cnt;
+   next_state    = state;
+   spim_m1_rrdy  = 0;
+   spim_m1_wrdy  = 0;
+   cfg_m1_rdata  = 0;
+
+   case(state)
+   FSM_IDLE:  begin
+	if(spim_fifo_req && cmd_fifo_empty) begin
+	   case(cfg_m1_spi_seq)
+	      P_FSM_C: begin
+	              cmd_fifo_wdata = {SOC,EOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+		                        cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+					cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	              next_state = FSM_ACK_PHASE;
+	      end
+	      P_FSM_CW: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_WRITE_PHASE;
+	      end
+	      P_FSM_CA: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+	      P_FSM_CAR: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+              P_FSM_CADR: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+	      P_FSM_CAMR: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+	      P_FSM_CAMDR: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+	      P_FSM_CAW: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+	      P_FSM_CADW: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_ADR_PHASE;
+	      end
+	       P_FSM_CDR: begin
+	          cmd_fifo_wdata = {SOC,EOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_READ_PHASE;
+	       end
+	       P_FSM_CDW: begin
+	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
+			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
+				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	          next_state = FSM_WRITE_PHASE;
+	       end
+
+
+	   endcase
+	   cmd_fifo_wr    = 1;
+	end
+   end
+   // ADDRESS PHASE
+   FSM_ADR_PHASE: begin
+	  if(!cmd_fifo_full) begin
+	      case(cfg_m1_spi_seq)
+	         P_FSM_CA:   // COMMAND + ADDRESS PHASE
+	         begin
+                       cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
+	               next_state = FSM_ACK_PHASE;
+	         end
+	         P_FSM_CAR:  // COMMAND + ADDRESS + READ PHASE
+		 begin
+                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
+	            next_cnt  = 'h0;
+	            next_state = FSM_READ_PHASE;
+	         end
+                 P_FSM_CADR: // COMMAND + ADDRESS + DUMMY + READ PHASE
+		 begin
+                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
+	            next_cnt  = 'h0;
+	            next_state = FSM_READ_PHASE;
+	         end
+	         P_FSM_CAMR: // COMMAND + ADDRESS + MODE + READ PHASE
+		 begin
+                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
+	            next_cnt  = 'h0;
+	            next_state = FSM_READ_PHASE;
+	         end
+	         P_FSM_CAMDR: // COMMAND + ADDRESS + MODE + DUMMY + READ PHASE
+		 begin
+                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
+	            next_cnt  = 'h0;
+	            next_state = FSM_READ_PHASE;
+	         end
+
+		 P_FSM_CAW:begin
+                    cmd_fifo_wdata = {NOC,NOC,cfg_m1_addr[31:0]};
+	            next_cnt  = 'h0;
+	            next_state = FSM_WRITE_PHASE;
+	         end
+		 P_FSM_CADW: begin
+                    cmd_fifo_wdata = {NOC,NOC,cfg_m1_addr[31:0]};
+	            next_cnt  = 'h0;
+	            next_state = FSM_WRITE_PHASE;
+	         end
+	      endcase
+              cmd_fifo_wr      = 1;
+	  end
+   end
+
+   //----------------------------------------------------------
+   // Check Resonse FIFO is not empty then read the data from response fifo
+   // ---------------------------------------------------------
+   FSM_READ_PHASE: begin
+	if(res_fifo_empty != 1 && spim_fifo_rdata_req) begin
+	   spim_m1_rrdy = 1;
+           cfg_m1_rdata = res_fifo_rdata;
+	   res_fifo_rd  = 1;
+	   if(cfg_data_cnt[7:2] == cur_cnt) begin
+	      next_state = FSM_ACK_PHASE;
+	   end else begin
+	      next_state = FSM_READ_BUSY;
+	      next_cnt  = cur_cnt+1;
+	    end
+	 end
+   end
+   //----------------------------------------------
+   // Wait for Previous Read Data Read
+   // ---------------------------------------------
+   FSM_READ_BUSY: begin
+        spim_m1_rrdy = 0;
+	if(spim_fifo_rdata_req == 0) begin
+           next_state    = FSM_READ_PHASE;
+	end
+   end
+
+   //----------------------------------------------------------
+   // Check command FIFO is not full and Write Data is available
+   // ---------------------------------------------------------
+   FSM_WRITE_PHASE: begin
+        if(cmd_fifo_full != 1 && spim_fifo_req) begin
+	   // If this a single word config cycle or 
+           // in crrent spim_fifo_wr request
+	   spim_m1_wrdy = 1;
+	   if(cfg_data_cnt[7:2] == cur_cnt) begin
+              cmd_fifo_wdata = {NOC,EOC,spim_fifo_wdata[31:0]};
+	      next_state     = FSM_ACK_PHASE;
+	   end else begin
+              cmd_fifo_wdata = {NOC,NOC,spim_fifo_wdata[31:0]};
+	      next_state     = FSM_WRITE_BUSY;
+	      next_cnt      = cur_cnt+1;
+	    end
+	   cmd_fifo_wr  = 1;
+	 end
+   end
+   //----------------------------------------------
+   // Wait for NEXT Data Ready
+   // ---------------------------------------------
+   FSM_WRITE_BUSY: begin
+	spim_m1_wrdy = 0;
+	if(spim_fifo_wdata_req == 0) begin
+           next_state    = FSM_WRITE_PHASE;
+	end
+   end
+
+   FSM_ACK_PHASE: begin
+	   spim_m1_ack = 1;
+	   next_state = FSM_IDLE;
+	end
+
+   endcase
+
+
+end
 
 endmodule

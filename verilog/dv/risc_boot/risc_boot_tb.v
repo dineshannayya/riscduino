@@ -71,6 +71,7 @@
 
 `timescale 1 ns / 1 ps
 
+`include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "caravel_netlists.v"
 `include "spiflash.v"
@@ -130,8 +131,9 @@ module risc_boot_tb;
         begin
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
+           $dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
            //$dumpvars(2,risc_boot_tb.uut);
-           $dumpvars(4,risc_boot_tb.uut.mprj.u_core);
+           $dumpvars(4,risc_boot_tb.uut.mprj);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");
         end
@@ -302,18 +304,22 @@ module risc_boot_tb;
    //tri  user_flash_io2 = mprj_io[35];
    //tri  user_flash_io3 = mprj_io[36];
 
-   // Quard flash
-	spiflash #(
-		.FILENAME("user_uart.hex")
-	) u_user_spiflash (
-		.csb(user_flash_csb),
-		.clk(user_flash_clk),
-		.io0(mprj_io[32]),
-		.io1(mprj_io[33]),
-		.io2(mprj_io[34]),
-		.io3(mprj_io[35])	
-	);
 
+   // Quard flash
+     s25fl256s #(.mem_file_name("user_uart.hex"),
+	         .otp_file_name("none")) 
+		 u_spi_flash_256mb (
+           // Data Inputs/Outputs
+       .SI      (mprj_io[32]),
+       .SO      (mprj_io[33]),
+       // Controls
+       .SCK     (user_flash_clk),
+       .CSNeg   (user_flash_csb),
+       .WPNeg   (mprj_io[34]),
+       .HOLDNeg (mprj_io[35]),
+       .RSTNeg  (RSTB)
+
+       );
 
 //------------------------------------------------
 // Integrate the SDRAM 8 BIT Memory

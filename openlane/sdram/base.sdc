@@ -36,13 +36,12 @@ puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 
 set_input_delay 2.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {wb_rst_n}
 
-set_input_delay  3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_stb_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_stb_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_addr_i*]
-set_input_delay  5.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_we_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_we_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_dat_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_sel_i*]
-set_input_delay  3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_cyc_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_cti_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_cyc_i*]
 
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port cfg_sdr_tras_d*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port cfg_sdr_trp_d*]
@@ -57,7 +56,7 @@ set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port cfg_sdr_rfmax*]
 
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_dat_o*]
-set_output_delay 3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_ack_o*]
+set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_ack_o*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port sdr_init_done*]
 
 ######################################
@@ -69,7 +68,36 @@ set sdram_output_delay_value [expr $::env(SDRAM_CLOCK_PERIOD) * 0.6]
 puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
 puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 
-set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out*]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[0]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[1]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[2]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[3]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[4]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[5]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[6]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[7]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[8]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[9]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[10]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[11]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[12]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[13]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[14]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[15]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[16]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[17]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[18]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[19]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[20]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[21]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[22]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[23]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[24]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[25]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[26]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[27]]
+set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[28]]
+#set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_out[29]] Masked SDRAM clock
 set_output_delay $sdram_output_delay_value  -clock [get_clocks $::env(SDRAM_CLOCK_PORT)] [get_port io_oeb*]
 
 ################################################

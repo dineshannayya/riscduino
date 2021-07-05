@@ -37,7 +37,9 @@ set ::env(SYNTH_MAX_FANOUT) 4
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/spi_master/src/spim_top.sv \
+        $script_dir/../../verilog/rtl/spi_master/src/spim_if.sv \
         $script_dir/../../verilog/rtl/spi_master/src/spim_regs.sv \
+        $script_dir/../../verilog/rtl/spi_master/src/spim_fifo.sv \
         $script_dir/../../verilog/rtl/spi_master/src/spim_clkgen.sv \
         $script_dir/../../verilog/rtl/spi_master/src/spim_ctrl.sv \
         $script_dir/../../verilog/rtl/spi_master/src/spim_rx.sv \

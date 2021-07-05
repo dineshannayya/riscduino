@@ -105,7 +105,7 @@ module async_wb (
 // -------------------------------------------------
 logic        PendingRd     ; // Pending Read Transaction
 logic        m_cmd_wr_en       ;
-logic [70:0] m_cmd_wr_data     ;
+logic [68:0] m_cmd_wr_data     ;
 logic        m_cmd_wr_full     ;
 logic        m_cmd_wr_afull    ;
 
@@ -119,14 +119,14 @@ logic [32:0] m_resp_rd_data     ;
 
 assign m_cmd_wr_en = (!PendingRd) && wbm_stb_i && !m_cmd_wr_full && !m_cmd_wr_afull;
 
-assign m_cmd_wr_data = {wbm_cyc_i,wbm_stb_i,wbm_adr_i,wbm_we_i,wbm_dat_i,wbm_sel_i};
+assign m_cmd_wr_data = {wbm_adr_i,wbm_we_i,wbm_dat_i,wbm_sel_i};
 
 always@(negedge wbm_rst_n or posedge wbm_clk_i)
 begin
    if(wbm_rst_n == 0) begin
       PendingRd <= 1'b0;
    end else begin
-      if((!PendingRd) && wbm_stb_i && (!wbm_we_i)) begin
+      if((!PendingRd) && wbm_stb_i && (!wbm_we_i) && m_cmd_wr_en) begin
       PendingRd <= 1'b1;
       end else if(PendingRd && wbm_stb_i && (!wbm_we_i) && wbm_ack_o) begin
          PendingRd <= 1'b0;
@@ -158,10 +158,26 @@ logic        s_resp_wr_en        ;
 logic [32:0] s_resp_wr_data      ;
 logic        s_resp_wr_full      ;
 logic        s_resp_wr_afull     ;
+logic        wbs_ack_f          ;
+
+
+always@(negedge wbs_rst_n or posedge wbs_clk_i)
+begin
+   if(wbs_rst_n == 0) begin
+      wbs_ack_f <= 1'b0;
+   end else begin
+      wbs_ack_f <= wbs_ack_i;
+   end
+end
 
 
 // Read Interface
-assign {wbs_cyc_o,wbs_stb_o,wbs_adr_o,wbs_we_o,wbs_dat_o,wbs_sel_o} = (s_cmd_rd_empty) ? '0:  s_cmd_rd_data;
+assign {wbs_adr_o,wbs_we_o,wbs_dat_o,wbs_sel_o} = (s_cmd_rd_empty) ? '0:  s_cmd_rd_data;
+// All the downstream logic expect Stobe is getting de-asserted 
+// atleast for 1 cycle after ack is generated
+assign wbs_stb_o = (wbs_ack_f) ? 1'b0 : (s_cmd_rd_empty) ? 1'b0: 1'b1;
+assign wbs_cyc_o = (wbs_ack_f) ? 1'b0 : (s_cmd_rd_empty) ? 1'b0: 1'b1;
+
 assign s_cmd_rd_en = wbs_ack_i;
 
 // Write Interface
@@ -169,7 +185,7 @@ assign s_cmd_rd_en = wbs_ack_i;
 assign s_resp_wr_en   = wbs_stb_o & (!wbs_we_o) & wbs_ack_i & !s_resp_wr_full;
 assign s_resp_wr_data = {wbs_err_i,wbs_dat_i};
 
-async_fifo #(.W(71), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_cmd_if (
+async_fifo #(.W(69), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_cmd_if (
 	           // Sync w.r.t WR clock
 	           .wr_clk        (wbm_clk_i         ),
                    .wr_reset_n    (wbm_rst_n         ),

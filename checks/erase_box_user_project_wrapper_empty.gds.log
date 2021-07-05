@@ -1,0 +1,45 @@
+/home/dinesha/workarea/opencore/git/yifive_r0/checks/user_project_wrapper_empty.gds /home/dinesha/workarea/opencore/git/yifive_r0/checks/user_project_wrapper_empty_erased.gds user_project_wrapper
+
+Magic 8.3 revision 182 - Compiled on Fri Jun 25 23:58:13 UTC 2021.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+Using NULL graphics device.
+Processing system .magicrc file
+Sourcing design .magicrc for technology sky130A ...
+2 Magic internal units = 1 Lambda
+Input style sky130(): scaleFactor=2, multiplier=2
+Scaled tech values by 2 / 1 to match internal grid scaling
+Loading sky130A Device Generator Menu ...
+Using technology "sky130A", version 1.0.116-4-g522a373
+Input style sky130(vendor): scaleFactor=2, multiplier=2
+CIF input style is now "sky130(vendor)"
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 3.0
+Library name: user_project_wrapper
+Reading "user_project_wrapper".
+Root cell box:
+           width x height  (   llx,  lly  ), (   urx,  ury  )  area (units^2)
+
+microns:   20.00 x 3520.00  (-20.00,  0.00 ), (  0.00,  3520.00)  70400.00  
+lambda:   2000.00 x 352000.00  (-2000.00,  0.00 ), (  0.00,  352000.00)  704000000.00
+internal:   4000 x 704000  ( -4000,  0    ), (     0,  704000)  2816000000
+Root cell box:
+           width x height  (   llx,  lly  ), (   urx,  ury  )  area (units^2)
+
+microns:   20.00 x 3520.00  ( 2920.00,  0.00 ), ( 2940.00,  3520.00)  70400.00  
+lambda:   2000.00 x 352000.00  ( 292000.00,  0.00 ), ( 294000.00,  352000.00)  704000000.00
+internal:   4000 x 704000  ( 584000,  0    ), ( 588000,  704000)  2816000000
+Root cell box:
+           width x height  (   llx,  lly  ), (   urx,  ury  )  area (units^2)
+
+microns:  2960.00 x 20.00   (-20.00, -20.00), ( 2940.00,  0.00 )  59200.00  
+lambda:   296000.00 x 2000.00  (-2000.00, -2000.00), ( 294000.00,  0.00 )  592000000.00
+internal: 592000 x 4000    ( -4000, -4000 ), ( 588000,  0    )  2368000000
+Root cell box:
+           width x height  (   llx,  lly  ), (   urx,  ury  )  area (units^2)
+
+microns:  2960.00 x 20.00   (-20.00,  3520.00), ( 2940.00,  3540.00)  59200.00  
+lambda:   296000.00 x 2000.00  (-2000.00,  352000.00), ( 294000.00,  354000.00)  592000000.00
+internal: 592000 x 4000    ( -4000,  704000), ( 588000,  708000)  2368000000
+   Generating output for cell xor_target
+/home/dinesha/workarea/opencore/git/yifive_r0/checks/user_project_wrapper_empty_erased.gds
