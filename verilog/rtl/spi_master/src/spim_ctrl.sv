@@ -242,7 +242,7 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 	            FSM_READ_WAIT,FSM_READ_PHASE,FSM_TX_DONE,FSM_CS_DEASEERT} state,next_state;
 
  
-  assign ctrl_state =  state;
+  assign ctrl_state =  state[3:0];
   assign en_quad_in = (s_spi_mode == SPI_STD) ? 1'b0 : 1'b1;
 
   assign spi_mode = s_spi_mode;

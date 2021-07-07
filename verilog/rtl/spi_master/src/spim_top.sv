@@ -103,7 +103,7 @@ module spim_top
     output logic                 [31:0]  spi_debug,
 
     // PAD I/f
-    input  logic [5:0]                   io_in    ,
+    input  logic [5:2]                   io_in    ,
     output logic  [5:0]                  io_out   ,
     output logic  [5:0]                  io_oeb
 
@@ -188,7 +188,7 @@ module spim_top
     assign spi_debug  =   {m0_res_fifo_flush,m1_res_fifo_flush,spi_init_done,
 		          m0_cmd_fifo_full,m0_cmd_fifo_empty,m0_res_fifo_full,m0_res_fifo_empty,
 		          m1_cmd_fifo_full,m1_cmd_fifo_empty,m1_res_fifo_full,m1_res_fifo_empty,
-		          ctrl_state[3:0], m0_state[3:0],m1_state[3:0],spi_ctrl_status};
+		          ctrl_state[3:0], m0_state[3:0],m1_state[3:0],spi_ctrl_status[8:0]};
 
 //-------------------------------------------------------
 // SPI Interface moved inside to support carvel IO pad 
