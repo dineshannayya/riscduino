@@ -129,21 +129,21 @@ module clk_skew_adjust(clk_in, sel, clk_out);
   wire d30;
 
 
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_1  (.A(clk_in),  .X(clk_d1));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_2  (.A(clk_d1),    .X(clk_d2));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_3  (.A(clk_d2),    .X(clk_d3));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_4  (.A(clk_d3),    .X(clk_d4));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_5  (.A(clk_d4),    .X(clk_d5));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_6  (.A(clk_d5),    .X(clk_d6));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_7  (.A(clk_d6),    .X(clk_d7));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_8  (.A(clk_d7),    .X(clk_d8));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_9  (.A(clk_d8),    .X(clk_d9));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_10 (.A(clk_d9),    .X(clk_d10));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_11 (.A(clk_d10),   .X(clk_d11));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_12 (.A(clk_d11),   .X(clk_d12));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_13 (.A(clk_d12),   .X(clk_d13));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_14 (.A(clk_d13),   .X(clk_d14));
-  sky130_fd_sc_hd__clkbuf_1 clkbuf_15 (.A(clk_d14),   .X(clk_d15));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_1  (.A(clk_in),  .X(clk_d1));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_2  (.A(clk_d1),    .X(clk_d2));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_3  (.A(clk_d2),    .X(clk_d3));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_4  (.A(clk_d3),    .X(clk_d4));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_5  (.A(clk_d4),    .X(clk_d5));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_6  (.A(clk_d5),    .X(clk_d6));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_7  (.A(clk_d6),    .X(clk_d7));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_8  (.A(clk_d7),    .X(clk_d8));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_9  (.A(clk_d8),    .X(clk_d9));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_10 (.A(clk_d9),    .X(clk_d10));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_11 (.A(clk_d10),   .X(clk_d11));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_12 (.A(clk_d11),   .X(clk_d12));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_13 (.A(clk_d12),   .X(clk_d13));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_14 (.A(clk_d13),   .X(clk_d14));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_15 (.A(clk_d14),   .X(clk_d15));
 
 
   // Tap point selection
@@ -186,7 +186,7 @@ module clk_skew_adjust(clk_in, sel, clk_out);
   sky130_fd_sc_hd__mux2_1 u_mux_level_21 ( .X (d21) , .A0 (d12), .A1(d13), .S(sel[2]));
 
   // fourth level mux - 1
-  sky130_fd_sc_hd__mux2_1 u_mux_level_30 ( .X (d30) , .A0 (d20), .A1(d21), .S(sel[3]));
+  sky130_fd_sc_hd__mux2_4 u_mux_level_30 ( .X (d30) , .A0 (d20), .A1(d21), .S(sel[3]));
 
 
   assign clk_out = d30;

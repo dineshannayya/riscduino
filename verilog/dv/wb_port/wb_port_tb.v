@@ -50,7 +50,10 @@ module wb_port_tb;
 	`ifdef WFDUMP
 	initial begin
 		$dumpfile("wb_port.vcd");
-		$dumpvars(0, wb_port_tb.uut.mprj);
+		$dumpvars(1, wb_port_tb);
+		$dumpvars(2, wb_port_tb.uut);
+		//$dumpvars(1, wb_port_tb.uut.mprj);
+		$dumpvars(1, wb_port_tb.uut.mprj.u_wb_host);
 	end
        `endif
 
@@ -76,7 +79,7 @@ module wb_port_tb;
 	initial begin
 	   wait(checkbits == 16'h AB60);
 		$display("Monitor: MPRJ-Logic WB Started");
-		wait(checkbits == 16'h AB61);
+		wait(checkbits == 16'h AB6A);
 		$display ("##########################################################");
 		`ifdef GL
 	    	$display("Monitor: Mega-Project WB (GL) Passed");
@@ -162,5 +165,67 @@ module wb_port_tb;
 		.io3()			// not used
 	);
 
+`ifndef GL // Drive Power for Hold Fix Buf
+    // All standard cell need power hook-up for functionality work
+    initial begin
+	force uut.mprj.u_spi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio0.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay1_sdio0.VNB  = VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio0.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio0.VNB  = VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio0.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio0.VPB     =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio0.VGND    =VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio0.VNB     =VSS;
+
+
+	force uut.mprj.u_spi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio1.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay1_sdio1.VNB = VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio1.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio1.VNB = VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio1.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio1.VPB     =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio1.VGND    =VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio1.VNB     =VSS;
+
+	force uut.mprj.u_spi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio2.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay1_sdio2.VNB = VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio2.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio2.VNB = VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio2.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio2.VPB     =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio2.VGND    =VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio2.VNB     =VSS;
+
+	force uut.mprj.u_spi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay1_sdio3.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay1_sdio3.VNB = VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_delay2_sdio3.VGND =VSS;
+	force uut.mprj.u_spi_master.u_delay2_sdio3.VNB = VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio3.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio3.VPB     =USER_VDD1V8;
+	force uut.mprj.u_spi_master.u_buf_sdio3.VGND    =VSS;
+	force uut.mprj.u_spi_master.u_buf_sdio3.VNB     =VSS;
+          
+	force uut.mprj.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
+	force uut.mprj.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
+	force uut.mprj.u_uart_core.u_lineclk_buf.VGND =VSS;
+	force uut.mprj.u_uart_core.u_lineclk_buf.VNB = VSS;
+    end
+`endif    
 endmodule
 `default_nettype wire

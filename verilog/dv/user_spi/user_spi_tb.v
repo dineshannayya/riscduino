@@ -386,6 +386,68 @@ user_project_wrapper u_top(
 
 );
 
+`ifndef GL // Drive Power for Hold Fix Buf
+    // All standard cell need power hook-up for functionality work
+    initial begin
+	force u_top.u_spi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio0.VGND =VSS;
+	force u_top.u_spi_master.u_delay1_sdio0.VNB = VSS;
+	force u_top.u_spi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio0.VGND =VSS;
+	force u_top.u_spi_master.u_delay2_sdio0.VNB = VSS;
+	force u_top.u_spi_master.u_buf_sdio0.VPWR   =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio0.VPB    =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio0.VGND   =VSS;
+	force u_top.u_spi_master.u_buf_sdio0.VNB    =VSS;
+
+	force u_top.u_spi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio1.VGND =VSS;
+	force u_top.u_spi_master.u_delay1_sdio1.VNB = VSS;
+	force u_top.u_spi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio1.VGND =VSS;
+	force u_top.u_spi_master.u_delay2_sdio1.VNB = VSS;
+	force u_top.u_spi_master.u_buf_sdio1.VPWR   =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio1.VPB    =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio1.VGND   =VSS;
+	force u_top.u_spi_master.u_buf_sdio1.VNB    =VSS;
+
+	force u_top.u_spi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio2.VGND =VSS;
+	force u_top.u_spi_master.u_delay1_sdio2.VNB = VSS;
+	force u_top.u_spi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio2.VGND =VSS;
+	force u_top.u_spi_master.u_delay2_sdio2.VNB = VSS;
+	force u_top.u_spi_master.u_buf_sdio2.VPWR   =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio2.VPB    =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio2.VGND   =VSS;
+	force u_top.u_spi_master.u_buf_sdio2.VNB    =VSS;
+
+	force u_top.u_spi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay1_sdio3.VGND =VSS;
+	force u_top.u_spi_master.u_delay1_sdio3.VNB = VSS;
+	force u_top.u_spi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
+	force u_top.u_spi_master.u_delay2_sdio3.VGND =VSS;
+	force u_top.u_spi_master.u_delay2_sdio3.VNB = VSS;
+	force u_top.u_spi_master.u_buf_sdio3.VPWR   =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio3.VPB    =USER_VDD1V8;
+	force u_top.u_spi_master.u_buf_sdio3.VGND   =VSS;
+	force u_top.u_spi_master.u_buf_sdio3.VNB    =VSS;
+          
+	force u_top.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
+	force u_top.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
+	force u_top.u_uart_core.u_lineclk_buf.VGND =VSS;
+	force u_top.u_uart_core.u_lineclk_buf.VNB = VSS;
+    end
+`endif    
+
 //------------------------------------------------------
 //  Integrate the Serial flash with qurd support to
 //  user core using the gpio pads

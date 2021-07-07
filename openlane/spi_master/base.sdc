@@ -19,10 +19,16 @@ set_units -time ns
 set ::env(WB_CLOCK_PERIOD) "10"
 set ::env(WB_CLOCK_PORT) "mclk"
 
+set ::env(SPI_CLOCK_PORT)  "spiclk"
+set ::env(SPI_CLOCK_PERIOD) "20"
+
 ######################################
 # WB Clock domain input output
 ######################################
 create_clock [get_ports $::env(WB_CLOCK_PORT)]  -name $::env(WB_CLOCK_PORT)  -period $::env(WB_CLOCK_PERIOD)
+
+create_generated_clock -name $::env(SPI_CLOCK_PORT) -source [get_ports $::env(WB_CLOCK_PORT)] -master_clock $::env(WB_CLOCK_PORT) -divide_by 2  -add -comment "SPI Clock Out"  [get_port io_out[0]]
+
 set wb_input_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
 set wb_output_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
 puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
@@ -37,27 +43,54 @@ set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbd_dat_i*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbd_sel_i*]
 
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_in[5]]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_in[4]]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_in[3]]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_in[2]]
 
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbd_dat_o*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbd_ack_o*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbd_err_o*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port spi_debug*]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_out[5]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_out[4]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_out[3]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_out[2]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_out[1]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_out[0]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_oeb[5]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_oeb[4]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_oeb[3]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_oeb[2]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_oeb[1]]
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port io_oeb[0]]
+
+### SPI I/F constaints
+set spi_input_delay_value  [expr $::env(SPI_CLOCK_PERIOD) * 0.6]
+set spi_output_delay_value [expr $::env(SPI_CLOCK_PERIOD) * 0.6]
+
+set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[5]]
+set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[4]]
+set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[3]]
+set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[2]]
+
+set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[5]]
+set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[4]]
+set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[3]]
+set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[2]]
+
+#io_out[0] is spiclcok
+#set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[0]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[5]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[4]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[3]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[2]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[1]]
+
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[5]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[4]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[3]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[2]]
+set_output_delay 6  -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[1]]
+
+set_output_delay -0.5   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[5]]
+set_output_delay -0.5   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[4]]
+set_output_delay -0.5   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[3]]
+set_output_delay -0.5   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[2]]
+set_output_delay 0.0    -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[1]]
+
+# Chip select asserted multiple cycle eariler than spi clock
+set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[1]]
+
+set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[5]]
+set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[4]]
+set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[3]]
+set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[2]]
+set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[1]]
 
 # TODO set this as parameter
 set_driving_cell -lib_cell $::env(SYNTH_DRIVING_CELL) -pin $::env(SYNTH_DRIVING_CELL_PIN) [all_inputs]

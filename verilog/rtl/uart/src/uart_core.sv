@@ -205,11 +205,13 @@ uart_cfg u_cfg (
 //    cfg_baud_16x = 0xA0 (160)
 //###############################################################
 
-wire line_clk_16x;
+wire line_clk_16x_in;
+
+sky130_fd_sc_hd__clkbuf_16 u_lineclk_buf  (.A(line_clk_16x_in),  .X(line_clk_16x));
 
 clk_ctl #(11) u_clk_ctl (
    // Outputs
-       .clk_o          (line_clk_16x),
+       .clk_o          (line_clk_16x_in),
 
    // Inputs
        .mclk           (app_clk),

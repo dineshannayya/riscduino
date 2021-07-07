@@ -38,6 +38,8 @@
 ////     v1:    June 17, 2021, Dinesh A                           ////
 ////             core and wishbone clock domain are seperated     ////
 ////             Async fifo added in imem and dmem path           ////
+////     v2:    July 7, 2021, Dinesh A                            ////
+////            64bit debug signal added                          ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -92,6 +94,7 @@ module scr1_top_wb (
     // input   logic                                   test_rst_n,             // Test mode's reset - unused
     input   logic                                   core_clk,               // Core clock
     input   logic                                   rtc_clk,                // Real-time clock
+    output  logic [63:0]                            riscv_debug,
 `ifdef SCR1_DBG_EN
     output  logic                                   sys_rst_n_o,            // External System Reset output
                                                                             //   (for the processor cluster's components or
@@ -242,6 +245,11 @@ logic [63:0]                                        timer_val;
 // --------------------------------------------------------------------------------
 assign test_mode = 1'b0;
 assign test_rst_n = 1'b0;
+
+logic [48:0] core_debug;
+assign riscv_debug = {core_imem_req,core_imem_req,core_imem_cmd,core_imem_resp[1:0],
+	              core_dmem_req_ack,core_dmem_req,core_dmem_cmd,core_dmem_resp[1:0],
+		      wb_imem_req,wb_imem_req,wb_imem_cmd,wb_imem_resp[1:0], core_debug };
 //-------------------------------------------------------------------------------
 // Reset logic
 //-------------------------------------------------------------------------------
@@ -304,6 +312,7 @@ scr1_core_top i_core_top (
     .clk                        (core_clk         ),
     .core_rst_n_o               (core_rst_n_local ),
     .core_rdc_qlfy_o            (                 ),
+    .core_debug                 (core_debug       ),
 `ifdef SCR1_DBG_EN
     .sys_rst_n_o                (sys_rst_n_o      ),
     .sys_rdc_qlfy_o             (sys_rdc_qlfy_o   ),

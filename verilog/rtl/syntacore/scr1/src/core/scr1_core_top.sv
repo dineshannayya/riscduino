@@ -43,6 +43,7 @@ module scr1_core_top (
     input   logic                                   clk,                        // Core clock
     output  logic                                   core_rst_n_o,               // Core reset
     output  logic                                   core_rdc_qlfy_o,            // Core RDC qualifier
+    output  logic   [48:0]                          core_debug  ,
 `ifdef SCR1_DBG_EN
     output  logic                                   sys_rst_n_o,                // System reset
     output  logic                                   sys_rdc_qlfy_o,             // System RDC qualifier
@@ -290,6 +291,7 @@ assign core_rst_n_o         = core_rst_n;
 scr1_pipe_top i_pipe_top (
     // Control
     .pipe_rst_n                     (core_rst_n             ),
+    .pipe_debug                     (core_debug             ),
 `ifdef SCR1_DBG_EN
     .pipe2hdu_rdc_qlfy_i            (core2hdu_rdc_qlfy      ),
     .dbg_rst_n                      (hdu_rst_n              ),

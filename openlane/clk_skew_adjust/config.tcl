@@ -44,6 +44,8 @@ set ::env(VERILOG_FILES) "\
 ### Macro Placement
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
+#set ::env(FP_SIZING) absolute
+#set ::env(DIE_AREA) "0 0 50 50"
 
 
 
@@ -56,7 +58,7 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 # Fill this
 set ::env(CLOCK_TREE_SYNTH) 0
 
-set ::env(CELL_PAD) 0
+set ::env(CELL_PAD) 4
 
 set ::env(FP_CORE_UTIL) 40
 set ::env(PL_RANDOM_GLB_PLACEMENT) 1

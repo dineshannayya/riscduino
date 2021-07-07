@@ -42,8 +42,8 @@ set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
      $script_dir/../../verilog/rtl/lib/registers.v"
 
-#set ::env(SDC_FILE) "$script_dir/base.sdc"
-#set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) "$script_dir/base.sdc"
+set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
 set ::env(LEC_ENABLE) 0
 
@@ -57,7 +57,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 1000 200"
+set ::env(DIE_AREA) "0 0 400 200"
 
 
 # If you're going to use multiple power domains, then keep this disabled.

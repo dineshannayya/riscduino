@@ -100,6 +100,7 @@ module sdrc_core
 		reset_n,
                 sdr_width,
 		cfg_colbits,
+                debug,
 
 		/* Request from app */
 		app_req,	        // Transfer Request
@@ -163,7 +164,7 @@ input                   pad_clk             ; // SDRAM Clock from Pad, used for 
 input                   reset_n             ; // Reset Signal
 input [1:0]             sdr_width           ; // 2'b00 - 32 Bit SDR, 2'b01 - 16 Bit SDR, 2'b1x - 8 Bit
 input [1:0]             cfg_colbits         ; // 2'b00 - 8 Bit column address, 2'b01 - 9 Bit, 10 - 10 bit, 11 - 11Bits
-
+output [21:0]           debug               ;
 
 //------------------------------------------------
 // Request from app
@@ -293,6 +294,10 @@ wire [SDR_DW-1:0]        x2a_rddt;
 assign sdr_den_n = sdr_den_n_int ; 
 assign sdr_dout  = sdr_dout_int ;
 
+
+assign debug  = {r2x_idle,r2b_req,r2b_start,r2b_last,b2r_ack,b2r_arb_ok,r2b_write,
+                 b2x_idle,b2x_req,b2x_start,b2x_wrap,x2b_ack,b2x_tras_ok,x2b_refresh,x2b_pre_ok,x2b_act_ok,
+	         x2b_rdok,x2b_wrok,x2a_rdstart,x2a_wrstart,x2a_rdlast,x2a_wrlast};
 
 // To meet the timing at read path, read data is registered w.r.t pad_sdram_clock and register back to sdram_clk
 // assumption, pad_sdram_clk is synhronous and delayed clock of sdram_clk.

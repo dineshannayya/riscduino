@@ -123,18 +123,27 @@ void main()
 
 
     if (reg_mprj_globl_reg6  != 0x11223344) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB610000;
     if (reg_mprj_globl_reg7  != 0x22334455) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB620000;
     if (reg_mprj_globl_reg8  != 0x33445566) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB630000;
     if (reg_mprj_globl_reg9  != 0x44556677) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB640000;
     if (reg_mprj_globl_reg10 != 0x55667788) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB650000;
     if (reg_mprj_globl_reg11 != 0x66778899) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB660000;
     if (reg_mprj_globl_reg12 != 0x778899AA) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB670000;
     if (reg_mprj_globl_reg13 != 0x8899AABB) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB680000;
     if (reg_mprj_globl_reg14 != 0x99AABBCC) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB690000;
     if (reg_mprj_globl_reg15 != 0xAABBCCDD) bFail = 1;
 
     if(bFail == 0) {
-        reg_mprj_datal = 0xAB610000;
+        reg_mprj_datal = 0xAB6A0000;
     } else {
         reg_mprj_datal = 0xAB600000;
     }
