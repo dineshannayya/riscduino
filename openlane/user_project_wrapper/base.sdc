@@ -16,52 +16,113 @@
 
 
 set_units -time ns
-set ::env(WB_CLOCK_PERIOD) "10"
-set ::env(WB_CLOCK_PORT)   "wb_clk_i"
+set ::env(WBM_CLOCK_PERIOD) "10"
+set ::env(WBM_CLOCK_PORT)   "wb_clk_i"
+set ::env(WBM_CLOCK_NAME)   "wbm_clk_i"
+
+set ::env(WBS_CLOCK_PERIOD) "10"
+set ::env(WBS_CLOCK_PORT)   "u_wb_host*wbs_clk_i"
+set ::env(WBS_CLOCK_NAME)   "wbs_clk_i"
 
 set ::env(SDRAM_CLOCK_PERIOD) "20"
-set ::env(SDRAM_CLOCK_PORT)   "digital_core.u_glbl_cfg.sdram_clk"
+set ::env(SDRAM_CLOCK_PORT)   "u_glbl_cfg*sdram_clk"
+set ::env(SDRAM_CLOCK_NAME)   "sdram_clk"
 
 set ::env(PAD_SDRAM_CLOCK_PERIOD) "20"
-set ::env(PAD_SDRAM_CLOCK_PORT)   "digital_core.u_sdram_ctrl.sdram_pad_clk"
+set ::env(PAD_SDRAM_CLOCK_PORT)   "u_skew_sd_ci*sclk_out"
+set ::env(PAD_SDRAM_CLOCK_NAME)   "sdram_pad_clk"
 
 set ::env(CPU_CLOCK_PERIOD) "50"
-set ::env(CPU_CLOCK_PORT)   "digital_core.u_glbl_cfg.cpu_clk"
+set ::env(CPU_CLOCK_PORT)   "u_glbl_cfg*cpu_clk"
+set ::env(CPU_CLOCK_NAME)   "cpu_clk"
 
 set ::env(RTC_CLOCK_PERIOD) "50"
-set ::env(RTC_CLOCK_PORT)   "digital_core.u_glbl_cfg.rtc_clk"
+set ::env(RTC_CLOCK_PORT)   "u_glbl_cfg*rtc_clk"
+set ::env(RTC_CLOCK_NAME)   "rtc_clk"
+
+#Setting clock delay to center of the tap
+set_case_analysis 1 [get_pins -hierarchical u_skew_wi*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_wi*sel[2]] 
+set_case_analysis 0 [get_pins -hierarchical u_skew_wi*sel[1]] 
+set_case_analysis 0 [get_pins -hierarchical u_skew_wi*sel[0]] 
+
+set_case_analysis 1 [get_pins -hierarchical u_skew_riscv*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[0]]
+
+set_case_analysis 1 [get_pins -hierarchical u_skew_uart*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_uart*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_uart*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_uart*sel[0]]
+
+set_case_analysis 1 [get_pins -hierarchical u_skew_spi*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_spi*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_spi*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_spi*sel[0]]
+
+set_case_analysis 1 [get_pins -hierarchical u_skew_glbl*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_glbl*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_glbl*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_glbl*sel[0]]
+
+set_case_analysis 1 [get_pins -hierarchical u_skew_wh*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_wh*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_wh*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_wh*sel[0]]
+
+# Set the interface logic to 0
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_co*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_co*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_co*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_co*sel[0]]
+
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_ci*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_ci*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_ci*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sd_ci*sel[0]]
+
+set_case_analysis 0 [get_pins -hierarchical u_skew_sp_co*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sp_co*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sp_co*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sp_co*sel[0]]
+
 ######################################
-# WB Clock domain input output
+# WB MASTER Clock domain input output
 ######################################
-create_clock [get_ports $::env(WB_CLOCK_PORT)]  -name $::env(WB_CLOCK_PORT)  -period $::env(WB_CLOCK_PERIOD)
-set wb_input_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
-set wb_output_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
+create_clock [get_ports $::env(WBM_CLOCK_PORT)]  -name $::env(WBM_CLOCK_NAME)  -period $::env(WBM_CLOCK_PERIOD)
+set wb_input_delay_value [expr $::env(WBM_CLOCK_PERIOD) * 0.6]
+set wb_output_delay_value [expr $::env(WBM_CLOCK_PERIOD) * 0.6]
 puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
 puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 
 
-set_input_delay 2.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {wb_rst_i}
+set_input_delay 2.0 -clock [get_clocks $::env(WBM_CLOCK_NAME)] {wb_rst_i}
 
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_stb_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_cyc_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_we_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_sel_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_dat_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_adr_i*]
-set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wb_cti_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_stb_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_cyc_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_we_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_sel_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_dat_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_adr_i*]
+set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wb_cti_i*]
 
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_dat_o*]
-set_output_delay 3.0                     -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port wbs_ack_o*]
+set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_dat_o*]
+set_output_delay 3.0                     -clock [get_clocks $::env(WBM_CLOCK_NAME)] [get_port wbs_ack_o*]
 
+######################################
+# WishBone Slave Port
+#######################################
+create_clock [get_pins -hierarchical $::env(WBS_CLOCK_PORT)]  -name $::env(WBS_CLOCK_NAME)  -period $::env(WBS_CLOCK_PERIOD)
 ######################################
 # SDRAM Clock domain input output
 ######################################
-create_clock [get_pins (SDRAM_CLOCK_PORT)]  -name $::env(SDRAM_CLOCK_PORT)  -period $::env(SDRAM_CLOCK_PERIOD)
-create_clock [get_pins (PAD_SDRAM_CLOCK_PORT)]  -name $::env(PAD_SDRAM_CLOCK_PORT)  -period $::env(PAD_SDRAM_CLOCK_PERIOD)
-create_clock [get_pins (CPU_CLOCK_PORT)] -name $::env(CPU_CLOCK_PORT)  -period $::env(CPU_CLOCK_PERIOD)
-create_clock [get_pins (RTC_CLOCK_PORT)] -name $::env(RTC_CLOCK_PORT)  -period $::env(RTC_CLOCK_PERIOD)
+create_clock [get_pins -hierarchical $::env(SDRAM_CLOCK_PORT)]  -name $::env(SDRAM_CLOCK_NAME)  -period $::env(SDRAM_CLOCK_PERIOD)
+create_clock [get_pins -hierarchical $::env(PAD_SDRAM_CLOCK_PORT)]  -name $::env(PAD_SDRAM_CLOCK_NAME)  -period $::env(PAD_SDRAM_CLOCK_PERIOD)
+create_clock [get_pins -hierarchical $::env(CPU_CLOCK_PORT)] -name $::env(CPU_CLOCK_NAME)  -period $::env(CPU_CLOCK_PERIOD)
+create_clock [get_pins -hierarchical $::env(RTC_CLOCK_PORT)] -name $::env(RTC_CLOCK_NAME)  -period $::env(RTC_CLOCK_PERIOD)
 
-set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks $::env(WB_CLOCK_PORT)] -group [get_clocks $::env(SDRAM_CLOCK_PORT)] -group [get_clocks $::env(CPU_CLOCK_PORT)] -group [get_clocks $::env(RTC_CLOCK_PORT)]
+set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks $::env(WBM_CLOCK_NAME)] -group [get_clocks $::env(WBS_CLOCK_NAME)] -group [get_clocks $::env(SDRAM_CLOCK_NAME)] -group [get_clocks $::env(CPU_CLOCK_NAME)] -group [get_clocks $::env(RTC_CLOCK_NAME)] 
 
 
 
