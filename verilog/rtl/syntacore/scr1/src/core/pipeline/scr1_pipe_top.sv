@@ -47,6 +47,7 @@
 module scr1_pipe_top (
     // Common
     input   logic                                       pipe_rst_n,                 // Pipe reset
+    output  logic [48:0]                                pipe_debug,
 `ifdef SCR1_DBG_EN
     input   logic                                       pipe2hdu_rdc_qlfy_i,        // Pipe RDC qualifier
     input   logic                                       dbg_rst_n,                  // Debug reset
@@ -289,6 +290,10 @@ logic                                       exu_busy;
 logic                                       pipe2clkctl_wake_req_o;
 `endif // SCR1_CLKCTRL_EN
 
+
+assign pipe_debug = {curr_pc[31:0],new_pc_req,stop_fetch, exu_exc_req,brkpt,exu_init_pc,wfi_run2halt,instret,
+	             ifu2idu_vd,idu2ifu_rdy,idu2exu_req,exu2idu_rdy,exu2mprf_w_req,exu2csr_r_req,csr2exu_rw_exc,
+	             exu2csr_mret_update,csr2exu_irq,csr2exu_mstatus_mie_up};
 //-------------------------------------------------------------------------------
 // Pipeline logic
 //-------------------------------------------------------------------------------

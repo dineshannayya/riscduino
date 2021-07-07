@@ -83,6 +83,11 @@
 ////          m0 - External HOST                                  ////
 ////          m1 - RISC IMEM                                      ////
 ////          m2 - RISC DMEM                                      ////
+////    0.8 - 6th July 2021, Dinesh A                             ////
+////          For Better SDRAM Interface timing we have taping    ////
+////          sdram_clock goint to io_out[29] directly from       ////
+////          global register block, this help in better SDRAM    ////
+////          interface timing control                            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -136,6 +141,11 @@ module digital_core (
     output  wire [WB_WIDTH-1:0]        wbs_dat_o       ,  // data input
     output  wire                       wbs_ack_o       ,  // acknowlegement
 
+    // Analog (direct connection to GPIO pad---use with caution)
+    // Note that analog I/O is not available on the 7 lowest-numbered
+    // GPIO pads, and so the analog_io indexing is offset from the
+    // GPIO indexing by 7 (also upper 2 GPIOs do not have analog_io).
+    inout [`MPRJ_IO_PADS-10:0] analog_io,
  
     // Logic Analyzer Signals
     input  wire [127:0]                la_data_in      ,
@@ -775,7 +785,7 @@ clk_skew_adjust u_skew_sd_ci
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (io_in[29]                 ), 
+	       .clk_in     (sdram_clk                 ), 
 	       .sel        (cfg_cska_sd_ci            ), 
 	       .clk_out    (io_in_29_                 ) 
        );

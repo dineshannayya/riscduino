@@ -51,6 +51,9 @@
 ////     V.1  - June 25, 2021                                     ////
 ////            Pad logic is brought inside the block to avoid    ////
 ////            logic at digital core level for caravel project   ////
+////     V.2  - July 6, 2021                                      ////
+////            Added Hold fix cell for SPI data out signal to    ////
+////            met interface hold                                ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -182,7 +185,7 @@ module spim_top
     logic [3:0]   ctrl_state        ;
 
 
-    assign spi_debug  =   {3'h0,
+    assign spi_debug  =   {m0_res_fifo_flush,m1_res_fifo_flush,spi_init_done,
 		          m0_cmd_fifo_full,m0_cmd_fifo_empty,m0_res_fifo_full,m0_res_fifo_empty,
 		          m1_cmd_fifo_full,m1_cmd_fifo_empty,m1_res_fifo_full,m1_res_fifo_empty,
 		          ctrl_state[3:0], m0_state[3:0],m1_state[3:0],spi_ctrl_status};
@@ -207,6 +210,15 @@ logic                          spi_sdi2;
 logic                          spi_sdi3;
 logic                          spi_en_tx;
 logic                          spi_init_done;
+logic                          spi_sdo0_out;
+logic                          spi_sdo1_out;
+logic                          spi_sdo2_out;
+logic                          spi_sdo3_out;
+
+logic                          spi_sdo0_dl;
+logic                          spi_sdo1_dl;
+logic                          spi_sdo2_dl;
+logic                          spi_sdo3_dl;
 
 
 assign  spi_sdi0  =  io_in[2];
@@ -215,12 +227,30 @@ assign  spi_sdi2  =  io_in[4];
 assign  spi_sdi3  =  io_in[5];
 
 assign  io_out[0] =  spi_clk;
-assign  io_out[1] =  spi_csn0;
-assign  io_out[2] =  spi_sdo0;
-assign  io_out[3] =  spi_sdo1;
-assign  io_out[4] =  spi_sdo2;
-assign  io_out[5] =  spi_sdo3;
-   
+assign  io_out[1] =  spi_csn0;// No hold fix for CS#, as it asserted much eariler than SPI clock
+assign  io_out[2] =  spi_sdo0_out;
+assign  io_out[3] =  spi_sdo1_out;
+assign  io_out[4] =  spi_sdo2_out;
+assign  io_out[5] =  spi_sdo3_out;
+
+// ADDing Delay cells for Interface hold fix
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio0 (.X(spi_sdo0_d1),.A(spi_sdo0));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio0 (.X(spi_sdo0_d2),.A(spi_sdo0_d1));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio0    (.X(spi_sdo0_out),.A(spi_sdo0_d2));
+
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio1 (.X(spi_sdo1_d1),.A(spi_sdo1));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio1 (.X(spi_sdo1_d2),.A(spi_sdo1_d1));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio1    (.X(spi_sdo1_out),.A(spi_sdo1_d2));
+
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio2 (.X(spi_sdo2_d1),.A(spi_sdo2));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio2 (.X(spi_sdo2_d2),.A(spi_sdo2_d1));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio2    (.X(spi_sdo2_out),.A(spi_sdo2_d2));
+
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio3 (.X(spi_sdo3_d1),.A(spi_sdo3));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio3 (.X(spi_sdo3_d2),.A(spi_sdo3_d1));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio3    (.X(spi_sdo3_out),.A(spi_sdo3_d2));
+
+
 assign  io_oeb[0] =  1'b0;         // spi_clk
 assign  io_oeb[1] =  1'b0;         // spi_csn
 assign  io_oeb[2] =  !spi_en_tx;   // spi_dio0

@@ -45,6 +45,7 @@ set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/spi_master/src/spim_rx.sv \
         $script_dir/../../verilog/rtl/spi_master/src/spim_tx.sv "
 
+set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 

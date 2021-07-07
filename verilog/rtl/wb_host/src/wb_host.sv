@@ -98,12 +98,8 @@ module wb_host (
 
        output logic [7:0]          cfg_glb_ctrl     ,
        output logic [31:0]         cfg_clk_ctrl1    ,
-       output logic [31:0]         cfg_clk_ctrl2    ,
+       output logic [31:0]         cfg_clk_ctrl2    
 
-    // Logic Analyzer Signals
-       input  logic [127:0]        la_data_in       ,
-       output logic [127:0]        la_data_out      ,
-       input  logic [127:0]        la_oenb         
     );
 
 
@@ -136,6 +132,7 @@ logic [31:0]        wbm_adr_int;
 logic               wbm_stb_int;
 
 logic [2:0]         cfg_wb_clk_ctr;
+
 
 
 assign wbm_rst_n = !wbm_rst_i;

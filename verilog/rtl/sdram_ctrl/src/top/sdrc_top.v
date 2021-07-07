@@ -57,6 +57,8 @@
 	          Unused port wb_cti_i removed
              0.5 - 29th June 2021
 	          Wishbone Stagging FF added to break timing path
+             0.6 - 6th July 2021, Dinesh A
+	          32 bit debug port added
 
                                                              
  Copyright (C) 2000 Authors and OPENCORES.ORG                
@@ -90,6 +92,8 @@ module sdrc_top
            (
                     cfg_sdr_width       ,
                     cfg_colbits         ,
+
+		    sdram_debug         ,
                     
                 // WB bus
                     wb_rst_n            ,
@@ -149,6 +153,7 @@ input                   sdram_resetn       ; // Reset Signal
 input [1:0]             cfg_sdr_width      ; // 2'b00 - 32 Bit SDR, 2'b01 - 16 Bit SDR, 2'b1x - 8 Bit
 input [1:0]             cfg_colbits        ; // 2'b00 - 8 Bit column address, 
                                              // 2'b01 - 9 Bit, 10 - 10 bit, 11 - 11Bits
+output [31:0]           sdram_debug        ; // SDRAM debug signals
 
 //--------------------------------------
 // Wish Bone Interface
@@ -265,6 +270,11 @@ assign io_oeb     [29]       =      1'b0               ;
 // sdram pad clock is routed back through pad
 // SDRAM Clock from Pad, used for registering Read Data
 //wire #(1.0) sdram_pad_clk = sdram_clk;
+//
+wire [21:0] core_debug;
+assign sdram_debug = {sdr_init_done,wb_stag_stb_i,wb_stag_we_i,wb_stag_ack_o, 
+                      app_req,app_req_wr_n,app_req_ack,app_busy_n,app_wr_next_req, app_rd_valid,	      
+		      core_debug[21:0]};
 
 /************** Ends Here **************************/
 
@@ -340,6 +350,7 @@ sdrc_core #(.SDR_DW(SDR_DW) , .SDR_BW(SDR_BW),.APP_AW(APP_AW)) u_sdrc_core (
           .reset_n            (sdram_resetn       ) ,
           .sdr_width          (cfg_sdr_width      ) ,
           .cfg_colbits        (cfg_colbits        ) ,
+	  .debug              (core_debug         ) ,
 
  		/* Request from app */
           .app_req            (app_req            ) ,// Transfer Request

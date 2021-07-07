@@ -15,11 +15,10 @@
 
 // Include caravel global defines for the number of the user project IO pads 
 `include "defines.v"
-`define USE_POWER_PINS
-`define UNIT_DELAY #0.1
+       `define USE_POWER_PINS
+       `define UNIT_DELAY #0.1
 
 `ifdef GL
-
        `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
        `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
        `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
@@ -37,7 +36,6 @@
 	`include "clk_skew_adjust.v"
 
 `else
-
      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
      `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"

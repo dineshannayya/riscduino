@@ -83,6 +83,11 @@
 ////          m0 - External HOST                                  ////
 ////          m1 - RISC IMEM                                      ////
 ////          m2 - RISC DMEM                                      ////
+////    0.8 - 6th July 2021, Dinesh A                             ////
+////          For Better SDRAM Interface timing we have taping    ////
+////          sdram_clock goint to io_out[29] directly from       ////
+////          global register block, this help in better SDRAM    ////
+////          interface timing control                            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -315,7 +320,9 @@ wire [3:0]                        cfg_sdr_twr_d       ; // Write recovery delay
 wire [11: 0]                      cfg_sdr_rfsh        ;
 wire [2 : 0]                      cfg_sdr_rfmax       ;
 
-
+wire [31:0]                       spi_debug           ;
+wire [31:0]                       sdram_debug         ;
+wire [63:0]                       riscv_debug         ;
 
 
 
@@ -338,6 +345,9 @@ assign cfg_cska_wh    = cfg_clk_ctrl1[27:24];
 assign cfg_cska_sd_co = cfg_clk_ctrl2[3:0]; // SDRAM clock out control
 assign cfg_cska_sd_ci = cfg_clk_ctrl2[7:4]; // SDRAM clock in control
 assign cfg_cska_sp_co = cfg_clk_ctrl2[11:8];// SPI clock out control
+
+//assign la_data_out    = {riscv_debug,spi_debug,sdram_debug};
+assign la_data_out[127:0]    = {sdram_debug,spi_debug,riscv_debug};
 
 
 wb_host u_wb_host(
@@ -370,12 +380,8 @@ wb_host u_wb_host(
 
        .cfg_glb_ctrl     (cfg_glb_ctrl         ),
        .cfg_clk_ctrl1    (cfg_clk_ctrl1        ),
-       .cfg_clk_ctrl2    (cfg_clk_ctrl2        ),
+       .cfg_clk_ctrl2    (cfg_clk_ctrl2        )
 
-    // Logic Analyzer Signals
-       .la_data_in       (la_data_in           ),
-       .la_data_out      (la_data_out          ),
-       .la_oenb          (la_oenb              )
     );
 
 
@@ -389,6 +395,7 @@ scr1_top_wb u_riscv_top (
     .pwrup_rst_n            (wbd_int_rst_n             ),
     .rst_n                  (wbd_int_rst_n             ),
     .cpu_rst_n              (cpu_rst_n                 ),
+    .riscv_debug            (riscv_debug               ),
 
     // Clock
     .core_clk               (cpu_clk                   ),
@@ -476,6 +483,7 @@ sdrc_top
      u_sdram_ctrl (
     .cfg_sdr_width          (cfg_sdr_width              ),
     .cfg_colbits            (cfg_colbits                ),
+    .sdram_debug            (sdram_debug                ),
                     
     // WB bus
     .wb_rst_n               (wbd_int_rst_n              ),
@@ -780,7 +788,7 @@ clk_skew_adjust u_skew_sd_ci
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (io_in[29]                 ), 
+	       .clk_in     (sdram_clk                 ), 
 	       .sel        (cfg_cska_sd_ci            ), 
 	       .clk_out    (io_in_29_                 ) 
        );

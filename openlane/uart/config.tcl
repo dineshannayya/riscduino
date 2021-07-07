@@ -47,6 +47,7 @@ set ::env(VERILOG_FILES) "\
     $script_dir/../../verilog/rtl/lib/registers.v        \
     "
 
+set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 #set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/sdram_ctrl/src/defs ]
 
 set ::env(SDC_FILE) "$script_dir/base.sdc"
