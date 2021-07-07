@@ -88,6 +88,9 @@
 ////          sdram_clock goint to io_out[29] directly from       ////
 ////          global register block, this help in better SDRAM    ////
 ////          interface timing control                            ////
+////    0.9 - 7th July 2021, Dinesh A                             ////
+////          Removed 2 Unused port connection io_in[31:30] to    ////
+////          spi_master to avoid lvs issue                       ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -465,7 +468,7 @@ spim_top
     .spi_debug              (spi_debug                 ),
 
     // Pad Interface
-    .io_in                  (io_in[35:30]              ),
+    .io_in                  (io_in[35:32]              ), // io_in[31:30] unused ports
     .io_out                 ({io_out[35:31],io_in_30_} ),
     .io_oeb                 (io_oeb[35:30]             )
 
