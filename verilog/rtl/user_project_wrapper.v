@@ -779,7 +779,7 @@ clk_skew_adjust u_skew_sd_co
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (io_out_29_                ), 
+	       .clk_in     (sdram_clk                 ), 
 	       .sel        (cfg_cska_sd_co            ), 
 	       .clk_out    (io_out[29]                ) 
        );
@@ -791,7 +791,7 @@ clk_skew_adjust u_skew_sd_ci
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (sdram_clk                 ), 
+	       .clk_in     (io_in[29]                 ), 
 	       .sel        (cfg_cska_sd_ci            ), 
 	       .clk_out    (io_in_29_                 ) 
        );
