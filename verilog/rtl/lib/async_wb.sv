@@ -150,7 +150,7 @@ assign wbm_err_o      = m_resp_rd_data[32];
 // Slave Interface
 //-------------------------------
 
-logic [70:0] s_cmd_rd_data      ;
+logic [68:0] s_cmd_rd_data      ;
 logic        s_cmd_rd_empty     ;
 logic        s_cmd_rd_aempty    ;
 logic        s_cmd_rd_en        ;

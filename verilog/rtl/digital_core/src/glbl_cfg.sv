@@ -66,10 +66,7 @@
 module glbl_cfg (
 
         input logic             mclk,
-        input logic             user_clock1,
-        input logic             user_clock2,
         input logic             reset_n,
-        output logic [31:0]     device_idcode,
 
         // Reg Bus Interface Signal
         input logic             reg_cs,
@@ -81,13 +78,6 @@ module glbl_cfg (
        // Outputs
         output logic [31:0]     reg_rdata,
         output logic            reg_ack,
-
-       // SDRAM Clock
-
-       output  logic           sdram_clk,
-       output  logic           cpu_clk,
-       output  logic           rtc_clk,
-
 
        // Risc configuration
        output logic [31:0]     fuse_mhartid,
@@ -270,22 +260,8 @@ end
 //   -----------------------------------------------------------------
 
 
-// SDRAM Clock source & div selection
-wire       cfg_sdram_clk_src_sel   = reg_0[4];
-wire       cfg_sdram_clk_div       = reg_0[5];
-wire [1:0] cfg_sdram_clk_ratio     = reg_0[7:6];
 
-// Core Clock source & div selection
-wire       cfg_cpu_clk_src_sel   = reg_0[8];
-wire       cfg_cpu_clk_div       = reg_0[9];
-wire [1:0] cfg_cpu_clk_ratio     = reg_0[11:10];
-
-// RTC Clock source & div selection
-wire       cfg_rtc_clk_src_sel   = reg_0[12];
-wire       cfg_rtc_clk_div       = reg_0[13];
-wire [1:0] cfg_rtc_clk_ratio     = reg_0[15:14];
-
-generic_register #(8,0  ) u_reg0_be0 (
+generic_register #(8,8'hAA  ) u_reg0_be0 (
 	      .we            ({8{sw_wr_en_0 & 
                                  wr_be[0]   }}  ),		 
 	      .data_in       (sw_reg_wdata[7:0]    ),
@@ -296,7 +272,7 @@ generic_register #(8,0  ) u_reg0_be0 (
 	      .data_out      (reg_0[7:0]        )
           );
 
-generic_register #(8,0  ) u_reg0_be1 (
+generic_register #(8,8'hBB  ) u_reg0_be1 (
 	      .we            ({8{sw_wr_en_0 & 
                                  wr_be[1]   }}  ),		 
 	      .data_in       (sw_reg_wdata[15:8]    ),
@@ -306,7 +282,7 @@ generic_register #(8,0  ) u_reg0_be1 (
 	      //List of Outs
 	      .data_out      (reg_0[15:8]        )
           );
-generic_register #(8,0  ) u_reg0_be2 (
+generic_register #(8,8'hCC  ) u_reg0_be2 (
 	      .we            ({8{sw_wr_en_0 & 
                                  wr_be[2]   }}  ),		 
 	      .data_in       (sw_reg_wdata[23:16]    ),
@@ -317,7 +293,7 @@ generic_register #(8,0  ) u_reg0_be2 (
 	      .data_out      (reg_0[23:16]        )
           );
 
-generic_register #(8,0  ) u_reg0_be3 (
+generic_register #(8,8'hDD  ) u_reg0_be3 (
 	      .we            ({8{sw_wr_en_0 & 
                                  wr_be[3]   }}  ),		 
 	      .data_in       (sw_reg_wdata[31:24]    ),
@@ -333,7 +309,6 @@ generic_register #(8,0  ) u_reg0_be3 (
 //-----------------------------------------------------------------------
 //   reg-1, reset value = 32'hA55A_A55A
 //   -----------------------------------------------------------------
-assign  device_idcode     = reg_1[31:0]; 
 
 generic_register #(.WD(8),.RESET_DEFAULT(8'h5A)) u_reg1_be0 (
 	      .we            ({8{sw_wr_en_1 & 
@@ -1061,67 +1036,6 @@ generic_register #(8,0  ) u_reg15_be3 (
 
 
 
-
-//----------------------------------
-// Generate SDRAM Clock Generation
-//----------------------------------
-wire   sdram_clk_div;
-wire   sdram_ref_clk;
-
-assign sdram_ref_clk = (cfg_sdram_clk_src_sel) ? user_clock2 :user_clock1;
-
-
-
-assign sdram_clk = (cfg_sdram_clk_div) ? sdram_clk_div : sdram_ref_clk;
-
-
-clk_ctl #(1) u_sdramclk (
-   // Outputs
-       .clk_o         (sdram_clk_div      ),
-   // Inputs
-       .mclk          (sdram_ref_clk      ),
-       .reset_n       (reset_n            ), 
-       .clk_div_ratio (cfg_sdram_clk_ratio)
-   );
-
-
-//----------------------------------
-// Generate CORE Clock Generation
-//----------------------------------
-wire   cpu_clk_div;
-wire   cpu_ref_clk;
-
-assign cpu_ref_clk = (cfg_cpu_clk_src_sel) ? user_clock2 : user_clock1;
-assign cpu_clk     = (cfg_cpu_clk_div)     ? cpu_clk_div : cpu_ref_clk;
-
-
-clk_ctl #(1) u_cpuclk (
-   // Outputs
-       .clk_o         (cpu_clk_div      ),
-   // Inputs
-       .mclk          (cpu_ref_clk      ),
-       .reset_n       (reset_n          ), 
-       .clk_div_ratio (cfg_cpu_clk_ratio)
-   );
-
-//----------------------------------
-// Generate RTC Clock Generation
-//----------------------------------
-wire   rtc_clk_div;
-wire   rtc_ref_clk;
-
-assign rtc_ref_clk = (cfg_rtc_clk_src_sel) ? user_clock2 : user_clock1;
-assign rtc_clk     = (cfg_rtc_clk_div)     ? rtc_clk_div : rtc_ref_clk;
-
-
-clk_ctl #(1) u_rtcclk (
-   // Outputs
-       .clk_o         (rtc_clk_div      ),
-   // Inputs
-       .mclk          (rtc_ref_clk      ),
-       .reset_n       (reset_n          ), 
-       .clk_div_ratio (cfg_rtc_clk_ratio)
-   );
 
 
 endmodule

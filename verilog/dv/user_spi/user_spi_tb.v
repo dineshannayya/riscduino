@@ -445,6 +445,41 @@ user_project_wrapper u_top(
 	force u_top.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
 	force u_top.u_uart_core.u_lineclk_buf.VGND =VSS;
 	force u_top.u_uart_core.u_lineclk_buf.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_wb_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_wb_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_wb_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_wb_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_cpu_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_cpu_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_cpu_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_cpu_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_spi_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_spi_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_spi_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_spi_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_sdram_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_sdram_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_sdram_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_sdram_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_clkbuf_sdram.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_sdram.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_sdram.VGND =VSS;
+	force u_top.u_wb_host.u_clkbuf_sdram.VNB = VSS;
+
+	force u_top.u_wb_host.u_clkbuf_cpu.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_cpu.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_cpu.VGND =VSS;
+	force u_top.u_wb_host.u_clkbuf_cpu.VNB = VSS;
+
+	force u_top.u_wb_host.u_clkbuf_rtc.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_rtc.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_rtc.VGND =VSS;
+	force u_top.u_wb_host.u_clkbuf_rtc.VNB = VSS;
     end
 `endif    
 
