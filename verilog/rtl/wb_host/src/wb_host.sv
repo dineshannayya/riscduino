@@ -69,6 +69,17 @@ module wb_host (
     inout vccd1,	// User area 1 1.8V supply
     inout vssd1,	// User area 1 digital ground
 `endif
+       input logic                 user_clock1      ,
+       input logic                 user_clock2      ,
+
+       output logic                sdram_clk        ,
+       output logic                cpu_clk          ,
+       output logic                rtc_clk          ,
+       // Global Reset control
+       output logic                wbd_int_rst_n    ,
+       output logic                cpu_rst_n        ,
+       output logic                spi_rst_n        ,
+       output logic                sdram_rst_n      ,
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -96,7 +107,6 @@ module wb_host (
        input   logic               wbs_ack_i        ,  // acknowlegement
        input   logic               wbs_err_i        ,  // error
 
-       output logic [7:0]          cfg_glb_ctrl     ,
        output logic [31:0]         cfg_clk_ctrl1    ,
        output logic [31:0]         cfg_clk_ctrl2    
 
@@ -130,14 +140,33 @@ logic               sw_wr_en_3;
 logic [7:0]         cfg_bank_sel;
 logic [31:0]        wbm_adr_int;
 logic               wbm_stb_int;
+logic [23:0]        reg_0;  // Software_Reg_0
 
-logic [2:0]         cfg_wb_clk_ctr;
-
+logic  [2:0]        cfg_wb_clk_ctrl;
+logic  [2:0]        cfg_sdram_clk_ctrl;
+logic  [2:0]        cfg_cpu_clk_ctrl;
+logic  [2:0]        cfg_rtc_clk_ctrl;
+logic  [7:0]        cfg_glb_ctrl;
 
 
 assign wbm_rst_n = !wbm_rst_i;
 assign wbs_rst_n = !wbm_rst_i;
 
+sky130_fd_sc_hd__bufbuf_16 u_buf_wb_rst     (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_cpu_rst    (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_spi_rst    (.A(cfg_glb_ctrl[2]),.X(spi_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_sdram_rst  (.A(cfg_glb_ctrl[3]),.X(sdram_rst_n));
+
+// To reduce the load/Timing Wishbone I/F, Strobe is register to create
+// multi-cycle
+logic wb_req;
+always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
+    if ( wbm_rst_n == 1'b0 ) begin
+        wb_req   <= '0;
+   end else begin
+       wb_req   <= wbm_stb_i && (wbm_ack_o == 0) ;
+   end
+end
 
 assign  wbm_dat_o   = (reg_sel) ? reg_rdata : wbm_dat_int;  // data input
 assign  wbm_ack_o   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegement
@@ -156,7 +185,7 @@ assign  wbm_err_o   = (reg_sel) ? 1'b0      : wbm_err_int;  // error
 // added indirect MSB 8 bit address select option
 // So Address will be {Bank_Sel[7:0], wbm_adr_i[23:0}
 // ---------------------------------------------------------------------
-assign reg_sel       = wbm_stb_i & (wbm_adr_i[23] == 1'b1);
+assign reg_sel       = wb_req & (wbm_adr_i[23] == 1'b1);
 
 assign sw_addr       = wbm_adr_i [3:2];
 assign sw_rd_en      = reg_sel & !wbm_we_i;
@@ -187,12 +216,22 @@ begin : preg_out_Seq
    end
 end
 
+
+//-------------------------------------
+// Global + Clock Control
+// -------------------------------------
+assign cfg_glb_ctrl         = reg_0[7:0];
+assign cfg_wb_clk_ctrl      = reg_0[10:8];
+assign cfg_sdram_clk_ctrl   = reg_0[15:12];
+assign cfg_cpu_clk_ctrl     = reg_0[19:16];
+assign cfg_rtc_clk_ctrl     = reg_0[23:20];
+
 always @( *)
 begin 
   reg_out [31:0] = 8'd0;
 
   case (sw_addr [1:0])
-    2'b00 :   reg_out [31:0] = {21'h0,cfg_wb_clk_ctr[2:0],cfg_glb_ctrl [7:0]};     
+    2'b00 :   reg_out [31:0] = {8'h0, reg_0[23:0]};
     2'b01 :   reg_out [31:0] = {24'h0,cfg_bank_sel [7:0]};     
     2'b10 :   reg_out [31:0] = cfg_clk_ctrl1 [31:0];    
     2'b11 :   reg_out [31:0] = cfg_clk_ctrl2 [31:0];     
@@ -202,15 +241,14 @@ end
 
 
 
-generic_register #(11,0  ) u_glb_ctrl (
-	      .we            ({11{sw_wr_en_0}}   ),		 
-	      .data_in       (wbm_dat_i[10:0]    ),
+generic_register #(24,0  ) u_glb_ctrl (
+	      .we            ({24{sw_wr_en_0}}   ),		 
+	      .data_in       (wbm_dat_i[23:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
-	      .data_out      ({cfg_wb_clk_ctr[2:0],
-		               cfg_glb_ctrl[7:0]} )
+	      .data_out      (reg_0[23:0])
           );
 
 generic_register #(8,8'h30 ) u_bank_sel (
@@ -245,7 +283,7 @@ generic_register #(32,0  ) u_clk_ctrl2 (
           );
 
 
-assign wbm_stb_int = wbm_stb_i & !reg_sel;
+assign wbm_stb_int = wb_req & !reg_sel;
 
 // Since design need more than 16MB address space, we have implemented
 // indirect access
@@ -288,8 +326,8 @@ logic       wb_clk_div;
 logic       cfg_wb_clk_div;
 logic [1:0] cfg_wb_clk_ratio;
 
-assign    cfg_wb_clk_ratio =  cfg_wb_clk_ctr[1:0];
-assign    cfg_wb_clk_div   =  cfg_wb_clk_ctr[2];
+assign    cfg_wb_clk_ratio =  cfg_wb_clk_ctrl[1:0];
+assign    cfg_wb_clk_div   =  cfg_wb_clk_ctrl[2];
 
 
 assign wbs_clk_out  = (cfg_wb_clk_div)  ? wb_clk_div : wbm_clk_i;
@@ -303,6 +341,83 @@ clk_ctl #(1) u_wbclk (
        .reset_n       (wbm_rst_n        ), 
        .clk_div_ratio (cfg_wb_clk_ratio )
    );
+
+//----------------------------------
+// Generate SDRAM Clock Generation
+//----------------------------------
+wire   sdram_clk_div;
+wire   sdram_ref_clk;
+wire   sdram_clk_int;
+
+wire       cfg_sdram_clk_src_sel   = cfg_sdram_clk_ctrl[0];
+wire       cfg_sdram_clk_div       = cfg_sdram_clk_ctrl[1];
+wire [1:0] cfg_sdram_clk_ratio     = cfg_sdram_clk_ctrl[3:2];
+assign sdram_ref_clk = (cfg_sdram_clk_src_sel) ? user_clock2 :user_clock1;
+assign sdram_clk_int = (cfg_sdram_clk_div) ? sdram_clk_div : sdram_ref_clk;
+
+sky130_fd_sc_hd__clkbuf_16 u_clkbuf_sdram (.A (sdram_clk_int), . X(sdram_clk));
+
+clk_ctl #(1) u_sdramclk (
+   // Outputs
+       .clk_o         (sdram_clk_div      ),
+   // Inputs
+       .mclk          (sdram_ref_clk      ),
+       .reset_n       (reset_n            ), 
+       .clk_div_ratio (cfg_sdram_clk_ratio)
+   );
+
+
+//----------------------------------
+// Generate CORE Clock Generation
+//----------------------------------
+wire   cpu_clk_div;
+wire   cpu_ref_clk;
+wire   cpu_clk_int;
+
+wire       cfg_cpu_clk_src_sel   = cfg_cpu_clk_ctrl[0];
+wire       cfg_cpu_clk_div       = cfg_cpu_clk_ctrl[1];
+wire [1:0] cfg_cpu_clk_ratio     = cfg_cpu_clk_ctrl[3:2];
+
+assign cpu_ref_clk = (cfg_cpu_clk_src_sel) ? user_clock2 : user_clock1;
+assign cpu_clk_int = (cfg_cpu_clk_div)     ? cpu_clk_div : cpu_ref_clk;
+
+
+sky130_fd_sc_hd__clkbuf_16 u_clkbuf_cpu (.A (cpu_clk_int), . X(cpu_clk));
+
+clk_ctl #(1) u_cpuclk (
+   // Outputs
+       .clk_o         (cpu_clk_div      ),
+   // Inputs
+       .mclk          (cpu_ref_clk      ),
+       .reset_n       (reset_n          ), 
+       .clk_div_ratio (cfg_cpu_clk_ratio)
+   );
+
+//----------------------------------
+// Generate RTC Clock Generation
+//----------------------------------
+wire   rtc_clk_div;
+wire   rtc_ref_clk;
+wire   rtc_clk_int;
+wire       cfg_rtc_clk_src_sel   = cfg_rtc_clk_ctrl[0];
+wire       cfg_rtc_clk_div       = cfg_rtc_clk_ctrl[1];
+wire [1:0] cfg_rtc_clk_ratio     = cfg_rtc_clk_ctrl[3:2];
+
+assign rtc_ref_clk = (cfg_rtc_clk_src_sel) ? user_clock2 : user_clock1;
+assign rtc_clk_int = (cfg_rtc_clk_div)     ? rtc_clk_div : rtc_ref_clk;
+
+
+sky130_fd_sc_hd__clkbuf_16 u_clkbuf_rtc (.A (rtc_clk_int), . X(rtc_clk));
+
+clk_ctl #(1) u_rtcclk (
+   // Outputs
+       .clk_o         (rtc_clk_div      ),
+   // Inputs
+       .mclk          (rtc_ref_clk      ),
+       .reset_n       (reset_n          ), 
+       .clk_div_ratio (cfg_rtc_clk_ratio)
+   );
+
 
 
 endmodule

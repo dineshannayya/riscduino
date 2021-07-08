@@ -330,12 +330,8 @@ wire [63:0]                       riscv_debug         ;
 
 
 /////////////////////////////////////////////////////////
-// Generating acive low wishbone reset                 
-// //////////////////////////////////////////////////////
-assign wbd_int_rst_n  = cfg_glb_ctrl[0];
-assign cpu_rst_n      = cfg_glb_ctrl[1];
-assign spi_rst_n      = cfg_glb_ctrl[2];
-assign sdram_rst_n    = cfg_glb_ctrl[3];
+// Clock Skew Ctrl
+////////////////////////////////////////////////////////
 
 assign cfg_cska_wi    = cfg_clk_ctrl1[3:0];
 assign cfg_cska_riscv = cfg_clk_ctrl1[7:4];
@@ -354,6 +350,17 @@ assign la_data_out[127:0]    = {sdram_debug,spi_debug,riscv_debug};
 
 
 wb_host u_wb_host(
+       .user_clock1      (wb_clk_i             ),
+       .user_clock2      (user_clock2          ),
+
+       .sdram_clk        (sdram_clk            ),
+       .cpu_clk          (cpu_clk              ),
+       .rtc_clk          (rtc_clk              ),
+
+       .wbd_int_rst_n    (wbd_int_rst_n        ),
+       .cpu_rst_n        (cpu_rst_n            ),
+       .spi_rst_n        (spi_rst_n            ),
+       .sdram_rst_n      (sdram_rst_n          ),
 
     // Master Port
        .wbm_rst_i        (wb_rst_i             ),  
@@ -381,7 +388,6 @@ wb_host u_wb_host(
        .wbs_ack_i        (wbd_int_ack_o        ),  
        .wbs_err_i        (wbd_int_err_o        ),  
 
-       .cfg_glb_ctrl     (cfg_glb_ctrl         ),
        .cfg_clk_ctrl1    (cfg_clk_ctrl1        ),
        .cfg_clk_ctrl2    (cfg_clk_ctrl2        )
 
@@ -614,9 +620,6 @@ glbl_cfg   u_glbl_cfg (
 
        .mclk                   (wbd_clk_glbl              ),
        .reset_n                (wbd_int_rst_n             ),
-       .user_clock1            (wb_clk_i                  ),
-       .user_clock2            (user_clock2               ),
-       .device_idcode          (                          ),
 
         // Reg Bus Interface Signal
        .reg_cs                 (wbd_glbl_stb_o            ),
@@ -628,12 +631,6 @@ glbl_cfg   u_glbl_cfg (
        // Outputs
        .reg_rdata              (wbd_glbl_dat_i            ),
        .reg_ack                (wbd_glbl_ack_i            ),
-
-       // SDRAM Clock
-
-       .sdram_clk              (sdram_clk                 ),
-       .cpu_clk                (cpu_clk                   ),
-       .rtc_clk                (rtc_clk                   ),
 
        // Risc configuration
        .fuse_mhartid           (fuse_mhartid              ),
