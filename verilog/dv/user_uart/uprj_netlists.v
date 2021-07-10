@@ -34,6 +34,7 @@
         `include "syntacore.v"
         `include "wb_host.v"
 	`include "clk_skew_adjust.v"
+	`include "clk_buf.v"
 
 `else
      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
@@ -58,6 +59,7 @@
      `include "lib/async_fifo_th.sv"  
      `include "lib/reset_sync.sv"  
      `include "lib/double_sync_low.v"  
+     `include "lib/clk_buf.v"  
 
      `include "sdram_ctrl/src/top/sdrc_top.v" 
      `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 
