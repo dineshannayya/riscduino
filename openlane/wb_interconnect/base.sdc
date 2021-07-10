@@ -32,6 +32,8 @@ set clk_indx [lsearch [all_inputs] [get_port $::env(CLOCK_PORT)]]
 set rst_indx [lsearch [all_inputs] [get_port rst_n]]
 set all_inputs_wo_clk_rst [lreplace [all_inputs] $clk_indx $rst_indx]
 
+set_clock_uncertainty -from $::env(CLOCK_PORT) -to $::env(CLOCK_PORT)  -setup 0.400
+set_clock_uncertainty -from $::env(CLOCK_PORT) -to $::env(CLOCK_PORT)  -hold  0.050
 
 # correct resetn
 set_input_delay $input_delay_value  -clock [get_clocks $::env(CLOCK_PORT)] $all_inputs_wo_clk_rst

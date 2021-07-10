@@ -28,6 +28,8 @@ set wb_output_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
 puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
 puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 
+set_clock_uncertainty -from $::env(WB_CLOCK_PORT) -to $::env(WB_CLOCK_PORT)  -setup 0.400
+set_clock_uncertainty -from $::env(WB_CLOCK_PORT) -to $::env(WB_CLOCK_PORT)  -hold  0.050
 
 set_input_delay 2.0 -clock [get_clocks $::env(WB_CLOCK_PORT)] {reset_n}
 
@@ -38,7 +40,6 @@ set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port reg_be*]
 set_input_delay  $wb_input_delay_value   -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port sdr_init_done*]
 
-set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port device_idcode*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port reg_rdata*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port reg_ack*]
 set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT)] [get_port fuse_mhartid*]
@@ -69,11 +70,3 @@ set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
 
-## These are generated clock, only max delay added
-set_false_path -to [get_port sdram_clk] 
-set_false_path -to [get_port cpu_clk] 
-set_false_path -to [get_port rtc_clk] 
-
-#set_max_delay 2.0 [get_port sdram_clk]
-#set_max_delay 2.0 [get_port cpu_clk]
-#set_max_delay 2.0 [get_port rtc_clk]

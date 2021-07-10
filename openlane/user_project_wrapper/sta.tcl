@@ -15,55 +15,59 @@
 # SPDX-FileContributor: Modified by Dinesh Annayya <dinesha@opencores.org>
 
 
-set ::env(LIB_FASTEST) "/home/dinesha/workarea/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ff_n40C_1v95.lib"
-set ::env(LIB_SLOWEST) "/home/dinesha/workarea/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ss_100C_1v60.lib"
+set ::env(LIB_FASTEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ff_n40C_1v95.lib"
+set ::env(LIB_SLOWEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ss_100C_1v60.lib"
 set ::env(DESIGN_NAME) "user_project_wrapper"
-set ::env(BASE_SDC_FILE) "/project/openlane/user_project_wrapper/base.sdc"
+set ::env(BASE_SDC_FILE) "base.sdc"
 set ::env(SYNTH_DRIVING_CELL) "sky130_fd_sc_hd__inv_8"
 set ::env(SYNTH_DRIVING_CELL_PIN) "Y"
 set ::env(SYNTH_CAP_LOAD) "17.65"
 set ::env(WIRE_RC_LAYER) "met1"
+
+#To disable empty filler cell black box get created
+#set link_make_black_boxes 0
 
 
 set_cmd_units -time ns -capacitance pF -current mA -voltage V -resistance kOhm -distance um
 define_corners wc bc
 read_liberty -corner bc $::env(LIB_FASTEST)
 read_liberty -corner wc $::env(LIB_SLOWEST)
-read_verilog /project/verilog/gl/clk_skew_adjust.v  
-read_verilog /project/verilog/gl/glbl_cfg.v  
-#read_verilog /project/verilog/gl/sdram.v  
-read_verilog /project/verilog/gl/spi_master.v  
-#read_verilog /project/verilog/gl/syntacore.v  
-read_verilog /project/verilog/gl/uart.v  
-read_verilog /project/verilog/gl/wb_host.v  
-read_verilog /project/verilog/gl/wb_interconnect.v
-read_verilog /project/verilog/gl/user_project_wrapper.v  
+read_verilog netlist/clk_skew_adjust.v  
+read_verilog netlist/glbl_cfg.v  
+read_verilog netlist/sdram.v  
+read_verilog netlist/spi_master.v 
+read_verilog netlist/syntacore.v  
+read_verilog netlist/uart.v  
+read_verilog netlist/wb_host.v  
+read_verilog netlist/wb_interconnect.v
+read_verilog netlist/user_project_wrapper.v  
 link_design  $::env(DESIGN_NAME)
 
-read_spef -path u_skew_wi    /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_riscv /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_uart  /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_spi   /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_sdram /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_glbl  /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_wh    /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_sd_co /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_sd_ci /project/spef/clk_skew_adjust.spef  
-read_spef -path u_skew_sp_co /project/spef/clk_skew_adjust.spef  
-read_spef -path u_glbl_cfg   /project/spef/glbl_cfg.spef  
-#read_spef -path u_riscv_top  /project/spef/scr1_top_wb.spef  
-#read_spef -path u_sdram_ctrl /project/spef/sdrc_top.spef  
-read_spef -path u_spi_master /project/spef/spim_top.spef  
-read_spef -path u_uart_core  /project/spef/uart_core.spef  
-read_spef -path u_wb_host    /project/spef/wb_host.spef  
-read_spef -path u_intercon   /project/spef/wb_interconnect.spef
-read_spef /project/spef/user_project_wrapper.spef  
+
+read_spef -path u_skew_wi    ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_riscv ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_uart  ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_spi   ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_sdram ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_glbl  ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_wh    ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_sd_co ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_sd_ci ../../spef/clk_skew_adjust.spef  
+read_spef -path u_skew_sp_co ../../spef/clk_skew_adjust.spef  
+read_spef -path u_glbl_cfg   ../../spef/glbl_cfg.spef  
+read_spef -path u_riscv_top  ../../spef/scr1_top_wb.spef  
+read_spef -path u_sdram_ctrl ../../spef/sdrc_top.spef  
+read_spef -path u_spi_master ../../spef/spim_top.spef  
+read_spef -path u_uart_core  ../../spef/uart_core.spef  
+read_spef -path u_wb_host    ../../spef/wb_host.spef  
+read_spef -path u_intercon   ../../spef/wb_interconnect.spef
+read_spef ../..//spef/user_project_wrapper.spef  
 
 
 read_sdc -echo $::env(BASE_SDC_FILE)
 
 # check for missing constraints
-check_setup  -verbose > unconstraints.rpt
+#check_setup  -verbose > unconstraints.rpt
 
 set_operating_conditions -analysis_type single
 # Propgate the clock
@@ -71,11 +75,25 @@ set_propagated_clock [all_clocks]
 
 report_tns
 report_wns
-report_power 
-report_checks -unique -slack_max -0.0 -group_count 100 
-report_checks -unique -slack_min -0.0 -group_count 100 
+#report_power 
+echo "################ CORNER : WC (SLOW) TIMING Report ###################" > timing_max.rpt
+report_checks -unique -path_delay max -slack_max -0.0 -group_count 100 -corner wc >> timing_max.rpt
+report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(WBM_CLOCK_NAME)       -corner wc  > timing_max.rpt
+report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(WBS_CLOCK_NAME)       -corner wc  > timing_max.rpt
+report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(SDRAM_CLOCK_NAME)     -corner wc  > timing_max.rpt
+report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(PAD_SDRAM_CLOCK_NAME) -corner wc  > timing_max.rpt
+report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(CPU_CLOCK_NAME)       -corner wc  > timing_max.rpt
+report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(RTC_CLOCK_NAME)       -corner wc  > timing_max.rpt
+
+echo "################ CORNER : BC (SLOW) TIMING Report ###################" > timing_min.rpt
+report_checks -unique -path_delay min -slack_min -0.0 -group_count 100 -corner bc >> timing_min.rpt
+report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(WBM_CLOCK_NAME)        -corner bc  > timing_min.rpt
+report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(WBS_CLOCK_NAME)        -corner bc  > timing_min.rpt
+report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(SDRAM_CLOCK_NAME)      -corner bc  > timing_min.rpt
+report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(PAD_SDRAM_CLOCK_NAME)  -corner bc  > timing_min.rpt
+report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(CPU_CLOCK_NAME)        -corner bc  > timing_min.rpt
+report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(RTC_CLOCK_NAME)        -corner bc  > timing_min.rpt
+
 report_checks -path_delay min_max 
-report_checks -group_count 100  -slack_max -0.01  > timing.rpt
 
-report_checks -group_count 100  -slack_min -0.01 >> timing.rpt
-
+exit
