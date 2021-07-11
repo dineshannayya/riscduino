@@ -78,22 +78,25 @@ report_wns
 #report_power 
 echo "################ CORNER : WC (SLOW) TIMING Report ###################" > timing_max.rpt
 report_checks -unique -path_delay max -slack_max -0.0 -group_count 100 -corner wc >> timing_max.rpt
-report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(WBM_CLOCK_NAME)       -corner wc  > timing_max.rpt
-report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(WBS_CLOCK_NAME)       -corner wc  > timing_max.rpt
-report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(SDRAM_CLOCK_NAME)     -corner wc  > timing_max.rpt
-report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(PAD_SDRAM_CLOCK_NAME) -corner wc  > timing_max.rpt
-report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(CPU_CLOCK_NAME)       -corner wc  > timing_max.rpt
-report_checks -group_count 100 -path_delay max  -slack_max -0.01 -path_group $::env(RTC_CLOCK_NAME)       -corner wc  > timing_max.rpt
+report_checks -group_count 100 -path_delay max  -path_group $::env(WBM_CLOCK_NAME)       -corner wc  >> timing_max.rpt
+report_checks -group_count 100 -path_delay max  -path_group $::env(WBS_CLOCK_NAME)       -corner wc  >> timing_max.rpt
+report_checks -group_count 100 -path_delay max  -path_group $::env(SDRAM_CLOCK_NAME)     -corner wc  >> timing_max.rpt
+report_checks -group_count 100 -path_delay max  -path_group $::env(PAD_SDRAM_CLOCK_NAME) -corner wc  >> timing_max.rpt
+report_checks -group_count 100 -path_delay max  -path_group $::env(CPU_CLOCK_NAME)       -corner wc  >> timing_max.rpt
+report_checks -group_count 100 -path_delay max  -path_group $::env(RTC_CLOCK_NAME)       -corner wc  >> timing_max.rpt
+
+report_checks -path_delay max   -corner wc >> timing_max.rpt
 
 echo "################ CORNER : BC (SLOW) TIMING Report ###################" > timing_min.rpt
 report_checks -unique -path_delay min -slack_min -0.0 -group_count 100 -corner bc >> timing_min.rpt
-report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(WBM_CLOCK_NAME)        -corner bc  > timing_min.rpt
-report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(WBS_CLOCK_NAME)        -corner bc  > timing_min.rpt
-report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(SDRAM_CLOCK_NAME)      -corner bc  > timing_min.rpt
-report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(PAD_SDRAM_CLOCK_NAME)  -corner bc  > timing_min.rpt
-report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(CPU_CLOCK_NAME)        -corner bc  > timing_min.rpt
-report_checks -group_count 100  -path_delay min -slack_min -0.01 -path_group $::env(RTC_CLOCK_NAME)        -corner bc  > timing_min.rpt
+report_checks -group_count 100  -path_delay min -path_group $::env(WBM_CLOCK_NAME)        -corner bc  >> timing_min.rpt
+report_checks -group_count 100  -path_delay min -path_group $::env(WBS_CLOCK_NAME)        -corner bc  >> timing_min.rpt
+report_checks -group_count 100  -path_delay min -path_group $::env(SDRAM_CLOCK_NAME)      -corner bc  >> timing_min.rpt
+report_checks -group_count 100  -path_delay min -path_group $::env(PAD_SDRAM_CLOCK_NAME)  -corner bc  >> timing_min.rpt
+report_checks -group_count 100  -path_delay min -path_group $::env(CPU_CLOCK_NAME)        -corner bc  >> timing_min.rpt
+report_checks -group_count 100  -path_delay min -path_group $::env(RTC_CLOCK_NAME)        -corner bc  >> timing_min.rpt
 
+report_checks -path_delay min  -corner bc >> timing_min.rpt
 report_checks -path_delay min_max 
 
-exit
+#exit

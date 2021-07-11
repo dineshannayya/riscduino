@@ -45,7 +45,7 @@ set ::env(VERILOG_FILES) "\
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 30 30"
+set ::env(DIE_AREA) "0 0 60 100"
 
 
 
@@ -66,3 +66,8 @@ set ::env(FP_CORE_UTIL) 60
 set ::env(BOTTOM_MARGIN_MULT) 2
 set ::env(TOP_MARGIN_MULT) 2
 set ::env(GLB_RT_MAXLAYER) 4
+
+set ::env(FP_PDN_VPITCH) 30
+set ::env(FP_PDN_HPITCH) 30
+set ::env(FP_PDN_VWIDTH) 3
+set ::env(FP_PDN_HWIDTH) 3

@@ -60,7 +60,6 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $script_dir/../../verilog/gl/uart.v     \
 	$script_dir/../../verilog/gl/sdram.v \
 	$script_dir/../../verilog/gl/wb_host.v \
-	$script_dir/../../verilog/gl/clk_buf.v \
 	$script_dir/../../verilog/gl/clk_skew_adjust.v \
 	$script_dir/../../verilog/gl/syntacore.v \
 	"
@@ -72,7 +71,6 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/sdram.lef \
 	$lef_root/uart.lef \
 	$lef_root/wb_host.lef \
-	$lef_root/clk_buf.lef \
 	$lef_root/clk_skew_adjust.lef \
 	$lef_root/syntacore.lef \
 	"
@@ -84,7 +82,6 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/uart.gds \
 	$gds_root/sdram.gds \
 	$gds_root/wb_host.gds \
-	$gds_root/clk_buf.gds \
 	$gds_root/clk_skew_adjust.gds \
 	$gds_root/syntacore.gds \
 	"
@@ -101,6 +98,10 @@ set ::env(RUN_KLAYOUT_DRC) 0
 
 set ::env(VDD_PIN) [list {vccd1}]
 set ::env(GND_PIN) [list {vssd1}]
+
+set ::env(VDD_NETS) [list {vccd1}]
+set ::env(GND_NETS) [list {vssd1}]
+
 
 
 # The following is because there are no std cells in the example wrapper project.
@@ -123,3 +124,16 @@ set ::env(CLOCK_TREE_SYNTH) 0
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "250"
 
 
+set ::env(FP_PDN_HOFFSET) "5"
+set ::env(FP_PDN_HPITCH) "80"
+set ::env(FP_PDN_HSPACING) "15"
+set ::env(FP_PDN_HWIDTH) "3"
+set ::env(FP_PDN_LOWER_LAYER) "met4"
+set ::env(FP_PDN_RAILS_LAYER) "met1"
+set ::env(FP_PDN_RAIL_OFFSET) "0"
+set ::env(FP_PDN_RAIL_WIDTH) "0.48"
+set ::env(FP_PDN_UPPER_LAYER) "met5"
+set ::env(FP_PDN_VOFFSET) "5"
+set ::env(FP_PDN_VPITCH) "80"
+set ::env(FP_PDN_VSPACING) "15"
+set ::env(FP_PDN_VWIDTH) "3"

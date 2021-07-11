@@ -44,8 +44,8 @@ set ::env(VERILOG_FILES) "\
 ### Macro Placement
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
-#set ::env(FP_SIZING) absolute
-#set ::env(DIE_AREA) "0 0 50 50"
+set ::env(FP_SIZING) absolute
+set ::env(DIE_AREA) "0 0 100 100"
 
 
 
@@ -66,3 +66,8 @@ set ::env(PL_RANDOM_GLB_PLACEMENT) 1
 set ::env(BOTTOM_MARGIN_MULT) 2
 set ::env(TOP_MARGIN_MULT) 2
 set ::env(GLB_RT_MAXLAYER) 4
+
+set ::env(FP_PDN_VPITCH) 30
+set ::env(FP_PDN_HPITCH) 30
+set ::env(FP_PDN_VWIDTH) 3
+set ::env(FP_PDN_HWIDTH) 3

@@ -261,25 +261,6 @@ module wb_port_tb;
 	force uut.mprj.u_wb_host.u_clkbuf_rtc.VGND =VSS;
 	force uut.mprj.u_wb_host.u_clkbuf_rtc.VNB = VSS;
 
-	force uut.mprj.u_buf1_wb_rstn.u_buf.VPWR =USER_VDD1V8;
-	force uut.mprj.u_buf1_wb_rstn.u_buf.VPB  =USER_VDD1V8;
-	force uut.mprj.u_buf1_wb_rstn.u_buf.VGND =VSS;
-	force uut.mprj.u_buf1_wb_rstn.u_buf.VNB = VSS;
-
-	force uut.mprj.u_buf2_wb_rstn.u_buf.VPWR =USER_VDD1V8;
-	force uut.mprj.u_buf2_wb_rstn.u_buf.VPB  =USER_VDD1V8;
-	force uut.mprj.u_buf2_wb_rstn.u_buf.VGND =VSS;
-	force uut.mprj.u_buf2_wb_rstn.u_buf.VNB = VSS;
-
-	force uut.mprj.u_buf1_wbclk.u_buf.VPWR =USER_VDD1V8;
-	force uut.mprj.u_buf1_wbclk.u_buf.VPB  =USER_VDD1V8;
-	force uut.mprj.u_buf1_wbclk.u_buf.VGND =VSS;
-	force uut.mprj.u_buf1_wbclk.u_buf.VNB = VSS;
-
-	force uut.mprj.u_buf2_wbclk.u_buf.VPWR =USER_VDD1V8;
-	force uut.mprj.u_buf2_wbclk.u_buf.VPB  =USER_VDD1V8;
-	force uut.mprj.u_buf2_wbclk.u_buf.VGND =VSS;
-	force uut.mprj.u_buf2_wbclk.u_buf.VNB = VSS;
     end
 `endif    
 endmodule
