@@ -50,10 +50,10 @@ set_case_analysis 0 [get_pins -hierarchical u_skew_wi*sel[2]]
 set_case_analysis 0 [get_pins -hierarchical u_skew_wi*sel[1]] 
 set_case_analysis 0 [get_pins -hierarchical u_skew_wi*sel[0]] 
 
-set_case_analysis 1 [get_pins -hierarchical u_skew_riscv*sel[3]]
-set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[2]]
-set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[1]]
-set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[0]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_riscv*sel[3]]
+set_case_analysis 1 [get_pins -hierarchical u_skew_riscv*sel[2]]
+set_case_analysis 1 [get_pins -hierarchical u_skew_riscv*sel[1]]
+set_case_analysis 1 [get_pins -hierarchical u_skew_riscv*sel[0]]
 
 set_case_analysis 1 [get_pins -hierarchical u_skew_uart*sel[3]]
 set_case_analysis 0 [get_pins -hierarchical u_skew_uart*sel[2]]
@@ -68,12 +68,17 @@ set_case_analysis 0 [get_pins -hierarchical u_skew_spi*sel[0]]
 set_case_analysis 0 [get_pins -hierarchical u_skew_glbl*sel[3]]
 set_case_analysis 1 [get_pins -hierarchical u_skew_glbl*sel[2]]
 set_case_analysis 1 [get_pins -hierarchical u_skew_glbl*sel[1]]
-set_case_analysis 1 [get_pins -hierarchical u_skew_glbl*sel[0]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_glbl*sel[0]]
 
 set_case_analysis 1 [get_pins -hierarchical u_skew_wh*sel[3]]
 set_case_analysis 0 [get_pins -hierarchical u_skew_wh*sel[2]]
 set_case_analysis 0 [get_pins -hierarchical u_skew_wh*sel[1]]
 set_case_analysis 0 [get_pins -hierarchical u_skew_wh*sel[0]]
+
+set_case_analysis 1 [get_pins -hierarchical u_skew_sdram*sel[3]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sdram*sel[2]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sdram*sel[1]]
+set_case_analysis 0 [get_pins -hierarchical u_skew_sdram*sel[0]]
 
 # Set the interface logic to 0
 set_case_analysis 0 [get_pins -hierarchical u_skew_sd_co*sel[3]]

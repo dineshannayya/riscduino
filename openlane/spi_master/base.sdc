@@ -92,8 +92,8 @@ set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port i
 set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[2]]
 set_output_delay 0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_oeb[1]]
 
-set_clock_uncertainty -from $::env(SPI_CLOCK_PORT)   -to $::env(SPI_CLOCK_PORT)   -setup 0.400
-set_clock_uncertainty -from $::env(WB_CLOCK_PERIOD)  -to $::env(WB_CLOCK_PERIOD)  -setup 0.400
+set_clock_uncertainty -from $::env(SPI_CLOCK_PORT)   -to $::env(SPI_CLOCK_PORT)   -setup 0.800
+set_clock_uncertainty -from $::env(WB_CLOCK_PERIOD)  -to $::env(WB_CLOCK_PERIOD)  -setup 0.800
 set_clock_uncertainty -from $::env(SPI_CLOCK_PORT)   -to $::env(SPI_CLOCK_PORT)   -hold 0.050
 set_clock_uncertainty -from $::env(WB_CLOCK_PERIOD)  -to $::env(WB_CLOCK_PERIOD)  -hold 0.050
 

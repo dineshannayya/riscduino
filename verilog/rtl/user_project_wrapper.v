@@ -271,11 +271,11 @@ wire                              sdram_clk           ;
 wire                              cpu_clk       ;
 wire                              rtc_clk       ;
 wire                              wbd_clk_int   ;
-wire                              wbd_clk_int1  ;
-wire                              wbd_clk_int2  ;
+//wire                              wbd_clk_int1  ;
+//wire                              wbd_clk_int2  ;
 wire                              wbd_int_rst_n ;
-wire                              wbd_int1_rst_n ;
-wire                              wbd_int2_rst_n ;
+//wire                              wbd_int1_rst_n ;
+//wire                              wbd_int2_rst_n ;
 
 wire [31:0]                       fuse_mhartid  ;
 wire [15:0]                       irq_lines     ;
@@ -352,11 +352,11 @@ assign cfg_cska_sp_co = cfg_clk_ctrl2[11:8];// SPI clock out control
 //assign la_data_out    = {riscv_debug,spi_debug,sdram_debug};
 assign la_data_out[127:0]    = {sdram_debug,spi_debug,riscv_debug};
 
-clk_buf u_buf1_wb_rstn  (.clk_i(wbd_int_rst_n),.clk_o(wbd_int1_rst_n));
-clk_buf u_buf2_wb_rstn  (.clk_i(wbd_int1_rst_n),.clk_o(wbd_int2_rst_n));
-
-clk_buf u_buf1_wbclk    (.clk_i(wbd_clk_int),.clk_o(wbd_clk_int1));
-clk_buf u_buf2_wbclk    (.clk_i(wbd_clk_int1),.clk_o(wbd_clk_int2));
+//clk_buf u_buf1_wb_rstn  (.clk_i(wbd_int_rst_n),.clk_o(wbd_int1_rst_n));
+//clk_buf u_buf2_wb_rstn  (.clk_i(wbd_int1_rst_n),.clk_o(wbd_int2_rst_n));
+//
+//clk_buf u_buf1_wbclk    (.clk_i(wbd_clk_int),.clk_o(wbd_clk_int1));
+//clk_buf u_buf2_wbclk    (.clk_i(wbd_clk_int1),.clk_o(wbd_clk_int2));
 
 wb_host u_wb_host(
        .user_clock1      (wb_clk_i             ),
@@ -504,7 +504,7 @@ sdrc_top
     .sdram_debug            (sdram_debug                ),
                     
     // WB bus
-    .wb_rst_n               (wbd_int2_rst_n             ),
+    .wb_rst_n               (wbd_int_rst_n              ),
     .wb_clk_i               (wbd_clk_sdram              ),
     
     .wb_stb_i               (wbd_sdram_stb_o            ),
@@ -544,7 +544,7 @@ sdrc_top
 
 wb_interconnect  u_intercon (
          .clk_i         (wbd_clk_wi            ), 
-         .rst_n         (wbd_int2_rst_n        ),
+         .rst_n         (wbd_int_rst_n         ),
 
          // Master 0 Interface
          .m0_wbd_dat_i  (wbd_int_dat_i         ),
@@ -628,7 +628,7 @@ wb_interconnect  u_intercon (
 glbl_cfg   u_glbl_cfg (
 
        .mclk                   (wbd_clk_glbl              ),
-       .reset_n                (wbd_int2_rst_n            ),
+       .reset_n                (wbd_int_rst_n             ),
 
         // Reg Bus Interface Signal
        .reg_cs                 (wbd_glbl_stb_o            ),
@@ -669,7 +669,7 @@ glbl_cfg   u_glbl_cfg (
         );
 
 uart_core   u_uart_core (
-        .arst_n                 (wbd_int1_rst_n           ), // async reset
+        .arst_n                 (wbd_int_rst_n            ), // async reset
         .app_clk                (wbd_clk_uart             ),
 
         // Reg Bus Interface Signal
@@ -701,7 +701,7 @@ clk_skew_adjust u_skew_wi
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int1                ), 
+	       .clk_in     (wbd_clk_int                 ), 
 	       .sel        (cfg_cska_wi                 ), 
 	       .clk_out    (wbd_clk_wi                  ) 
        );
@@ -725,7 +725,7 @@ clk_skew_adjust u_skew_uart
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int1                ), 
+	       .clk_in     (wbd_clk_int                 ), 
 	       .sel        (cfg_cska_uart               ), 
 	       .clk_out    (wbd_clk_uart                ) 
        );
@@ -737,7 +737,7 @@ clk_skew_adjust u_skew_spi
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int2               ), 
+	       .clk_in     (wbd_clk_int                ), 
 	       .sel        (cfg_cska_spi               ), 
 	       .clk_out    (wbd_clk_spi                ) 
        );
@@ -749,7 +749,7 @@ clk_skew_adjust u_skew_sdram
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int2               ), 
+	       .clk_in     (wbd_clk_int                ), 
 	       .sel        (cfg_cska_sdram             ), 
 	       .clk_out    (wbd_clk_sdram              ) 
        );
@@ -761,7 +761,7 @@ clk_skew_adjust u_skew_glbl
                .vccd1      (vccd1                      ),// User area 1 1.8V supply
                .vssd1      (vssd1                      ),// User area 1 digital ground
 `endif
-	       .clk_in     (wbd_clk_int2              ), 
+	       .clk_in     (wbd_clk_int               ), 
 	       .sel        (cfg_cska_glbl             ), 
 	       .clk_out    (wbd_clk_glbl              ) 
        );

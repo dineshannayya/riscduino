@@ -23,7 +23,7 @@ set ::env(CLOCK_PORT) "clk_i"
 create_clock [get_ports $::env(CLOCK_PORT)]  -name $::env(CLOCK_PORT)  -period $::env(CLOCK_PERIOD)
 
 set input_delay_value [expr $::env(CLOCK_PERIOD) * 0.6]
-set output_delay_value [expr $::env(CLOCK_PERIOD) * 0.6]
+set output_delay_value [expr $::env(CLOCK_PERIOD) * 0.4]
 puts "\[INFO\]: Setting output delay to: $output_delay_value"
 puts "\[INFO\]: Setting input delay to: $input_delay_value"
 
