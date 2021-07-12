@@ -103,7 +103,7 @@ module spim_top
     output logic                 [31:0]  spi_debug,
 
     // PAD I/f
-    input  logic [5:2]                   io_in    ,
+    input  logic  [3:0]                  io_in    ,
     output logic  [5:0]                  io_out   ,
     output logic  [5:0]                  io_oeb
 
@@ -221,10 +221,10 @@ logic                          spi_sdo2_dl;
 logic                          spi_sdo3_dl;
 
 
-assign  spi_sdi0  =  io_in[2];
-assign  spi_sdi1  =  io_in[3];
-assign  spi_sdi2  =  io_in[4];
-assign  spi_sdi3  =  io_in[5];
+assign  spi_sdi0  =  io_in[0];
+assign  spi_sdi1  =  io_in[1];
+assign  spi_sdi2  =  io_in[2];
+assign  spi_sdi3  =  io_in[3];
 
 assign  io_out[0] =  spi_clk;
 assign  io_out[1] =  spi_csn0;// No hold fix for CS#, as it asserted much eariler than SPI clock

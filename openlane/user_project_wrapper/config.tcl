@@ -47,6 +47,8 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(FP_SIZING) "absolute"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro.cfg
 
+set ::env(PDN_CFG) $script_dir/pdn.tcl
+
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
@@ -96,8 +98,8 @@ set ::env(FP_PDN_CHECK_NODES) 0
 
 set ::env(RUN_KLAYOUT_DRC) 0
 
-set ::env(VDD_PIN) [list {vccd1}]
-set ::env(GND_PIN) [list {vssd1}]
+set ::env(VDD_PIN) [list {vdda1 vdda2 vccd1 vccd2}]
+set ::env(GND_PIN) [list {vssa1 vssa2 vssd1 vssd2}]
 
 set ::env(VDD_NETS) [list {vccd1}]
 set ::env(GND_NETS) [list {vssd1}]

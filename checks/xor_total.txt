@@ -1,1 +1,1 @@
-Total XOR differences = 0
+Total XOR differences = 2488

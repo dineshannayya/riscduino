@@ -3,8 +3,8 @@ FULL RUN LOG:
 Step 0 done without fatal errors.
  Executing Step 1 of 8: Project License Check
 {{LICENSE COMPLIANCE PASSED}} Apache-2.0 LICENSE file was found in project root
- SPDX COMPLIANCE Found 691 non-compliant files with the SPDX Standard. Check full log for more information
-SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/a', '/home/dinesha/workarea/opencore/git/yifive_r0/README.md', '/home/dinesha/workarea/opencore/git/yifive_r0/test.v', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/default.cvcrc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/config.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/magic_spice.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/opt.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/trimmed.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/tracks_copy.info', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/synthesis/hierarchy.dot', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/synthesis/yosys.sdc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/20-fastroute_4.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/24-tritonRoute.param', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/17-fastroute.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/21-fastroute_5.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/24-tritonRoute.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/19-fastroute_3.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/routing/18-fastroute_2.guide', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/magic/sky130_fd_sc_hd__conb_1.ext']
+ SPDX COMPLIANCE Found 971 non-compliant files with the SPDX Standard. Check full log for more information
+SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/README.md', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/user_project_wrapper.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/wb_host.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/sdrc_top.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/wb_interconnect.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/scr1_top_wb.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/glbl_cfg.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/test.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/uart_core.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/clk_skew_adjust.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/clk_buf.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/spim_top.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/default.cvcrc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/config.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/magic_spice.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/opt.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/trimmed.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/tracks_copy.info', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/synthesis/hierarchy.dot']
  Executing Step 2 of 8: YAML File Check
  YAML file valid!
 Step 2 done without fatal errors.
@@ -32,11 +32,8 @@ Power Checks Passed
 Step 4 done without fatal errors.
  Executing Step 5 of 8: XOR Consistency Checks
  Running XOR Checks...
-Total XOR differences = 0
- XOR Checks on User Project GDS Passed!
-Step 5 done without fatal errors.
+Total XOR differences = 2488
+ XOR Checks on GDS Failed, Reason: XOR Differences count is 2488. Please view /home/dinesha/workarea/opencore/git/yifive_r0/checks/*.xor.* for more details.
+TEST FAILED AT STEP 5
  Executing Step 6 of 8: DRC Violations Checks
  Running Magic DRC Checks...
- DRC Checks on User Project GDS Passed!
-Step 6 done without fatal errors.
- All Checks PASSED !!!
