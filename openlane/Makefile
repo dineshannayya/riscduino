@@ -21,7 +21,7 @@ CLEAN = $(foreach block,$(BLOCKS), clean-$(block))
 OPENLANE_TAG ?= v0.15
 OPENLANE_IMAGE_NAME ?= efabless/openlane:$(OPENLANE_TAG)
 OPENLANE_BASIC_COMMAND = "cd /project/openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
-OPENLANE_INTERACTIVE_COMMAND = "cd /project/openlane && flow.tcl -it -file ./$*/interactive.tcl"
+OPENLANE_INTERACTIVE_COMMAND = "cd /project/openlane && flow.tcl -it -file ./$*/interactive.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
 
 all: $(BLOCKS)
 

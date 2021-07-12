@@ -87,5 +87,5 @@ set ::env(DIODE_INSERTION_STRATEGY) 4
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 3
-set ::env(FP_PDN_HWIDTH) 3
+set ::env(FP_PDN_VWIDTH) 5
+set ::env(FP_PDN_HWIDTH) 5
