@@ -221,6 +221,7 @@ parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
 
 parameter P_FSM_CDR    = 4'b1001; // COMMAND -> DUMMY -> READ
 parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
+parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 //---------------------------------------------------------
   parameter P_CS0 = 4'b0001;
   parameter P_CS1 = 4'b0010;
@@ -341,7 +342,7 @@ end
       cfg_m0_spi_seq[3:0]   <= P_FSM_CAMDR;
       cfg_m0_addr_cnt[1:0]  <= P_24BIT;
       cfg_m0_dummy_cnt[1:0] <= P_16BIT;
-      cfg_m0_data_cnt[7:0]  <= 4; // 4 Byte
+      cfg_m0_data_cnt[7:0]  <= 8'h20; // 32 Byte
 
       cfg_m1_fsm_reset      <= 'h0;
       cfg_m1_cs_reg         <= P_CS0;
@@ -607,73 +608,44 @@ begin
 
    case(state)
    FSM_IDLE:  begin
+        next_cnt      = 0;
 	if(spim_fifo_req && cmd_fifo_empty) begin
 	   case(cfg_m1_spi_seq)
 	      P_FSM_C: begin
 	              cmd_fifo_wdata = {SOC,EOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
 		                        cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
 					cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
+	              spim_m1_wrdy = 1;
 	              next_state = FSM_ACK_PHASE;
 	      end
-	      P_FSM_CW: begin
+	      P_FSM_CW, 
+	      P_FSM_CDW:
+	      begin
 	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
 			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
 				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
 	          next_state = FSM_WRITE_PHASE;
 	      end
-	      P_FSM_CA: begin
+	      P_FSM_CA, 
+	      P_FSM_CAR, 
+	      P_FSM_CADR,
+	      P_FSM_CAMR, 
+	      P_FSM_CAMDR, 
+	      P_FSM_CAW, 
+	      P_FSM_CADW: 
+	      begin
 	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
 			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
 				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
 	          next_state = FSM_ADR_PHASE;
 	      end
-	      P_FSM_CAR: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_ADR_PHASE;
-	      end
-              P_FSM_CADR: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_ADR_PHASE;
-	      end
-	      P_FSM_CAMR: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_ADR_PHASE;
-	      end
-	      P_FSM_CAMDR: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_ADR_PHASE;
-	      end
-	      P_FSM_CAW: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_ADR_PHASE;
-	      end
-	      P_FSM_CADW: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_ADR_PHASE;
-	      end
-	       P_FSM_CDR: begin
+	       P_FSM_CDR,
+	       P_FSM_CR: 
+               begin
 	          cmd_fifo_wdata = {SOC,EOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
 			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
 				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
 	          next_state = FSM_READ_PHASE;
-	       end
-	       P_FSM_CDW: begin
-	          cmd_fifo_wdata = {SOC,NOC, cfg_m1_data_cnt[7:0],cfg_m1_dummy_cnt[1:0],
-			            cfg_m1_addr_cnt[1:0],cfg_m1_spi_seq[3:0],
-				    cfg_m1_mode_reg[7:0],cfg_m1_cmd_reg[7:0]};
-	          next_state = FSM_WRITE_PHASE;
 	       end
 
 
@@ -688,26 +660,12 @@ begin
 	         P_FSM_CA:   // COMMAND + ADDRESS PHASE
 	         begin
                        cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
+	               spim_m1_wrdy = 1;
 	               next_state = FSM_ACK_PHASE;
 	         end
-	         P_FSM_CAR:  // COMMAND + ADDRESS + READ PHASE
-		 begin
-                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
-	            next_cnt  = 'h0;
-	            next_state = FSM_READ_PHASE;
-	         end
-                 P_FSM_CADR: // COMMAND + ADDRESS + DUMMY + READ PHASE
-		 begin
-                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
-	            next_cnt  = 'h0;
-	            next_state = FSM_READ_PHASE;
-	         end
-	         P_FSM_CAMR: // COMMAND + ADDRESS + MODE + READ PHASE
-		 begin
-                    cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
-	            next_cnt  = 'h0;
-	            next_state = FSM_READ_PHASE;
-	         end
+	         P_FSM_CAR,  // COMMAND + ADDRESS + READ PHASE
+                 P_FSM_CADR, // COMMAND + ADDRESS + DUMMY + READ PHASE
+	         P_FSM_CAMR, // COMMAND + ADDRESS + MODE + READ PHASE
 	         P_FSM_CAMDR: // COMMAND + ADDRESS + MODE + DUMMY + READ PHASE
 		 begin
                     cmd_fifo_wdata = {NOC,EOC,cfg_m1_addr[31:0]};
@@ -715,12 +673,9 @@ begin
 	            next_state = FSM_READ_PHASE;
 	         end
 
-		 P_FSM_CAW:begin
-                    cmd_fifo_wdata = {NOC,NOC,cfg_m1_addr[31:0]};
-	            next_cnt  = 'h0;
-	            next_state = FSM_WRITE_PHASE;
-	         end
-		 P_FSM_CADW: begin
+		 P_FSM_CAW,
+		 P_FSM_CADW: 
+		 begin
                     cmd_fifo_wdata = {NOC,NOC,cfg_m1_addr[31:0]};
 	            next_cnt  = 'h0;
 	            next_state = FSM_WRITE_PHASE;

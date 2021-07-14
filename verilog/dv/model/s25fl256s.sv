@@ -710,21 +710,21 @@ specify
         // Typical Byte Programming Time
         specparam        tdevice_BP                = 4e8;//tBP
         // Sector Erase Operation
-        specparam        tdevice_SE64              = 650e7;//tSE
+        specparam        tdevice_SE64              = 10e7; // 650e7;//tSE Dinesh A
         // Sector Erase Operation
-        specparam        tdevice_SE256             = 1875e7;//tSE
+        specparam        tdevice_SE256             = 10e7; // 1875e7;//tSE Dinesh A
         // Bulk Erase Operation
         specparam        tdevice_BE                = 330e9;//tBE
         // WRR Cycle Time
-        specparam        tdevice_WRR               = 1; // 2e9;//tW
+        specparam        tdevice_WRR               = 1; // 2e9;//tW Dinesh A
         // Erase Suspend/Erase Resume Time
         specparam        tdevice_ERSSUSP           = 45e6;//tESL
         // Program Suspend/Program Resume Time
-        specparam        tdevice_PRGSUSP           = 1; // 40e6;//
+        specparam        tdevice_PRGSUSP           = 1; // 40e6;// Dinesh A
         // VCC (min) to CS# Low
-        specparam        tdevice_PU                = 1; // 3e8;//tPU
+        specparam        tdevice_PU                = 1; // 3e8;//tPU Dinesh A
         // PPB Erase Time
-        specparam        tdevice_PPBERASE          = 15e9;//
+        specparam        tdevice_PPBERASE          = 1; // 15e9;// Dinesh A
         // Password Unlock Time
         specparam        tdevice_PASSULCK          = 1e6;//
         // Password Unlock to Password Unlock Time
@@ -2932,6 +2932,7 @@ endspecify
                                                     end
                                                 end
                                                 WByte[i] = Byte_slv;
+						//$display("%m: Loc: %x Byte: %x",i,Byte_slv);
                                             end
 
                                             if (data_cnt > (PageSize+1)*BYTE)
@@ -3955,8 +3956,10 @@ endspecify
                             begin
                                 if (Viol != 0)
                                     WData[i] = -1;
-                                else
-                                    WData[i] = WByte[i];
+			        else begin
+                                        WData[i] = WByte[i];
+					//$display("%m: Loc: %x WData: %x",i,WData[i]);
+			        end
                             end
                         end
                         else
@@ -5069,6 +5072,7 @@ endspecify
                         begin
                             new_int = WData[i];
                             old_int = Mem[Addr + i - cnt];
+			    //$display("%m: New Loc: %x New Data: %x Old Data: %x",i,new_int,old_int);
                             if (new_int > -1)
                             begin
                                 new_bit = new_int;
@@ -5109,6 +5113,7 @@ endspecify
                     for (i=0;i<=wr_cnt;i=i+1)
                     begin
                         Mem[Addr_tmp + i - cnt] = WData[i];
+			//$display("%m => SFLASH WR Address: %x Data: %x",Addr_tmp + i - cnt, WData[i]);
                         if ((Addr_tmp + i) == AddrHi)
                         begin
                             Addr_tmp = AddrLo;
@@ -6035,6 +6040,7 @@ endspecify
                     if (~EDONE)
                     begin
                         ADDRHILO_SEC(AddrLo, AddrHi, Addr);
+			$display("%m: Sector Erase Address: %x Start: %x End: %x",Addr,AddrLo,AddrHi);
                         for (i=AddrLo;i<=AddrHi;i=i+1)
                         begin
                             Mem[i] = -1;

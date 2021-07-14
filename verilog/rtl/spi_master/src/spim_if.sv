@@ -125,7 +125,8 @@ parameter NOC = 1'b0;    // NORMAL COMMAND
 // State Machine state
 parameter IDLE       = 4'b000;
 parameter ADR_PHASE  = 4'b001;
-parameter READ_DATA  = 4'b010;
+parameter CMD_WAIT   = 4'b010;
+parameter READ_DATA  = 4'b011;
 
 /*************************************************************
 *  SPI FSM State Control
@@ -187,6 +188,9 @@ logic [WB_WIDTH-1:0]  spim_wb_rdata  ;
 logic                 spim_mem_ack   ;
 logic [3:0]           next_state     ;
 
+logic 	              NextPreDVal    ;
+logic [7:0]	      NextPreDCnt    ;
+logic [31:0]	      NextPreAddr    ;
 
 
   //---------------------------------------------------------------
@@ -266,7 +270,12 @@ begin
    next_state     = state;
    case(state)
    IDLE:  begin
-	if(spim_mem_req && cmd_fifo_empty) begin
+	// Check If any prefetch data available and if see it matched with WB
+	// address, If yes, the move to data reading from response fifo, else 
+	// generate command request
+	if(spim_mem_req && NextPreDVal && (spim_wb_addr == NextPreAddr)) begin
+          next_state = READ_DATA;
+	end else if(spim_mem_req && cmd_fifo_empty) begin
 	   cmd_fifo_wdata = {SOC,NOC,cfg_data_cnt[7:0],cfg_dummy_cnt[1:0],cfg_addr_cnt[1:0],cfg_mem_seq[3:0],cfg_mode_reg[7:0],cfg_cmd_reg[7:0]};
 	   cmd_fifo_wr    = 1;
 	   next_state = ADR_PHASE;
@@ -275,8 +284,13 @@ begin
    ADR_PHASE: begin
           cmd_fifo_wdata = {NOC,EOC,spim_wb_addr[31:0]};
           cmd_fifo_wr      = 1;
-          next_state = READ_DATA;
+          next_state = CMD_WAIT;
    end
+   CMD_WAIT: begin
+	  // Wait for Command Accepted, before reading data
+	  // to take care of staled data being read due to pre-fetch logic
+	  if(cmd_fifo_empty) next_state = READ_DATA;
+    end
 
 
    READ_DATA: begin
@@ -289,7 +303,33 @@ begin
    end
    endcase
 end
+
+/*****************************************************************
+* This logic help to find any pre-fetch data available inside the response
+* FIFO and if the next data read request address matches with NextPreAddr, The read
+* the data from Response FIFO, else generate new request
+* Note: Basic Assumption is cmd_fifo_wr & res_fifo_rd does not occur in same
+* time as it's generation control through FSM
+* **********************************************************/
     
+always_ff @(negedge rst_n or posedge mclk) begin
+    if ( rst_n == 1'b0 ) begin
+	NextPreDVal       <= 1'b0;
+	NextPreDCnt       <= 'h0;
+	NextPreAddr       <= 'h0;
+    end else if(cmd_fifo_wr) begin
+       NextPreDVal    <= 1'b1;
+       NextPreDCnt    <= cfg_data_cnt;
+       NextPreAddr    <= spim_wb_addr;
+    end else if (res_fifo_rd) begin
+	if(NextPreDCnt == 4) begin
+            NextPreDVal <= 1'b0;
+        end else begin
+           NextPreDCnt <= NextPreDCnt-4;
+           NextPreAddr <= NextPreAddr+4;
+        end
+    end
+end
 
 
 endmodule

@@ -53,15 +53,15 @@ set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(WB_CLOCK_PORT
 set spi_input_delay_value  [expr $::env(SPI_CLOCK_PERIOD) * 0.6]
 set spi_output_delay_value [expr $::env(SPI_CLOCK_PERIOD) * 0.6]
 
-set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[5]]
-set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[4]]
 set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[3]]
 set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[2]]
+set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[1]]
+set_input_delay  6   -max -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[0]]
 
-set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[5]]
-set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[4]]
 set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[3]]
 set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[2]]
+set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[1]]
+set_input_delay  0   -min -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_in[0]]
 
 #io_out[0] is spiclcok
 #set_output_delay $wb_output_delay_value  -clock [get_clocks $::env(SPI_CLOCK_PORT)] [get_port io_out[0]]

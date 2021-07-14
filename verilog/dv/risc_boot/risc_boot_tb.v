@@ -158,7 +158,7 @@ module risc_boot_tb;
 	   $display("Monitor: Test User Risc Boot Started");
        
 	   // Wait for user risc core to boot up 
-           repeat (35000) @(posedge clock);  
+           repeat (25000) @(posedge clock);  
            tb_uart.uart_init;
            tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
         	                          uart_stick_parity, uart_timeout, uart_divisor);
@@ -307,7 +307,8 @@ module risc_boot_tb;
 
    // Quard flash
      s25fl256s #(.mem_file_name("user_uart.hex"),
-	         .otp_file_name("none")) 
+	         .otp_file_name("none"), 
+                 .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
        .SI      (mprj_io[32]),

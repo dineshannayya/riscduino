@@ -34,10 +34,14 @@
 ////               accesss are supported.                         ////
 ////               Upto 255 Byte Read/Write Burst supported       ////
 ////    Limitation:                                               ////
-////       1.  Write/Read FIFO Abort case not managed, expect     ////
-////               user to clearly close the busrt request        ////
+////       1.  Write/Read FIFO Abort case not managed M1 port,    ////
+////           expect user to clearly close the busrt request     ////
 ////       2.  Wishbone Request abort not yet supported.          ////
 ////       3.  Write access through M0 Port not supported         ////
+////       4.  When Pre fetch feature used and both port m0 and   ////
+////           m1 used, user need to make sure that data pre fetch////
+////           count is withing 8DW, less Read path can hang due  ////
+////           to response FIFO full from one master port         ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    1. Add support for WishBone request timout                ////
@@ -54,6 +58,14 @@
 ////     V.2  - July 6, 2021                                      ////
 ////            Added Hold fix cell for SPI data out signal to    ////
 ////            met interface hold                                ////
+////     V.3  - July 13, 2021                                     ////
+////            Data Prefetch feature added in M0 port, If Only   ////
+////            M0 Read used, then Prefetch read can be 255 Byte, ////
+////            But if the Both M0 and M1 read access enabled,    ////
+////            then user need to make sure that M0 Prefetch is   ////
+////            with in 8DW or 32 Byte, else there is chance      ////
+////            data path can hang due to response FIFO full due  ////
+////            to partial reading of data                        ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -380,7 +392,7 @@ spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
    );
 
  // Master 0 Response FIFO
- spim_fifo #(.W(32), .DP(4)) u_m0_res_fifo (
+ spim_fifo #(.W(32), .DP(8)) u_m0_res_fifo (
 	 .clk                           (mclk                        ),
          .reset_n                       (rst_n                       ),
 	 .flush                         (m0_res_fifo_flush           ),
@@ -409,7 +421,7 @@ spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
          .rd_data                       (m1_cmd_fifo_rdata           )
    );
  // Master 1 Response FIFO
- spim_fifo #(.W(32), .DP(2)) u_m1_res_fifo (
+ spim_fifo #(.W(32), .DP(8)) u_m1_res_fifo (
 	 .clk                           (mclk                        ),
          .reset_n                       (rst_n                       ),
 	 .flush                         (m1_res_fifo_flush           ),

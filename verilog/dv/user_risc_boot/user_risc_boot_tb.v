@@ -155,7 +155,7 @@ module user_risc_boot_tb;
 
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (30) begin
+		repeat (20) begin
 			repeat (1000) @(posedge clock);
 			// $display("+1000 cycles");
 		end
@@ -374,7 +374,8 @@ user_project_wrapper u_top(
 
    // Quard flash
      s25fl256s #(.mem_file_name("user_risc_boot.hex"),
-	         .otp_file_name("none")) 
+	         .otp_file_name("none"),
+                 .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
        .SI      (flash_io0),
