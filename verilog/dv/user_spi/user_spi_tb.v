@@ -105,7 +105,52 @@ module user_spi_tb;
 	reg        test_fail;
 	reg [31:0] read_data;
 
+/*************************************************************
+*  SPI FSM State Control
+*
+*   OPERATION   COMMAND                   SEQUENCE 
+*
+*    ERASE       P4E(0x20)           ->  COMMAND + ADDRESS
+*    ERASE       P8E(0x40)           ->  COMMAND + ADDRESS
+*    ERASE       SE(0xD8)            ->  COMMAND + ADDRESS
+*    ERASE       BE(0x60)            ->  COMMAND + ADDRESS
+*    ERASE       BE(0xC7)            ->  COMMAND 
+*    PROGRAM     PP(0x02)            ->  COMMAND + ADDRESS + Write DATA
+*    PROGRAM     QPP(0x32)           ->  COMMAND + ADDRESS + Write DATA
+*    READ        READ(0x3)           ->  COMMAND + ADDRESS + READ DATA
+*    READ        FAST_READ(0xB)      ->  COMMAND + ADDRESS + DUMMY + READ DATA
+*    READ        DOR (0x3B)          ->  COMMAND + ADDRESS + DUMMY + READ DATA
+*    READ        QOR (0x6B)          ->  COMMAND + ADDRESS + DUMMY + READ DATA
+*    READ        DIOR (0xBB)         ->  COMMAND + ADDRESS + MODE  + READ DATA
+*    READ        QIOR (0xEB)         ->  COMMAND + ADDRESS + MODE  + DUMMY + READ DATA
+*    READ        RDID (0x9F)         ->  COMMAND + READ DATA
+*    READ        READ_ID (0x90)      ->  COMMAND + ADDRESS + READ DATA
+*    WRITE       WREN(0x6)           ->  COMMAND
+*    WRITE       WRDI                ->  COMMAND
+*    STATUS      RDSR(0x05)          ->  COMMAND + READ DATA
+*    STATUS      RCR(0x35)           ->  COMMAND + READ DATA
+*    CONFIG      WRR(0x01)           ->  COMMAND + WRITE DATA
+*    CONFIG      CLSR(0x30)          ->  COMMAND
+*    Power Saving DP(0xB9)           ->  COMMAND
+*    Power Saving RES(0xAB)          ->  COMMAND + READ DATA
+*    OTP          OTPP(0x42)         ->  COMMAND + ADDR+ WRITE DATA
+*    OTP          OTPR(0x4B)         ->  COMMAND + ADDR + DUMMY + READ DATA
+*    ********************************************************************/
+parameter P_FSM_C      = 4'b0000; // Command Phase Only
+parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
+parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
 
+parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
+parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
+parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
+parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
+
+parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
+parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
+
+parameter P_FSM_CDR    = 4'b1001; // COMMAND -> DUMMY -> READ
+parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
+parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
@@ -150,8 +195,198 @@ module user_spi_tb;
 		test_fail = 0;
 	        repeat (200) @(posedge clock);
 		$display("#############################################");
-		$display("  Testing Direct SPI Memory Read             ");
+		$display("  Read Identification (RDID:0x9F)            ");
 		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h9F});
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00190201);
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read              ");
+		$display(" SPI Mode: Normal/Single Bit                ");
+		$display("Prefetch : 1DW, OPCODE:READ(0x3)            ");
+		$display("SEQ: Command -> Address -> Read Data        ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h04,2'b00,2'b10,4'h3,8'h00,8'h03});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read              ");
+		$display(" SPI Mode: Normal/Single Bit                ");
+		$display("Prefetch : 1DW, OPCODE:FASTREAD(0xB)        ");
+		$display("SEQ: Command -> Address -> Dummy -> Read Data");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h04,2'b00,2'b10,4'h4,8'h00,8'h0B});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read              ");
+		$display(" SPI Mode: Dual Mode                        ");
+		$display("Prefetch : 1DW, OPCODE:DOR(0x3B)        ");
+		$display("SEQ: Command -> Address -> Dummy -> Read Data");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b10,2'b01,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h04,2'b00,2'b10,4'h4,8'h00,8'h3B});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read with Prefetch");
+		$display(" SPI Mode: Quad                             ");
+		$display("Prefetch : 8DW, OPCODE:URAD READ(0xEB)      ");
+		$display("SEQ: Command -> Address -> Dummy -> Read Data");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h20,2'b01,2'b10,4'h6,8'h00,8'hEB});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read with Prefetch:3DW");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000008,{8'hC,2'b01,2'b10,4'h6,8'h00,8'hEB});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read with Prefetch:2DW");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h8,2'b01,2'b10,4'h6,8'h00,8'hEB});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read with Prefetch:1DW");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h4,2'b01,2'b10,4'h6,8'h00,8'hEB});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read with Prefetch:7DW");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h1C,2'b01,2'b10,4'h6,8'h00,8'hEB});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
 		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
@@ -173,7 +408,6 @@ module user_spi_tb;
 		$display("  Testing Single Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-
 		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
 		wb_user_core_write(32'h10000010,{8'h4,2'b01,2'b10,4'b0110,8'h00,8'hEB});
 		wb_user_core_write(32'h10000014,32'h00000200);
@@ -212,6 +446,7 @@ module user_spi_tb;
 		$display("#############################################");
 		$display("  Testing Two Word Indirect SPI Memory Read");
 		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
 		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
 		wb_user_core_write(32'h10000010,{8'h8,2'b01,2'b10,4'b0110,8'h00,8'hEB});
 		wb_user_core_write(32'h10000014,32'h00000200);
@@ -242,6 +477,8 @@ module user_spi_tb;
 		$display("#############################################");
 		$display("  Testing Three Word Indirect SPI Memory Read");
 		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
 		wb_user_core_write(32'h10000010,{8'hC,2'b01,2'b10,4'b0110,8'h00,8'hEB});
 		wb_user_core_write(32'h10000014,32'h00000200);
 		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
@@ -263,6 +500,8 @@ module user_spi_tb;
 		$display("#############################################");
 		$display("  Testing Four Word Indirect SPI Memory Read");
 		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
 		wb_user_core_write(32'h10000010,{8'h10,2'b01,2'b10,4'b0110,8'h00,8'hEB});
 		wb_user_core_write(32'h10000014,32'h00000200);
 		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
@@ -288,6 +527,8 @@ module user_spi_tb;
 		$display("#############################################");
 		$display("  Testing Five Word Indirect SPI Memory Read");
 		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
 		wb_user_core_write(32'h10000010,{8'h14,2'b01,2'b10,4'b0110,8'h00,8'hEB});
 		wb_user_core_write(32'h10000014,32'h00000200);
 		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
@@ -304,6 +545,8 @@ module user_spi_tb;
 		$display("#############################################");
 		$display("  Testing Eight Word Indirect SPI Memory Read");
 		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
 		wb_user_core_write(32'h10000010,{8'h20,2'b01,2'b10,4'b0110,8'h00,8'hEB});
 		wb_user_core_write(32'h10000014,32'h00000200);
 		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
@@ -323,6 +566,464 @@ module user_spi_tb;
 		wb_user_core_read_check(32'h1000001C,read_data,32'h45530393);
 		wb_user_core_read_check(32'h1000001C,read_data,32'h33445537);
 		wb_user_core_read_check(32'h1000001C,read_data,32'h0077ae23);
+
+		$display("#############################################");
+		$display("  Sector Erase Command            ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		// WEN COMMAND
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b00,4'b0000,8'h00,8'h06});
+		wb_user_core_write(32'h10000018,32'h0);
+                // Sector Erase
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b10,4'b0010,8'h00,8'hD8});
+		wb_user_core_write(32'h10000014,32'h00000000);
+		wb_user_core_write(32'h10000018,32'h0);
+
+		// RDSR
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h05});
+		read_data = 32'hFFFF_FFFF;
+		while (read_data[1:0] == 2'b11) begin
+		    wb_user_core_read(32'h1000001C,read_data);
+		    repeat (10) @(posedge clock);
+		end
+
+		$display("#############################################");
+		$display("  Page Write Command Address: 0x00          ");
+		$display("#############################################");
+		// WEN COMMAND
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b00,4'b0000,8'h00,8'h06});
+		wb_user_core_write(32'h10000018,32'h0);
+		 // Page Programing
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'hF0,2'b00,2'b10,P_FSM_CAW,8'h00,8'h02});
+		wb_user_core_write(32'h10000014,32'h00000000);
+		wb_user_core_write(32'h10000018,32'h00010000);
+		wb_user_core_write(32'h10000018,32'h00010001);
+		wb_user_core_write(32'h10000018,32'h00010002);
+		wb_user_core_write(32'h10000018,32'h00010003);
+		wb_user_core_write(32'h10000018,32'h00010004);
+		wb_user_core_write(32'h10000018,32'h00010005);
+		wb_user_core_write(32'h10000018,32'h00010006);
+		wb_user_core_write(32'h10000018,32'h00010007);
+		wb_user_core_write(32'h10000018,32'h00010008);
+		wb_user_core_write(32'h10000018,32'h00010009);
+		wb_user_core_write(32'h10000018,32'h00010010);
+		wb_user_core_write(32'h10000018,32'h00010011);
+		wb_user_core_write(32'h10000018,32'h00010012);
+		wb_user_core_write(32'h10000018,32'h00010013);
+		wb_user_core_write(32'h10000018,32'h00010014);
+		wb_user_core_write(32'h10000018,32'h00010015);
+		wb_user_core_write(32'h10000018,32'h00010016);
+		wb_user_core_write(32'h10000018,32'h00010017);
+		wb_user_core_write(32'h10000018,32'h00010018);
+		wb_user_core_write(32'h10000018,32'h00010019);
+		wb_user_core_write(32'h10000018,32'h00010020);
+		wb_user_core_write(32'h10000018,32'h00010021);
+		wb_user_core_write(32'h10000018,32'h00010022);
+		wb_user_core_write(32'h10000018,32'h00010023);
+		wb_user_core_write(32'h10000018,32'h00010024);
+		wb_user_core_write(32'h10000018,32'h00010025);
+		wb_user_core_write(32'h10000018,32'h00010026);
+		wb_user_core_write(32'h10000018,32'h00010027);
+		wb_user_core_write(32'h10000018,32'h00010028);
+		wb_user_core_write(32'h10000018,32'h00010029);
+		wb_user_core_write(32'h10000018,32'h00010030);
+		wb_user_core_write(32'h10000018,32'h00010031);
+		wb_user_core_write(32'h10000018,32'h00010032);
+		wb_user_core_write(32'h10000018,32'h00010033);
+		wb_user_core_write(32'h10000018,32'h00010034);
+		wb_user_core_write(32'h10000018,32'h00010035);
+		wb_user_core_write(32'h10000018,32'h00010036);
+		wb_user_core_write(32'h10000018,32'h00010037);
+		wb_user_core_write(32'h10000018,32'h00010038);
+		wb_user_core_write(32'h10000018,32'h00010039);
+		wb_user_core_write(32'h10000018,32'h00010040);
+		wb_user_core_write(32'h10000018,32'h00010041);
+		wb_user_core_write(32'h10000018,32'h00010042);
+		wb_user_core_write(32'h10000018,32'h00010043);
+		wb_user_core_write(32'h10000018,32'h00010044);
+		wb_user_core_write(32'h10000018,32'h00010045);
+		wb_user_core_write(32'h10000018,32'h00010046);
+		wb_user_core_write(32'h10000018,32'h00010047);
+		wb_user_core_write(32'h10000018,32'h00010048);
+		wb_user_core_write(32'h10000018,32'h00010049);
+		wb_user_core_write(32'h10000018,32'h00010050);
+		wb_user_core_write(32'h10000018,32'h00010051);
+		wb_user_core_write(32'h10000018,32'h00010052);
+		wb_user_core_write(32'h10000018,32'h00010053);
+		wb_user_core_write(32'h10000018,32'h00010054);
+		wb_user_core_write(32'h10000018,32'h00010055);
+		wb_user_core_write(32'h10000018,32'h00010056);
+		wb_user_core_write(32'h10000018,32'h00010057);
+		wb_user_core_write(32'h10000018,32'h00010058);
+		wb_user_core_write(32'h10000018,32'h00010059);
+
+		// RDSR
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h05});
+		read_data = 32'hFFFF_FFFF;
+		while (read_data[1:0] == 2'b11) begin
+		    wb_user_core_read(32'h1000001C,read_data);
+		    repeat (10) @(posedge clock);
+		 end
+
+		$display("#############################################");
+		$display("  Page Read through Direct Access            ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000000,read_data,32'h00010000);
+		wb_user_core_read_check(32'h00000004,read_data,32'h00010001);
+		wb_user_core_read_check(32'h00000008,read_data,32'h00010002);
+		wb_user_core_read_check(32'h0000000C,read_data,32'h00010003);
+		wb_user_core_read_check(32'h00000010,read_data,32'h00010004);
+		wb_user_core_read_check(32'h00000014,read_data,32'h00010005);
+		wb_user_core_read_check(32'h00000018,read_data,32'h00010006);
+		wb_user_core_read_check(32'h0000001C,read_data,32'h00010007);
+		wb_user_core_read_check(32'h00000020,read_data,32'h00010008);
+		wb_user_core_read_check(32'h00000024,read_data,32'h00010009);
+		wb_user_core_read_check(32'h00000028,read_data,32'h00010010);
+		wb_user_core_read_check(32'h0000002C,read_data,32'h00010011);
+		wb_user_core_read_check(32'h00000030,read_data,32'h00010012);
+		wb_user_core_read_check(32'h00000034,read_data,32'h00010013);
+		wb_user_core_read_check(32'h00000038,read_data,32'h00010014);
+		wb_user_core_read_check(32'h0000003C,read_data,32'h00010015);
+		wb_user_core_read_check(32'h00000040,read_data,32'h00010016);
+		wb_user_core_read_check(32'h00000044,read_data,32'h00010017);
+		wb_user_core_read_check(32'h00000048,read_data,32'h00010018);
+		wb_user_core_read_check(32'h0000004C,read_data,32'h00010019);
+		wb_user_core_read_check(32'h00000050,read_data,32'h00010020);
+		wb_user_core_read_check(32'h00000054,read_data,32'h00010021);
+		wb_user_core_read_check(32'h00000058,read_data,32'h00010022);
+		wb_user_core_read_check(32'h0000005C,read_data,32'h00010023);
+		wb_user_core_read_check(32'h00000060,read_data,32'h00010024);
+		wb_user_core_read_check(32'h00000064,read_data,32'h00010025);
+		wb_user_core_read_check(32'h00000068,read_data,32'h00010026);
+		wb_user_core_read_check(32'h0000006C,read_data,32'h00010027);
+		wb_user_core_read_check(32'h00000070,read_data,32'h00010028);
+		wb_user_core_read_check(32'h00000074,read_data,32'h00010029);
+		wb_user_core_read_check(32'h00000078,read_data,32'h00010030);
+		wb_user_core_read_check(32'h0000007C,read_data,32'h00010031);
+		wb_user_core_read_check(32'h00000080,read_data,32'h00010032);
+		wb_user_core_read_check(32'h00000084,read_data,32'h00010033);
+		wb_user_core_read_check(32'h00000088,read_data,32'h00010034);
+		wb_user_core_read_check(32'h0000008C,read_data,32'h00010035);
+		wb_user_core_read_check(32'h00000090,read_data,32'h00010036);
+		wb_user_core_read_check(32'h00000094,read_data,32'h00010037);
+		wb_user_core_read_check(32'h00000098,read_data,32'h00010038);
+		wb_user_core_read_check(32'h0000009C,read_data,32'h00010039);
+		wb_user_core_read_check(32'h000000A0,read_data,32'h00010040);
+		wb_user_core_read_check(32'h000000A4,read_data,32'h00010041);
+		wb_user_core_read_check(32'h000000A8,read_data,32'h00010042);
+		wb_user_core_read_check(32'h000000AC,read_data,32'h00010043);
+		wb_user_core_read_check(32'h000000B0,read_data,32'h00010044);
+		wb_user_core_read_check(32'h000000B4,read_data,32'h00010045);
+		wb_user_core_read_check(32'h000000B8,read_data,32'h00010046);
+		wb_user_core_read_check(32'h000000BC,read_data,32'h00010047);
+		wb_user_core_read_check(32'h000000C0,read_data,32'h00010048);
+		wb_user_core_read_check(32'h000000C4,read_data,32'h00010049);
+		wb_user_core_read_check(32'h000000C8,read_data,32'h00010050);
+		wb_user_core_read_check(32'h000000CC,read_data,32'h00010051);
+		wb_user_core_read_check(32'h000000D0,read_data,32'h00010052);
+		wb_user_core_read_check(32'h000000D4,read_data,32'h00010053);
+		wb_user_core_read_check(32'h000000D8,read_data,32'h00010054);
+		wb_user_core_read_check(32'h000000DC,read_data,32'h00010055);
+		wb_user_core_read_check(32'h000000E0,read_data,32'h00010056);
+		wb_user_core_read_check(32'h000000E4,read_data,32'h00010057);
+		wb_user_core_read_check(32'h000000E8,read_data,32'h00010058);
+		wb_user_core_read_check(32'h000000EC,read_data,32'h00010059);
+
+		repeat (100) @(posedge clock);
+		$display("#############################################");
+		$display("  Page Read through Indirect Access           ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000010,{8'hF0,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000000);
+
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010000);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010001);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010002);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010003);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010004);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010005);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010006);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010007);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010008);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010009);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010010);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010011);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010012);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010013);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010014);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010015);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010016);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010017);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010018);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010019);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010020);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010021);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010022);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010023);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010024);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010025);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010026);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010027);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010028);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010029);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010030);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010031);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010032);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010033);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010034);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010035);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010036);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010037);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010038);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010039);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010040);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010041);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010042);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010043);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010044);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010045);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010046);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010047);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010048);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010049);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010050);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010051);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010052);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010053);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010054);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010055);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010056);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010057);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010058);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00010059);
+
+		repeat (100) @(posedge clock);
+		$display("#############################################");
+		$display("  Page Write Command Address: 0x200          ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		// WEN COMMAND
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b00,4'b0000,8'h00,8'h06});
+		wb_user_core_write(32'h10000018,32'h0);
+		 // Page Programing
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'hF0,2'b00,2'b10,P_FSM_CAW,8'h00,8'h02});
+		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_write(32'h10000018,32'h00020000);
+		wb_user_core_write(32'h10000018,32'h00020001);
+		wb_user_core_write(32'h10000018,32'h00020002);
+		wb_user_core_write(32'h10000018,32'h00020003);
+		wb_user_core_write(32'h10000018,32'h00020004);
+		wb_user_core_write(32'h10000018,32'h00020005);
+		wb_user_core_write(32'h10000018,32'h00020006);
+		wb_user_core_write(32'h10000018,32'h00020007);
+		wb_user_core_write(32'h10000018,32'h00020008);
+		wb_user_core_write(32'h10000018,32'h00020009);
+		wb_user_core_write(32'h10000018,32'h00020010);
+		wb_user_core_write(32'h10000018,32'h00020011);
+		wb_user_core_write(32'h10000018,32'h00020012);
+		wb_user_core_write(32'h10000018,32'h00020013);
+		wb_user_core_write(32'h10000018,32'h00020014);
+		wb_user_core_write(32'h10000018,32'h00020015);
+		wb_user_core_write(32'h10000018,32'h00020016);
+		wb_user_core_write(32'h10000018,32'h00020017);
+		wb_user_core_write(32'h10000018,32'h00020018);
+		wb_user_core_write(32'h10000018,32'h00020019);
+		wb_user_core_write(32'h10000018,32'h00020020);
+		wb_user_core_write(32'h10000018,32'h00020021);
+		wb_user_core_write(32'h10000018,32'h00020022);
+		wb_user_core_write(32'h10000018,32'h00020023);
+		wb_user_core_write(32'h10000018,32'h00020024);
+		wb_user_core_write(32'h10000018,32'h00020025);
+		wb_user_core_write(32'h10000018,32'h00020026);
+		wb_user_core_write(32'h10000018,32'h00020027);
+		wb_user_core_write(32'h10000018,32'h00020028);
+		wb_user_core_write(32'h10000018,32'h00020029);
+		wb_user_core_write(32'h10000018,32'h00020030);
+		wb_user_core_write(32'h10000018,32'h00020031);
+		wb_user_core_write(32'h10000018,32'h00020032);
+		wb_user_core_write(32'h10000018,32'h00020033);
+		wb_user_core_write(32'h10000018,32'h00020034);
+		wb_user_core_write(32'h10000018,32'h00020035);
+		wb_user_core_write(32'h10000018,32'h00020036);
+		wb_user_core_write(32'h10000018,32'h00020037);
+		wb_user_core_write(32'h10000018,32'h00020038);
+		wb_user_core_write(32'h10000018,32'h00020039);
+		wb_user_core_write(32'h10000018,32'h00020040);
+		wb_user_core_write(32'h10000018,32'h00020041);
+		wb_user_core_write(32'h10000018,32'h00020042);
+		wb_user_core_write(32'h10000018,32'h00020043);
+		wb_user_core_write(32'h10000018,32'h00020044);
+		wb_user_core_write(32'h10000018,32'h00020045);
+		wb_user_core_write(32'h10000018,32'h00020046);
+		wb_user_core_write(32'h10000018,32'h00020047);
+		wb_user_core_write(32'h10000018,32'h00020048);
+		wb_user_core_write(32'h10000018,32'h00020049);
+		wb_user_core_write(32'h10000018,32'h00020050);
+		wb_user_core_write(32'h10000018,32'h00020051);
+		wb_user_core_write(32'h10000018,32'h00020052);
+		wb_user_core_write(32'h10000018,32'h00020053);
+		wb_user_core_write(32'h10000018,32'h00020054);
+		wb_user_core_write(32'h10000018,32'h00020055);
+		wb_user_core_write(32'h10000018,32'h00020056);
+		wb_user_core_write(32'h10000018,32'h00020057);
+		wb_user_core_write(32'h10000018,32'h00020058);
+		wb_user_core_write(32'h10000018,32'h00020059);
+
+		// RDSR
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
+		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h05});
+		read_data = 32'hFFFF_FFFF;
+		while (read_data[1:0] == 2'b11) begin
+		    wb_user_core_read(32'h1000001C,read_data);
+		    repeat (10) @(posedge clock);
+		 end
+
+		$display("#############################################");
+		$display("  Page Read through Direct Access            ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00020000);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00020001);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00020002);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00020003);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00020004);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00020005);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00020006);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00020007);
+		wb_user_core_read_check(32'h00000220,read_data,32'h00020008);
+		wb_user_core_read_check(32'h00000224,read_data,32'h00020009);
+		wb_user_core_read_check(32'h00000228,read_data,32'h00020010);
+		wb_user_core_read_check(32'h0000022C,read_data,32'h00020011);
+		wb_user_core_read_check(32'h00000230,read_data,32'h00020012);
+		wb_user_core_read_check(32'h00000234,read_data,32'h00020013);
+		wb_user_core_read_check(32'h00000238,read_data,32'h00020014);
+		wb_user_core_read_check(32'h0000023C,read_data,32'h00020015);
+		wb_user_core_read_check(32'h00000240,read_data,32'h00020016);
+		wb_user_core_read_check(32'h00000244,read_data,32'h00020017);
+		wb_user_core_read_check(32'h00000248,read_data,32'h00020018);
+		wb_user_core_read_check(32'h0000024C,read_data,32'h00020019);
+		wb_user_core_read_check(32'h00000250,read_data,32'h00020020);
+		wb_user_core_read_check(32'h00000254,read_data,32'h00020021);
+		wb_user_core_read_check(32'h00000258,read_data,32'h00020022);
+		wb_user_core_read_check(32'h0000025C,read_data,32'h00020023);
+		wb_user_core_read_check(32'h00000260,read_data,32'h00020024);
+		wb_user_core_read_check(32'h00000264,read_data,32'h00020025);
+		wb_user_core_read_check(32'h00000268,read_data,32'h00020026);
+		wb_user_core_read_check(32'h0000026C,read_data,32'h00020027);
+		wb_user_core_read_check(32'h00000270,read_data,32'h00020028);
+		wb_user_core_read_check(32'h00000274,read_data,32'h00020029);
+		wb_user_core_read_check(32'h00000278,read_data,32'h00020030);
+		wb_user_core_read_check(32'h0000027C,read_data,32'h00020031);
+		wb_user_core_read_check(32'h00000280,read_data,32'h00020032);
+		wb_user_core_read_check(32'h00000284,read_data,32'h00020033);
+		wb_user_core_read_check(32'h00000288,read_data,32'h00020034);
+		wb_user_core_read_check(32'h0000028C,read_data,32'h00020035);
+		wb_user_core_read_check(32'h00000290,read_data,32'h00020036);
+		wb_user_core_read_check(32'h00000294,read_data,32'h00020037);
+		wb_user_core_read_check(32'h00000298,read_data,32'h00020038);
+		wb_user_core_read_check(32'h0000029C,read_data,32'h00020039);
+		wb_user_core_read_check(32'h000002A0,read_data,32'h00020040);
+		wb_user_core_read_check(32'h000002A4,read_data,32'h00020041);
+		wb_user_core_read_check(32'h000002A8,read_data,32'h00020042);
+		wb_user_core_read_check(32'h000002AC,read_data,32'h00020043);
+		wb_user_core_read_check(32'h000002B0,read_data,32'h00020044);
+		wb_user_core_read_check(32'h000002B4,read_data,32'h00020045);
+		wb_user_core_read_check(32'h000002B8,read_data,32'h00020046);
+		wb_user_core_read_check(32'h000002BC,read_data,32'h00020047);
+		wb_user_core_read_check(32'h000002C0,read_data,32'h00020048);
+		wb_user_core_read_check(32'h000002C4,read_data,32'h00020049);
+		wb_user_core_read_check(32'h000002C8,read_data,32'h00020050);
+		wb_user_core_read_check(32'h000002CC,read_data,32'h00020051);
+		wb_user_core_read_check(32'h000002D0,read_data,32'h00020052);
+		wb_user_core_read_check(32'h000002D4,read_data,32'h00020053);
+		wb_user_core_read_check(32'h000002D8,read_data,32'h00020054);
+		wb_user_core_read_check(32'h000002DC,read_data,32'h00020055);
+		wb_user_core_read_check(32'h000002E0,read_data,32'h00020056);
+		wb_user_core_read_check(32'h000002E4,read_data,32'h00020057);
+		wb_user_core_read_check(32'h000002E8,read_data,32'h00020058);
+		wb_user_core_read_check(32'h000002EC,read_data,32'h00020059);
+
+		repeat (10) @(posedge clock);
+		$display("#############################################");
+		$display("  Page Read through Indirect Access           ");
+		$display("#############################################");
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
+		wb_user_core_write(32'h10000010,{8'hF0,2'b01,2'b10,4'b0110,8'h00,8'hEB});
+		wb_user_core_write(32'h10000014,32'h00000200);
+
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020000);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020001);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020002);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020003);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020004);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020005);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020006);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020007);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020008);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020009);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020010);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020011);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020012);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020013);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020014);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020015);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020016);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020017);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020018);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020019);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020020);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020021);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020022);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020023);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020024);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020025);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020026);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020027);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020028);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020029);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020030);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020031);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020032);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020033);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020034);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020035);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020036);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020037);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020038);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020039);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020040);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020041);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020042);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020043);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020044);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020045);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020046);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020047);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020048);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020049);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020050);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020051);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020052);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020053);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020054);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020055);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020056);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020057);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020058);
+		wb_user_core_read_check(32'h1000001C,read_data,32'h00020059);
+
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
 
@@ -508,7 +1209,8 @@ user_project_wrapper u_top(
 
    // Quard flash
      s25fl256s #(.mem_file_name("user_risc_boot.hex"),
-	         .otp_file_name("none")) 
+	         .otp_file_name("none"),
+                 .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
        .SI      (flash_io0),

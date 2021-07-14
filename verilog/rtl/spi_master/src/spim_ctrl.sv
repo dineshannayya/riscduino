@@ -178,6 +178,7 @@ parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
 
 parameter P_FSM_CDR    = 4'b1001; // COMMAND -> DUMMY -> READ
 parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
+parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 
 //---------------------
   parameter P_8BIT   = 2'b00;
@@ -200,7 +201,6 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 
   logic spi_en_rx;
 
-  logic        res_fifo_flush;
 
   logic [15:0] counter_tx;
   logic        counter_tx_valid;
@@ -224,7 +224,6 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 
   logic        tx_clk_en;
   logic        rx_clk_en;
-  logic        en_quad_in;
   logic [1:0]  cnt; // counter for cs assertion and de-assertion
   logic [1:0]  nxt_cnt;
   logic [1:0]  gnt;
@@ -239,11 +238,10 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
   enum logic [2:0] {DATA_NULL,DATA_EMPTY,DATA_CMD,DATA_ADDR,DATA_MODE,DATA_FIFO} ctrl_data_mux;
 
   enum logic [4:0] {FSM_IDLE,FSM_CS_ASSERT,FSM_CMD_PHASE,FSM_ADR_PHASE,FSM_DUMMY_PHASE,FSM_MODE_PHASE,FSM_WRITE_CMD,FSM_WRITE_PHASE,
-	            FSM_READ_WAIT,FSM_READ_PHASE,FSM_TX_DONE,FSM_CS_DEASEERT} state,next_state;
+	            FSM_READ_WAIT,FSM_READ_PHASE,FSM_TX_DONE,FSM_FLUSH,FSM_CS_DEASEERT} state,next_state;
 
  
   assign ctrl_state =  state[3:0];
-  assign en_quad_in = (s_spi_mode == SPI_STD) ? 1'b0 : 1'b1;
 
   assign spi_mode = s_spi_mode;
 
@@ -299,13 +297,12 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
   // care of partial reading case.
   //---------------------------------------------------------------------------
   
-  assign m0_res_fifo_flush   =  (gnt == 2'b01) ? res_fifo_flush : 1'b0;
-  assign m1_res_fifo_flush   =  (gnt == 2'b10) ? res_fifo_flush : 1'b0;
+  logic  fsm_flush;
+  assign m0_res_fifo_flush   =  (gnt == 2'b01) ? fsm_flush : 1'b0;
+  assign m1_res_fifo_flush   =  (gnt == 2'b10) ? fsm_flush : 1'b0;
 
   assign spi_clock_en =  tx_clk_en |  rx_clk_en;
 
-  logic  fsm_flush;
-  assign fsm_flush  =  (state == FSM_IDLE);
 
   spim_clkgen u_clkgen
   (
@@ -329,8 +326,9 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
     .sdo1           ( spi_sdo1               ),
     .sdo2           ( spi_sdo2               ),
     .sdo3           ( spi_sdo3               ),
-    .en_quad_in     ( en_quad_in             ),
+    .s_spi_mode     ( s_spi_mode             ),
     .counter_in     ( counter_tx             ),
+    .counter_in_upd ( counter_tx_valid       ),
     .txdata         ( data_to_tx             ),
     .data_valid     ( data_to_tx_valid       ),
     .data_ready     ( tx_data_ready          ),
@@ -348,7 +346,7 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
     .sdi1           ( spi_sdi1               ),
     .sdi2           ( spi_sdi2               ),
     .sdi3           ( spi_sdi3               ),
-    .en_quad_in     ( en_quad_in             ),
+    .s_spi_mode     ( s_spi_mode             ),
     .counter_in     ( counter_rx             ),
     .counter_in_upd ( counter_rx_valid       ),
     .data           ( res_fifo_wdata         ),
@@ -405,6 +403,7 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 
   always_comb
   begin
+    fsm_flush          = 0;
     counter_tx         =  '0;
     counter_tx_valid   = 1'b0;
     counter_rx         =  '0;
@@ -416,7 +415,6 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
     spi_en_tx          = 1'b0;
     spi_status         =  '0;
     cmd_fifo_rd        = 1'b0;
-    res_fifo_flush     = 0;
     nxt_cnt            = cnt;
     case(state)
       FSM_IDLE:
@@ -430,6 +428,7 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 
       // Asserted CS# low
       FSM_CS_ASSERT: begin
+	 fsm_flush=1; // Flush stale data in response fifo
 	 if(cfg_cs_early == cnt) begin
 	     next_state  = FSM_CMD_PHASE;
 	 end else begin
@@ -459,6 +458,7 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 	      P_FSM_CADW:  next_state = FSM_ADR_PHASE;
 	      P_FSM_CDR:   next_state = FSM_DUMMY_PHASE;
 	      P_FSM_CDW:   next_state = FSM_DUMMY_PHASE;
+	      P_FSM_CR:    next_state = FSM_READ_WAIT;
 	      default  :   next_state = FSM_TX_DONE;
               endcase
 	  end
@@ -562,7 +562,6 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
       FSM_READ_WAIT: begin
           spi_en_tx        = 1'b1;
 	  if (tx_done) begin
-              res_fifo_flush  = 1; // Flush any stall data in response fifo
 	      next_state = FSM_READ_PHASE;
 	  end
       end
@@ -574,7 +573,7 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
           spi_en_rx        = 1'b1;
 	  if(!cmd_fifo_empty) begin
              // If you see new command request, then abort the current request
-	      next_state = FSM_CS_DEASEERT;
+	      next_state = FSM_FLUSH;
 	  end else begin
 	     if (rx_done && spi_rise) begin
 	         next_state = FSM_CS_DEASEERT;
@@ -582,6 +581,13 @@ parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
 	  end
         end
 
+      FSM_FLUSH: begin
+	   fsm_flush = 1;
+	   // Wait for safe SPI-clock de-assertion phase
+	   if(spi_clock_en ==0) begin 
+	         next_state = FSM_CS_DEASEERT;
+	   end
+      end
       // Wait for TX Done
       FSM_TX_DONE: begin
          spi_en_tx        = 1'b1;
@@ -666,7 +672,7 @@ end
             s_spi_mode <= SPI_STD;
 	end else if(state == FSM_ADR_PHASE && cfg_spi_switch == P_MODE_SWITCH_AT_ADDR) begin
             s_spi_mode <= cfg_spi_mode;
-	end else if(state == FSM_DUMMY_PHASE && cfg_spi_switch == P_MODE_SWITCH_AT_DATA) begin
+	end else if(((state == FSM_READ_PHASE) || state == FSM_WRITE_CMD ) && cfg_spi_switch == P_MODE_SWITCH_AT_DATA) begin
             s_spi_mode <= cfg_spi_mode;
 	end
      end

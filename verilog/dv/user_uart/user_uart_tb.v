@@ -190,7 +190,7 @@ begin
    // Remove all the reset
    wb_user_core_write('h3080_0000,'hF);
 
-   repeat (20000) @(posedge clock);  // wait for Processor Get Ready
+   repeat (16000) @(posedge clock);  // wait for Processor Get Ready
    tb_uart.uart_init;
    wb_user_core_write(`ADDR_SPACE_UART+8'h0,{3'h0,2'b00,1'b1,1'b1,1'b1});  
    
@@ -412,7 +412,10 @@ user_project_wrapper u_top(
 
 
    // Quard flash
-     s25fl256s #(.mem_file_name("user_uart.hex"),.otp_file_name("none")) u_spi_flash_256mb
+     s25fl256s #(.mem_file_name("user_uart.hex"),
+	         .otp_file_name("none"), 
+                 .TimingModel("S25FL512SAGMFI010_F_30pF")) 
+		 u_spi_flash_256mb
        (
            // Data Inputs/Outputs
        .SI      (flash_io0),

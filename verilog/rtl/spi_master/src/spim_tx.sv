@@ -81,29 +81,43 @@ module spim_tx
     output logic        sdo1,           // SPI Dout1
     output logic        sdo2,           // SPI Dout2
     output logic        sdo3,           // SPI Dout3
-    input  logic        en_quad_in,     // SPI quad mode indication
+    input  logic [1:0]  s_spi_mode,     // SPI quad mode indication
     input  logic [15:0] counter_in,     // Transmit counter
+    input  logic        counter_in_upd,
     input  logic [31:0] txdata,         // 32 bit tranmsit data
     input  logic        data_valid,     // Input data valid
     output logic        data_ready,     // Data in acepted, this for txfifo
     output logic        clk_en_o        // Enable Tx clock
 );
 
+//------------------------------------------------------
+// Parameter Decleration
+// -----------------------------------------------------
+  parameter P_SINGLE = 2'b00;
+  parameter P_DOUBLE = 2'b01;
+  parameter P_QUAD   = 2'b10;
+
+//------------------------------------------------------
+// Variable Decleration
+// -----------------------------------------------------
   logic [31:0]          data_int       ; // Data Input
   logic [31:0]          data_int_next  ; // Next Data Input
   logic [15:0]          counter        ; // Tx Counter
   logic [15:0]          counter_next   ; // tx next counter
   logic [15:0]          counter_trgt   ; // counter exit counter
   logic                 tx32b_done     ;  // 32 bit Transmit done
-  logic                 en_quad;
-  logic                 en_quad_next;
+  logic  [1:0]          spi_mode     ;
+  logic  [1:0]          spi_mode_next;
 
   logic                 data_ready_i;     // Data in acepted, this for txfifo
-  enum logic [0:0] { IDLE, TRANSMIT } tx_CS, tx_NS;
+  logic                 next_data_ready_i;// Data in acepted, this for txfifo
+  enum logic [1:0] { IDLE, TRANSMIT,WAIT_FIFO_AVAIL } tx_CS, tx_NS;
 
 
   // Indicate 32 bit data done, usefull for readining next 32b from txfifo
-  assign tx32b_done  = (!en_quad && (counter[4:0] == 5'b11111)) || (en_quad && (counter[2:0] == 3'b111));
+  assign tx32b_done  = (spi_mode == P_SINGLE  && (counter[4:0] == 5'b11111)) || 
+                       (spi_mode == P_DOUBLE  && (counter[3:0] == 4'b1111)) || 
+	               (spi_mode == P_QUAD   && (counter[2:0] == 3'b111));
 
   assign tx_done    = (counter == (counter_trgt-1)) && (tx_CS == TRANSMIT);
 
@@ -114,8 +128,9 @@ module spim_tx
     tx_NS         = tx_CS;
     data_int_next = data_int;
     data_ready_i    = 1'b0;
+    next_data_ready_i    = 1'b0;
     counter_next  = counter;
-    en_quad_next  =  en_quad;
+    spi_mode_next  =  spi_mode;
 
     case (tx_CS)
       IDLE: begin
@@ -123,7 +138,7 @@ module spim_tx
         counter_next  = '0;
 
         if (en && data_valid) begin
-	  en_quad_next    = en_quad_in;
+	  spi_mode_next    = s_spi_mode;
           data_ready_i    = 1'b1;
           tx_NS         = TRANSMIT;
         end
@@ -134,7 +149,7 @@ module spim_tx
                counter_next = 0;
                // Check if there is next data
                if (en && data_valid) begin 
-	         en_quad_next    = en_quad_in;
+	         spi_mode_next    = s_spi_mode;
                  data_int_next = txdata;
                  data_ready_i    = 1'b1;
                  tx_NS         = TRANSMIT;
@@ -143,18 +158,28 @@ module spim_tx
                end
          end else if (tx32b_done) begin
                if (en && data_valid) begin
-	         en_quad_next    = en_quad_in;
+	         spi_mode_next    = s_spi_mode;
                  data_int_next = txdata;
-                 data_ready_i    = 1'b1;
+                 next_data_ready_i    = 1'b1;
+                 counter_next = counter + 1;
                  tx_NS         = TRANSMIT;
                end else begin
-                 tx_NS    = IDLE;
+                 tx_NS    = WAIT_FIFO_AVAIL;
                end
            end else begin
               counter_next = counter + 1;
-              data_int_next = (en_quad) ? {data_int[27:0],4'b0000} : {data_int[30:0],1'b0};
+              data_int_next = (spi_mode == P_QUAD   ) ? {data_int[27:0],4'b0000} : 
+		              (spi_mode == P_DOUBLE ) ? {data_int[29:0],2'b00} : {data_int[30:0],1'b0};
            end
       end
+      WAIT_FIFO_AVAIL: begin
+           if (en && data_valid) begin 
+	     spi_mode_next    = s_spi_mode;
+             data_int_next = txdata;
+             data_ready_i    = 1'b1;
+             tx_NS         = TRANSMIT;
+           end 
+        end
     endcase
   end
 
@@ -167,7 +192,6 @@ module spim_tx
       counter      <= 0;
       data_int     <= 'h0;
       tx_CS        <= IDLE;
-      en_quad      <= 0;
       sdo0         <= '0;
       sdo1         <= '0;
       sdo2         <= '1;
@@ -175,12 +199,12 @@ module spim_tx
       counter_trgt <= '0;
       data_ready   <= '0;
       data_ready_f <= 0;
+      spi_mode     <= P_SINGLE;
     end
-    else if(flush) begin
+    else if(flush && tx_edge) begin
        counter      <= 0;
        data_int     <= 'h0;
        tx_CS        <= IDLE;
-       en_quad      <= 0;
        sdo0         <= '0;
        sdo1         <= '0;
        sdo2         <= '1;
@@ -188,9 +212,10 @@ module spim_tx
        counter_trgt <= '0;
        data_ready   <= '0;
        data_ready_f <= 0;
+      spi_mode     <= P_SINGLE;
     end else begin
-       data_ready_f <= data_ready_i;
-       data_ready   <= data_ready_f && !data_ready_i; // Generate Pulse at falling edge
+       data_ready_f <= data_ready_i | next_data_ready_i;
+       data_ready   <= data_ready_f && !(data_ready_i | next_data_ready_i); // Generate Pulse at falling edge
        if(tx_edge) begin
           tx_CS        <= tx_NS;
           counter      <= counter_next;
@@ -198,14 +223,15 @@ module spim_tx
        end
        // Counter Exit condition, quad mode div-4 , else actual counter
        if (en && data_ready_i && tx_edge) begin
-	  en_quad      <= en_quad_in;
-          counter_trgt <= (en_quad_in) ? {2'b00,counter_in[15:2]} : counter_in;
+	  spi_mode      <= s_spi_mode;
+          counter_trgt <= (s_spi_mode == P_QUAD )   ? {2'b00,counter_in[15:2]} : 
+		          (s_spi_mode == P_DOUBLE ) ? {1'b0, counter_in[15:1]} :    counter_in;
        end
        if(tx_edge && tx_NS == TRANSMIT) begin
-          sdo0         <= (en_quad_next) ? data_int_next[28] : data_int_next[31];
-          sdo1         <= (en_quad_next) ? data_int_next[29] : 1'b0;
-          sdo2         <= (en_quad_next) ? data_int_next[30] : 1'b1; // Protect
-          sdo3         <= (en_quad_next) ? data_int_next[31] : 1'b1; // Hold need to '1'
+          sdo0         <= (spi_mode_next == P_QUAD) ? data_int_next[28] : (spi_mode_next == P_DOUBLE) ? data_int_next[30] : data_int_next[31];
+          sdo1         <= (spi_mode_next == P_QUAD) ? data_int_next[29] : (spi_mode_next == P_DOUBLE) ? data_int_next[31] :  1'b0;
+          sdo2         <= (spi_mode_next == P_QUAD) ? data_int_next[30] : 1'b1; // Protect
+          sdo3         <= (spi_mode_next == P_QUAD) ? data_int_next[31] : 1'b1; // Hold need to '1'
        end
     end      
   end
