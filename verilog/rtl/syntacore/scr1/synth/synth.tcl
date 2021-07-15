@@ -55,7 +55,7 @@ set ::env(VERILOG_FILES) [glob  \
 	../src/top/scr1_top_wb.sv   \
 	../src/top/scr1_dmem_wb.sv   \
 	../src/top/scr1_imem_wb.sv   \
-	../../../lib/sync_fifo.sv  ]
+	../../../lib/async_fifo.sv  ]
 
 #set ::env(VERILOG_FILES_BLACKBOX) [glob  \
 #            $::env(DESIGN_DIR)/src/top/scr1_dp_memory.sv ]
@@ -69,27 +69,23 @@ set ::env(SYNTH_DEFINES) [list YOSYS ]
 set ::env(LIB_SYNTH)  ./tmp/trimmed.lib
 
 
-#set ::env(SDC_FILE) "./designs/aes128/src/aes128.sdc"
+set ::env(SDC_FILE) "base.sdc"
 
 # Fill this
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "clk"
+set ::env(CLOCK_PORT) "wb_clk core_clk rtc_clk"
 set ::env(CLOCK_TREE_SYNTH) 0
 
-set ::env(RUN_SIMPLE_CTS) 0
-set ::env(SYNTH_BUFFERING) 0
-set ::env(SYNTH_SIZING) 0
+set ::env(SYNTH_BUFFERING) 1
+set ::env(SYNTH_SIZING) 1
 
 set ::env(SYNTH_DRIVING_CELL) "sky130_fd_sc_hd__inv_8"
 set ::env(SYNTH_CAP_LOAD) "17.65"
 set ::env(SYNTH_MAX_TRAN) "[expr {0.1*10.0}]"
 
 set ::env(SYNTH_MAX_FANOUT) 6
-set ::env(FP_CORE_UTIL) 50
-set ::env(PL_TARGET_DENSITY) [ expr ($::env(FP_CORE_UTIL)+5) / 100.0 ]
-set ::env(CELL_PAD) 4
 
-set ::env(SYNTH_NO_FLAT) "0"
+set ::env(SYNTH_NO_FLAT) "1"
 
 
 set ::env(SYNTH_STRATEGY) "AREA 0"
@@ -119,7 +115,7 @@ set sizing $::env(SYNTH_SIZING)
 yosys -import
 
 set vtop $::env(DESIGN_NAME)
-#set sdc_file $::env(SDC_FILE)
+set sdc_file $::env(SDC_FILE)
 set sclib $::env(LIB_SYNTH)
 
 if { [info exists ::env(SYNTH_DEFINES) ] } {
@@ -178,12 +174,12 @@ set abc_ext     ".abc"
 
 
 # get old sdc, add library specific stuff for abc scripts
-set sdc_file $::env(yosys_tmp_file_tag).sdc
-set outfile [open ${sdc_file} w]
+#set sdc_file $::env(yosys_tmp_file_tag).sdc
+#set outfile [open ${sdc_file} w]
 #puts $outfile $sdc_data
-puts $outfile "set_driving_cell ${driver}"
-puts $outfile "set_load ${cload}"
-close $outfile
+#puts $outfile "set_driving_cell ${driver}"
+#puts $outfile "set_load ${cload}"
+#close $outfile
 
 
 # ABC Scrips
@@ -404,14 +400,14 @@ if { [info exists ::env(SYNTH_EXPLORE)] && $::env(SYNTH_EXPLORE) } {
 	write_verilog -noattr -noexpr -nohex -nodec -defparam "$::env(SAVE_NETLIST)"
 }
 
-if { $::env(SYNTH_NO_FLAT) } {
-	design -reset
-	file copy -force $::env(SAVE_NETLIST) $::env(yosys_tmp_file_tag)_unflat.v
-	read_verilog -sv $::env(SAVE_NETLIST)
-	synth -top $vtop -flatten
-	splitnets
-	opt_clean -purge
-	insbuf -buf {*}$::env(SYNTH_MIN_BUF_PORT)
-	write_verilog -noattr -noexpr -nohex -nodec -defparam "$::env(SAVE_NETLIST)"
-	tee -o "$::env(yosys_report_file_tag)_$strategy$chk_ext" check
-}
+#if { $::env(SYNTH_NO_FLAT) } {
+#	design -reset
+#	file copy -force $::env(SAVE_NETLIST) $::env(yosys_tmp_file_tag)_unflat.v
+#	read_verilog -sv $::env(SAVE_NETLIST)
+#	synth -top $vtop -flatten
+#	splitnets
+#	opt_clean -purge
+#	insbuf -buf {*}$::env(SYNTH_MIN_BUF_PORT)
+#	write_verilog -noattr -noexpr -nohex -nodec -defparam "$::env(SAVE_NETLIST)"
+#	tee -o "$::env(yosys_report_file_tag)_$strategy$chk_ext" check
+#}

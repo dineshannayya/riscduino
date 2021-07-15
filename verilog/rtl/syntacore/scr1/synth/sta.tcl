@@ -16,10 +16,9 @@
 
 set ::env(LIB_FASTEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ff_n40C_1v95.lib"
 set ::env(LIB_SLOWEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ss_100C_1v60.lib"
-set ::env(CURRENT_NETLIST) ../user_project_wrapper/netlist/syntacore.v
+set ::env(CURRENT_NETLIST) netlist/scr1_top_wb.gv
 set ::env(DESIGN_NAME) "scr1_top_wb"
-set ::env(CURRENT_SPEF) ../../spef/scr1_top_wb.spef
-set ::env(BASE_SDC_FILE) "/project/openlane/syntacore/base.sdc"
+set ::env(BASE_SDC_FILE) "base.sdc"
 set ::env(SYNTH_DRIVING_CELL) "sky130_fd_sc_hd__inv_8"
 set ::env(SYNTH_DRIVING_CELL_PIN) "Y"
 set ::env(SYNTH_CAP_LOAD) "17.65"
@@ -32,7 +31,6 @@ read_liberty -max $::env(LIB_SLOWEST)
 read_verilog $::env(CURRENT_NETLIST)
 link_design  $::env(DESIGN_NAME)
 
-read_spef  $::env(CURRENT_SPEF)
 
 read_sdc -echo $::env(BASE_SDC_FILE)
 

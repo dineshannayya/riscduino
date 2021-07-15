@@ -22,7 +22,7 @@ set ::env(WB_CLOCK_PORT)      "wb_clk"
 set ::env(WB_CLOCK_NAME)      "wb_clk"
 
 #Risc Core Clock
-set ::env(CORE_CLOCK_PERIOD) "40"
+set ::env(CORE_CLOCK_PERIOD) "20"
 set ::env(CORE_CLOCK_PORT)   "core_clk"
 set ::env(CORE_CLOCK_NAME)   "core_clk"
 

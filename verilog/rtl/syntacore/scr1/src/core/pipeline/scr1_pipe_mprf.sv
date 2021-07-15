@@ -49,6 +49,24 @@ logic                        wr_req_vd;
 logic                        rs1_addr_vd;
 logic                        rs2_addr_vd;
 
+`ifdef SCRC1_MPRF_STAGE
+logic                        rs1_addr_vd_ff;
+logic                        rs2_addr_vd_ff;
+
+logic                        rs1_new_data_req;
+logic                        rs2_new_data_req;
+logic                        rs1_new_data_req_ff;
+logic                        rs2_new_data_req_ff;
+logic                        read_new_data_req;
+
+logic    [`SCR1_XLEN-1:0]    rd_data_ff;
+
+logic    [`SCR1_XLEN-1:0]    rs1_data_ff;
+logic    [`SCR1_XLEN-1:0]    rs2_data_ff;
+
+
+`endif
+
 `ifdef  SCR1_MPRF_RAM
 logic                        rs1_addr_vd_ff;
 logic                        rs2_addr_vd_ff;
@@ -147,8 +165,43 @@ end
 //------------------------------------------------------------------------------
 
 // asynchronous read operation
-assign  mprf2exu_rs1_data_o = ( rs1_addr_vd ) ? mprf_int[exu2mprf_rs1_addr_i] : '0;
-assign  mprf2exu_rs2_data_o = ( rs2_addr_vd ) ? mprf_int[exu2mprf_rs2_addr_i] : '0;
+//
+`ifdef SCRC1_MPRF_STAGE
+   assign  rs1_new_data_req    =   wr_req_vd & ( exu2mprf_rs1_addr_i == exu2mprf_rd_addr_i );
+   assign  rs2_new_data_req    =   wr_req_vd & ( exu2mprf_rs2_addr_i == exu2mprf_rd_addr_i );
+   assign  read_new_data_req   =   rs1_new_data_req | rs2_new_data_req;
+
+// bypass new wr_data to the read output if write/read collision occurs
+   assign  mprf2exu_rs1_data_o   =   ( rs1_new_data_req_ff ) ? rd_data_ff
+                                   : (( rs1_addr_vd_ff )     ? rs1_data_ff
+                                                               : '0 );
+   
+   assign  mprf2exu_rs2_data_o   =   ( rs2_new_data_req_ff ) ? rd_data_ff
+                                   : (( rs2_addr_vd_ff )     ? rs2_data_ff
+                                                               : '0 );
+
+   
+   always_ff @( posedge clk ) begin
+      if ( read_new_data_req ) begin
+          rd_data_ff     <=  exu2mprf_rd_data_i;
+      end
+   end
+
+   always_ff @( posedge clk ) begin
+       rs1_addr_vd_ff          <=  rs1_addr_vd;
+       rs2_addr_vd_ff          <=  rs2_addr_vd;
+       rs1_new_data_req_ff     <=  rs1_new_data_req;
+       rs2_new_data_req_ff     <=  rs2_new_data_req;
+   end
+   always_ff @( posedge clk ) begin
+      rs1_data_ff   <=   mprf_int[exu2mprf_rs1_addr_i];
+      rs2_data_ff   <=   mprf_int[exu2mprf_rs2_addr_i];
+   end
+
+`else 
+    assign  mprf2exu_rs1_data_o = ( rs1_addr_vd ) ? mprf_int[exu2mprf_rs1_addr_i] : '0;
+    assign  mprf2exu_rs2_data_o = ( rs2_addr_vd ) ? mprf_int[exu2mprf_rs2_addr_i] : '0;
+`endif
 
 // write operation
  `ifdef SCR1_MPRF_RST_EN

@@ -149,7 +149,8 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("risc_boot.vcd");
-	   	$dumpvars(4, user_uart_tb);
+	   	$dumpvars(1, user_uart_tb);
+	   	$dumpvars(0, user_uart_tb.u_top.u_riscv_top);
 	   end
        `endif
 
