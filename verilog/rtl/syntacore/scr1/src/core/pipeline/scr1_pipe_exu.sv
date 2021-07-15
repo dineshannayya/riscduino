@@ -845,26 +845,41 @@ assign mprf_rs1_req = exu_queue_vd & idu2exu_use_rs1_i;
 assign mprf_rs2_req = exu_queue_vd & idu2exu_use_rs2_i;
 `else // SCR1_NO_EXE_STAGE
  `ifdef  SCR1_MPRF_RAM
-assign mprf_rs1_req = exu_queue_en
-                    ? (exu_queue_vd_next & idu2exu_use_rs1_i)
-                    : (exu_queue_vd      & idu2exu_use_rs1_ff);
-assign mprf_rs2_req = exu_queue_en
-                    ? (exu_queue_vd_next & idu2exu_use_rs2_i)
-                    : (exu_queue_vd      & idu2exu_use_rs2_ff);
+     assign mprf_rs1_req = exu_queue_en
+                         ? (exu_queue_vd_next & idu2exu_use_rs1_i)
+                         : (exu_queue_vd      & idu2exu_use_rs1_ff);
+     assign mprf_rs2_req = exu_queue_en
+                         ? (exu_queue_vd_next & idu2exu_use_rs2_i)
+                         : (exu_queue_vd      & idu2exu_use_rs2_ff);
  `else // SCR1_MPRF_RAM
-assign mprf_rs1_req = exu_queue_vd & idu2exu_use_rs1_ff;
-assign mprf_rs2_req = exu_queue_vd & idu2exu_use_rs2_ff;
- `endif // SCR1_MPRF_RAM
+    `ifdef  SCRC1_MPRF_STAGE // ADD FF Stage at MRPF
+        assign mprf_rs1_req = exu_queue_en
+                            ? (exu_queue_vd_next & idu2exu_use_rs1_i)
+                            : (exu_queue_vd      & idu2exu_use_rs1_ff);
+        assign mprf_rs2_req = exu_queue_en
+                            ? (exu_queue_vd_next & idu2exu_use_rs2_i)
+                            : (exu_queue_vd      & idu2exu_use_rs2_ff);
+
+     `else
+          assign mprf_rs1_req = exu_queue_vd & idu2exu_use_rs1_ff;
+          assign mprf_rs2_req = exu_queue_vd & idu2exu_use_rs2_ff;
+     `endif // SCR1_MPRF_RAM
+  `endif
 `endif // SCR1_NO_EXE_STAGE
 
 // If exu_queue isn't enabled we need previous addresses and usage flags because
 // RAM blocks read operation is SYNCHRONOUS
 `ifdef SCR1_MPRF_RAM
-assign mprf_rs1_addr = exu_queue_en ? idu2exu_cmd_i.rs1_addr : exu_queue.rs1_addr;
-assign mprf_rs2_addr = exu_queue_en ? idu2exu_cmd_i.rs2_addr : exu_queue.rs2_addr;
+     assign mprf_rs1_addr = exu_queue_en ? idu2exu_cmd_i.rs1_addr : exu_queue.rs1_addr;
+     assign mprf_rs2_addr = exu_queue_en ? idu2exu_cmd_i.rs2_addr : exu_queue.rs2_addr;
 `else // SCR1_MPRF_RAM
-assign mprf_rs1_addr = exu_queue.rs1_addr;
-assign mprf_rs2_addr = exu_queue.rs2_addr;
+    `ifdef SCRC1_MPRF_STAGE
+        assign mprf_rs1_addr = exu_queue_en ? idu2exu_cmd_i.rs1_addr : exu_queue.rs1_addr;
+        assign mprf_rs2_addr = exu_queue_en ? idu2exu_cmd_i.rs2_addr : exu_queue.rs2_addr;
+    `else
+        assign mprf_rs1_addr = exu_queue.rs1_addr;
+        assign mprf_rs2_addr = exu_queue.rs2_addr;
+     `endif
 `endif // SCR1_MPRF_RAM
 
 assign exu2mprf_rs1_addr_o = mprf_rs1_req ? `SCR1_MPRF_AWIDTH'(mprf_rs1_addr) : '0;

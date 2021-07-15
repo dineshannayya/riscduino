@@ -88,17 +88,19 @@
   `define SCR1_RVM_EXT
   `define SCR1_RVC_EXT
   parameter int unsigned SCR1_MTVEC_BASE_WR_BITS = 26;
-  `define SCR1_MTVEC_MODE_EN
-  `define SCR1_FAST_MUL
+  `define SCR1_MTVEC_MODE_EN          // enable writable MTVEC.mode field to allow vectored irq mode, otherwise only direct mode is possible
+// `define SCR1_FAST_MUL               // enable fast one-cycle multiplication, otherwise multiplication takes 32 cycles
 //`define SCR1_MPRF_RST_EN - yosys fix, two dimensional array init not allowed
-  `define SCR1_MCOUNTEN_EN
-//  `define SCR1_DBG_EN
-  `define SCR1_TDU_EN
-  parameter int unsigned SCR1_TDU_TRIG_NUM = 4;
-  `define SCR1_TDU_ICOUNT_EN
-  `define SCR1_IPIC_EN
-  `define SCR1_IPIC_SYNC_EN
+  `define SCR1_MCOUNTEN_EN            // enable custom MCOUNTEN CSR for counter control
+//`define SCR1_DBG_EN                 // enable Debug Subsystem (TAPC, DM, SCU, HDU)
+//`define SCR1_TDU_EN                 // enable Trigger Debug Unit (hardware breakpoints)
+//  parameter int unsigned SCR1_TDU_TRIG_NUM = 4;
+// `define SCR1_TDU_ICOUNT_EN          // enable hardware triggers on instruction counter
+  `define SCR1_IPIC_EN                // enable Integrated Programmable Interrupt Controller
+  `define SCR1_IPIC_SYNC_EN           // enable IPIC synchronizer
 //  `define SCR1_TCM_EN
+  `define SCR1_NEW_PC_REG             // enable register in IFU for New_PC value
+  `define SCRC1_MPRF_STAGE            // enabled register at Read path of MPRF
 `elsif  SCR1_CFG_RV32IC_BASE
   `define SCR1_RVI_EXT
   `define SCR1_RVC_EXT
