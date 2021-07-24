@@ -743,7 +743,7 @@ assign exu2ifu_pc_new_req_o = init_pc                                        // 
                             | (exu_queue_vd & jb_taken);
 
 // Jump/branch signals
-assign branch_taken = exu_queue.branch_req & ialu_cmp;
+assign branch_taken = exu_queue.branch_req & ialu_cmp & ialu_rdy;
 assign jb_taken     = exu_queue.jump_req | branch_taken;
 assign jb_new_pc    = ialu_addr_res & SCR1_JUMP_MASK;
 

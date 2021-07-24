@@ -44,6 +44,8 @@ set ::env(VERILOG_FILES) [glob  \
 	../src/core/pipeline/scr1_pipe_mprf.sv  \
 	../src/core/pipeline/scr1_pipe_csr.sv  \
 	../src/core/pipeline/scr1_pipe_ialu.sv  \
+	../src/core/pipeline/scr1_pipe_mul.sv  \
+	../src/core/pipeline/scr1_pipe_div.sv  \
 	../src/core/pipeline/scr1_pipe_lsu.sv  \
 	../src/core/pipeline/scr1_pipe_hdu.sv  \
 	../src/core/pipeline/scr1_pipe_tdu.sv  \

@@ -17,7 +17,11 @@
 // //////////////////////////////////////////////////////////////////////////
 /// @file       <scr1_timer.sv>
 /// @brief      Memory-mapped Timer
-///
+///    Version 1.0 - 18 - July 2021 - Dinesh A Project: yifive
+///           1.To break the timing path, input and output path are registered
+///           2.Spilt the 64 bit adder into two 32 bit added with taking care of
+///             overflow
+////////////////////////////////////////////////////////////////////////////////
 
 `include "scr1_arch_description.svh"
 `include "scr1_memif.svh"
@@ -119,7 +123,8 @@ assign time_posedge = (timeclk_cnt_en & (timeclk_cnt == 0));
 always_comb begin
     mtime_new   = mtime_reg;
     if (time_posedge) begin
-        mtime_new   = mtime_reg + 1'b1;
+        mtime_new[31:0]    = mtime_reg[31:0] + 1'b1;
+        mtime_new[63:32]   = (&mtime_reg[31:0]) ? (mtime_new[63:32] + 1'b1) : mtime_new[63:32];
     end
     if (mtimelo_up) begin
         mtime_new[31:0]     = dmem_wdata;
@@ -225,21 +230,32 @@ end
 //-------------------------------------------------------------------------------
 // Memory interface
 //-------------------------------------------------------------------------------
-assign dmem_req_valid   =   (dmem_width == SCR1_MEM_WIDTH_WORD) & (~|dmem_addr[1:0]) &
-                            (dmem_addr[SCR1_TIMER_ADDR_WIDTH-1:2] <= SCR1_TIMER_MTIMECMPHI[SCR1_TIMER_ADDR_WIDTH-1:2]);
-
-assign dmem_req_ack     = 1'b1;
+logic                           dmem_cmd_ff;
+logic [SCR1_TIMER_ADDR_WIDTH-1:0]   dmem_addr_ff;
+always_ff @(negedge rst_n, posedge clk) begin
+    if (~rst_n) begin
+       dmem_req_valid <= '0;
+       dmem_req_ack  <= '0;
+       dmem_cmd_ff  <= '0;
+       dmem_addr_ff <= '0;
+    end else begin
+       dmem_req_valid <=  (dmem_req) && (dmem_req_ack == 0) &&  (dmem_width == SCR1_MEM_WIDTH_WORD) & (~|dmem_addr[1:0]) &
+                          (dmem_addr[SCR1_TIMER_ADDR_WIDTH-1:2] <= SCR1_TIMER_MTIMECMPHI[SCR1_TIMER_ADDR_WIDTH-1:2]);
+       dmem_req_ack   <= dmem_req & (dmem_req_ack ==0);
+       dmem_cmd_ff    <= dmem_cmd;
+       dmem_addr_ff   <= dmem_addr[SCR1_TIMER_ADDR_WIDTH-1:0];
+    end
+end
 
 always_ff @(negedge rst_n, posedge clk) begin
     if (~rst_n) begin
         dmem_resp   <= SCR1_MEM_RESP_NOTRDY;
         dmem_rdata  <= '0;
     end else begin
-        if (dmem_req) begin
-            if (dmem_req_valid) begin
+        if (dmem_req_valid) begin
                 dmem_resp   <= SCR1_MEM_RESP_RDY_OK;
-                if (dmem_cmd == SCR1_MEM_CMD_RD) begin
-                    case (dmem_addr[SCR1_TIMER_ADDR_WIDTH-1:0])
+                if (dmem_cmd_ff == SCR1_MEM_CMD_RD) begin
+                    case (dmem_addr_ff)
                         SCR1_TIMER_CONTROL      : dmem_rdata    <= `SCR1_DMEM_DWIDTH'({timer_clksrc_rtc, timer_en});
                         SCR1_TIMER_DIVIDER      : dmem_rdata    <= `SCR1_DMEM_DWIDTH'(timer_div);
                         SCR1_TIMER_MTIMELO      : dmem_rdata    <= mtime_reg[31:0];
@@ -249,9 +265,6 @@ always_ff @(negedge rst_n, posedge clk) begin
                         default                 : begin end
                     endcase
                 end
-            end else begin
-                dmem_resp   <= SCR1_MEM_RESP_RDY_ER;
-            end
         end else begin
             dmem_resp   <= SCR1_MEM_RESP_NOTRDY;
             dmem_rdata  <= '0;
@@ -266,8 +279,8 @@ always_comb begin
     mtimehi_up      = 1'b0;
     mtimecmplo_up   = 1'b0;
     mtimecmphi_up   = 1'b0;
-    if (dmem_req & dmem_req_valid & (dmem_cmd == SCR1_MEM_CMD_WR)) begin
-        case (dmem_addr[SCR1_TIMER_ADDR_WIDTH-1:0])
+    if (dmem_req_valid & (dmem_cmd_ff == SCR1_MEM_CMD_WR)) begin
+        case (dmem_addr_ff)
             SCR1_TIMER_CONTROL      : control_up    = 1'b1;
             SCR1_TIMER_DIVIDER      : divider_up    = 1'b1;
             SCR1_TIMER_MTIMELO      : mtimelo_up    = 1'b1;

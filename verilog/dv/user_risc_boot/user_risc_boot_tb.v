@@ -155,7 +155,7 @@ module user_risc_boot_tb;
 
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (20) begin
+		repeat (30) begin
 			repeat (1000) @(posedge clock);
 			// $display("+1000 cycles");
 		end

@@ -51,6 +51,8 @@ set ::env(VERILOG_FILES) "\
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_mprf.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_csr.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_ialu.sv  \
+	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_mul.sv  \
+	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_div.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_lsu.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_hdu.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_tdu.sv  \
@@ -62,6 +64,7 @@ set ::env(VERILOG_FILES) "\
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/top/scr1_top_wb.sv   \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/top/scr1_dmem_wb.sv   \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/top/scr1_imem_wb.sv   \
+	$script_dir/../../verilog/rtl/syntacore/scr1/src/top/scr1_intf.sv   \
 	$script_dir/../../verilog/rtl/lib/async_fifo.sv "
 
 set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/syntacore/scr1/src/includes ]
@@ -83,7 +86,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) [list 0.0 0.0 1500.0 1200.0]
+set ::env(DIE_AREA) [list 0.0 0.0 1600.0 1200.0]
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -92,7 +95,11 @@ set ::env(RUN_CVC) 0
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 
-set ::env(PL_ROUTABILITY_DRIVEN) 1
+set ::env(PL_TIME_DRIVEN) 1
+set ::env(PL_TARGET_DENSITY) "0.45"
+set ::env(GLOBAL_ROUTER) "fastroute"
+set ::env(DETAILED_ROUTER) "tritonroute"
+set ::env(CELL_PAD) "4"
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4
@@ -100,6 +107,8 @@ set ::env(FP_IO_HEXTEND) 4
 
 set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+set ::env(DIODE_INSERTION_STRATEGY) 4
+
 
 #set ::env(LVS_CONNECT_BY_LABEL) 1
 

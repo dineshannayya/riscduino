@@ -237,72 +237,87 @@ logic [1:0]                                         timer_dmem_resp;
 
 logic                                               timer_irq;
 logic [63:0]                                        timer_val;
+logic [48:0]                                        core_debug;
 
-
-//---------------------------------------------------------------------------------
-// To avoid core level power hook up, we have brought this signal inside, to
-// avoid any cell at digital core level
-// --------------------------------------------------------------------------------
-assign test_mode = 1'b0;
-assign test_rst_n = 1'b0;
-
-logic [48:0] core_debug;
-assign riscv_debug = {core_imem_req,core_imem_req,core_imem_cmd,core_imem_resp[1:0],
-	              core_dmem_req_ack,core_dmem_req,core_dmem_cmd,core_dmem_resp[1:0],
-		      wb_imem_req,wb_imem_req,wb_imem_cmd,wb_imem_resp[1:0], core_debug };
 //-------------------------------------------------------------------------------
-// Reset logic
+// SCR1 Intf instance
 //-------------------------------------------------------------------------------
-// Power-Up Reset synchronizer
-scr1_reset_sync_cell #(
-    .STAGES_AMOUNT       (SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM)
-) i_pwrup_rstn_reset_sync (
-    .rst_n          (pwrup_rst_n     ),
-    .clk            (core_clk        ),
-    .test_rst_n     (test_rst_n      ),
-    .test_mode      (test_mode       ),
-    .rst_n_in       (1'b1            ),
-    .rst_n_out      (pwrup_rst_n_sync)
-);
-
-// Regular Reset synchronizer
-scr1_reset_sync_cell #(
-    .STAGES_AMOUNT       (SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM)
-) i_rstn_reset_sync (
-    .rst_n          (pwrup_rst_n     ),
-    .clk            (core_clk        ),
-    .test_rst_n     (test_rst_n      ),
-    .test_mode      (test_mode       ),
-    .rst_n_in       (rst_n           ),
-    .rst_n_out      (rst_n_sync      )
-);
-
-// CPU Reset synchronizer
-scr1_reset_sync_cell #(
-    .STAGES_AMOUNT       (SCR1_CLUSTER_TOP_RST_SYNC_STAGES_NUM)
-) i_cpu_rstn_reset_sync (
-    .rst_n          (pwrup_rst_n     ),
-    .clk            (core_clk        ),
-    .test_rst_n     (test_rst_n      ),
-    .test_mode      (test_mode       ),
-    .rst_n_in       (cpu_rst_n       ),
-    .rst_n_out      (cpu_rst_n_sync  )
-);
+scr1_intf u_intf (
+    // Control
+    .pwrup_rst_n                        (pwrup_rst_n),        // Power-Up Reset
+    .rst_n                              (rst_n),              // Regular Reset signal
+    .cpu_rst_n                          (cpu_rst_n),          // CPU Reset (Core Reset)
+    .core_clk                           (core_clk),           // Core clock
+    .rtc_clk                            (rtc_clk),            // Real-time clock
+    .riscv_debug                        (riscv_debug),
 
 `ifdef SCR1_DBG_EN
-// TAPC Reset
-scr1_reset_and2_cell i_tapc_rstn_and2_cell (
-    .rst_n_in       ({trst_n, pwrup_rst_n}),
-    .test_rst_n     (test_rst_n      ),
-    .test_mode      (test_mode       ),
-    .rst_n_out      (tapc_trst_n     )
-);
+    // -- JTAG I/F
+    .trst_n                             (trst_n),
 `endif // SCR1_DBG_EN
+
+    .wb_rst_n                           (wb_rst_n),           // Wish bone reset
+    .wb_clk                             (wb_clk),             // wish bone clock
+
+    // Instruction Memory Interface
+    .wbd_imem_stb_o                     (wbd_imem_stb_o),     // strobe/request
+    .wbd_imem_adr_o                     (wbd_imem_adr_o),     // address
+    .wbd_imem_we_o                      (wbd_imem_we_o),      // write
+    .wbd_imem_dat_o                     (wbd_imem_dat_o),     // data output
+    .wbd_imem_sel_o                     (wbd_imem_sel_o),     // byte enable
+    .wbd_imem_dat_i                     (wbd_imem_dat_i),     // data input
+    .wbd_imem_ack_i                     (wbd_imem_ack_i),     // acknowlegement
+    .wbd_imem_err_i                     (wbd_imem_err_i),     // error
+
+    // Data Memory Interface
+    .wbd_dmem_stb_o                     (wbd_dmem_stb_o),     // strobe/request
+    .wbd_dmem_adr_o                     (wbd_dmem_adr_o),     // address
+    .wbd_dmem_we_o                      (wbd_dmem_we_o),      // write
+    .wbd_dmem_dat_o                     (wbd_dmem_dat_o),     // data output
+    .wbd_dmem_sel_o                     (wbd_dmem_sel_o),     // byte enable
+    .wbd_dmem_dat_i                     (wbd_dmem_dat_i),     // data input
+    .wbd_dmem_ack_i                     (wbd_dmem_ack_i),     // acknowlegement
+    .wbd_dmem_err_i                     (wbd_dmem_err_i),     // error
+
+    // Common
+    .pwrup_rst_n_sync                   (pwrup_rst_n_sync),   // Power-Up reset
+    .rst_n_sync                         (rst_n_sync),         // Regular reset
+    .cpu_rst_n_sync                     (cpu_rst_n_sync),     // CPU reset
+    .test_mode                          (test_mode),          // DFT Test Mode
+    .test_rst_n                         (test_rst_n),         // DFT Test Reset
+    .core_rst_n_local                   (core_rst_n_local),   // Core reset
+    .core_debug                         (core_debug  ),
+`ifdef SCR1_DBG_EN
+    // Debug Interface
+    .tapc_trst_n                        (tapc_trst_n),        // Test Reset (TRSTn)
+`endif
+    // Memory-mapped external timer
+    .timer_val                          (timer_val),          // Machine timer value
+    // Instruction Memory Interface
+    .core_imem_req_ack                  (core_imem_req_ack),  // IMEM request acknowledge
+    .core_imem_req                      (core_imem_req),      // IMEM request
+    .core_imem_cmd                      (core_imem_cmd),      // IMEM command
+    .core_imem_addr                     (core_imem_addr),     // IMEM address
+    .core_imem_rdata                    (core_imem_rdata),    // IMEM read data
+    .core_imem_resp                     (core_imem_resp),     // IMEM response
+
+    // Data Memory Interface
+    .core_dmem_req_ack                  (core_dmem_req_ack),  // DMEM request acknowledge
+    .core_dmem_req                      (core_dmem_req),      // DMEM request
+    .core_dmem_cmd                      (core_dmem_cmd),      // DMEM command
+    .core_dmem_width                    (core_dmem_width),    // DMEM data width
+    .core_dmem_addr                     (core_dmem_addr),     // DMEM address
+    .core_dmem_wdata                    (core_dmem_wdata),    // DMEM write data
+    .core_dmem_rdata                    (core_dmem_rdata),    // DMEM read data
+    .core_dmem_resp                     (core_dmem_resp)      // DMEM response
+
+);
+
 
 //-------------------------------------------------------------------------------
 // SCR1 core instance
 //-------------------------------------------------------------------------------
-scr1_core_top i_core_top (
+scr1_core_top u_core_top (
     // Common
     .pwrup_rst_n                (pwrup_rst_n_sync ),
     .rst_n                      (rst_n_sync       ),
@@ -366,231 +381,6 @@ scr1_core_top i_core_top (
 );
 
 
-`ifdef SCR1_TCM_EN
-//-------------------------------------------------------------------------------
-// TCM instance
-//-------------------------------------------------------------------------------
-scr1_tcm #(
-    .SCR1_TCM_SIZE  (`SCR1_DMEM_AWIDTH'(~SCR1_TCM_ADDR_MASK + 1'b1))
-) i_tcm (
-    .clk            (core_clk        ),
-    .rst_n          (core_rst_n_local),
-
-    // Instruction interface to TCM
-    .imem_req_ack   (tcm_imem_req_ack),
-    .imem_req       (tcm_imem_req    ),
-    .imem_addr      (tcm_imem_addr   ),
-    .imem_rdata     (tcm_imem_rdata  ),
-    .imem_resp      (tcm_imem_resp   ),
-
-    // Data interface to TCM
-    .dmem_req_ack   (tcm_dmem_req_ack),
-    .dmem_req       (tcm_dmem_req    ),
-    .dmem_cmd       (tcm_dmem_cmd    ),
-    .dmem_width     (tcm_dmem_width  ),
-    .dmem_addr      (tcm_dmem_addr   ),
-    .dmem_wdata     (tcm_dmem_wdata  ),
-    .dmem_rdata     (tcm_dmem_rdata  ),
-    .dmem_resp      (tcm_dmem_resp   )
-);
-`endif // SCR1_TCM_EN
-
-
-//-------------------------------------------------------------------------------
-// Memory-mapped timer instance
-//-------------------------------------------------------------------------------
-scr1_timer i_timer (
-    // Common
-    .rst_n          (core_rst_n_local  ),
-    .clk            (core_clk          ),
-    .rtc_clk        (rtc_clk           ),
-
-    // Memory interface
-    .dmem_req       (timer_dmem_req    ),
-    .dmem_cmd       (timer_dmem_cmd    ),
-    .dmem_width     (timer_dmem_width  ),
-    .dmem_addr      (timer_dmem_addr   ),
-    .dmem_wdata     (timer_dmem_wdata  ),
-    .dmem_req_ack   (timer_dmem_req_ack),
-    .dmem_rdata     (timer_dmem_rdata  ),
-    .dmem_resp      (timer_dmem_resp   ),
-
-    // Timer interface
-    .timer_val      (timer_val         ),
-    .timer_irq      (timer_irq         )
-);
-
-
-`ifdef SCR1_IMEM_ROUTER_EN
-//-------------------------------------------------------------------------------
-// Instruction memory router
-//-------------------------------------------------------------------------------
-scr1_imem_router #(
- `ifdef SCR1_TCM_EN
-    .SCR1_ADDR_MASK     (SCR1_TCM_ADDR_MASK),
-    .SCR1_ADDR_PATTERN  (SCR1_TCM_ADDR_PATTERN)
- `endif // SCR1_TCM_EN
-) i_imem_router (
-    .rst_n          (core_rst_n_local ),
-    .clk            (core_clk         ),
-    // Interface to core
-    .imem_req_ack   (core_imem_req_ack),
-    .imem_req       (core_imem_req    ),
-    .imem_cmd       (core_imem_cmd    ),
-    .imem_addr      (core_imem_addr   ),
-    .imem_rdata     (core_imem_rdata  ),
-    .imem_resp      (core_imem_resp   ),
-    // Interface to WB bridge
-    .port0_req_ack  (wb_imem_req_ack ),
-    .port0_req      (wb_imem_req     ),
-    .port0_cmd      (wb_imem_cmd     ),
-    .port0_addr     (wb_imem_addr    ),
-    .port0_rdata    (wb_imem_rdata   ),
-    .port0_resp     (wb_imem_resp    ),
- `ifdef SCR1_TCM_EN
-    // Interface to TCM
-    .port1_req_ack  (tcm_imem_req_ack ),
-    .port1_req      (tcm_imem_req     ),
-    .port1_cmd      (tcm_imem_cmd     ),
-    .port1_addr     (tcm_imem_addr    ),
-    .port1_rdata    (tcm_imem_rdata   ),
-    .port1_resp     (tcm_imem_resp    )
- `endif // SCR1_TCM_EN
-);
-
-`else // SCR1_IMEM_ROUTER_EN
-
-assign wb_imem_req         = core_imem_req;
-assign wb_imem_cmd         = core_imem_cmd;
-assign wb_imem_addr        = core_imem_addr;
-assign core_imem_req_ack    = wb_imem_req_ack;
-assign core_imem_resp       = wb_imem_resp;
-assign core_imem_rdata      = wb_imem_rdata;
-
-`endif // SCR1_IMEM_ROUTER_EN
-
-//-------------------------------------------------------------------------------
-// Data memory router
-//-------------------------------------------------------------------------------
-scr1_dmem_router #(
-
-`ifdef SCR1_TCM_EN
-    .SCR1_PORT1_ADDR_MASK       (SCR1_TCM_ADDR_MASK),
-    .SCR1_PORT1_ADDR_PATTERN    (SCR1_TCM_ADDR_PATTERN),
-`else // SCR1_TCM_EN
-    .SCR1_PORT1_ADDR_MASK       (32'h00000000),
-    .SCR1_PORT1_ADDR_PATTERN    (32'hFFFFFFFF),
-`endif // SCR1_TCM_EN
-
-    .SCR1_PORT2_ADDR_MASK       (SCR1_TIMER_ADDR_MASK),
-    .SCR1_PORT2_ADDR_PATTERN    (SCR1_TIMER_ADDR_PATTERN)
-
-) i_dmem_router (
-    .rst_n          (core_rst_n_local    ),
-    .clk            (core_clk            ),
-    // Interface to core
-    .dmem_req_ack   (core_dmem_req_ack   ),
-    .dmem_req       (core_dmem_req       ),
-    .dmem_cmd       (core_dmem_cmd       ),
-    .dmem_width     (core_dmem_width     ),
-    .dmem_addr      (core_dmem_addr      ),
-    .dmem_wdata     (core_dmem_wdata     ),
-    .dmem_rdata     (core_dmem_rdata     ),
-    .dmem_resp      (core_dmem_resp      ),
-`ifdef SCR1_TCM_EN
-    // Interface to TCM
-    .port1_req_ack  (tcm_dmem_req_ack    ),
-    .port1_req      (tcm_dmem_req        ),
-    .port1_cmd      (tcm_dmem_cmd        ),
-    .port1_width    (tcm_dmem_width      ),
-    .port1_addr     (tcm_dmem_addr       ),
-    .port1_wdata    (tcm_dmem_wdata      ),
-    .port1_rdata    (tcm_dmem_rdata      ),
-    .port1_resp     (tcm_dmem_resp       ),
-`else // SCR1_TCM_EN
-    .port1_req_ack  (1'b0),
-    .port1_req      (                    ),
-    .port1_cmd      (                    ),
-    .port1_width    (                    ),
-    .port1_addr     (                    ),
-    .port1_wdata    (                    ),
-    .port1_rdata    (32'h0               ),
-    .port1_resp     (SCR1_MEM_RESP_RDY_ER),
-`endif // SCR1_TCM_EN
-    // Interface to memory-mapped timer
-    .port2_req_ack  (timer_dmem_req_ack  ),
-    .port2_req      (timer_dmem_req      ),
-    .port2_cmd      (timer_dmem_cmd      ),
-    .port2_width    (timer_dmem_width    ),
-    .port2_addr     (timer_dmem_addr     ),
-    .port2_wdata    (timer_dmem_wdata    ),
-    .port2_rdata    (timer_dmem_rdata    ),
-    .port2_resp     (timer_dmem_resp     ),
-    // Interface to WB bridge
-    .port0_req_ack  (wb_dmem_req_ack    ),
-    .port0_req      (wb_dmem_req        ),
-    .port0_cmd      (wb_dmem_cmd        ),
-    .port0_width    (wb_dmem_width      ),
-    .port0_addr     (wb_dmem_addr       ),
-    .port0_wdata    (wb_dmem_wdata      ),
-    .port0_rdata    (wb_dmem_rdata      ),
-    .port0_resp     (wb_dmem_resp       )
-);
-
-
-//-------------------------------------------------------------------------------
-// Instruction memory WB bridge
-//-------------------------------------------------------------------------------
-scr1_imem_wb i_imem_wb (
-    .core_rst_n     (core_rst_n_local   ),
-    .core_clk       (core_clk           ),
-    // Interface to imem router
-    .imem_req_ack   (wb_imem_req_ack   ),
-    .imem_req       (wb_imem_req       ),
-    .imem_addr      (wb_imem_addr      ),
-    .imem_rdata     (wb_imem_rdata     ),
-    .imem_resp      (wb_imem_resp      ),
-    // WB interface
-    .wb_rst_n       (wb_rst_n          ),
-    .wb_clk         (wb_clk            ),
-    .wbd_stb_o      (wbd_imem_stb_o    ), 
-    .wbd_adr_o      (wbd_imem_adr_o    ), 
-    .wbd_we_o       (wbd_imem_we_o     ),  
-    .wbd_dat_o      (wbd_imem_dat_o    ), 
-    .wbd_sel_o      (wbd_imem_sel_o    ), 
-    .wbd_dat_i      (wbd_imem_dat_i    ), 
-    .wbd_ack_i      (wbd_imem_ack_i    ), 
-    .wbd_err_i      (wbd_imem_err_i    )
-);
-
-
-//-------------------------------------------------------------------------------
-// Data memory WB bridge
-//-------------------------------------------------------------------------------
-scr1_dmem_wb i_dmem_wb (
-    .core_rst_n     (core_rst_n_local   ),
-    .core_clk       (core_clk           ),
-    // Interface to dmem router
-    .dmem_req_ack   (wb_dmem_req_ack   ),
-    .dmem_req       (wb_dmem_req       ),
-    .dmem_cmd       (wb_dmem_cmd       ),
-    .dmem_width     (wb_dmem_width     ),
-    .dmem_addr      (wb_dmem_addr      ),
-    .dmem_wdata     (wb_dmem_wdata     ),
-    .dmem_rdata     (wb_dmem_rdata     ),
-    .dmem_resp      (wb_dmem_resp      ),
-    // WB interface
-    .wb_rst_n       (wb_rst_n          ),
-    .wb_clk         (wb_clk            ),
-    .wbd_stb_o      (wbd_dmem_stb_o    ), 
-    .wbd_adr_o      (wbd_dmem_adr_o    ), 
-    .wbd_we_o       (wbd_dmem_we_o     ),  
-    .wbd_dat_o      (wbd_dmem_dat_o    ), 
-    .wbd_sel_o      (wbd_dmem_sel_o    ), 
-    .wbd_dat_i      (wbd_dmem_dat_i    ), 
-    .wbd_ack_i      (wbd_dmem_ack_i    ), 
-    .wbd_err_i      (wbd_dmem_err_i    )
-);
 
 endmodule : scr1_top_wb
 

@@ -6,14 +6,14 @@ Reading /home/dinesha/workarea/opencore/git/yifive_r0/checks/user_project_wrappe
 Reading /home/dinesha/workarea/opencore/git/yifive_r0/checks/user_project_wrapper_erased.gds ..
 --- Running XOR for 69/20 ---
 "_input" in: xor.drc:38
-Elapsed: 0.000s
+Elapsed: 0.010s
 "_input" in: xor.drc:38
 Elapsed: 0.010s
 "^" in: xor.drc:38
-Elapsed: 0.010s
+Elapsed: 0.000s
 XOR differences: 0
 "_output" in: xor.drc:41
-Elapsed: 0.000s
+Elapsed: 0.010s
 --- Running XOR for 70/20 ---
 "_input" in: xor.drc:38
 Elapsed: 0.010s
@@ -30,15 +30,15 @@ Elapsed: 0.010s
 "_input" in: xor.drc:38
 Elapsed: 0.000s
 "^" in: xor.drc:38
-Elapsed: 0.000s
+Elapsed: 0.010s
 XOR differences: 358
 "_output" in: xor.drc:41
 Elapsed: 0.010s
 --- Running XOR for 71/44 ---
 "_input" in: xor.drc:38
-Elapsed: 0.010s
-"_input" in: xor.drc:38
 Elapsed: 0.000s
+"_input" in: xor.drc:38
+Elapsed: 0.010s
 "^" in: xor.drc:38
 Elapsed: 0.010s
 XOR differences: 1144
@@ -56,13 +56,13 @@ XOR differences: 984
 Elapsed: 0.010s
 --- Running XOR for 81/14 ---
 "_input" in: xor.drc:38
-Elapsed: 0.000s
-"_input" in: xor.drc:38
 Elapsed: 0.010s
-"^" in: xor.drc:38
+"_input" in: xor.drc:38
 Elapsed: 0.000s
+"^" in: xor.drc:38
+Elapsed: 0.010s
 XOR differences: 2
 "_output" in: xor.drc:41
-Elapsed: 0.010s
+Elapsed: 0.000s
 Writing layout file: /home/dinesha/workarea/opencore/git/yifive_r0/checks/user_project_wrapper.xor.gds ..
-Total run time: 0.170s
+Total run time: 0.160s

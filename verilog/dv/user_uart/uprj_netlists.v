@@ -93,6 +93,8 @@
      `include "syntacore/scr1/src/core/pipeline/scr1_pipe_ifu.sv"
      `include "syntacore/scr1/src/core/pipeline/scr1_pipe_lsu.sv"
      `include "syntacore/scr1/src/core/pipeline/scr1_pipe_mprf.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_mul.sv"
+     `include "syntacore/scr1/src/core/pipeline/scr1_pipe_div.sv"
      `include "syntacore/scr1/src/core/pipeline/scr1_pipe_top.sv"
      `include "syntacore/scr1/src/core/primitives/scr1_reset_cells.sv"
      `include "syntacore/scr1/src/core/primitives/scr1_cg.sv"
@@ -111,6 +113,7 @@
      `include "syntacore/scr1/src/top/scr1_timer.sv"
      `include "syntacore/scr1/src/top/scr1_dmem_wb.sv"
      `include "syntacore/scr1/src/top/scr1_imem_wb.sv"
+     `include "syntacore/scr1/src/top/scr1_intf.sv"
      `include "syntacore/scr1/src/top/scr1_top_wb.sv"
      `include "lib/sync_fifo.sv"
 

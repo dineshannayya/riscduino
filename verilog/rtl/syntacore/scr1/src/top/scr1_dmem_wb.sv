@@ -377,17 +377,22 @@ assign  resp_fifo_din.hrdata = (wbd_we_o) ? 'h0: wbd_dat_i;
         .rd_data    (resp_fifo_dout          )
       );
 
-
-
 assign resp_fifo_rd = !resp_fifo_empty;
-
-assign dmem_rdata = (resp_fifo_rd) ? scr1_conv_wb2mem_rdata(resp_fifo_dout.hwidth, resp_fifo_dout.haddr, resp_fifo_dout.hrdata) : 'h0;
-
-assign dmem_resp = (resp_fifo_rd)
-                    ? (resp_fifo_dout.hresp == 1'b1)
-                        ? SCR1_MEM_RESP_RDY_OK
-                        : SCR1_MEM_RESP_RDY_ER
-                    : SCR1_MEM_RESP_NOTRDY ;
+  
+// Added FF to improve timing
+always_ff @(posedge core_clk, negedge core_rst_n) begin
+   if(core_rst_n == 0) begin
+      dmem_rdata <= '0;
+      dmem_resp <= '0;
+   end else begin
+      dmem_rdata <= (resp_fifo_rd) ? scr1_conv_wb2mem_rdata(resp_fifo_dout.hwidth, resp_fifo_dout.haddr, resp_fifo_dout.hrdata) : 'h0;
+      dmem_resp  <= (resp_fifo_rd)
+                          ? (resp_fifo_dout.hresp == 1'b1)
+                              ? SCR1_MEM_RESP_RDY_OK
+                              : SCR1_MEM_RESP_RDY_ER
+                          : SCR1_MEM_RESP_NOTRDY ;
+   end
+end
 
 
 
