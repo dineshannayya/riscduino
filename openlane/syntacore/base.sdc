@@ -22,7 +22,7 @@ set ::env(WB_CLOCK_PORT)      "wb_clk"
 set ::env(WB_CLOCK_NAME)      "wb_clk"
 
 #Risc Core Clock
-set ::env(CORE_CLOCK_PERIOD) "40"
+set ::env(CORE_CLOCK_PERIOD) "20"
 set ::env(CORE_CLOCK_PORT)   "core_clk"
 set ::env(CORE_CLOCK_NAME)   "core_clk"
 
@@ -54,8 +54,8 @@ create_clock [get_ports $::env(RTC_CLOCK_PORT)]  -name $::env(RTC_CLOCK_NAME)  -
 # WB Clock domain input output
 ######################################
 create_clock [get_ports $::env(WB_CLOCK_PORT)]  -name $::env(WB_CLOCK_NAME)  -period $::env(WB_CLOCK_PERIOD)
-set wb_input_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
-set wb_output_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.6]
+set wb_input_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.45]
+set wb_output_delay_value [expr $::env(WB_CLOCK_PERIOD) * 0.45]
 puts "\[INFO\]: Setting wb output delay to:$wb_output_delay_value"
 puts "\[INFO\]: Setting wb input delay to: $wb_input_delay_value"
 set wb_clk_indx [lsearch [all_inputs] [get_port $::env(WB_CLOCK_NAME)]]

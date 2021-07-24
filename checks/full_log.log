@@ -3,8 +3,8 @@ FULL RUN LOG:
 Step 0 done without fatal errors.
  Executing Step 1 of 8: Project License Check
 {{LICENSE COMPLIANCE PASSED}} Apache-2.0 LICENSE file was found in project root
- SPDX COMPLIANCE Found 971 non-compliant files with the SPDX Standard. Check full log for more information
-SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/README.md', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/user_project_wrapper.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/wb_host.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/sdrc_top.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/wb_interconnect.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/scr1_top_wb.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/glbl_cfg.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/test.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/uart_core.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/clk_skew_adjust.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/clk_buf.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/spim_top.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/default.cvcrc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/config.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/magic_spice.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/opt.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/trimmed.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/tracks_copy.info', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/syntacore/runs/syntacore/tmp/synthesis/hierarchy.dot']
+ SPDX COMPLIANCE Found 1110 non-compliant files with the SPDX Standard. Check full log for more information
+SPDX COMPLIANCE: NON-COMPLIANT FILES PREVIEW: ['/home/dinesha/workarea/opencore/git/yifive_r0/README.md', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/user_project_wrapper.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/wb_host.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/sdrc_top.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/wb_interconnect.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/scr1_top_wb.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/glbl_cfg.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/test.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/uart_core.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/clk_skew_adjust.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/clk_buf.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/spef/spim_top.spef', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/default.cvcrc', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/aa', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/runs/scr_core/config.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/runs/scr_core/tmp/magic_spice.tcl', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/runs/scr_core/tmp/opt.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/runs/scr_core/tmp/trimmed.lib', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/runs/scr_core/tmp/tracks_copy.info', '/home/dinesha/workarea/opencore/git/yifive_r0/openlane/scr_core/runs/scr_core/tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib']
  Executing Step 2 of 8: YAML File Check
  YAML file valid!
 Step 2 done without fatal errors.
@@ -21,7 +21,7 @@ b'Running sha1sum checks'
 instance caravel found
 instance user_project_wrapper found
 Design is complex and contains: 47 modules
-Design is complex and contains: 18 modules
+Design is complex and contains: 20 modules
 verilog Consistency Checks Passed.
  Basic Hierarchy Checks Passed.
 {PROGRESS} Running Pins and Power Checks...
@@ -37,3 +37,7 @@ Total XOR differences = 2488
 TEST FAILED AT STEP 5
  Executing Step 6 of 8: DRC Violations Checks
  Running Magic DRC Checks...
+Violation Message "All nwells must contain metal-connected N+ taps (nwell.4) "found 1 Times.
+ DRC Checks on GDS Failed, Reason: Total # of DRC violations is 1
+TEST FAILED AT STEP 6
+ SOME Checks FAILED !!!

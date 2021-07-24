@@ -19,7 +19,10 @@
 /// @file       <scr1_pipe_mprf.sv>
 /// @brief      Multi Port Register File (MPRF)
 ///
-
+///   Version 1.0 - Dinesh A - Project: yifive
+///                added additional stage FF to break timing path
+///                additional define SCRC1_MPRF_STAGE added
+//////////////////////////////////////////////////////////////////////////////
 `include "scr1_arch_description.svh"
 `include "scr1_arch_types.svh"
 

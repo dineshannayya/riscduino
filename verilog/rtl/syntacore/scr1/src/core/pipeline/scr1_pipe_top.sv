@@ -618,7 +618,7 @@ scr1_pipe_tdu i_pipe_tdu (
  `ifdef SCR1_DBG_EN
     .rst_n                      (dbg_rst_n             ),
  `else
-    .rst_n                      (pipe_rst_n            ), // dinesh-a: Bugfix- reset correction when debug is not enabled
+    .rst_n                      (pipe_rst_n            ),
  `endif // SCR1_DBG_EN
     .clk                        (clk                   ),
     .clk_en                     (1'b1                  ),

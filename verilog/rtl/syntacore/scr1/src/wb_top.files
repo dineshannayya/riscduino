@@ -22,4 +22,5 @@ top/scr1_timer.sv
 top/scr1_dmem_wb.sv
 top/scr1_imem_wb.sv
 top/scr1_top_wb.sv
+top/scr1_intf.sv
 ../../../lib/sync_fifo.sv

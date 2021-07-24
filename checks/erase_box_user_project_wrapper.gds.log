@@ -16,47 +16,48 @@ CIF input style is now "sky130(vendor)"
 Warning: Calma reading is not undoable!  I hope that's OK.
 Library written using GDS-II Release 3.0
 Library name: user_project_wrapper
-Reading "sky130_fd_sc_hd__decap_3".
-Reading "sky130_fd_sc_hd__decap_8".
-Reading "sky130_fd_sc_hd__decap_6".
-Reading "sky130_fd_sc_hd__decap_12".
-Reading "sky130_fd_sc_hd__tapvpwrvgnd_1".
-Reading "sky130_fd_sc_hd__fill_1".
-Reading "sky130_fd_sc_hd__o22a_4".
-Reading "sky130_fd_sc_hd__decap_4".
-Reading "sky130_fd_sc_hd__and2_4".
-Reading "sky130_fd_sc_hd__clkbuf_1".
-Reading "sky130_fd_sc_hd__dfxtp_4".
-Reading "sky130_fd_sc_hd__or2_4".
-Reading "sky130_fd_sc_hd__fill_2".
-Reading "sky130_fd_sc_hd__o21a_4".
-Reading "sky130_fd_sc_hd__buf_2".
-Reading "sky130_fd_sc_hd__and3_4".
-Reading "sky130_fd_sc_hd__a2bb2o_4".
-Reading "sky130_fd_sc_hd__conb_1".
-Reading "sky130_fd_sc_hd__inv_2".
-Reading "sky130_fd_sc_hd__a32o_4".
-Reading "sky130_fd_sc_hd__diode_2".
-Reading "sky130_fd_sc_hd__dfrtp_4".
+Reading "sky130_fd_sc_hd__clkbuf_16".
+Reading "sky130_fd_sc_hd__buf_4".
 Reading "sky130_fd_sc_hd__a21o_4".
-Reading "sky130_fd_sc_hd__a211o_4".
+Reading "sky130_fd_sc_hd__clkbuf_1".
+Reading "sky130_fd_sc_hd__dfstp_4".
+Reading "sky130_fd_sc_hd__or3_4".
 Reading "sky130_fd_sc_hd__a21boi_4".
 Reading "sky130_fd_sc_hd__or4_4".
-Reading "sky130_fd_sc_hd__a21oi_4".
-Reading "sky130_fd_sc_hd__or3_4".
-Reading "sky130_fd_sc_hd__nor2_4".
-Reading "sky130_fd_sc_hd__and4_4".
-Reading "sky130_fd_sc_hd__nand2_4".
-Reading "sky130_fd_sc_hd__clkbuf_16".
-Reading "sky130_fd_sc_hd__buf_8".
 Reading "sky130_fd_sc_hd__a22oi_4".
-Reading "sky130_fd_sc_hd__dfstp_4".
+Reading "sky130_fd_sc_hd__and3_4".
 Reading "sky130_fd_sc_hd__o21ai_4".
-Reading "sky130_fd_sc_hd__buf_4".
-Reading "sky130_fd_sc_hd__a2111o_4".
 Reading "sky130_fd_sc_hd__o32a_4".
+Reading "sky130_fd_sc_hd__and2_4".
+Reading "sky130_fd_sc_hd__and4_4".
+Reading "sky130_fd_sc_hd__dfxtp_4".
+Reading "sky130_fd_sc_hd__or2_4".
+Reading "sky130_fd_sc_hd__diode_2".
+Reading "sky130_fd_sc_hd__o22a_4".
+Reading "sky130_fd_sc_hd__nor2_4".
+Reading "sky130_fd_sc_hd__o21a_4".
+Reading "sky130_fd_sc_hd__a32o_4".
+Reading "sky130_fd_sc_hd__buf_2".
+Reading "sky130_fd_sc_hd__a21oi_4".
+Reading "sky130_fd_sc_hd__nand2_4".
+Reading "sky130_fd_sc_hd__inv_2".
+Reading "sky130_fd_sc_hd__dfrtp_4".
+Reading "sky130_fd_sc_hd__decap_4".
+Reading "sky130_fd_sc_hd__a211o_4".
+Reading "sky130_fd_sc_hd__fill_2".
+Reading "sky130_fd_sc_hd__decap_8".
+Reading "sky130_fd_sc_hd__a2bb2o_4".
+Reading "sky130_fd_sc_hd__tapvpwrvgnd_1".
+Reading "sky130_fd_sc_hd__decap_12".
+Reading "sky130_fd_sc_hd__conb_1".
+Reading "sky130_fd_sc_hd__decap_6".
+Reading "sky130_fd_sc_hd__fill_1".
+Reading "sky130_fd_sc_hd__decap_3".
+Reading "sky130_fd_sc_hd__a2111o_4".
 Reading "sky130_fd_sc_hd__a21bo_4".
-Reading "scr1_top_wb".
+Reading "sky130_fd_sc_hd__o41a_4".
+Reading "sky130_fd_sc_hd__buf_8".
+Reading "scr1_core_top".
     100 uses
     200 uses
     300 uses
@@ -1275,556 +1276,6 @@ Reading "scr1_top_wb".
     121600 uses
     121700 uses
     121800 uses
-    121900 uses
-    122000 uses
-    122100 uses
-    122200 uses
-    122300 uses
-    122400 uses
-    122500 uses
-    122600 uses
-    122700 uses
-    122800 uses
-    122900 uses
-    123000 uses
-    123100 uses
-    123200 uses
-    123300 uses
-    123400 uses
-    123500 uses
-    123600 uses
-    123700 uses
-    123800 uses
-    123900 uses
-    124000 uses
-    124100 uses
-    124200 uses
-    124300 uses
-    124400 uses
-    124500 uses
-    124600 uses
-    124700 uses
-    124800 uses
-    124900 uses
-    125000 uses
-    125100 uses
-    125200 uses
-    125300 uses
-    125400 uses
-    125500 uses
-    125600 uses
-    125700 uses
-    125800 uses
-    125900 uses
-    126000 uses
-    126100 uses
-    126200 uses
-    126300 uses
-    126400 uses
-    126500 uses
-    126600 uses
-    126700 uses
-    126800 uses
-    126900 uses
-    127000 uses
-    127100 uses
-    127200 uses
-    127300 uses
-    127400 uses
-    127500 uses
-    127600 uses
-    127700 uses
-    127800 uses
-    127900 uses
-    128000 uses
-    128100 uses
-    128200 uses
-    128300 uses
-    128400 uses
-    128500 uses
-    128600 uses
-    128700 uses
-    128800 uses
-    128900 uses
-    129000 uses
-    129100 uses
-    129200 uses
-    129300 uses
-    129400 uses
-    129500 uses
-    129600 uses
-    129700 uses
-    129800 uses
-    129900 uses
-    130000 uses
-    130100 uses
-    130200 uses
-    130300 uses
-    130400 uses
-    130500 uses
-    130600 uses
-    130700 uses
-    130800 uses
-    130900 uses
-    131000 uses
-    131100 uses
-    131200 uses
-    131300 uses
-    131400 uses
-    131500 uses
-    131600 uses
-    131700 uses
-    131800 uses
-    131900 uses
-    132000 uses
-    132100 uses
-    132200 uses
-    132300 uses
-    132400 uses
-    132500 uses
-    132600 uses
-    132700 uses
-    132800 uses
-    132900 uses
-    133000 uses
-    133100 uses
-    133200 uses
-    133300 uses
-    133400 uses
-    133500 uses
-    133600 uses
-    133700 uses
-    133800 uses
-    133900 uses
-    134000 uses
-    134100 uses
-    134200 uses
-    134300 uses
-    134400 uses
-    134500 uses
-    134600 uses
-    134700 uses
-    134800 uses
-    134900 uses
-    135000 uses
-    135100 uses
-    135200 uses
-    135300 uses
-    135400 uses
-    135500 uses
-    135600 uses
-    135700 uses
-    135800 uses
-    135900 uses
-    136000 uses
-    136100 uses
-    136200 uses
-    136300 uses
-    136400 uses
-    136500 uses
-    136600 uses
-    136700 uses
-    136800 uses
-    136900 uses
-    137000 uses
-    137100 uses
-    137200 uses
-    137300 uses
-    137400 uses
-    137500 uses
-    137600 uses
-    137700 uses
-    137800 uses
-    137900 uses
-    138000 uses
-    138100 uses
-    138200 uses
-    138300 uses
-    138400 uses
-    138500 uses
-    138600 uses
-    138700 uses
-    138800 uses
-    138900 uses
-    139000 uses
-    139100 uses
-    139200 uses
-    139300 uses
-    139400 uses
-    139500 uses
-    139600 uses
-    139700 uses
-    139800 uses
-    139900 uses
-    140000 uses
-    140100 uses
-    140200 uses
-    140300 uses
-    140400 uses
-    140500 uses
-    140600 uses
-    140700 uses
-    140800 uses
-    140900 uses
-    141000 uses
-    141100 uses
-    141200 uses
-    141300 uses
-    141400 uses
-    141500 uses
-    141600 uses
-    141700 uses
-    141800 uses
-    141900 uses
-    142000 uses
-    142100 uses
-    142200 uses
-    142300 uses
-    142400 uses
-    142500 uses
-    142600 uses
-    142700 uses
-    142800 uses
-    142900 uses
-    143000 uses
-    143100 uses
-    143200 uses
-    143300 uses
-    143400 uses
-    143500 uses
-    143600 uses
-    143700 uses
-    143800 uses
-    143900 uses
-    144000 uses
-    144100 uses
-    144200 uses
-    144300 uses
-    144400 uses
-    144500 uses
-    144600 uses
-    144700 uses
-    144800 uses
-    144900 uses
-    145000 uses
-    145100 uses
-    145200 uses
-    145300 uses
-    145400 uses
-    145500 uses
-    145600 uses
-    145700 uses
-    145800 uses
-    145900 uses
-    146000 uses
-    146100 uses
-    146200 uses
-    146300 uses
-    146400 uses
-    146500 uses
-    146600 uses
-    146700 uses
-    146800 uses
-    146900 uses
-    147000 uses
-    147100 uses
-    147200 uses
-    147300 uses
-    147400 uses
-    147500 uses
-    147600 uses
-    147700 uses
-    147800 uses
-    147900 uses
-    148000 uses
-    148100 uses
-    148200 uses
-    148300 uses
-    148400 uses
-    148500 uses
-    148600 uses
-    148700 uses
-    148800 uses
-    148900 uses
-    149000 uses
-    149100 uses
-    149200 uses
-    149300 uses
-    149400 uses
-    149500 uses
-    149600 uses
-    149700 uses
-    149800 uses
-    149900 uses
-    150000 uses
-    150100 uses
-    150200 uses
-    150300 uses
-    150400 uses
-    150500 uses
-    150600 uses
-    150700 uses
-    150800 uses
-    150900 uses
-    151000 uses
-    151100 uses
-    151200 uses
-    151300 uses
-    151400 uses
-    151500 uses
-    151600 uses
-    151700 uses
-    151800 uses
-    151900 uses
-    152000 uses
-    152100 uses
-    152200 uses
-    152300 uses
-    152400 uses
-    152500 uses
-    152600 uses
-    152700 uses
-    152800 uses
-    152900 uses
-    153000 uses
-    153100 uses
-    153200 uses
-    153300 uses
-    153400 uses
-    153500 uses
-    153600 uses
-    153700 uses
-    153800 uses
-    153900 uses
-    154000 uses
-    154100 uses
-    154200 uses
-    154300 uses
-    154400 uses
-    154500 uses
-    154600 uses
-    154700 uses
-    154800 uses
-    154900 uses
-    155000 uses
-    155100 uses
-    155200 uses
-    155300 uses
-    155400 uses
-    155500 uses
-    155600 uses
-    155700 uses
-    155800 uses
-    155900 uses
-    156000 uses
-    156100 uses
-    156200 uses
-    156300 uses
-    156400 uses
-    156500 uses
-    156600 uses
-    156700 uses
-    156800 uses
-    156900 uses
-    157000 uses
-    157100 uses
-    157200 uses
-    157300 uses
-    157400 uses
-    157500 uses
-    157600 uses
-    157700 uses
-    157800 uses
-    157900 uses
-    158000 uses
-    158100 uses
-    158200 uses
-    158300 uses
-    158400 uses
-    158500 uses
-    158600 uses
-    158700 uses
-    158800 uses
-    158900 uses
-    159000 uses
-    159100 uses
-    159200 uses
-    159300 uses
-    159400 uses
-    159500 uses
-    159600 uses
-    159700 uses
-    159800 uses
-    159900 uses
-    160000 uses
-    160100 uses
-    160200 uses
-    160300 uses
-    160400 uses
-    160500 uses
-    160600 uses
-    160700 uses
-    160800 uses
-    160900 uses
-    161000 uses
-    161100 uses
-    161200 uses
-    161300 uses
-    161400 uses
-    161500 uses
-    161600 uses
-    161700 uses
-    161800 uses
-    161900 uses
-    162000 uses
-    162100 uses
-    162200 uses
-    162300 uses
-    162400 uses
-    162500 uses
-    162600 uses
-    162700 uses
-    162800 uses
-    162900 uses
-    163000 uses
-    163100 uses
-    163200 uses
-    163300 uses
-    163400 uses
-    163500 uses
-    163600 uses
-    163700 uses
-    163800 uses
-    163900 uses
-    164000 uses
-    164100 uses
-    164200 uses
-    164300 uses
-    164400 uses
-    164500 uses
-    164600 uses
-    164700 uses
-    164800 uses
-    164900 uses
-    165000 uses
-    165100 uses
-    165200 uses
-    165300 uses
-    165400 uses
-    165500 uses
-    165600 uses
-    165700 uses
-    165800 uses
-    165900 uses
-    166000 uses
-    166100 uses
-    166200 uses
-    166300 uses
-    166400 uses
-    166500 uses
-    166600 uses
-    166700 uses
-    166800 uses
-    166900 uses
-    167000 uses
-    167100 uses
-    167200 uses
-    167300 uses
-    167400 uses
-    167500 uses
-    167600 uses
-    167700 uses
-    167800 uses
-    167900 uses
-    168000 uses
-    168100 uses
-    168200 uses
-    168300 uses
-    168400 uses
-    168500 uses
-    168600 uses
-    168700 uses
-    168800 uses
-    168900 uses
-    169000 uses
-    169100 uses
-    169200 uses
-    169300 uses
-    169400 uses
-    169500 uses
-    169600 uses
-    169700 uses
-    169800 uses
-    169900 uses
-    170000 uses
-    170100 uses
-    170200 uses
-    170300 uses
-    170400 uses
-    170500 uses
-    170600 uses
-    170700 uses
-    170800 uses
-    170900 uses
-    171000 uses
-    171100 uses
-    171200 uses
-    171300 uses
-    171400 uses
-    171500 uses
-    171600 uses
-    171700 uses
-    171800 uses
-    171900 uses
-    172000 uses
-    172100 uses
-    172200 uses
-    172300 uses
-    172400 uses
-    172500 uses
-    172600 uses
-    172700 uses
-    172800 uses
-    172900 uses
-    173000 uses
-    173100 uses
-    173200 uses
-    173300 uses
-    173400 uses
-    173500 uses
-    173600 uses
-    173700 uses
-    173800 uses
-    173900 uses
-    174000 uses
-    174100 uses
-    174200 uses
-    174300 uses
-    174400 uses
-    174500 uses
-    174600 uses
-    174700 uses
-    174800 uses
-    174900 uses
-    175000 uses
-    175100 uses
-    175200 uses
-    175300 uses
-    175400 uses
-    175500 uses
-    175600 uses
-    175700 uses
-    175800 uses
-    175900 uses
-    176000 uses
-    176100 uses
-    176200 uses
-    176300 uses
-    176400 uses
-    176500 uses
-    176600 uses
-    176700 uses
-    176800 uses
 Reading "sky130_fd_sc_hd__clkdlybuf4s15_2".
 Reading "sky130_fd_sc_hd__mux2_1".
 Reading "sky130_fd_sc_hd__mux2_4".
@@ -1960,7 +1411,7 @@ Reading "wb_host".
     11900 uses
     12000 uses
     12100 uses
-Reading "sdrc_top".
+Reading "scr1_intf".
     100 uses
     200 uses
     300 uses
@@ -2213,105 +1664,6 @@ Reading "sdrc_top".
     25000 uses
     25100 uses
     25200 uses
-    25300 uses
-    25400 uses
-    25500 uses
-    25600 uses
-    25700 uses
-    25800 uses
-    25900 uses
-    26000 uses
-    26100 uses
-    26200 uses
-    26300 uses
-    26400 uses
-    26500 uses
-    26600 uses
-    26700 uses
-    26800 uses
-    26900 uses
-    27000 uses
-    27100 uses
-    27200 uses
-    27300 uses
-    27400 uses
-    27500 uses
-    27600 uses
-    27700 uses
-    27800 uses
-    27900 uses
-    28000 uses
-    28100 uses
-    28200 uses
-    28300 uses
-    28400 uses
-    28500 uses
-    28600 uses
-    28700 uses
-    28800 uses
-    28900 uses
-    29000 uses
-    29100 uses
-    29200 uses
-    29300 uses
-    29400 uses
-    29500 uses
-    29600 uses
-    29700 uses
-    29800 uses
-    29900 uses
-    30000 uses
-    30100 uses
-    30200 uses
-    30300 uses
-    30400 uses
-    30500 uses
-    30600 uses
-    30700 uses
-    30800 uses
-    30900 uses
-    31000 uses
-    31100 uses
-    31200 uses
-    31300 uses
-    31400 uses
-    31500 uses
-    31600 uses
-    31700 uses
-    31800 uses
-    31900 uses
-    32000 uses
-    32100 uses
-    32200 uses
-    32300 uses
-    32400 uses
-    32500 uses
-    32600 uses
-    32700 uses
-    32800 uses
-    32900 uses
-    33000 uses
-    33100 uses
-    33200 uses
-    33300 uses
-    33400 uses
-    33500 uses
-    33600 uses
-    33700 uses
-    33800 uses
-    33900 uses
-    34000 uses
-    34100 uses
-    34200 uses
-    34300 uses
-    34400 uses
-    34500 uses
-    34600 uses
-    34700 uses
-    34800 uses
-    34900 uses
-    35000 uses
-    35100 uses
 Reading "uart_core".
     100 uses
     200 uses
@@ -2717,6 +2069,358 @@ Reading "wb_interconnect".
     26400 uses
     26500 uses
     26600 uses
+Reading "sdrc_top".
+    100 uses
+    200 uses
+    300 uses
+    400 uses
+    500 uses
+    600 uses
+    700 uses
+    800 uses
+    900 uses
+    1000 uses
+    1100 uses
+    1200 uses
+    1300 uses
+    1400 uses
+    1500 uses
+    1600 uses
+    1700 uses
+    1800 uses
+    1900 uses
+    2000 uses
+    2100 uses
+    2200 uses
+    2300 uses
+    2400 uses
+    2500 uses
+    2600 uses
+    2700 uses
+    2800 uses
+    2900 uses
+    3000 uses
+    3100 uses
+    3200 uses
+    3300 uses
+    3400 uses
+    3500 uses
+    3600 uses
+    3700 uses
+    3800 uses
+    3900 uses
+    4000 uses
+    4100 uses
+    4200 uses
+    4300 uses
+    4400 uses
+    4500 uses
+    4600 uses
+    4700 uses
+    4800 uses
+    4900 uses
+    5000 uses
+    5100 uses
+    5200 uses
+    5300 uses
+    5400 uses
+    5500 uses
+    5600 uses
+    5700 uses
+    5800 uses
+    5900 uses
+    6000 uses
+    6100 uses
+    6200 uses
+    6300 uses
+    6400 uses
+    6500 uses
+    6600 uses
+    6700 uses
+    6800 uses
+    6900 uses
+    7000 uses
+    7100 uses
+    7200 uses
+    7300 uses
+    7400 uses
+    7500 uses
+    7600 uses
+    7700 uses
+    7800 uses
+    7900 uses
+    8000 uses
+    8100 uses
+    8200 uses
+    8300 uses
+    8400 uses
+    8500 uses
+    8600 uses
+    8700 uses
+    8800 uses
+    8900 uses
+    9000 uses
+    9100 uses
+    9200 uses
+    9300 uses
+    9400 uses
+    9500 uses
+    9600 uses
+    9700 uses
+    9800 uses
+    9900 uses
+    10000 uses
+    10100 uses
+    10200 uses
+    10300 uses
+    10400 uses
+    10500 uses
+    10600 uses
+    10700 uses
+    10800 uses
+    10900 uses
+    11000 uses
+    11100 uses
+    11200 uses
+    11300 uses
+    11400 uses
+    11500 uses
+    11600 uses
+    11700 uses
+    11800 uses
+    11900 uses
+    12000 uses
+    12100 uses
+    12200 uses
+    12300 uses
+    12400 uses
+    12500 uses
+    12600 uses
+    12700 uses
+    12800 uses
+    12900 uses
+    13000 uses
+    13100 uses
+    13200 uses
+    13300 uses
+    13400 uses
+    13500 uses
+    13600 uses
+    13700 uses
+    13800 uses
+    13900 uses
+    14000 uses
+    14100 uses
+    14200 uses
+    14300 uses
+    14400 uses
+    14500 uses
+    14600 uses
+    14700 uses
+    14800 uses
+    14900 uses
+    15000 uses
+    15100 uses
+    15200 uses
+    15300 uses
+    15400 uses
+    15500 uses
+    15600 uses
+    15700 uses
+    15800 uses
+    15900 uses
+    16000 uses
+    16100 uses
+    16200 uses
+    16300 uses
+    16400 uses
+    16500 uses
+    16600 uses
+    16700 uses
+    16800 uses
+    16900 uses
+    17000 uses
+    17100 uses
+    17200 uses
+    17300 uses
+    17400 uses
+    17500 uses
+    17600 uses
+    17700 uses
+    17800 uses
+    17900 uses
+    18000 uses
+    18100 uses
+    18200 uses
+    18300 uses
+    18400 uses
+    18500 uses
+    18600 uses
+    18700 uses
+    18800 uses
+    18900 uses
+    19000 uses
+    19100 uses
+    19200 uses
+    19300 uses
+    19400 uses
+    19500 uses
+    19600 uses
+    19700 uses
+    19800 uses
+    19900 uses
+    20000 uses
+    20100 uses
+    20200 uses
+    20300 uses
+    20400 uses
+    20500 uses
+    20600 uses
+    20700 uses
+    20800 uses
+    20900 uses
+    21000 uses
+    21100 uses
+    21200 uses
+    21300 uses
+    21400 uses
+    21500 uses
+    21600 uses
+    21700 uses
+    21800 uses
+    21900 uses
+    22000 uses
+    22100 uses
+    22200 uses
+    22300 uses
+    22400 uses
+    22500 uses
+    22600 uses
+    22700 uses
+    22800 uses
+    22900 uses
+    23000 uses
+    23100 uses
+    23200 uses
+    23300 uses
+    23400 uses
+    23500 uses
+    23600 uses
+    23700 uses
+    23800 uses
+    23900 uses
+    24000 uses
+    24100 uses
+    24200 uses
+    24300 uses
+    24400 uses
+    24500 uses
+    24600 uses
+    24700 uses
+    24800 uses
+    24900 uses
+    25000 uses
+    25100 uses
+    25200 uses
+    25300 uses
+    25400 uses
+    25500 uses
+    25600 uses
+    25700 uses
+    25800 uses
+    25900 uses
+    26000 uses
+    26100 uses
+    26200 uses
+    26300 uses
+    26400 uses
+    26500 uses
+    26600 uses
+    26700 uses
+    26800 uses
+    26900 uses
+    27000 uses
+    27100 uses
+    27200 uses
+    27300 uses
+    27400 uses
+    27500 uses
+    27600 uses
+    27700 uses
+    27800 uses
+    27900 uses
+    28000 uses
+    28100 uses
+    28200 uses
+    28300 uses
+    28400 uses
+    28500 uses
+    28600 uses
+    28700 uses
+    28800 uses
+    28900 uses
+    29000 uses
+    29100 uses
+    29200 uses
+    29300 uses
+    29400 uses
+    29500 uses
+    29600 uses
+    29700 uses
+    29800 uses
+    29900 uses
+    30000 uses
+    30100 uses
+    30200 uses
+    30300 uses
+    30400 uses
+    30500 uses
+    30600 uses
+    30700 uses
+    30800 uses
+    30900 uses
+    31000 uses
+    31100 uses
+    31200 uses
+    31300 uses
+    31400 uses
+    31500 uses
+    31600 uses
+    31700 uses
+    31800 uses
+    31900 uses
+    32000 uses
+    32100 uses
+    32200 uses
+    32300 uses
+    32400 uses
+    32500 uses
+    32600 uses
+    32700 uses
+    32800 uses
+    32900 uses
+    33000 uses
+    33100 uses
+    33200 uses
+    33300 uses
+    33400 uses
+    33500 uses
+    33600 uses
+    33700 uses
+    33800 uses
+    33900 uses
+    34000 uses
+    34100 uses
+    34200 uses
+    34300 uses
+    34400 uses
+    34500 uses
+    34600 uses
+    34700 uses
+    34800 uses
+    34900 uses
+    35000 uses
+    35100 uses
 Reading "glbl_cfg".
     100 uses
     200 uses
@@ -2860,7 +2564,6 @@ Reading "glbl_cfg".
     14000 uses
     14100 uses
 Reading "sky130_fd_sc_hd__dlygate4sd3_1".
-Reading "sky130_fd_sc_hd__o41a_4".
 Reading "spim_top".
     100 uses
     200 uses
@@ -3109,6 +2812,32 @@ Reading "spim_top".
     24500 uses
     24600 uses
     24700 uses
+    24800 uses
+    24900 uses
+    25000 uses
+    25100 uses
+    25200 uses
+    25300 uses
+    25400 uses
+    25500 uses
+    25600 uses
+    25700 uses
+    25800 uses
+    25900 uses
+    26000 uses
+    26100 uses
+    26200 uses
+    26300 uses
+    26400 uses
+    26500 uses
+    26600 uses
+    26700 uses
+    26800 uses
+    26900 uses
+    27000 uses
+    27100 uses
+    27200 uses
+    27300 uses
 Reading "user_project_wrapper".
 Root cell box:
            width x height  (   llx,  lly  ), (   urx,  ury  )  area (units^2)

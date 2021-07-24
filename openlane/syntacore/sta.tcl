@@ -19,7 +19,7 @@ set ::env(LIB_SLOWEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sk
 set ::env(CURRENT_NETLIST) ../user_project_wrapper/netlist/syntacore.v
 set ::env(DESIGN_NAME) "scr1_top_wb"
 set ::env(CURRENT_SPEF) ../../spef/scr1_top_wb.spef
-set ::env(BASE_SDC_FILE) "/project/openlane/syntacore/base.sdc"
+set ::env(BASE_SDC_FILE) "base.sdc"
 set ::env(SYNTH_DRIVING_CELL) "sky130_fd_sc_hd__inv_8"
 set ::env(SYNTH_DRIVING_CELL_PIN) "Y"
 set ::env(SYNTH_CAP_LOAD) "17.65"
