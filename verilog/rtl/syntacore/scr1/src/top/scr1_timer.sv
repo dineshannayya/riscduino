@@ -19,7 +19,7 @@
 /// @brief      Memory-mapped Timer
 ///    Version 1.0 - 18 - July 2021 - Dinesh A Project: yifive
 ///           1.To break the timing path, input and output path are registered
-///           2.Spilt the 64 bit adder into two 32 bit added with taking care of
+///           2.Spilt the 64 bit adder into two 32 bit adder with taking care of
 ///             overflow
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,6 +66,7 @@ localparam int unsigned SCR1_TIMER_DIVIDER_WIDTH                            = 10
 // Local signals declaration
 //-------------------------------------------------------------------------------
 logic [63:0]                                        mtime_reg;
+logic                                               mtime_32b_ovr; // Indicate 32b Ovr flow
 logic [63:0]                                        mtime_new;
 logic [63:0]                                        mtimecmp_reg;
 logic [63:0]                                        mtimecmp_new;
@@ -124,12 +125,10 @@ always_comb begin
     mtime_new   = mtime_reg;
     if (time_posedge) begin
         mtime_new[31:0]    = mtime_reg[31:0] + 1'b1;
-        mtime_new[63:32]   = (&mtime_reg[31:0]) ? (mtime_new[63:32] + 1'b1) : mtime_new[63:32];
-    end
-    if (mtimelo_up) begin
+        mtime_new[63:32]   = mtime_32b_ovr ? (mtime_new[63:32] + 1'b1) : mtime_new[63:32];
+    end else if (mtimelo_up) begin
         mtime_new[31:0]     = dmem_wdata;
-    end
-    if (mtimehi_up) begin
+    end else if (mtimehi_up) begin
         mtime_new[63:32]    = dmem_wdata;
     end
 end
@@ -137,9 +136,11 @@ end
 always_ff @(posedge clk, negedge rst_n) begin
     if (~rst_n) begin
         mtime_reg   <= '0;
+	mtime_32b_ovr <= '0;
     end else begin
         if (time_posedge | mtimelo_up | mtimehi_up) begin
             mtime_reg   <= mtime_new;
+	    mtime_32b_ovr <= &mtime_new; // Indicate 32B Overflow in next increment by check all one
         end
     end
 end

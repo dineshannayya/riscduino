@@ -187,6 +187,7 @@ proc run_flow {args} {
 			-mag_path $::env(magic_result_file_tag).mag \
 			-maglef_path $::env(magic_result_file_tag).lef.mag \
 			-spice_path $::env(magic_result_file_tag).spice \
+			-spef_path $::env(tritonRoute_result_file_tag).spef \
 			-verilog_path $::env(CURRENT_NETLIST) \
 			-save_path $arg_values(-save_path) \
 			-tag $::env(RUN_TAG)
