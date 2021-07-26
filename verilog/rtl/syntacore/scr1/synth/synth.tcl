@@ -54,6 +54,7 @@ set ::env(VERILOG_FILES) [glob  \
 	../src/top/scr1_imem_router.sv   \
 	../src/top/scr1_tcm.sv   \
 	../src/top/scr1_timer.sv   \
+	../src/top/scr1_intf.sv   \
 	../src/top/scr1_top_wb.sv   \
 	../src/top/scr1_dmem_wb.sv   \
 	../src/top/scr1_imem_wb.sv   \

@@ -32,7 +32,7 @@ set ::env(PAD_SDRAM_CLOCK_PERIOD) "20"
 set ::env(PAD_SDRAM_CLOCK_PORT)   "u_skew_sd_ci*clk_in"
 set ::env(PAD_SDRAM_CLOCK_NAME)   "sdram_pad_clk"
 
-set ::env(CPU_CLOCK_PERIOD) "50"
+set ::env(CPU_CLOCK_PERIOD) "20"
 set ::env(CPU_CLOCK_PORT)   "u_wb_host*cpu_clk"
 set ::env(CPU_CLOCK_NAME)   "cpu_clk"
 
