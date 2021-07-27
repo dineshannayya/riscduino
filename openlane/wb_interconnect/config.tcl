@@ -68,6 +68,8 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_ROUTABILITY_DRIVEN) 1
+set ::env(FP_CORE_UTIL) "40"
+set ::env(PL_TARGET_DENSITY) "0.50"
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4

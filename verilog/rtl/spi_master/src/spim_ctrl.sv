@@ -123,15 +123,17 @@ module spim_ctrl  #(
     input  logic                          spi_sdi1,
     input  logic                          spi_sdi2,
     input  logic                          spi_sdi3,
-    output logic                          spi_en_tx // Spi Direction control
+    output logic                          spi_en_tx_out // Spi Direction control
 );
 
 //--------------------------------------
 // Parameter
 // --------------------------------------
-parameter  SPI_STD     = 2'b00;
-parameter  SPI_QUAD_TX = 2'b01;
-parameter  SPI_QUAD_RX = 2'b10;
+parameter P_SINGLE = 2'b00;
+parameter P_DOUBLE = 2'b01;
+parameter P_QUAD   = 2'b10;
+parameter P_QDDR   = 2'b11;
+
 
 /*************************************************************
 *  SPI FSM State Control
@@ -200,6 +202,7 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
   logic spi_clock_en;
 
   logic spi_en_rx;
+  logic spi_en_tx;
 
 
   logic [15:0] counter_tx;
@@ -207,6 +210,7 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
   logic [15:0] counter_rx;
   logic        counter_rx_valid;
 
+  logic        dummy_phase;
   logic [31:0] data_to_tx;
   logic        data_to_tx_valid;
   logic        data_to_tx_ready;
@@ -298,11 +302,13 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
   //---------------------------------------------------------------------------
   
   logic  fsm_flush;
+  logic  spi_dummy;
   assign m0_res_fifo_flush   =  (gnt == 2'b01) ? fsm_flush : 1'b0;
   assign m1_res_fifo_flush   =  (gnt == 2'b10) ? fsm_flush : 1'b0;
 
   assign spi_clock_en =  tx_clk_en |  rx_clk_en;
 
+  assign spi_en_tx_out  = (spi_en_tx) && (spi_dummy ==0); // Don't Drive Tx On Dummy Phase
 
   spim_clkgen u_clkgen
   (
@@ -329,9 +335,11 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
     .s_spi_mode     ( s_spi_mode             ),
     .counter_in     ( counter_tx             ),
     .counter_in_upd ( counter_tx_valid       ),
+    .dummy_phase    ( dummy_phase            ),
     .txdata         ( data_to_tx             ),
     .data_valid     ( data_to_tx_valid       ),
     .data_ready     ( tx_data_ready          ),
+    .spi_dummy      ( spi_dummy              ),
     .clk_en_o       ( tx_clk_en              )
   );
   spim_rx #(.ENDIEAN(ENDIEAN)) u_rxreg
@@ -359,6 +367,7 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
   begin
       data_to_tx       =  'h0;
       data_to_tx_valid = 1'b0;
+      dummy_phase       = 1'b0;
 
       case(ctrl_data_mux)
           DATA_NULL:
@@ -369,6 +378,7 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 
           DATA_EMPTY:
           begin
+	      dummy_phase       =  1'b1;
               data_to_tx       =  '0;
               data_to_tx_valid = 1'b1;
           end
@@ -471,7 +481,7 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
           ctrl_data_valid  = 1'b1;
           counter_tx       =  (cfg_addr_cnt == P_8BIT) ? 'd8 :
 	                      (cfg_addr_cnt == P_16BIT) ? 'd16 :
-	                      (cfg_addr_cnt == P_24BIT) ? 'd24 : 'd20;
+	                      (cfg_addr_cnt == P_24BIT) ? 'd24 : 'd32;
           counter_tx_valid = 1'b1;
           spi_en_tx        = 1'b1;
 	  if (tx_data_ready) begin
@@ -496,9 +506,16 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
           ctrl_data_mux    = DATA_EMPTY;
           ctrl_data_valid  = 1'b1;
           counter_tx_valid = 1'b1;
-          counter_tx       =  (cfg_dummy_cnt == P_8BIT) ? 'd8 :
-	                      (cfg_dummy_cnt == P_16BIT) ? 'd16 :
-	                      (cfg_dummy_cnt == P_24BIT) ? 'd24 : 'd20;
+	  if(s_spi_mode == P_QDDR ) begin
+	    // QDDR Mode, change the Dummy cycle values to 32,40,48,56
+            counter_tx       =  (cfg_dummy_cnt == 2'b00) ? 'd32 :
+	                        (cfg_dummy_cnt == 2'b01) ? 'd40 :
+	                        (cfg_dummy_cnt == 2'b10) ? 'd48 : 'd56;
+	  end else begin
+            counter_tx       =  (cfg_dummy_cnt == P_8BIT) ? 'd8 :
+	                        (cfg_dummy_cnt == P_16BIT) ? 'd16 :
+	                        (cfg_dummy_cnt == P_24BIT) ? 'd24 : 'd32;
+	  end
           spi_en_tx        = 1'b1;
 	  if (tx_data_ready) begin
               ctrl_data_valid = 1'b0;
@@ -575,7 +592,7 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
              // If you see new command request, then abort the current request
 	      next_state = FSM_FLUSH;
 	  end else begin
-	     if (rx_done && spi_rise) begin
+	     if (rx_done) begin
 	         next_state = FSM_CS_DEASEERT;
              end 
 	  end
@@ -666,10 +683,10 @@ end
   // ----------------------------------------------------------------------
   always @(posedge clk or negedge rstn) begin
      if (rstn == 1'b0) begin
-        s_spi_mode <= SPI_STD;
+        s_spi_mode <= P_SINGLE;
      end else begin
 	if(state == FSM_IDLE) begin // Reset the Mode at IDLE State
-            s_spi_mode <= SPI_STD;
+            s_spi_mode <= P_SINGLE;
 	end else if(state == FSM_ADR_PHASE && cfg_spi_switch == P_MODE_SWITCH_AT_ADDR) begin
             s_spi_mode <= cfg_spi_mode;
 	end else if(((state == FSM_READ_PHASE) || state == FSM_WRITE_CMD ) && cfg_spi_switch == P_MODE_SWITCH_AT_DATA) begin

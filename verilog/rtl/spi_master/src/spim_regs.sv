@@ -443,7 +443,7 @@ end
                  cfg_m1_data_cnt[7:0] <= 'h2; // 2 Bytes
                  cfg_m1_addr          <= 'h0; 
                  cfg_m1_wrdy          <= 1'b1;
-                 cfg_m1_wdata         <= {16'h0,8'h2,8'h0}; // <<cr1[7:0]><sr1[7:0]>> cr1[1] = 1 indicate quad mode
+                 cfg_m1_wdata         <= {16'h0,8'h2,8'h0}; // <<cr1[7:0]><sr1[7:0]>> cr1[1] = 1 indicate quad mode cr1[7:6]=3 
                  cfg_m1_req           <= 'h1;
                  spi_init_state       <=  SPI_INIT_WRR_WAIT;
               end
@@ -480,7 +480,7 @@ end
         MEM_CTRL1: begin // This register control Direct Memory Access Type
              if ( spim_reg_be[0] == 1 ) begin
                cfg_m0_cs_reg    <= spim_reg_wdata[3:0]; // Chip Select for Memory Interface
-               cfg_m0_spi_mode  <= spim_reg_wdata[5:4]; // SPI Mode, 0 - Normal, 1- Double, 2 - Qard
+               cfg_m0_spi_mode  <= spim_reg_wdata[5:4]; // SPI Mode, 0 - Normal, 1- Double, 2 - Qard, 3 - QDDR
                cfg_m0_spi_switch<= spim_reg_wdata[7:6]; // Phase where to switch the SPI Mode
              end
              if ( spim_reg_be[1] == 1 ) begin

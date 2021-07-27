@@ -203,6 +203,33 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		wb_user_core_read_check(32'h1000001C,read_data,32'h00190201);
 		$display("#############################################");
 		$display("Testing Direct SPI Memory Read              ");
+		$display(" SPI Mode: QDDR (Dual 4 but)                ");
+		$display("Prefetch : 1DW, OPCODE:READ(0xED)           ");
+		$display("SEQ: Command -> Address -> Read Data        ");
+		$display("#############################################");
+		// QDDR Config
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b11,4'b0001});
+		wb_user_core_write(32'h10000008,{8'h04,2'b01,2'b10,4'h6,8'h00,8'hED});
+                wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
+		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
+		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
+		wb_user_core_read_check(32'h00000208,read_data,32'h00000193);
+		wb_user_core_read_check(32'h0000020C,read_data,32'h00000213);
+		wb_user_core_read_check(32'h00000210,read_data,32'h00000293);
+		wb_user_core_read_check(32'h00000214,read_data,32'h00000313);
+		wb_user_core_read_check(32'h00000218,read_data,32'h00000393);
+		wb_user_core_read_check(32'h0000021C,read_data,32'h00000413);
+		wb_user_core_read_check(32'h00000400,read_data,32'h11223737);
+		wb_user_core_read_check(32'h00000404,read_data,32'h300007b7);
+		wb_user_core_read_check(32'h00000408,read_data,32'h34470293);
+		wb_user_core_read_check(32'h0000040C,read_data,32'h22334337);
+		wb_user_core_read_check(32'h00000410,read_data,32'h0057ac23);
+		wb_user_core_read_check(32'h00000414,read_data,32'h45530393);
+		wb_user_core_read_check(32'h00000418,read_data,32'h33445537);
+		wb_user_core_read_check(32'h0000041C,read_data,32'h0077ae23);
+		$display("#############################################");
+		$display("Testing Direct SPI Memory Read              ");
 		$display(" SPI Mode: Normal/Single Bit                ");
 		$display("Prefetch : 1DW, OPCODE:READ(0x3)            ");
 		$display("SEQ: Command -> Address -> Read Data        ");
