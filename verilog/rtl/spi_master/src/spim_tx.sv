@@ -85,8 +85,10 @@ module spim_tx
     input  logic [15:0] counter_in,     // Transmit counter
     input  logic        counter_in_upd,
     input  logic [31:0] txdata,         // 32 bit tranmsit data
+    input  logic        dummy_phase,    // dummy data
     input  logic        data_valid,     // Input data valid
     output logic        data_ready,     // Data in acepted, this for txfifo
+    output logic        spi_dummy,      // spi dummy phase
     output logic        clk_en_o        // Enable Tx clock
 );
 
@@ -96,6 +98,7 @@ module spim_tx
   parameter P_SINGLE = 2'b00;
   parameter P_DOUBLE = 2'b01;
   parameter P_QUAD   = 2'b10;
+  parameter P_QDDR   = 2'b11;
 
 //------------------------------------------------------
 // Variable Decleration
@@ -117,7 +120,8 @@ module spim_tx
   // Indicate 32 bit data done, usefull for readining next 32b from txfifo
   assign tx32b_done  = (spi_mode == P_SINGLE  && (counter[4:0] == 5'b11111)) || 
                        (spi_mode == P_DOUBLE  && (counter[3:0] == 4'b1111)) || 
-	               (spi_mode == P_QUAD   && (counter[2:0] == 3'b111));
+	               (spi_mode == P_QUAD    && (counter[2:0] == 3'b111))   ||
+	               (spi_mode == P_QDDR    && (counter[2:0] == 3'b111));
 
   assign tx_done    = (counter == (counter_trgt-1)) && (tx_CS == TRANSMIT);
 
@@ -137,7 +141,7 @@ module spim_tx
         data_int_next = txdata;
         counter_next  = '0;
 
-        if (en && data_valid) begin
+        if (en && data_valid && tx_edge) begin
 	  spi_mode_next    = s_spi_mode;
           data_ready_i    = 1'b1;
           tx_NS         = TRANSMIT;
@@ -148,7 +152,7 @@ module spim_tx
          if ((counter + 1) ==counter_trgt) begin
                counter_next = 0;
                // Check if there is next data
-               if (en && data_valid) begin 
+               if (en && data_valid && tx_edge) begin 
 	         spi_mode_next    = s_spi_mode;
                  data_int_next = txdata;
                  data_ready_i    = 1'b1;
@@ -157,7 +161,7 @@ module spim_tx
                  tx_NS    = IDLE;
                end
          end else if (tx32b_done) begin
-               if (en && data_valid) begin
+               if (en && (spi_dummy || data_valid) && tx_edge) begin
 	         spi_mode_next    = s_spi_mode;
                  data_int_next = txdata;
                  next_data_ready_i    = 1'b1;
@@ -168,12 +172,13 @@ module spim_tx
                end
            end else begin
               counter_next = counter + 1;
-              data_int_next = (spi_mode == P_QUAD   ) ? {data_int[27:0],4'b0000} : 
+              data_int_next = (spi_mode == P_QDDR   ) ? {data_int[27:0],4'b0000} :
+		              (spi_mode == P_QUAD   ) ? {data_int[27:0],4'b0000} : 
 		              (spi_mode == P_DOUBLE ) ? {data_int[29:0],2'b00} : {data_int[30:0],1'b0};
            end
       end
       WAIT_FIFO_AVAIL: begin
-           if (en && data_valid) begin 
+           if (en && data_valid && tx_edge) begin 
 	     spi_mode_next    = s_spi_mode;
              data_int_next = txdata;
              data_ready_i    = 1'b1;
@@ -199,6 +204,7 @@ module spim_tx
       counter_trgt <= '0;
       data_ready   <= '0;
       data_ready_f <= 0;
+      spi_dummy    <= 0;
       spi_mode     <= P_SINGLE;
     end
     else if(flush && tx_edge) begin
@@ -212,11 +218,12 @@ module spim_tx
        counter_trgt <= '0;
        data_ready   <= '0;
        data_ready_f <= 0;
+       spi_dummy     <= dummy_phase;
       spi_mode     <= P_SINGLE;
     end else begin
        data_ready_f <= data_ready_i | next_data_ready_i;
        data_ready   <= data_ready_f && !(data_ready_i | next_data_ready_i); // Generate Pulse at falling edge
-       if(tx_edge) begin
+       if(tx_edge || (spi_mode_next == P_QDDR)) begin
           tx_CS        <= tx_NS;
           counter      <= counter_next;
           data_int     <= data_int_next;
@@ -224,14 +231,18 @@ module spim_tx
        // Counter Exit condition, quad mode div-4 , else actual counter
        if (en && data_ready_i && tx_edge) begin
 	  spi_mode      <= s_spi_mode;
-          counter_trgt <= (s_spi_mode == P_QUAD )   ? {2'b00,counter_in[15:2]} : 
+	  spi_dummy     <= dummy_phase;
+          counter_trgt <= (s_spi_mode == P_QDDR )   ? {2'b00,counter_in[15:2]} : 
+		          (s_spi_mode == P_QUAD )   ? {2'b00,counter_in[15:2]} : 
 		          (s_spi_mode == P_DOUBLE ) ? {1'b0, counter_in[15:1]} :    counter_in;
+       end else if (en == 0) begin
+	  spi_dummy     <= '0;
        end
-       if(tx_edge && tx_NS == TRANSMIT) begin
-          sdo0         <= (spi_mode_next == P_QUAD) ? data_int_next[28] : (spi_mode_next == P_DOUBLE) ? data_int_next[30] : data_int_next[31];
-          sdo1         <= (spi_mode_next == P_QUAD) ? data_int_next[29] : (spi_mode_next == P_DOUBLE) ? data_int_next[31] :  1'b0;
-          sdo2         <= (spi_mode_next == P_QUAD) ? data_int_next[30] : 1'b1; // Protect
-          sdo3         <= (spi_mode_next == P_QUAD) ? data_int_next[31] : 1'b1; // Hold need to '1'
+       if((tx_edge || (spi_mode_next == P_QDDR)) && tx_NS == TRANSMIT) begin
+          sdo0         <= ((spi_mode_next == P_QUAD) || (spi_mode_next == P_QDDR))? data_int_next[28] : (spi_mode_next == P_DOUBLE) ? data_int_next[30] : data_int_next[31];
+          sdo1         <= ((spi_mode_next == P_QUAD) || (spi_mode_next == P_QDDR))? data_int_next[29] : (spi_mode_next == P_DOUBLE) ? data_int_next[31] :  1'b0;
+          sdo2         <= ((spi_mode_next == P_QUAD) || (spi_mode_next == P_QDDR))? data_int_next[30] : 1'b1; // Protect
+          sdo3         <= ((spi_mode_next == P_QUAD) || (spi_mode_next == P_QDDR))? data_int_next[31] : 1'b1; // Hold need to '1'
        end
     end      
   end

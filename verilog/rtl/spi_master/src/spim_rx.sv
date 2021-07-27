@@ -91,6 +91,7 @@ module spim_rx #(
   parameter P_SINGLE = 2'b00;
   parameter P_DOUBLE = 2'b01;
   parameter P_QUAD   = 2'b10;
+  parameter P_QDDR   = 2'b11;
 
 //------------------------------------------------------
 // Variable Decleration
@@ -103,12 +104,14 @@ module spim_rx #(
   logic [15:0] counter_next;
   logic        reg_done;
   logic        data_valid_i;
+  logic        qddr_rx_en;
   enum logic [1:0] { IDLE, RECEIVE, WAIT_FIFO, WAIT_FIFO_DONE } rx_CS, rx_NS;
 
 
   assign reg_done  = (s_spi_mode == P_SINGLE && (counter[4:0] == 5'b11111)) || 
 	             (s_spi_mode == P_DOUBLE && (counter[3:0] == 4'b1111)) ||
-	             (s_spi_mode == P_QUAD && (counter[2:0] == 3'b111));
+	             (s_spi_mode == P_QUAD && (counter[2:0] == 3'b111))    ||
+	             (s_spi_mode == P_QDDR && (counter[2:0] == 3'b111));
 
 
 
@@ -130,9 +133,9 @@ module spim_rx #(
 
       RECEIVE: begin
 
-        if (rx_edge) begin
+        if (rx_edge || qddr_rx_en) begin
           counter_next = counter + 1;
-          if (s_spi_mode == P_QUAD )
+          if ((s_spi_mode == P_QUAD ) || (s_spi_mode == P_QDDR ))
              data_int_next = {data_int[27:0],sdi3,sdi2,sdi1,sdi0};
           else if (s_spi_mode == P_DOUBLE )
              data_int_next = {data_int[29:0],sdi1,sdi0};
@@ -185,6 +188,7 @@ module spim_rx #(
       clk_en_o     <= '0;
       data         <= 'b0;
       data_valid   <= 1'b0;
+      qddr_rx_en   <= '0;
       rx_CS        <= IDLE;
     end else if(flush && rx_edge) begin
         counter      <= 0;
@@ -194,11 +198,20 @@ module spim_rx #(
         clk_en_o     <= '0;
         data         <= 'b0;
         data_valid   <= 1'b0;
+	qddr_rx_en   <= 0;
         rx_CS        <= IDLE;
     end else begin
+        // Enable qddr rx after first rx edge
+        if(en && rx_edge && (rx_CS == RECEIVE) && (s_spi_mode ==P_QDDR)) begin
+	   qddr_rx_en <= 1;
+        end else if(!en || rx_done) begin
+	   qddr_rx_en <= 0;
+	end
+	
        data_valid <= data_valid_i;
        data <= (ENDIEAN) ? data_int_next : {data_int_next[7:0],data_int_next[15:8],data_int_next[23:16],data_int_next[31:24]};
-       if (rx_edge) begin
+       clk_en_o     <= (rx_NS == RECEIVE);
+       if (rx_edge ||  qddr_rx_en) begin
           counter      <= counter_next;
           data_int     <= data_int_next;
           rx_CS        <= rx_NS;
@@ -206,7 +219,8 @@ module spim_rx #(
           clk_en_o     <= (rx_NS == RECEIVE);
        end
        if (en && counter_in_upd) begin
-           counter_trgt <= (s_spi_mode ==P_QUAD )   ? {2'b00,counter_in[15:2]} : 
+           counter_trgt <= (s_spi_mode ==P_QDDR )   ? {2'b00,counter_in[15:2]} : 
+		           (s_spi_mode ==P_QUAD )   ? {2'b00,counter_in[15:2]} : 
 		           (s_spi_mode ==P_DOUBLE ) ? {1'b0,counter_in[15:1]} : counter_in;
        end
     end

@@ -31,7 +31,7 @@ rm crt_tcm.o user_risc_boot.o
 #iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_spi_tb.v -o user_spi_tb.vvp
 
 #iverilog without Dump
-iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_spi_tb.v -o user_spi_tb.vvp
+iverilog -g2005-sv -D WFDUMP -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_spi_tb.v -o user_spi_tb.vvp
 
 # GLS 
 #iverilog -g2005-sv -D GL -D FUNCTIONAL -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/gl -I ../../../verilog -I /home/dinesha/workarea/pdk/sky130A -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_spi_tb.v -o user_spi_tb.vvp

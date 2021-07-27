@@ -66,6 +66,8 @@
 ////            with in 8DW or 32 Byte, else there is chance      ////
 ////            data path can hang due to response FIFO full due  ////
 ////            to partial reading of data                        ////
+////     V.4  -  July 26, 2021                                    ////
+////             QDDR (0xED) supported is added                   ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -240,10 +242,10 @@ assign  spi_sdi3  =  io_in[3];
 
 assign  io_out[0] =  spi_clk;
 assign  io_out[1] =  spi_csn0;// No hold fix for CS#, as it asserted much eariler than SPI clock
-assign  io_out[2] =  spi_sdo0_out;
-assign  io_out[3] =  spi_sdo1_out;
-assign  io_out[4] =  spi_sdo2_out;
-assign  io_out[5] =  spi_sdo3_out;
+assign  #1 io_out[2] =  spi_sdo0_out;
+assign  #1 io_out[3] =  spi_sdo1_out;
+assign  #1 io_out[4] =  spi_sdo2_out;
+assign  #1 io_out[5] =  spi_sdo3_out;
 
 // ADDing Delay cells for Interface hold fix
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio0 (.X(spi_sdo0_d1),.A(spi_sdo0));
@@ -265,10 +267,10 @@ sky130_fd_sc_hd__clkbuf_16 u_buf_sdio3    (.X(spi_sdo3_out),.A(spi_sdo3_d2));
 
 assign  io_oeb[0] =  1'b0;         // spi_clk
 assign  io_oeb[1] =  1'b0;         // spi_csn
-assign  io_oeb[2] =  !spi_en_tx;   // spi_dio0
-assign  io_oeb[3] =  !spi_en_tx;   // spi_dio1
-assign  io_oeb[4] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio2
-assign  io_oeb[5] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio3
+assign  #1 io_oeb[2] =  !spi_en_tx;   // spi_dio0
+assign  #1 io_oeb[3] =  !spi_en_tx;   // spi_dio1
+assign  #1 io_oeb[4] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio2
+assign  #1 io_oeb[5] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio3
 
 spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .mclk                           (mclk                         ),
@@ -491,7 +493,7 @@ spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .spi_sdi1                       (spi_sdi1                     ),
         .spi_sdi2                       (spi_sdi2                     ),
         .spi_sdi3                       (spi_sdi3                     ),
-	.spi_en_tx                      (spi_en_tx                    )
+	.spi_en_tx_out                      (spi_en_tx                    )
     );
 
 endmodule
