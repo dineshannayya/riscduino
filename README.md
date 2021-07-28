@@ -155,6 +155,145 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
   </tr>
 </table>
 
+##### Register Map Wishbone HOST
+
+| Offset | Name       | Description   |
+| ------ | ---------  | ------------- |
+| 0x00   | GLBL_CTRL  | [RW] Global Wishbone Access Control Register |
+| 0x04   | BANK_CTRL  | [RW] Bank Selection, MSB 8 bit Address |
+| 0x08   | CLK_SKEW_CTRL1| [RW] Clock Skew Control2 |
+| 0x0c   | CLK_SKEW_CTRL2 | [RW] Clock Skew Control2 |
+
+##### Register: GLBL_CTRL
+
+| Bits  | Name          | Description    |
+| ----  | ----          | -------------- |
+| 31:24 | Resevered     | Unsused |
+| 23:20 | RTC_CLK_CTRL  | RTC Clock Div Selection |
+| 19:16 | CPU_CLK_CTRL  | CPU Clock Div Selection |
+| 15:12 | SDARM_CLK_CTRL| SDRAM Clock Div Selection |
+| 10:8  | WB_CLK_CTRL   | Core Wishbone Clock Div Selection |
+|   7   | UART_I2C_SEL  | 0 - UART , 1 - I2C Master IO Selection |
+|   5   | I2C_RST       | I2C Reset Control |
+|   4   | UART_RST      | UART Reset Control |
+|   3   | SDRAM_RST     | SDRAM Reset Control |
+|   2   | SPI_RST       | SPI Reset Control |
+|   1   | CPU_RST       | CPU Reset Control |
+|   0   | WB_RST        | Wishbone Core Reset Control |
+
+##### Register: BANK_CTRL
+
+| Bits  | Name          | Description    |
+| ----  | ----          | -------------- |
+| 31:24 | Resevered     | Unsused |
+| 7:0   | BANK_SEL      | Holds the upper 8 bit address core Wishbone Address |
+
+##### Register: CLK_SKEW_CTRL1
+
+| Bits  | Name          | Description    |
+| ----  | ----          | -------------- |
+| 31:28 | Resevered     | Unsused |
+| 27:24 | CLK_SKEW_WB   | WishBone Core Clk Skew Control |
+| 23:20 | CLK_SKEW_GLBL | Glbal Register Clk Skew Control |
+| 19:16 | CLK_SKEW_SDRAM| SDRAM Clk Skew Control |
+| 15:12 | CLK_SKEW_SPI  | SPI Clk Skew Control |
+| 11:8  | CLK_SKEW_UART | UART/I2C Clk Skew Control |
+| 7:4   | CLK_SKEW_RISC | RISC Clk Skew Control |
+| 3:0   | CLK_SKEW_WI   | Wishbone Clk Skew Control |
+
+##### Register Map SPI MASTER
+
+| Offset | Name       | Description   |
+| ------ | ---------  | ------------- |
+| 0x00   | GLBL_CTRL  | [RW] Global SPI Access Control Register |
+| 0x04   | DMEM_CTRL1 | [RW] Direct SPI Memory Access Control Register1 |
+| 0x08   | DMEM_CTRL2 | [RW] Direct SPI Memory Access Control Register2 |
+| 0x0c   | IMEM_CTRL1 | [RW] Indirect SPI Memory Access Control Register1 |
+| 0x10   | IMEM_CTRL2 | [RW] Indirect SPI Memory Access Control Register2 |
+| 0x14   | IMEM_ADDR  | [RW] Indirect SPI Memory Address  |
+| 0x18   | IMEM_WDATA | [W]  Indirect SPI Memory Write Data |
+| 0x1c   | IMEM_RDATA | [R]  Indirect SPI Memory Read Data |
+| 0x20   | SPI_STATUS | [R] SPI Debug Status |
+
+##### Register: GLBL_CTRL
+
+| Bits  | Name        | Description    |
+| ----  | ----        | -------------- |
+| 31:16 | Resevered   | Unsused |
+| 15:8  | SPI_CLK_DIV | SPI Clock Div Rato Selection |
+| 7:4   | Reserved    | Unused |
+| 3:2   | CS_LATE     | CS DE_ASSERTION CONTROL |
+| 1:0   | CS_EARLY    | CS ASSERTION CONTROL |
+
+##### Register: DMEM_CTRL1
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:9 | Resevered  | Unsused        |
+| 8    | FSM_RST    | Direct Mem State Machine Reset |
+| 7:6  | SPI_SWITCH | Phase at which SPI Mode need to switch |
+| 5:4  | SPI_MODE   | SPI Mode, 0 - Single, 1 - Dual, 2 - Quad, 3 - QDDR |
+| 3:0  | CS_SELECT  | CHIP SELECT |
+
+##### Register: DMEM_CTRL2
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:24 | DATA_CNT  | Total Data Byte Count        |
+| 23:22 | DUMMY_CNT | Total Dummy Byte Count |
+| 21:20 | ADDR_CNT  | Total Address Byte Count |
+| 19:16 | SPI_SEQ   | SPI Access Sequence |
+| 15:8  | MODE_REG  | Mode Register Value |
+| 7:0   | CMD_REG   | Command Register Value |
+
+##### Register: IMEM_CTRL1
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:9 | Resevered  | Unsused        |
+| 8    | FSM_RST    | InDirect Mem State Machine Reset |
+| 7:6  | SPI_SWITCH | Phase at which SPI Mode need to switch |
+| 5:4  | SPI_MODE   | SPI Mode, 0 - Single, 1 - Dual, 2 - Quad, 3 - QDDR |
+| 3:0  | CS_SELECT  | CHIP SELECT |
+
+##### Register: IMEM_CTRL2
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:24 | DATA_CNT  | Total Data Byte Count        |
+| 23:22 | DUMMY_CNT | Total Dummy Byte Count |
+| 21:20 | ADDR_CNT  | Total Address Byte Count |
+| 19:16 | SPI_SEQ   | SPI Access Sequence |
+| 15:8  | MODE_REG  | Mode Register Value |
+| 7:0   | CMD_REG   | Command Register Value |
+
+##### Register: IMEM_ADDR
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:0 | ADDR       | Indirect Memory Address  |
+
+##### Register: IMEM_WDATA
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:0 | WDATA      | Indirect Memory Write Data  |
+
+##### Register: IMEM_RDATA
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:0 | RDATA      | Indirect Memory Read Data  |
+
+##### Register: SPI_STATUS
+
+| Bits | Name       | Description    |
+| ---- | ----       | -------------- |
+| 31:0 | DEBUG      | SPI Debug Status  |
+
+
+
+
 # SOC Pin Mapping
 Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Mapping as follows
 
