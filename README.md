@@ -50,6 +50,8 @@ YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program
     * industry-grade and silicon-proven Open-Source RISC-V core from syntacore 
     * industry-graded and silicon-proven 8-bit SDRAM controller
     * Quad SPI Master
+    * UART with 16Byte FIFO
+    * I2C Master
     * Wishbone compatible design
     * Written in System Verilog
     * Open-source tool set
