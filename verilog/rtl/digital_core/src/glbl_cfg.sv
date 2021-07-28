@@ -121,11 +121,11 @@ logic           reg_cs_2l    ;
 
 
 logic [31:0]    reg_0;  // Software_Reg_0
-logic [31:0]    reg_1;  // Software-Reg_1
+logic [31:0]    reg_1;  // Risc Fuse ID
 logic [31:0]    reg_2;  // Software-Reg_2
-logic [31:0]    reg_3;  // Software-Reg_3
-logic [31:0]    reg_4;  // Software-Reg_4
-logic [31:0]    reg_5;  // Software-Reg_5
+logic [31:0]    reg_3;  // Interrup Control
+logic [31:0]    reg_4;  // SDRAM_CTRL1
+logic [31:0]    reg_5;  // SDRAM_CTRL2
 logic [31:0]    reg_6;  // Software-Reg_6
 logic [31:0]    reg_7;  // Software-Reg_7
 logic [31:0]    reg_8;  // Software-Reg_8
@@ -310,6 +310,7 @@ generic_register #(8,8'hDD  ) u_reg0_be3 (
 //   reg-1, reset value = 32'hA55A_A55A
 //   -----------------------------------------------------------------
 
+assign  fuse_mhartid     = reg_1[31:0]; 
 generic_register #(.WD(8),.RESET_DEFAULT(8'h5A)) u_reg1_be0 (
 	      .we            ({8{sw_wr_en_1 & 
                                  wr_be[0]   }}  ),		 
@@ -356,7 +357,6 @@ generic_register #(.WD(8),.RESET_DEFAULT(8'hA5)  ) u_reg1_be3 (
 //-----------------------------------------------------------------------
 //   reg-2, reset value = 32'hAABBCCDD
 //-----------------------------------------------------------------
-assign  fuse_mhartid     = reg_1[31:0]; 
 
 generic_register #(.WD(8),.RESET_DEFAULT(8'hDD)  ) u_reg2_be0 (
 	      .we            ({8{sw_wr_en_2 & 
