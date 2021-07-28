@@ -157,14 +157,14 @@ parameter FSM_ACK_PHASE   = 3'b110;
 // Register Decoding
 // ---------------------------
 parameter GLBL_CTRL    = 4'b0000;
-parameter MEM_CTRL1    = 4'b0001;
-parameter MEM_CTRL2    = 4'b0010;
-parameter REG_CTRL1    = 4'b0011;
-parameter REG_CTRL2    = 4'b0100;
-parameter REG_SPIADR   = 4'b0101;
-parameter REG_SPIWDATA = 4'b0110;
-parameter REG_SPIRDATA = 4'b0111;
-parameter REG_STATUS   = 4'b1000;
+parameter DMEM_CTRL1   = 4'b0001;
+parameter DMEM_CTRL2   = 4'b0010;
+parameter IMEM_CTRL1   = 4'b0011;
+parameter IMEM_CTRL2   = 4'b0100;
+parameter IMEM_ADDR    = 4'b0101;
+parameter IMEM_WDATA   = 4'b0110;
+parameter IMEM_RDATA   = 4'b0111;
+parameter SPI_STATUS   = 4'b1000;
 
 // Init FSM
 parameter SPI_INIT_PWUP      = 3'b000;
@@ -289,8 +289,8 @@ logic                 spim_fifo_wdata_req  ;
 //   3. Indirect Memory Read
 //----------------------------------------------
 //
-assign spim_fifo_rdata_req = spim_reg_req && spim_reg_we == 0 && (spim_reg_addr== REG_SPIRDATA);
-assign spim_fifo_wdata_req = spim_reg_req && spim_reg_we == 1 && (spim_reg_addr== REG_SPIWDATA);
+assign spim_fifo_rdata_req = spim_reg_req && spim_reg_we == 0 && (spim_reg_addr== IMEM_RDATA);
+assign spim_fifo_wdata_req = spim_reg_req && spim_reg_we == 1 && (spim_reg_addr== IMEM_WDATA);
 
 always_ff @(negedge rst_n or posedge mclk) begin
    if ( rst_n == 1'b0 ) begin
@@ -302,14 +302,14 @@ always_ff @(negedge rst_n or posedge mclk) begin
 	     // If FIFO Write DATA case, Make sure that there no previous pending
 	     // need to processed
              spim_reg_ack  <= 1'b1;
-	 end else if (spim_reg_req && spim_reg_we && (spim_reg_addr != REG_SPIWDATA)) begin // Indirect memory Write
+	 end else if (spim_reg_req && spim_reg_we && (spim_reg_addr != IMEM_WDATA)) begin // Indirect memory Write
              spim_reg_ack  <= 1'b1;
 	 end else if (spim_fifo_rdata_req && (spim_m1_rrdy == 1)) begin // Indirect mem Read
 	     // If FIFO Read DATA case, Make sure that there Data is read from
              // External SPI Memory
              spim_reg_ack  <= 1'b1;
              spim_reg_rdata <= reg_rdata;
-	end else if (spim_reg_req && spim_reg_we == 0 && (spim_reg_addr != REG_SPIRDATA)) begin // Normal Read
+	end else if (spim_reg_req && spim_reg_we == 0 && (spim_reg_addr != IMEM_RDATA)) begin // Normal Read
 	     // Read other than FIFO Read Data case
              spim_reg_ack  <= 1'b1;
              spim_reg_rdata <= reg_rdata;
@@ -477,7 +477,7 @@ end
                 spi_clk_div <= spim_reg_wdata[15:8];
              end
          end
-        MEM_CTRL1: begin // This register control Direct Memory Access Type
+        DMEM_CTRL1: begin // This register control Direct Memory Access Type
              if ( spim_reg_be[0] == 1 ) begin
                cfg_m0_cs_reg    <= spim_reg_wdata[3:0]; // Chip Select for Memory Interface
                cfg_m0_spi_mode  <= spim_reg_wdata[5:4]; // SPI Mode, 0 - Normal, 1- Double, 2 - Qard, 3 - QDDR
@@ -487,7 +487,7 @@ end
                cfg_m0_fsm_reset <= spim_reg_wdata[8];
              end
          end
-         MEM_CTRL2: begin // This register control Direct Memory Access Type
+         DMEM_CTRL2: begin // This register control Direct Memory Access Type
              if ( spim_reg_be[0] == 1 ) begin
                 cfg_m0_cmd_reg <= spim_reg_wdata[7:0];
              end
@@ -503,7 +503,7 @@ end
                cfg_m0_data_cnt[7:0]  <= spim_reg_wdata[31:24];
              end
          end
-         REG_CTRL1: begin
+         IMEM_CTRL1: begin
              if ( spim_reg_be[0] == 1 ) begin
                cfg_m1_cs_reg    <= spim_reg_wdata[3:0]; // Chip Select for Memory Interface
                cfg_m1_spi_mode  <= spim_reg_wdata[5:4]; // SPI Mode, 0 - Normal, 1- Double, 2 - Qard
@@ -513,7 +513,7 @@ end
                cfg_m1_fsm_reset <= spim_reg_wdata[8];
              end
          end
-         REG_CTRL2: begin // This register control Direct Memory Access Type
+         IMEM_CTRL2: begin // This register control Direct Memory Access Type
              if ( spim_reg_be[0] == 1 ) begin
                 cfg_m1_cmd_reg <= spim_reg_wdata[7:0];
              end
@@ -529,7 +529,7 @@ end
                 cfg_m1_data_cnt[7:0]  <= spim_reg_wdata[31:24];
              end
          end
-         REG_SPIADR: begin
+         IMEM_ADDR: begin
            for (byte_index = 0; byte_index < 4; byte_index = byte_index+1 )
                if ( spim_reg_be[byte_index] == 1 )
                  cfg_m1_addr[byte_index*8 +: 8] <= spim_reg_wdata[(byte_index*8) +: 8];
@@ -548,14 +548,14 @@ end
       if(spim_reg_req) begin
           case(spim_reg_addr)
             GLBL_CTRL:   reg_rdata[31:0] = {16'h0,spi_clk_div,4'h0,cfg_cs_late,cfg_cs_early};
-	    MEM_CTRL1:    reg_rdata[31:0] =  {23'h0,cfg_m0_fsm_reset,cfg_m0_spi_switch,cfg_m0_spi_mode,cfg_m0_cs_reg};
-	    MEM_CTRL2:    reg_rdata[31:0] =  {cfg_m0_data_cnt,cfg_m0_dummy_cnt,cfg_m0_addr_cnt,cfg_m0_spi_seq,cfg_m0_mode_reg,cfg_m0_cmd_reg};
-            REG_CTRL1:    reg_rdata[31:0] =  {23'h0, cfg_m1_fsm_reset,cfg_m1_spi_switch,cfg_m1_spi_mode,cfg_m1_cs_reg};
-	    REG_CTRL2:    reg_rdata[31:0] =  {cfg_m1_data_cnt,cfg_m1_dummy_cnt,cfg_m1_addr_cnt,cfg_m1_spi_seq,cfg_m1_mode_reg,cfg_m1_cmd_reg};
-            REG_SPIADR:   reg_rdata[31:0] = cfg_m1_addr;
-            REG_SPIWDATA: reg_rdata[31:0] = cfg_m1_wdata;
-            REG_SPIRDATA: reg_rdata[31:0] = cfg_m1_rdata;
-            REG_STATUS:   reg_rdata[31:0] = spi_debug;
+	    DMEM_CTRL1:    reg_rdata[31:0] =  {23'h0,cfg_m0_fsm_reset,cfg_m0_spi_switch,cfg_m0_spi_mode,cfg_m0_cs_reg};
+	    DMEM_CTRL2:    reg_rdata[31:0] =  {cfg_m0_data_cnt,cfg_m0_dummy_cnt,cfg_m0_addr_cnt,cfg_m0_spi_seq,cfg_m0_mode_reg,cfg_m0_cmd_reg};
+            IMEM_CTRL1:    reg_rdata[31:0] =  {23'h0, cfg_m1_fsm_reset,cfg_m1_spi_switch,cfg_m1_spi_mode,cfg_m1_cs_reg};
+	    IMEM_CTRL2:    reg_rdata[31:0] =  {cfg_m1_data_cnt,cfg_m1_dummy_cnt,cfg_m1_addr_cnt,cfg_m1_spi_seq,cfg_m1_mode_reg,cfg_m1_cmd_reg};
+            IMEM_ADDR:   reg_rdata[31:0] = cfg_m1_addr;
+            IMEM_WDATA: reg_rdata[31:0] = cfg_m1_wdata;
+            IMEM_RDATA: reg_rdata[31:0] = cfg_m1_rdata;
+            SPI_STATUS:   reg_rdata[31:0] = spi_debug;
           endcase
        end
     end 
