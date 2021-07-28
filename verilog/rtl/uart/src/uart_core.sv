@@ -85,9 +85,8 @@ module uart_core
    output logic        reg_ack,
 
        // Pad Control
-   input  logic [1:0]  io_in,
-   output logic [1:0]  io_out,
-   output logic [1:0]  io_oeb
+   input  logic        rxd,
+   output logic        txd
 
      );
 
@@ -141,20 +140,6 @@ wire [AW:0]    rx_fifo_dval          ; // Total Rx fifo Data Available
 wire           si_ss                 ;
 
 
-/////////////////////////////////////////////////////////
-// uart interface
-///////////////////////////////////////////////////////
-
-wire            si                  ; 
-wire            so                  ;
-
-// for uart
-assign  io_oeb[0] =  1'b1; // Uart RX
-assign  si        =  io_in[0];
-assign  io_out[0] =  1'b0;
-
-assign  io_oeb[1] =  1'b0; // Uart TX
-assign  io_out[1]  =  so;
 
 uart_cfg u_cfg (
 
@@ -254,7 +239,7 @@ uart_txfsm u_txfsm (
                .fifo_data         ( tx_fifo_rd_data   ),
 
           // Line Interface
-               .so                ( so                )
+               .so                ( txd               )
           );
 
 
@@ -311,7 +296,7 @@ async_fifo_th #(W,DP,0,0) u_txfifo  (
 
 
 double_sync_low   u_si_sync (
-               .in_data           ( si                ),
+               .in_data           (rxd                ),
                .out_clk           (line_clk_16x       ),
                .out_rst_n         (line_reset_n       ),
                .out_data          (si_ss              ) 

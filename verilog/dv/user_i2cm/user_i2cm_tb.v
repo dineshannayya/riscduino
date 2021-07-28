@@ -20,18 +20,10 @@
 ////                                                              ////
 ////  This file is part of the YIFive cores project               ////
 ////  https://github.com/dineshannayya/yifive_r0.git              ////
-////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
-////   Digital core.                                              ////
-////   1. User Risc core is booted using  compiled code of        ////
-////      user_risc_boot.c                                        ////
-////   2. User Risc core uses Serial Flash and SDRAM to boot      ////
-////   3. After successful boot, Risc core will  write signature  ////
-////      in to  user register from 0x3000_0018 to 0x3000_002C    ////
-////   4. Through the External Wishbone Interface we read back    ////
-////       and validate the user register to declared pass fail   ////
+////   i2c Master .                                               ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -76,36 +68,45 @@
 `include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
-
-module user_risc_boot_tb;
-	reg clock;
-	reg wb_rst_i;
-	reg power1, power2;
-	reg power3, power4;
-
-        reg        wbd_ext_cyc_i;  // strobe/request
-        reg        wbd_ext_stb_i;  // strobe/request
-        reg [31:0] wbd_ext_adr_i;  // address
-        reg        wbd_ext_we_i;  // write
-        reg [31:0] wbd_ext_dat_i;  // data output
-        reg [3:0]  wbd_ext_sel_i;  // byte enable
-
-        wire [31:0] wbd_ext_dat_o;  // data input
-        wire        wbd_ext_ack_o;  // acknowlegement
-        wire        wbd_ext_err_o;  // error
-
-	// User I/O
-	wire [37:0] io_oeb;
-	wire [37:0] io_out;
-	wire [37:0] io_in;
-
-	wire gpio;
-	wire [37:0] mprj_io;
-	wire [7:0] mprj_io_0;
-	reg         test_fail;
-	reg [31:0] read_data;
+`include "i2c_slave_model.v"
 
 
+`define ADDR_SPACE_UART  32'h3001_0000
+`define ADDR_SPACE_I2CM  32'h3001_0000
+
+
+module tb_top;
+
+reg            clock         ;
+reg            wb_rst_i      ;
+reg            power1, power2;
+reg            power3, power4;
+
+reg            wbd_ext_cyc_i;  // strobe/request
+reg            wbd_ext_stb_i;  // strobe/request
+reg [31:0]     wbd_ext_adr_i;  // address
+reg            wbd_ext_we_i;  // write
+reg [31:0]     wbd_ext_dat_i;  // data output
+reg [3:0]      wbd_ext_sel_i;  // byte enable
+
+wire [31:0]    wbd_ext_dat_o;  // data input
+wire           wbd_ext_ack_o;  // acknowlegement
+wire           wbd_ext_err_o;  // error
+
+// User I/O
+wire [37:0]    io_oeb        ;
+wire [37:0]    io_out        ;
+wire [37:0]    io_in         ;
+
+wire [37:0]    mprj_io       ;
+wire [7:0]     mprj_io_0     ;
+reg            test_fail     ;
+reg [31:0]     read_data     ;
+//----------------------------------
+// Uart Configuration
+// ---------------------------------
+
+integer i,j;
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
@@ -125,97 +126,183 @@ module user_risc_boot_tb;
 
 	`ifdef WFDUMP
 	   initial begin
-	   	$dumpfile("risc_boot.vcd");
-	   	$dumpvars(2, user_risc_boot_tb);
+	   	$dumpfile("tb_top.vcd");
+	   	$dumpvars(0, tb_top);
 	   end
        `endif
-
-	initial begin
-
-		#200; // Wait for reset removal
-	        repeat (10) @(posedge clock);
-		$display("Monitor: Standalone User Risc Boot Test Started");
-
-		   // Remove Wb Reset
-		   wb_user_core_write('h3080_0000,'h1);
-
-		#1;
-		//------------ SDRAM Config - 2
-                wb_user_core_write('h3000_0014,'h100_019E);
-
-	        repeat (2) @(posedge clock);
-		#1;
-		//------------ SDRAM Config - 1
-                wb_user_core_write('h3000_0010,'h2F17_2242);
-
-	        repeat (2) @(posedge clock);
-		#1;
-		// Remove all the reset
-                wb_user_core_write('h3080_0000,'hF);
-
-
-		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (30) begin
-			repeat (1000) @(posedge clock);
-			// $display("+1000 cycles");
-		end
-
-
-		$display("Monitor: Reading Back the expected value");
-		// User RISC core expect to write these value in global
-		// register, read back and decide on pass fail
-		// 0x30000018  = 0x11223344; 
-                // 0x3000001C  = 0x22334455; 
-                // 0x30000020  = 0x33445566; 
-                // 0x30000024  = 0x44556677; 
-                // 0x30000028 = 0x55667788; 
-                // 0x3000002C = 0x66778899; 
-
-                test_fail = 0;
-		wb_user_core_read(32'h30000018,read_data);
-		if(read_data != 32'h11223344) test_fail = 1;
-
-		wb_user_core_read(32'h3000001C,read_data);
-		if(read_data != 32'h22334455) test_fail = 1;
-
-		wb_user_core_read(32'h30000020,read_data);
-	        if(read_data != 32'h33445566) test_fail = 1;
-
-		wb_user_core_read(32'h30000024,read_data);
-                if(read_data!= 32'h44556677) test_fail = 1;
-
-		wb_user_core_read(32'h30000028,read_data);
-                if(read_data!= 32'h55667788) test_fail = 1;
-
-		wb_user_core_read(32'h3000002C,read_data) ;
-	        if(read_data != 32'h66778899) test_fail = 1;
-
-	   
-	    	$display("###################################################");
-          	if(test_fail == 0) begin
-		   `ifdef GL
-	    	       $display("Monitor: Standalone User Risc Boot (GL) Passed");
-		   `else
-		       $display("Monitor: Standalone User Risc Boot (RTL) Passed");
-		   `endif
-	        end else begin
-		    `ifdef GL
-	    	        $display("Monitor: Standalone User Risc Boot (GL) Failed");
-		    `else
-		        $display("Monitor: Standalone User Risc Boot (RTL) Failed");
-		    `endif
-		 end
-	    	$display("###################################################");
-	    $finish;
-	end
 
 	initial begin
 		wb_rst_i <= 1'b1;
 		#100;
 		wb_rst_i <= 1'b0;	    	// Release reset
 	end
+initial
+begin
+   test_fail = 0;
+
+   #200; // Wait for reset removal
+   repeat (10) @(posedge clock);
+   $display("############################################");
+   $display("   Testing I2CM Read/Write Access           ");
+   $display("############################################");
+   
+
+   repeat (10) @(posedge clock);
+   #1;
+   // Enable I2M Block & WB Reset and Enable I2CM Mux Select
+   wb_user_core_write('h3080_0000,'hA1);
+
+   repeat (100) @(posedge clock);  
+
+    @(posedge  clock);
+    $display("---------- Initialize I2C Master ----------"); 
+
+    //Wrire Prescale registers
+     wb_user_core_write(`ADDR_SPACE_I2CM+(8'h0<<2),8'hC7);  
+     wb_user_core_write(`ADDR_SPACE_I2CM+(8'h1<<2),8'h00);  
+    // Core Enable
+     wb_user_core_write(`ADDR_SPACE_I2CM+(8'h2<<2),8'h80);  
+    
+    // Writing Data
+
+    $display("---------- Writing Data ----------"); 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h20); // Slave Addr + WR  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h90);  
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+     
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h66);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10);  
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+   
+   /* Byte1: 12 */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h12);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10); // No Stop + Write  
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+   
+   /* Byte1: 34 */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h34);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10); // No Stop + Write 
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+   /* Byte1: 56 */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h56);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10); // No Stop + Write 
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+   /* Byte1: 78 */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h78);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h50); // Stop + Write 
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+    //Reading Data
+    
+    //Wrire Address
+    $display("---------- Writing Data ----------"); 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h20);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h90);  
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+     
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h66);  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h50);  
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+    //Generate Read
+    $display("---------- Writing Data ----------"); 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h21); // Slave Addr + RD  
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h90);  
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+    /* BYTE-1 : 0x12  */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h20);  // RD + ACK
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+    //Compare received data
+    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3<<2),8'h12);  
+     
+    /* BYTE-2 : 0x34  */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h20);  // RD + ACK
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+    //Compare received data
+    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3<<2),8'h34);  
+
+    /* BYTE-3 : 0x56  */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4 <<2),8'h20);  // RD + ACK
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
+
+    //Compare received data
+    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3<<2),8'h56);  
+
+    /* BYTE-4 : 0x78  */ 
+    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h68);  // STOP + RD + NACK 
+
+    read_data[1] = 1'b1;
+    while(read_data[1]==1)
+      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4 <<2),read_data);  
+
+    //Compare received data
+    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3 <<2),8'h78);  
+
+    repeat(100)@(posedge clock);
+
+
+
+     $display("###################################################");
+     if(test_fail == 0) begin
+        `ifdef GL
+            $display("Monitor: Standalone User I2M Test (GL) Passed");
+        `else
+            $display("Monitor: Standalone User I2M Test (RTL) Passed");
+        `endif
+     end else begin
+         `ifdef GL
+             $display("Monitor: Standalone User I2M Test (GL) Failed");
+         `else
+             $display("Monitor: Standalone User I2M Test (RTL) Failed");
+         `endif
+      end
+     $display("###################################################");
+     #100
+     $finish;
+end
+
+
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
+
 
 user_project_wrapper u_top(
 `ifdef USE_POWER_PINS
@@ -361,9 +448,9 @@ user_project_wrapper u_top(
 	force u_top.u_wb_host.u_clkbuf_rtc.VPB  =USER_VDD1V8;
 	force u_top.u_wb_host.u_clkbuf_rtc.VGND =VSS;
 	force u_top.u_wb_host.u_clkbuf_rtc.VNB = VSS;
+
     end
 `endif    
-
 //------------------------------------------------------
 //  Integrate the Serial flash with qurd support to
 //  user core using the gpio pads
@@ -388,10 +475,11 @@ user_project_wrapper u_top(
 
 
    // Quard flash
-     s25fl256s #(.mem_file_name("user_risc_boot.hex"),
-	         .otp_file_name("none"),
+     s25fl256s #(.mem_file_name("user_uart.hex"),
+	         .otp_file_name("none"), 
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
-		 u_spi_flash_256mb (
+		 u_spi_flash_256mb
+       (
            // Data Inputs/Outputs
        .SI      (flash_io0),
        .SO      (flash_io1),
@@ -452,6 +540,26 @@ mt48lc8m8a2 #(.data_bits(8)) u_sdram8 (
      );
 
 
+//---------------------------
+//  UART Agent integration
+// --------------------------
+tri scl,sda;
+
+assign scl   = (io_oeb[36] == 1'b0) ? io_out[36]: 1'bz;
+assign sda  =  (io_oeb[37] == 1'b0) ? io_out[37] : 1'bz;
+assign io_in[37]  =  sda;
+assign io_in[36]  =  scl;
+
+pullup p1(scl); // pullup scl line
+pullup p2(sda); // pullup sda line
+
+ 
+i2c_slave_model u_i2c_slave (
+	.scl   (scl), 
+	.sda   (sda)
+       );
+
+
 task wb_user_core_write;
 input [31:0] address;
 input [31:0] data;
@@ -501,7 +609,42 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  //$display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  repeat (2) @(posedge clock);
+end
+endtask
+
+task  wb_user_core_read_cmp;
+input [31:0] address;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data === cmp_data) begin
+     $display("STATUS: DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  end else begin
+     $display("ERROR: DEBUG WB USER ACCESS READ Address : %x, Exp Data : %x Rxd Data: ",address,cmp_data,data);
+     test_fail= 1;
+     #100
+     $finish;
+  end
   repeat (2) @(posedge clock);
 end
 endtask

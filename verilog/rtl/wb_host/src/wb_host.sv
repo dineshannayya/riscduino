@@ -80,6 +80,9 @@ module wb_host (
        output logic                cpu_rst_n        ,
        output logic                spi_rst_n        ,
        output logic                sdram_rst_n      ,
+       output logic                uart_rst_n       ,
+       output logic                i2cm_rst_n       ,
+       output logic                uart_i2c_sel     ,
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -152,10 +155,13 @@ logic  [7:0]        cfg_glb_ctrl;
 assign wbm_rst_n = !wbm_rst_i;
 assign wbs_rst_n = !wbm_rst_i;
 
-sky130_fd_sc_hd__bufbuf_16 u_buf_wb_rst     (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_cpu_rst    (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_spi_rst    (.A(cfg_glb_ctrl[2]),.X(spi_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_sdram_rst  (.A(cfg_glb_ctrl[3]),.X(sdram_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_wb_rst        (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_cpu_rst       (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_spi_rst       (.A(cfg_glb_ctrl[2]),.X(spi_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_sdram_rst     (.A(cfg_glb_ctrl[3]),.X(sdram_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_i2cm_rst       (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_uart_i2c_sel  (.A(cfg_glb_ctrl[7]),.X(uart_i2c_sel));
 
 // To reduce the load/Timing Wishbone I/F, Strobe is register to create
 // multi-cycle

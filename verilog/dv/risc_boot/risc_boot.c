@@ -180,7 +180,7 @@ void main()
     reg_mprj_globl_reg4  = 0x2F172242;
 
     // Remove All Reset
-    reg_mprj_wbhost_reg0 = 0xF;
+    reg_mprj_wbhost_reg0 = 0x1F;
 
 
     // configure the user uart
