@@ -155,7 +155,24 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
   </tr>
 </table>
 
-##### Register Map Wishbone HOST
+# SOC Size
+
+| Block       | Total Cell | Seq      | Combo   |
+| ------      | ---------  | -------- | -----   |
+| RISC        | 26642      | 3158     | 23484   |
+| GLOBAL REG  | 2753       | 575      | 2178    |
+| SDRAM       | 7198       | 1207     | 5991    |
+| SPI         | 7607       | 1279     | 6328    |
+| UART_I2C    | 3561       | 605      | 2956    |
+| WB_HOST     | 3073       | 515      | 2558    |
+| WB_INTC     | 1291       | 110      | 1181    |
+|             |            |          |         |
+| TOTAL       | 52125      | 7449     | 44676   |
+
+
+
+# SOC Register Map
+##### Register Map: Wishbone HOST
 
 | Offset | Name       | Description   |
 | ------ | ---------  | ------------- |
@@ -201,7 +218,7 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
 | 7:4   | CLK_SKEW_RISC | RISC Clk Skew Control |
 | 3:0   | CLK_SKEW_WI   | Wishbone Clk Skew Control |
 
-##### Register Map SPI MASTER
+##### Register Map: SPI MASTER
 
 | Offset | Name       | Description   |
 | ------ | ---------  | ------------- |
@@ -292,7 +309,67 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
 | 31:0 | DEBUG      | SPI Debug Status  |
 
 
+##### Register Map: Global Register
 
+| Offset | Name        | Description   |
+| ------ | ---------   | ------------- |
+| 0x00   | SOFT_REG0   | [RW] Software Register0 |
+| 0x04   | RISC_FUSE   | [RW] Risc Fuse Value  |
+| 0x08   | SOFT_REG2   | [RW] Software Register2 |
+| 0x0c   | INTR_CTRL   | [RW] Interrupt Control |
+| 0x10   | SDRAM_CTRL1 | [RW] Indirect SPI Memory Access Control Register2 |
+| 0x14   | SDRAM_CTRL2 | [RW] Indirect SPI Memory Address  |
+| 0x18   | SOFT_REG6   | [RW] Software Register6 |
+| 0x1C   | SOFT_REG7   | [RW] Software Register7 |
+| 0x20   | SOFT_REG8   | [RW] Software Register8 |
+| 0x24   | SOFT_REG9   | [RW] Software Register9 |
+| 0x28   | SOFT_REG10  | [RW] Software Register10 |
+| 0x2C   | SOFT_REG11  | [RW] Software Register11 |
+| 0x30   | SOFT_REG12  | [RW] Software Register12 |
+| 0x34   | SOFT_REG13  | [RW] Software Register13 |
+| 0x38   | SOFT_REG14  | [RW] Software Register14 |
+| 0x3C   | SOFT_REG15  | [RW] Software Register15 |
+
+##### Register: RISC_FUSE
+
+| Bits  | Name        | Description    |
+| ----  | ----        | -------------- |
+| 31:0  | RISC_FUSE   | RISC Core Fuse Value |
+
+##### Register: INTR_CTRL
+
+| Bits  | Name        | Description    |
+| ----  | ----        | -------------- |
+| 31:20 | Reserved    | Unused         |
+| 19:17 | USER_IRQ    | User Interrupt generation toward riscv         |
+| 16    | SOFT_IRQ    | Software Interrupt generation toward riscv     |
+| 15:0  | EXT_IRQ     | External Interrupt generation toward riscv     |
+
+##### Register: SDRAM_CTRL1
+
+| Bits  | Name        | Description    |
+| ----  | ----        | -------------- |
+| 31   | Reserved    | Unused         |
+| 30   | SDRAM_INIT_DONE    | SDRAM init done indication         |
+| 29   | SDR_EN    | SDRAM controller enable     |
+| 28:26| SDR_CAS   | SDRAM CAS latency     |
+| 25:24| SDR_REQ_DP| SDRAM Maximum Request accepted by SDRAM controller     |
+| 23:20| SDR_TWR   | SDRAM Write Recovery delay    |
+| 19:16| SDR_TRCAR | SDRAM Auto Refresh Period     |
+| 15:12| SDR_TRCD  | SDRAM Active ti R/W delay     |
+| 11:8 | SDR_TRP   | SDRAM Prechard to active delay     |
+| 7:4  | SDR_TRAS  | SDRAM Active to precharge     |
+| 3:2  | SDR_COL   | SDRAM Colum Address     |
+| 1:0  | SDR_WD    | SDRAM Interface Width, 0 - 32bit, 1 - 16 bit, 2 - 8 bit     |
+
+##### Register: SDRAM_CTRL2
+
+| Bits  | Name        | Description    |
+| ----  | ----        | -------------- |
+| 31:28 | Reserved    | Unused         |
+| 27:16 | SDRAM_REFRESH | SDRAM Refresh Rate per row  |
+| 15:3  | SDR_MODE_REG  | SDRAM Mode Register     |
+| 2:0   | SDR_MODE_REG  | Number of rows to rfsh at a time     |
 
 # SOC Pin Mapping
 Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Mapping as follows
@@ -384,15 +461,15 @@ Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Map
   </tr>
   <tr>
     <td  align="center"> gpio[36]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> Uart TX</td>
-    <td  align="center"> UART</td>
+    <td  align="center"> Inout</td>
+    <td  align="center"> Uart TX/I2C CLK</td>
+    <td  align="center"> UART/I2C</td>
   </tr>
   <tr>
     <td  align="center"> gpio[37]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> Uart RX</td>
-    <td  align="center"> UART</td>
+    <td  align="center"> Inout</td>
+    <td  align="center"> Uart RX/I2C Data</td>
+    <td  align="center"> UART/I2C</td>
   </tr>
 </table>
 
