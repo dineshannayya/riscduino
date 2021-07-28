@@ -150,7 +150,7 @@ integer i,j;
 	   initial begin
 	   	$dumpfile("risc_boot.vcd");
 	   	$dumpvars(1, user_uart_tb);
-	   	$dumpvars(0, user_uart_tb.u_top.u_riscv_top);
+	   	$dumpvars(0, user_uart_tb.u_top);
 	   end
        `endif
 
@@ -189,7 +189,7 @@ begin
    repeat (2) @(posedge clock);
    #1;
    // Remove all the reset
-   wb_user_core_write('h3080_0000,'hF);
+   wb_user_core_write('h3080_0000,'h1F);
 
    repeat (16000) @(posedge clock);  // wait for Processor Get Ready
    tb_uart.uart_init;
@@ -347,10 +347,10 @@ user_project_wrapper u_top(
 	force u_top.u_spi_master.u_buf_sdio3.VGND   =VSS;
 	force u_top.u_spi_master.u_buf_sdio3.VNB    =VSS;
           
-	force u_top.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
-	force u_top.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
-	force u_top.u_uart_core.u_lineclk_buf.VGND =VSS;
-	force u_top.u_uart_core.u_lineclk_buf.VNB = VSS;
+	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
+	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
+	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VGND =VSS;
+	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VNB = VSS;
 
 	force u_top.u_wb_host.u_buf_wb_rst.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_buf_wb_rst.VPB  =USER_VDD1V8;
@@ -371,6 +371,21 @@ user_project_wrapper u_top(
 	force u_top.u_wb_host.u_buf_sdram_rst.VPB  =USER_VDD1V8;
 	force u_top.u_wb_host.u_buf_sdram_rst.VGND =VSS;
 	force u_top.u_wb_host.u_buf_sdram_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_uart_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_uart_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_uart_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_uart_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_i2cm_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_i2cm_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_i2cm_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_i2cm_rst.VNB = VSS;
+
+	force u_top.u_wb_host.u_buf_uart_i2c_sel.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_uart_i2c_sel.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_uart_i2c_sel.VGND =VSS;
+	force u_top.u_wb_host.u_buf_uart_i2c_sel.VNB = VSS;
 
 	force u_top.u_wb_host.u_clkbuf_sdram.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_clkbuf_sdram.VPB  =USER_VDD1V8;
@@ -565,13 +580,13 @@ wire [31:0] wbd_sdram_dat_i = u_top.u_sdram_ctrl.wb_dat_i;
 wire [31:0] wbd_sdram_dat_o = u_top.u_sdram_ctrl.wb_dat_o;
 wire [3:0]  wbd_sdram_sel_i = u_top.u_sdram_ctrl.wb_sel_i;
 
-wire        wbd_uart_stb_i  = u_top.u_uart_core.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_core.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_core.reg_wr;
-wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_core.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_core.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_core.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_core.reg_be;
+wire        wbd_uart_stb_i  = u_top.u_uart_i2c.reg_cs;
+wire        wbd_uart_ack_o  = u_top.u_uart_i2c.reg_ack;
+wire        wbd_uart_we_i   = u_top.u_uart_i2c.reg_wr;
+wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c.reg_addr;
+wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c.reg_wdata;
+wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c.reg_rdata;
+wire        wbd_uart_sel_i  = u_top.u_uart_i2c.reg_be;
 
 `endif
 

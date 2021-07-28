@@ -15,11 +15,10 @@
 
 // Include caravel global defines for the number of the user project IO pads 
 `include "defines.v"
-`define USE_POWER_PINS
-`define UNIT_DELAY #0.1
+       `define USE_POWER_PINS
+       `define UNIT_DELAY #0.1
 
 `ifdef GL
-
        `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
        `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
        `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
@@ -29,7 +28,7 @@
         `include "glbl_cfg.v"
         `include "sdram.v"
         `include "spi_master.v"
-        `include "uart.v"
+        `include "uart_i2cm.v"
         `include "wb_interconnect.v"
         `include "user_project_wrapper.v"
         `include "syntacore.v"
@@ -38,7 +37,6 @@
 	`include "clk_buf.v"
 
 `else
-
      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
      `include "libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v"
      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
@@ -62,6 +60,12 @@
      `include "lib/reset_sync.sv"  
      `include "lib/double_sync_low.v"  
      `include "lib/clk_buf.v"  
+
+     `include "i2cm/src/core/i2cm_bit_ctrl.v"
+     `include "i2cm/src/core/i2cm_byte_ctrl.v"
+     `include "i2cm/src/core/i2cm_top.v"
+
+     `include "uart_i2c/src/uart_i2c_top.sv"
 
      `include "sdram_ctrl/src/top/sdrc_top.v" 
      `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 

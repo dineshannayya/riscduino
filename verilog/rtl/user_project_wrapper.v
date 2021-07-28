@@ -91,6 +91,10 @@
 ////    0.9 - 7th July 2021, Dinesh A                             ////
 ////          Removed 2 Unused port connection io_in[31:30] to    ////
 ////          spi_master to avoid lvs issue                       ////
+////    1.0 - 28th July 2021, Dinesh A                            ////
+////          i2cm integrated part of uart_i2cm module,           ////
+////          due to number of IO pin limitation,                 ////
+////          Only UART OR I2C selected based on config mode      ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -267,6 +271,9 @@ wire                           wbd_uart_err_i;  // error
 wire                              cpu_rst_n     ;
 wire                              spi_rst_n     ;
 wire                              sdram_rst_n   ;
+wire                              uart_rst_n    ;// uart reset
+wire                              i2c_rst_n     ;// i2c reset
+wire                              uart_i2c_sel  ;// 0 - uart, 1 - I2C
 wire                              sdram_clk           ;
 wire                              cpu_clk       ;
 wire                              rtc_clk       ;
@@ -370,6 +377,9 @@ wb_host u_wb_host(
        .cpu_rst_n        (cpu_rst_n            ),
        .spi_rst_n        (spi_rst_n            ),
        .sdram_rst_n      (sdram_rst_n          ),
+       .uart_rst_n       (uart_rst_n           ), // uart reset
+       .i2cm_rst_n       (i2c_rst_n            ), // i2c reset
+       .uart_i2c_sel     (uart_i2c_sel         ), // 0 - uart, 1 - I2C
 
     // Master Port
        .wbm_rst_i        (wb_rst_i             ),  
@@ -668,8 +678,10 @@ glbl_cfg   u_glbl_cfg (
 
         );
 
-uart_core   u_uart_core (
-        .arst_n                 (wbd_int_rst_n            ), // async reset
+uart_i2c_top   u_uart_i2c (
+        .uart_rstn              (uart_rst_n               ), // uart reset
+        .i2c_rstn               (i2c_rst_n                ), // i2c reset
+	.uart_i2c_sel           (uart_i2c_sel             ), // 0 - uart, 1 - I2C
         .app_clk                (wbd_clk_uart             ),
 
         // Reg Bus Interface Signal
