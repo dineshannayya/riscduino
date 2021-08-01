@@ -58,7 +58,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 2200 200"
+set ::env(DIE_AREA) "0 0 2200 150"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -68,14 +68,14 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_ROUTABILITY_DRIVEN) 1
-set ::env(FP_CORE_UTIL) "40"
+set ::env(FP_CORE_UTIL) "50"
 set ::env(PL_TARGET_DENSITY) "0.50"
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4
 
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VPITCH) 180
+set ::env(FP_PDN_HPITCH) 180
 set ::env(FP_PDN_VWIDTH) 3
 set ::env(FP_PDN_HWIDTH) 3
 

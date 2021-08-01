@@ -95,6 +95,10 @@
 ////          i2cm integrated part of uart_i2cm module,           ////
 ////          due to number of IO pin limitation,                 ////
 ////          Only UART OR I2C selected based on config mode      ////
+////    1.1 - 1st Aug 2021, Dinesh A                              ////
+////          usb1.1 host integrated part of uart_i2cm_usb module,////
+////          due to number of IO pin limitation,                 ////
+////          Only UART/I2C/USB selected based on config mode     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -258,10 +262,10 @@ wire                           wbd_glbl_err_i;  // error
 wire                           wbd_uart_stb_o; // strobe/request
 wire   [7:0]                   wbd_uart_adr_o; // address
 wire                           wbd_uart_we_o;  // write
-wire   [7:0]                   wbd_uart_dat_o; // data output
+wire   [31:0]                  wbd_uart_dat_o; // data output
 wire                           wbd_uart_sel_o; // byte enable
 wire                           wbd_uart_cyc_o ;
-wire   [7:0]                   wbd_uart_dat_i; // data input
+wire   [31:0]                  wbd_uart_dat_i; // data input
 wire                           wbd_uart_ack_i; // acknowlegement
 wire                           wbd_uart_err_i;  // error
 
@@ -273,10 +277,12 @@ wire                              spi_rst_n     ;
 wire                              sdram_rst_n   ;
 wire                              uart_rst_n    ;// uart reset
 wire                              i2c_rst_n     ;// i2c reset
-wire                              uart_i2c_sel  ;// 0 - uart, 1 - I2C
+wire                              usb_rst_n     ;// i2c reset
+wire   [1:0]                      uart_i2c_usb_sel  ;// 0 - uart, 1 - I2C, 2- USb
 wire                              sdram_clk           ;
 wire                              cpu_clk       ;
 wire                              rtc_clk       ;
+wire                              usb_clk       ;
 wire                              wbd_clk_int   ;
 //wire                              wbd_clk_int1  ;
 //wire                              wbd_clk_int2  ;
@@ -372,6 +378,7 @@ wb_host u_wb_host(
        .sdram_clk        (sdram_clk            ),
        .cpu_clk          (cpu_clk              ),
        .rtc_clk          (rtc_clk              ),
+       .usb_clk          (usb_clk              ),
 
        .wbd_int_rst_n    (wbd_int_rst_n        ),
        .cpu_rst_n        (cpu_rst_n            ),
@@ -379,7 +386,8 @@ wb_host u_wb_host(
        .sdram_rst_n      (sdram_rst_n          ),
        .uart_rst_n       (uart_rst_n           ), // uart reset
        .i2cm_rst_n       (i2c_rst_n            ), // i2c reset
-       .uart_i2c_sel     (uart_i2c_sel         ), // 0 - uart, 1 - I2C
+       .usb_rst_n        (usb_rst_n            ), // usb reset
+       .uart_i2c_usb_sel (uart_i2c_usb_sel     ), // 0 - uart, 1 - I2C, 2- USB
 
     // Master Port
        .wbm_rst_i        (wb_rst_i             ),  
@@ -678,21 +686,23 @@ glbl_cfg   u_glbl_cfg (
 
         );
 
-uart_i2c_top   u_uart_i2c (
+uart_i2c_usb_top   u_uart_i2c_usb (
         .uart_rstn              (uart_rst_n               ), // uart reset
         .i2c_rstn               (i2c_rst_n                ), // i2c reset
-	.uart_i2c_sel           (uart_i2c_sel             ), // 0 - uart, 1 - I2C
+        .usb_rstn               (usb_rst_n                ), // i2c reset
+	.uart_i2c_usb_sel       (uart_i2c_usb_sel         ), // 0 - uart, 1 - I2C
         .app_clk                (wbd_clk_uart             ),
+	.usb_clk                (usb_clk                  ),
 
         // Reg Bus Interface Signal
        .reg_cs                 (wbd_uart_stb_o            ),
        .reg_wr                 (wbd_uart_we_o             ),
        .reg_addr               (wbd_uart_adr_o[5:2]       ),
-       .reg_wdata              (wbd_uart_dat_o[7:0]       ),
+       .reg_wdata              (wbd_uart_dat_o            ),
        .reg_be                 (wbd_uart_sel_o            ),
 
        // Outputs
-       .reg_rdata              (wbd_uart_dat_i[7:0]       ),
+       .reg_rdata              (wbd_uart_dat_i            ),
        .reg_ack                (wbd_uart_ack_i            ),
 
        // Pad interface

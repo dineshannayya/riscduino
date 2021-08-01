@@ -1,0 +1,10 @@
+core/usbh_core.sv
+core/usbh_crc16.sv
+core/usbh_crc5.sv
+core/usbh_fifo.sv
+core/usbh_sie.sv
+phy/usb_fs_phy.v
+phy/usb_transceiver.v
+lib/async_wb.sv
+lib/async_fifo.sv
+top/usb1_host.sv 

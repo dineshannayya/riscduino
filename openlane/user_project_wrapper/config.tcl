@@ -59,7 +59,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $script_dir/../../verilog/gl/spi_master.v \
         $script_dir/../../verilog/gl/wb_interconnect.v \
         $script_dir/../../verilog/gl/glbl_cfg.v     \
-        $script_dir/../../verilog/gl/uart_i2cm.v     \
+        $script_dir/../../verilog/gl/uart_i2cm_usb.v     \
 	$script_dir/../../verilog/gl/sdram.v \
 	$script_dir/../../verilog/gl/wb_host.v \
 	$script_dir/../../verilog/gl/clk_skew_adjust.v \
@@ -71,7 +71,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/glbl_cfg.lef \
 	$lef_root/wb_interconnect.lef \
 	$lef_root/sdram.lef \
-	$lef_root/uart_i2cm.lef \
+	$lef_root/uart_i2cm_usb.lef \
 	$lef_root/wb_host.lef \
 	$lef_root/clk_skew_adjust.lef \
 	$lef_root/syntacore.lef \
@@ -81,7 +81,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/spi_master.gds \
 	$gds_root/glbl_cfg.gds \
 	$gds_root/wb_interconnect.gds \
-	$gds_root/uart_i2cm.gds \
+	$gds_root/uart_i2cm_usb.gds \
 	$gds_root/sdram.gds \
 	$gds_root/wb_host.gds \
 	$gds_root/clk_skew_adjust.gds \

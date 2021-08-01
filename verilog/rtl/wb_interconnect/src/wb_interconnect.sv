@@ -155,10 +155,10 @@ module wb_interconnect(
 
          // Slave 3 Interface
 	 // Uart is 8bit interface 
-         input	logic [7:0]	s3_wbd_dat_i,
+         input	logic [31:0]	s3_wbd_dat_i,
          input	logic 	        s3_wbd_ack_i,
          // input	logic 	s3_wbd_err_i,
-         output	logic [7:0]	s3_wbd_dat_o,
+         output	logic [31:0]	s3_wbd_dat_o,
          output	logic [7:0]	s3_wbd_adr_o, 
          output	logic    	s3_wbd_sel_o,
          output	logic 	        s3_wbd_we_o,
@@ -321,7 +321,7 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
  assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
  assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
 
- assign  s3_wbd_dat_o =  s3_wb_wr.wbd_dat[7:0] ;
+ assign  s3_wbd_dat_o =  s3_wb_wr.wbd_dat[31:0] ;
  assign  s3_wbd_adr_o =  s3_wb_wr.wbd_adr[7:0] ; // Global Reg Need 8 bit
  assign  s3_wbd_sel_o =  s3_wb_wr.wbd_sel[0] ;
  assign  s3_wbd_we_o  =  s3_wb_wr.wbd_we  ;
@@ -340,7 +340,7 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
  assign s2_wb_rd.wbd_ack  = s2_wbd_ack_i ;
  assign s2_wb_rd.wbd_err  = 1'b0; // s2_wbd_err_i ; - unused
 
- assign s3_wb_rd.wbd_dat  = {24'h0,s3_wbd_dat_i} ;
+ assign s3_wb_rd.wbd_dat  = s3_wbd_dat_i ;
  assign s3_wb_rd.wbd_ack  = s3_wbd_ack_i ;
  assign s3_wb_rd.wbd_err  = 1'b0; // s3_wbd_err_i ; - unused
 

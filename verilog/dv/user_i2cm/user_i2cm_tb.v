@@ -394,10 +394,10 @@ user_project_wrapper u_top(
 	force u_top.u_spi_master.u_buf_sdio3.VGND   =VSS;
 	force u_top.u_spi_master.u_buf_sdio3.VNB    =VSS;
           
-	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
-	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
-	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VGND =VSS;
-	force u_top.u_uart_i2c.u_uart_core.u_lineclk_buf.VNB = VSS;
+	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
+	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
+	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VGND =VSS;
+	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VNB = VSS;
 
 	force u_top.u_wb_host.u_buf_wb_rst.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_buf_wb_rst.VPB  =USER_VDD1V8;
@@ -429,10 +429,10 @@ user_project_wrapper u_top(
 	force u_top.u_wb_host.u_buf_i2cm_rst.VGND =VSS;
 	force u_top.u_wb_host.u_buf_i2cm_rst.VNB = VSS;
 
-	force u_top.u_wb_host.u_buf_uart_i2c_sel.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_uart_i2c_sel.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_uart_i2c_sel.VGND =VSS;
-	force u_top.u_wb_host.u_buf_uart_i2c_sel.VNB = VSS;
+	force u_top.u_wb_host.u_buf_usb_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_usb_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_usb_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_usb_rst.VNB = VSS;
 
 	force u_top.u_wb_host.u_clkbuf_sdram.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_clkbuf_sdram.VPB  =USER_VDD1V8;
@@ -449,6 +449,10 @@ user_project_wrapper u_top(
 	force u_top.u_wb_host.u_clkbuf_rtc.VGND =VSS;
 	force u_top.u_wb_host.u_clkbuf_rtc.VNB = VSS;
 
+	force u_top.u_wb_host.u_clkbuf_usb.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_usb.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_clkbuf_usb.VGND =VSS;
+	force u_top.u_wb_host.u_clkbuf_usb.VNB = VSS;
     end
 `endif    
 //------------------------------------------------------

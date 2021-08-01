@@ -75,6 +75,7 @@ module wb_host (
        output logic                sdram_clk        ,
        output logic                cpu_clk          ,
        output logic                rtc_clk          ,
+       output logic                usb_clk          ,
        // Global Reset control
        output logic                wbd_int_rst_n    ,
        output logic                cpu_rst_n        ,
@@ -82,7 +83,8 @@ module wb_host (
        output logic                sdram_rst_n      ,
        output logic                uart_rst_n       ,
        output logic                i2cm_rst_n       ,
-       output logic                uart_i2c_sel     ,
+       output logic                usb_rst_n        ,
+       output logic  [1:0]         uart_i2c_usb_sel ,
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -143,13 +145,14 @@ logic               sw_wr_en_3;
 logic [7:0]         cfg_bank_sel;
 logic [31:0]        wbm_adr_int;
 logic               wbm_stb_int;
-logic [23:0]        reg_0;  // Software_Reg_0
+logic [31:0]        reg_0;  // Software_Reg_0
 
 logic  [2:0]        cfg_wb_clk_ctrl;
-logic  [2:0]        cfg_sdram_clk_ctrl;
-logic  [2:0]        cfg_cpu_clk_ctrl;
-logic  [2:0]        cfg_rtc_clk_ctrl;
-logic  [7:0]        cfg_glb_ctrl;
+logic  [3:0]        cfg_sdram_clk_ctrl;
+logic  [3:0]        cfg_cpu_clk_ctrl;
+logic  [7:0]        cfg_rtc_clk_ctrl;
+logic  [3:0]        cfg_usb_clk_ctrl;
+logic  [6:0]        cfg_glb_ctrl;
 
 
 assign wbm_rst_n = !wbm_rst_i;
@@ -160,8 +163,9 @@ sky130_fd_sc_hd__bufbuf_16 u_buf_cpu_rst       (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n
 sky130_fd_sc_hd__bufbuf_16 u_buf_spi_rst       (.A(cfg_glb_ctrl[2]),.X(spi_rst_n));
 sky130_fd_sc_hd__bufbuf_16 u_buf_sdram_rst     (.A(cfg_glb_ctrl[3]),.X(sdram_rst_n));
 sky130_fd_sc_hd__bufbuf_16 u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_i2cm_rst       (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_uart_i2c_sel  (.A(cfg_glb_ctrl[7]),.X(uart_i2c_sel));
+sky130_fd_sc_hd__bufbuf_16 u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
+sky130_fd_sc_hd__bufbuf_16 u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
+
 
 // To reduce the load/Timing Wishbone I/F, Strobe is register to create
 // multi-cycle
@@ -226,18 +230,21 @@ end
 //-------------------------------------
 // Global + Clock Control
 // -------------------------------------
-assign cfg_glb_ctrl         = reg_0[7:0];
-assign cfg_wb_clk_ctrl      = reg_0[10:8];
-assign cfg_sdram_clk_ctrl   = reg_0[15:12];
-assign cfg_cpu_clk_ctrl     = reg_0[19:16];
-assign cfg_rtc_clk_ctrl     = reg_0[23:20];
+assign cfg_glb_ctrl         = reg_0[6:0];
+assign uart_i2c_usb_sel     = reg_0[8:7];
+assign cfg_wb_clk_ctrl      = reg_0[11:9];
+assign cfg_rtc_clk_ctrl     = reg_0[19:12];
+assign cfg_cpu_clk_ctrl     = reg_0[23:20];
+assign cfg_sdram_clk_ctrl   = reg_0[27:24];
+assign cfg_usb_clk_ctrl     = reg_0[31:28];
+
 
 always @( *)
 begin 
   reg_out [31:0] = 8'd0;
 
   case (sw_addr [1:0])
-    2'b00 :   reg_out [31:0] = {8'h0, reg_0[23:0]};
+    2'b00 :   reg_out [31:0] = reg_0;
     2'b01 :   reg_out [31:0] = {24'h0,cfg_bank_sel [7:0]};     
     2'b10 :   reg_out [31:0] = cfg_clk_ctrl1 [31:0];    
     2'b11 :   reg_out [31:0] = cfg_clk_ctrl2 [31:0];     
@@ -247,14 +254,14 @@ end
 
 
 
-generic_register #(24,0  ) u_glb_ctrl (
+generic_register #(32,0  ) u_glb_ctrl (
 	      .we            ({24{sw_wr_en_0}}   ),		 
 	      .data_in       (wbm_dat_i[23:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
-	      .data_out      (reg_0[23:0])
+	      .data_out      (reg_0[31:0])
           );
 
 generic_register #(8,8'h30 ) u_bank_sel (
@@ -403,27 +410,44 @@ clk_ctl #(1) u_cpuclk (
 // Generate RTC Clock Generation
 //----------------------------------
 wire   rtc_clk_div;
-wire   rtc_ref_clk;
-wire   rtc_clk_int;
-wire       cfg_rtc_clk_src_sel   = cfg_rtc_clk_ctrl[0];
-wire       cfg_rtc_clk_div       = cfg_rtc_clk_ctrl[1];
-wire [1:0] cfg_rtc_clk_ratio     = cfg_rtc_clk_ctrl[3:2];
-
-assign rtc_ref_clk = (cfg_rtc_clk_src_sel) ? user_clock2 : user_clock1;
-assign rtc_clk_int = (cfg_rtc_clk_div)     ? rtc_clk_div : rtc_ref_clk;
+wire [7:0] cfg_rtc_clk_ratio     = cfg_rtc_clk_ctrl[7:0];
 
 
-sky130_fd_sc_hd__clkbuf_16 u_clkbuf_rtc (.A (rtc_clk_int), . X(rtc_clk));
+sky130_fd_sc_hd__clkbuf_16 u_clkbuf_rtc (.A (rtc_clk_div), . X(rtc_clk));
 
-clk_ctl #(1) u_rtcclk (
+clk_ctl #(7) u_rtcclk (
    // Outputs
        .clk_o         (rtc_clk_div      ),
    // Inputs
-       .mclk          (rtc_ref_clk      ),
+       .mclk          (user_clock2      ),
        .reset_n       (reset_n          ), 
        .clk_div_ratio (cfg_rtc_clk_ratio)
    );
 
 
+//----------------------------------
+// Generate USB Clock Generation
+//----------------------------------
+wire   usb_clk_div;
+wire   usb_ref_clk;
+wire   usb_clk_int;
+
+wire       cfg_usb_clk_div       = cfg_usb_clk_ctrl[0];
+wire [2:0] cfg_usb_clk_ratio     = cfg_usb_clk_ctrl[3:1];
+
+assign usb_ref_clk = user_clock2 ;
+assign usb_clk_int = (cfg_usb_clk_div)     ? usb_clk_div : usb_ref_clk;
+
+
+sky130_fd_sc_hd__clkbuf_16 u_clkbuf_usb (.A (usb_clk_int), . X(usb_clk));
+
+clk_ctl #(2) u_usbclk (
+   // Outputs
+       .clk_o         (usb_clk_div      ),
+   // Inputs
+       .mclk          (usb_ref_clk      ),
+       .reset_n       (reset_n          ), 
+       .clk_div_ratio (cfg_usb_clk_ratio)
+   );
 
 endmodule
