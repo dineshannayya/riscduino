@@ -65,7 +65,16 @@
      `include "i2cm/src/core/i2cm_byte_ctrl.v"
      `include "i2cm/src/core/i2cm_top.v"
 
-     `include "uart_i2c/src/uart_i2c_top.sv"
+     `include "usb1_host/src/core/usbh_core.sv"
+     `include "usb1_host/src/core/usbh_crc16.sv"
+     `include "usb1_host/src/core/usbh_crc5.sv"
+     `include "usb1_host/src/core/usbh_fifo.sv"
+     `include "usb1_host/src/core/usbh_sie.sv"
+     `include "usb1_host/src/phy/usb_fs_phy.v"
+     `include "usb1_host/src/phy/usb_transceiver.v"
+     `include "usb1_host/src/top/usb1_host.sv"
+
+     `include "uart_i2c_usb/src/uart_i2c_usb.sv"
 
      `include "sdram_ctrl/src/top/sdrc_top.v" 
      `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 

@@ -67,18 +67,22 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
-module async_wb (
+module async_wb 
+     #(parameter AW  = 32,
+       parameter BW  = 4,
+       parameter DW  = 32)
+       (
 
     // Master Port
        input   logic               wbm_rst_n   ,  // Regular Reset signal
        input   logic               wbm_clk_i   ,  // System clock
        input   logic               wbm_cyc_i   ,  // strobe/request
        input   logic               wbm_stb_i   ,  // strobe/request
-       input   logic [31:0]        wbm_adr_i   ,  // address
+       input   logic [AW-1:0]      wbm_adr_i   ,  // address
        input   logic               wbm_we_i    ,  // write
-       input   logic [31:0]        wbm_dat_i   ,  // data output
-       input   logic [3:0]         wbm_sel_i   ,  // byte enable
-       output  logic [31:0]        wbm_dat_o   ,  // data input
+       input   logic [DW-1:0]      wbm_dat_i   ,  // data output
+       input   logic [BW-1:0]      wbm_sel_i   ,  // byte enable
+       output  logic [DW-1:0]      wbm_dat_o   ,  // data input
        output  logic               wbm_ack_o   ,  // acknowlegement
        output  logic               wbm_err_o   ,  // error
 
@@ -87,11 +91,11 @@ module async_wb (
        input   logic               wbs_clk_i   ,  // System clock
        output  logic               wbs_cyc_o   ,  // strobe/request
        output  logic               wbs_stb_o   ,  // strobe/request
-       output  logic [31:0]        wbs_adr_o   ,  // address
+       output  logic [AW-1:0]      wbs_adr_o   ,  // address
        output  logic               wbs_we_o    ,  // write
-       output  logic [31:0]        wbs_dat_o   ,  // data output
-       output  logic [3:0]         wbs_sel_o   ,  // byte enable
-       input   logic [31:0]        wbs_dat_i   ,  // data input
+       output  logic [DW-1:0]      wbs_dat_o   ,  // data output
+       output  logic [BW-1:0]      wbs_sel_o   ,  // byte enable
+       input   logic [DW-1:0]      wbs_dat_i   ,  // data input
        input   logic               wbs_ack_i   ,  // acknowlegement
        input   logic               wbs_err_i      // error
 
@@ -99,20 +103,21 @@ module async_wb (
 
 
 
+parameter CFW = AW+DW+BW+1 ; // COMMAND FIFO WIDTH
 
 //-------------------------------------------------
 //  Master Interface
 // -------------------------------------------------
-logic        PendingRd     ; // Pending Read Transaction
-logic        m_cmd_wr_en       ;
-logic [68:0] m_cmd_wr_data     ;
-logic        m_cmd_wr_full     ;
-logic        m_cmd_wr_afull    ;
+logic           PendingRd     ; // Pending Read Transaction
+logic           m_cmd_wr_en       ;
+logic [CFW-1:0] m_cmd_wr_data     ;
+logic           m_cmd_wr_full     ;
+logic           m_cmd_wr_afull    ;
 
-logic        m_resp_rd_empty    ;
-logic        m_resp_rd_aempty   ;
-logic        m_resp_rd_en       ;
-logic [32:0] m_resp_rd_data     ;
+logic           m_resp_rd_empty    ;
+logic           m_resp_rd_aempty   ;
+logic           m_resp_rd_en       ;
+logic [DW:0]    m_resp_rd_data     ;
 
 // Master Write Interface
 
@@ -142,20 +147,20 @@ assign wbm_ack_o = (wbm_stb_i && wbm_we_i)    ?  m_cmd_wr_en : // Write Logic
 	           (wbm_stb_i && (!wbm_we_i)) ? !m_resp_rd_empty : 1'b0; // Read Logic
 
 assign m_resp_rd_en   = !m_resp_rd_empty;
-assign wbm_dat_o      = m_resp_rd_data[31:0];
-assign wbm_err_o      = m_resp_rd_data[32];
+assign wbm_dat_o      = m_resp_rd_data[DW-1:0];
+assign wbm_err_o      = m_resp_rd_data[DW];
 
 
 //------------------------------
 // Slave Interface
 //-------------------------------
 
-logic [68:0] s_cmd_rd_data      ;
+logic [CFW-1:0] s_cmd_rd_data      ;
 logic        s_cmd_rd_empty     ;
 logic        s_cmd_rd_aempty    ;
 logic        s_cmd_rd_en        ;
 logic        s_resp_wr_en        ;
-logic [32:0] s_resp_wr_data      ;
+logic [DW:0] s_resp_wr_data      ;
 logic        s_resp_wr_full      ;
 logic        s_resp_wr_afull     ;
 logic        wbs_ack_f          ;
@@ -185,7 +190,7 @@ assign s_cmd_rd_en = wbs_ack_i;
 assign s_resp_wr_en   = wbs_stb_o & (!wbs_we_o) & wbs_ack_i & !s_resp_wr_full;
 assign s_resp_wr_data = {wbs_err_i,wbs_dat_i};
 
-async_fifo #(.W(69), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_cmd_if (
+async_fifo #(.W(CFW), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_cmd_if (
 	           // Sync w.r.t WR clock
 	           .wr_clk        (wbm_clk_i         ),
                    .wr_reset_n    (wbm_rst_n         ),
@@ -206,7 +211,7 @@ async_fifo #(.W(69), .DP(4), .WR_FAST(1), .RD_FAST(1)) u_cmd_if (
 
 // Response used only read path, read is blocking access, expect
 // only one location used in return path - reduced the depth to 2
-async_fifo #(.W(33), .DP(2), .WR_FAST(1), .RD_FAST(1)) u_resp_if (
+async_fifo #(.W(DW+1), .DP(2), .WR_FAST(1), .RD_FAST(1)) u_resp_if (
 	           // Sync w.r.t WR clock
 	           .wr_clk        (wbs_clk_i          ),
                    .wr_reset_n    (wbs_rst_n          ),

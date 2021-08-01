@@ -28,7 +28,7 @@ riscv64-unknown-elf-objdump -D user_uart.elf > user_uart.dump
 rm crt_tcm.o user_uart.o
 
 #iverilog with waveform dump
-iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I ../../../verilog/rtl/i2cm/src/includes -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_uart_tb.v -o user_uart_tb.vvp
+iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I ../../../verilog/rtl/i2cm/src/includes -I ../../../verilog/rtl/usb1_host/src/includes -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_uart_tb.v -o user_uart_tb.vvp
 
 
 #iverilog -g2005-sv -I $PDK_PATH -DFUNCTIONAL -DSIM -I  ../../../caravel/verilog/rtl -I ../ -I ../../../verilog/rtl -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_uart_tb.v -o user_uart_tb.vvp
