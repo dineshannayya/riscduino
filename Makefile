@@ -49,24 +49,20 @@ verify:
 # Install DV setup
 .PHONY: simenv
 simenv:
-	docker pull efabless/dv_setup:latest
+	docker pull dineshannayya/dv_setup:latest
 
 PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
 TARGET_PATH=$(shell pwd)
 PDK_PATH=${PDK_ROOT}/sky130A
-#dinesh-a: iverilog version inside the docker is not able to compile the rtl code
-#  So We are running upto hex file generation inside docker and iverilog outside the docker
-#VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} && make"
-VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} && make hex"
+VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} && make"
 $(DV_PATTERNS): verify-% : ./verilog/dv/% 
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_PATH}:${PDK_PATH} \
                 -v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
                 -e TARGET_PATH=${TARGET_PATH} -e PDK_PATH=${PDK_PATH} \
                 -e CARAVEL_ROOT=${CARAVEL_ROOT} \
-                -u $(id -u $$USER):$(id -g $$USER) efabless/dv_setup:latest \
+                -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:latest \
                 sh -c $(VERIFY_COMMAND)
-	cd ${TARGET_PATH}/verilog/dv/$* && $(MAKE) all
 				
 # Openlane Makefile Targets
 BLOCKS = $(shell cd openlane && find * -maxdepth 0 -type d)
