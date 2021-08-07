@@ -227,9 +227,12 @@ assign dmem_addr_mslgn_s = dmem_addr_mslgn & dmem_cmd_store;
 // Exception code logic
 always_comb begin
     case (1'b1)
-        dmem_resp_er     : lsu2exu_exc_code_o = lsu_cmd_ff_load  ? SCR1_EXC_CODE_LD_ACCESS_FAULT
-                                              : lsu_cmd_ff_store ? SCR1_EXC_CODE_ST_ACCESS_FAULT
-                                                                 : SCR1_EXC_CODE_INSTR_MISALIGN;
+        dmem_resp_er     : if(lsu_cmd_ff_load)
+		               lsu2exu_exc_code_o = SCR1_EXC_CODE_LD_ACCESS_FAULT;
+                           else if(lsu_cmd_ff_store)
+                               lsu2exu_exc_code_o =  SCR1_EXC_CODE_ST_ACCESS_FAULT;
+			   else
+                               lsu2exu_exc_code_o =  SCR1_EXC_CODE_INSTR_MISALIGN;
 `ifdef SCR1_TDU_EN
         lsu_exc_hwbrk    : lsu2exu_exc_code_o = SCR1_EXC_CODE_BREAKPOINT;
 `endif // SCR1_TDU_EN

@@ -58,12 +58,12 @@ vvp:  ${PATTERN:=.vvp}
 %.vvp: %_tb.v %.hex
 	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I$(SYNTACORE_FIRMWARE_PATH)  user_uart.c -o user_uart.o
 	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I$(SYNTACORE_FIRMWARE_PATH)  $(SYNTACORE_FIRMWARE_PATH)/crt_tcm.S -o crt_tcm.o
-	${GCC64_PREFIX}-gcc -march=rv32imc -mabi=ilp32 -T $(SYNTACORE_FIRMWARE_PATH)/link_tcm.ld user_uart.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -o user_uart.elf
+	${GCC64_PREFIX}-gcc -march=rv32imc -mabi=ilp32 -T $(SYNTACORE_FIRMWARE_PATH)/link_tcm.ld user_uart.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -o user_uart.elf -N
 	${GCC64_PREFIX}-objcopy -O verilog user_uart.elf user_uart.hex
 	${GCC64_PREFIX}-objdump -D user_uart.elf > user_uart.dump
 	rm crt_tcm.o user_uart.o
 ifeq ($(SIM),RTL)
-	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
 	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
 	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH)  \
 	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
@@ -82,15 +82,15 @@ endif
 	vvp $<
 
 %.elf: %.c $(CARAVEL_FIRMWARE_PATH)/sections.lds $(CARAVEL_FIRMWARE_PATH)/start.s
-	${GCC_PATH}/${GCC_PREFIX}-gcc -I $(CARAVEL_PATH) -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,$(CARAVEL_FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(CARAVEL_FIRMWARE_PATH)/start.s $<
+	${GCC64_PREFIX}-gcc -I $(CARAVEL_PATH) -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,$(CARAVEL_FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(CARAVEL_FIRMWARE_PATH)/start.s $<
 
 %.hex: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objcopy -O verilog $< $@ 
+	${GCC64_PREFIX}-objcopy -O verilog $< $@ 
 	# to fix flash base address
 	sed -i 's/@10000000/@00000000/g' $@
 
 %.bin: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
+	${GCC64_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
 
 # ---- Clean ----
 
