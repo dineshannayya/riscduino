@@ -18,8 +18,8 @@ BLOCKS = $(shell find * -maxdepth 0 -type d)
 CONFIG = $(foreach block,$(BLOCKS), ./$(block)/config.tcl)
 CLEAN = $(foreach block,$(BLOCKS), clean-$(block))
 
-OPENLANE_TAG ?= v0.15
-OPENLANE_IMAGE_NAME ?= efabless/openlane:$(OPENLANE_TAG)
+OPENLANE_TAG ?= rc7
+OPENLANE_IMAGE_NAME ?= dineshannayya/openlane:$(OPENLANE_TAG)
 OPENLANE_BASIC_COMMAND = "cd /project/openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
 OPENLANE_INTERACTIVE_COMMAND = "cd /project/openlane && flow.tcl -it -file ./$*/interactive.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
 
@@ -67,7 +67,7 @@ ifeq ($(OPENLANE_ROOT),)
 	@echo "Please export OPENLANE_ROOT"
 	@exit 1
 endif
-	git clone https://github.com/efabless/openlane.git --branch=$(OPENLANE_TAG) --depth=1 $(OPENLANE_ROOT) && \
+	git clone https://github.com/dineshannayya/openlane.git --branch=$(OPENLANE_TAG) --depth=1 $(OPENLANE_ROOT) && \
 		cd $(OPENLANE_ROOT) && \
 		make openlane
 

@@ -531,7 +531,7 @@ Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Map
     export CARAVEL_ROOT=<Carvel Installed Path>
     export OPENLANE_ROOT=<OpenLane Installed Path>
     export PDK_ROOT=<PDK Installed Path>
-    export IMAGE_NAME=efabless/openlane:rc7
+    export IMAGE_NAME=dineshannayya/openlane:rc7
 ```
 
 # Tests preparation
@@ -548,7 +548,11 @@ The simulation package includes the following tests:
 Examples:
 ``` sh
     make verify-wb_port  
-    make verify-risc_hello
+    make verify-risc_boot
+    make verify-user_uart
+    make verify-user_spi
+    make verify-user_i2cm
+    make verify-user_risc_boot
 ```
 
 # Tool Sets
@@ -591,6 +595,11 @@ YiFive Soc flow uses Openlane tool sets.
 Following tools in openlane docker is older version, we need to update these tool set.
 * Icarus Verilog version 12.0 (devel) (s20150603-1107-ga446c34d)
 * Yosys 0.9+4081 (git sha1 b6721aa9, clang 10.0.0-4ubuntu1 -fPIC -Os)
+
+We have modified these openlane changes in our git repo, you can use from these path
+     git clone https://github.com/dineshannayya/openlane.git
+    docker pull dineshannayya/openlane:rc7
+
 
 
 ## Contacts
