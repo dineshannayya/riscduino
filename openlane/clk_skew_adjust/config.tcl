@@ -67,7 +67,10 @@ set ::env(BOTTOM_MARGIN_MULT) 2
 set ::env(TOP_MARGIN_MULT) 2
 set ::env(GLB_RT_MAXLAYER) 4
 
-set ::env(FP_PDN_VPITCH) 30
-set ::env(FP_PDN_HPITCH) 30
+# helps in anteena fix
+set ::env(USE_ARC_ANTENNA_CHECK) "0"
+
+set ::env(FP_PDN_VPITCH) 20
+set ::env(FP_PDN_HPITCH) 20
 set ::env(FP_PDN_VWIDTH) 3
 set ::env(FP_PDN_HWIDTH) 3

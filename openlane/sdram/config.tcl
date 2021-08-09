@@ -75,14 +75,18 @@ set ::env(RUN_CVC) 0
 
 set ::env(PL_ROUTABILITY_DRIVEN) 1
 
+# helps in anteena fix
+set ::env(USE_ARC_ANTENNA_CHECK) "0"
+
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4
 
 
 set ::env(GLB_RT_MAXLAYER) 4
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+set ::env(DIODE_INSERTION_STRATEGY) 5
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 3
-set ::env(FP_PDN_HWIDTH) 3
+set ::env(FP_PDN_VWIDTH) 5
+set ::env(FP_PDN_HWIDTH) 5
