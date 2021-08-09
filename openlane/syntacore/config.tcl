@@ -100,6 +100,8 @@ set ::env(PL_TARGET_DENSITY) "0.45"
 set ::env(GLOBAL_ROUTER) "fastroute"
 set ::env(DETAILED_ROUTER) "tritonroute"
 set ::env(CELL_PAD) "4"
+# helps in anteena fix
+set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4
@@ -107,12 +109,9 @@ set ::env(FP_IO_HEXTEND) 4
 
 set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
-set ::env(DIODE_INSERTION_STRATEGY) 4
-
-
-#set ::env(LVS_CONNECT_BY_LABEL) 1
+set ::env(DIODE_INSERTION_STRATEGY) 5
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 3
-set ::env(FP_PDN_HWIDTH) 3
+set ::env(FP_PDN_VWIDTH) 5
+set ::env(FP_PDN_HWIDTH) 5
