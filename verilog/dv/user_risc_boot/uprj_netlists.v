@@ -28,13 +28,12 @@
         `include "glbl_cfg.v"
         `include "sdram.v"
         `include "spi_master.v"
-        `include "uart_i2cm.v"
+        `include "uart_i2cm_usb.v"
         `include "wb_interconnect.v"
         `include "user_project_wrapper.v"
         `include "syntacore.v"
         `include "wb_host.v"
 	`include "clk_skew_adjust.v"
-	`include "clk_buf.v"
 
 `else
      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"

@@ -1425,13 +1425,13 @@ wire [31:0] wbd_sdram_dat_i = u_top.u_sdram_ctrl.wb_dat_i;
 wire [31:0] wbd_sdram_dat_o = u_top.u_sdram_ctrl.wb_dat_o;
 wire [3:0]  wbd_sdram_sel_i = u_top.u_sdram_ctrl.wb_sel_i;
 
-wire        wbd_uart_stb_i  = u_top.u_uart_i2c.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_i2c.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_i2c.reg_wr;
-wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_i2c.reg_be;
+wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb.reg_cs;
+wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb.reg_ack;
+wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb.reg_wr;
+wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb.reg_addr;
+wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb.reg_wdata;
+wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb.reg_rdata;
+wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb.reg_be;
 
 `endif
 
