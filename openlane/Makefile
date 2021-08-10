@@ -34,13 +34,30 @@ ifeq ($(OPENLANE_ROOT),)
 	@echo "Please export OPENLANE_ROOT"
 	@exit 1
 endif
-ifeq ($(PDK_ROOT),)
-	@echo "Please export PDK_ROOT"
-	@exit 1
-endif
-	@echo "###############################################"
+#ifeq ($(PDK_ROOT),)
+#	@echo "Please export PDK_ROOT"
+#	@exit 1
+#endif
+	@echo "############ Running Command #####################"
 	@sleep 1
 
+#if PDK root is not defines, then use the PDK ROOT inside docker /opt/pdk
+ifneq ($(PDK_ROOT), 1)
+	@if [ -f ./$*/interactive.tcl ]; then\
+		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
+		-v $(PWD)/..:/project \
+		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
+		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_INTERACTIVE_COMMAND);\
+	else\
+		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
+		-v $(PWD)/..:/project \
+		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
+		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_BASIC_COMMAND);\
+	fi 
+endif
+
+#if PDK_ROOT define, then pick the local path
+ifeq ($(PDK_ROOT), 1)
 	@if [ -f ./$*/interactive.tcl ]; then\
 		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
 		-v $(PDK_ROOT):$(PDK_ROOT) \
@@ -55,7 +72,9 @@ endif
 		-e PDK_ROOT=$(PDK_ROOT) \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_BASIC_COMMAND);\
-	fi
+	fi 
+endif
+
 	mkdir -p ../signoff/$*/
 	cp $*/runs/$*/OPENLANE_VERSION ../signoff/$*/
 	cp $*/runs/$*/PDK_SOURCES ../signoff/$*/
