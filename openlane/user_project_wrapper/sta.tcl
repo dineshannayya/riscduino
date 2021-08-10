@@ -37,7 +37,7 @@ read_verilog netlist/glbl_cfg.v
 read_verilog netlist/sdram.v  
 read_verilog netlist/spi_master.v 
 read_verilog netlist/syntacore.v  
-read_verilog netlist/uart.v  
+read_verilog netlist/uart_i2cm_usb.v  
 read_verilog netlist/wb_host.v  
 read_verilog netlist/wb_interconnect.v
 read_verilog netlist/user_project_wrapper.v  
@@ -55,10 +55,10 @@ read_spef -path u_skew_sd_co ../../spef/clk_skew_adjust.spef
 read_spef -path u_skew_sd_ci ../../spef/clk_skew_adjust.spef  
 read_spef -path u_skew_sp_co ../../spef/clk_skew_adjust.spef  
 read_spef -path u_glbl_cfg   ../../spef/glbl_cfg.spef  
-read_spef -path u_riscv_top  ../../spef/scr1_top_wb.spef  
-read_spef -path u_sdram_ctrl ../../spef/sdrc_top.spef  
-read_spef -path u_spi_master ../../spef/spim_top.spef  
-read_spef -path u_uart_core  ../../spef/uart_core.spef  
+read_spef -path u_riscv_top  ../../spef/syntacore.spef
+read_spef -path u_sdram_ctrl ../../spef/sdram.spef
+read_spef -path u_spi_master ../../spef/spi_master.spef
+read_spef -path u_uart_i2c_usb  ../../spef/uart_i2cm_usb.spef  
 read_spef -path u_wb_host    ../../spef/wb_host.spef  
 read_spef -path u_intercon   ../../spef/wb_interconnect.spef
 read_spef ../..//spef/user_project_wrapper.spef  

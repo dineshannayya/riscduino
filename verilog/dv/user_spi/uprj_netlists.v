@@ -28,7 +28,7 @@
         `include "glbl_cfg.v"
         `include "sdram.v"
         `include "spi_master.v"
-        `include "uart_i2cm.v"
+        `include "uart_i2cm_usb.v"
         `include "wb_interconnect.v"
         `include "user_project_wrapper.v"
         `include "syntacore.v"

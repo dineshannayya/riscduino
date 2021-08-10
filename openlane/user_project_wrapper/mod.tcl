@@ -57,9 +57,9 @@ read_verilog  ../../verilog/gl/syntacore.v
 link_design  scr1_top_wb
 write_verilog -remove_cells [get_lib_cells {sky130_fd_sc_hd__decap* sky130_fd_sc_hd__fill* sky130_fd_sc_hd__diode_* sky130_ef_sc_hd__fakediode* sky130_fd_sc_hd__tapvpwrvgnd*}] netlist/syntacore.v
 
-read_verilog  ../../verilog/gl/uart.v  
-link_design  uart_core
-write_verilog -remove_cells [get_lib_cells {sky130_fd_sc_hd__decap* sky130_fd_sc_hd__fill* sky130_fd_sc_hd__diode_* sky130_ef_sc_hd__fakediode* sky130_fd_sc_hd__tapvpwrvgnd*}] netlist/uart.v
+read_verilog  ../../verilog/gl/uart_i2cm_usb.v  
+link_design  uart_i2c_usb_top
+write_verilog -remove_cells [get_lib_cells {sky130_fd_sc_hd__decap* sky130_fd_sc_hd__fill* sky130_fd_sc_hd__diode_* sky130_ef_sc_hd__fakediode* sky130_fd_sc_hd__tapvpwrvgnd*}] netlist/uart_i2cm_usb.v
 
 read_verilog  ../../verilog/gl/wb_host.v  
 link_design  wb_host
