@@ -526,11 +526,12 @@ Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Map
    - Docker (ensure docker daemon is running) -- tested with version 19.03.12, but any recent version should suffice.
 
 ## Environment setting
+   - Note: PDK alreay installed inside the docker, no need to define the PDK_ROOT, This will be point to /opt/pdk path inside the docker
+           if user define the PDK_ROOT path, then flow will use the user defined PDK PATH
 
 ```bash
     export CARAVEL_ROOT=<Carvel Installed Path>
     export OPENLANE_ROOT=<OpenLane Installed Path>
-    export PDK_ROOT=<PDK Installed Path>
     export IMAGE_NAME=dineshannayya/openlane:rc7
 ```
 

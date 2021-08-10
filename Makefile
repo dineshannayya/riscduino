@@ -57,12 +57,21 @@ TARGET_PATH=$(shell pwd)
 PDK_PATH=${PDK_ROOT}/sky130A
 VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} && make"
 $(DV_PATTERNS): verify-% : ./verilog/dv/% 
+	@if [ ! -d "$(PDK_ROOT)" ]; then \
+	docker run -v ${TARGET_PATH}:${TARGET_PATH}  \
+                -v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
+                -e TARGET_PATH=${TARGET_PATH} \
+                -e CARAVEL_ROOT=${CARAVEL_ROOT} \
+                -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:latest \
+                sh -c $(VERIFY_COMMAND); \
+	else \
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_PATH}:${PDK_PATH} \
                 -v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
                 -e TARGET_PATH=${TARGET_PATH} -e PDK_PATH=${PDK_PATH} \
                 -e CARAVEL_ROOT=${CARAVEL_ROOT} \
                 -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:latest \
-                sh -c $(VERIFY_COMMAND)
+                sh -c $(VERIFY_COMMAND); \
+	fi
 				
 # Openlane Makefile Targets
 BLOCKS = $(shell cd openlane && find * -maxdepth 0 -type d)
