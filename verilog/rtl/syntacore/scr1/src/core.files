@@ -25,6 +25,8 @@ core/pipeline/scr1_pipe_idu.sv
 core/pipeline/scr1_pipe_ifu.sv
 core/pipeline/scr1_pipe_lsu.sv
 core/pipeline/scr1_pipe_mprf.sv
+core/pipeline/scr1_pipe_mul.sv
+core/pipeline/scr1_pipe_div.sv
 core/pipeline/scr1_pipe_top.sv
 core/primitives/scr1_reset_cells.sv
 core/primitives/scr1_cg.sv

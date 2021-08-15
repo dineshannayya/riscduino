@@ -241,30 +241,30 @@ assign imem_resp = (resp_fifo_rd)
 
 // Check Core interface
 SCR1_SVA_IMEM_WB_BRIDGE_REQ_XCHECK : assert property (
-    @(negedge clk) disable iff (~rst_n)
+    @(negedge core_clk) disable iff (~core_rst_n)
     !$isunknown(imem_req)
     ) else $error("IMEM WB bridge Error: imem_req has unknown values");
 
 SCR1_IMEM_WB_BRIDGE_ADDR_XCHECK : assert property (
-    @(negedge clk) disable iff (~rst_n)
+    @(negedge core_clk) disable iff (~core_rst_n)
     imem_req |-> !$isunknown(imem_addr)
     ) else $error("IMEM WB bridge Error: imem_addr has unknown values");
 
 SCR1_IMEM_WB_BRIDGE_ADDR_ALLIGN : assert property (
-    @(negedge clk) disable iff (~rst_n)
+    @(negedge core_clk) disable iff (~core_rst_n)
     imem_req |-> (imem_addr[1:0] == '0)
     ) else $error("IMEM WB bridge Error: imem_addr has unalign values");
 
 // Check WB interface
 SCR1_IMEM_WB_BRIDGE_HREADY_XCHECK : assert property (
-    @(negedge clk) disable iff (~rst_n)
-    !$isunknown(hready)
-    ) else $error("IMEM WB bridge Error: hready has unknown values");
+    @(negedge core_clk) disable iff (~core_rst_n)
+    !$isunknown(imem_req_ack)
+    ) else $error("IMEM WB bridge Error: imem_req_ack has unknown values");
 
 SCR1_IMEM_WB_BRIDGE_HRESP_XCHECK : assert property (
-    @(negedge clk) disable iff (~rst_n)
-    !$isunknown(hresp)
-    ) else $error("IMEM WB bridge Error: hresp has unknown values");
+    @(negedge core_clk) disable iff (~core_rst_n)
+    !$isunknown(imem_resp)
+    ) else $error("IMEM WB bridge Error: imem_resp has unknown values");
 
 `endif // SCR1_TRGT_SIMULATION
 

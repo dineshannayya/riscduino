@@ -317,7 +317,7 @@ scr1_intf u_intf (
 //-------------------------------------------------------------------------------
 // SCR1 core instance
 //-------------------------------------------------------------------------------
-scr1_core_top u_core_top (
+scr1_core_top i_core_top (
     // Common
     .pwrup_rst_n                (pwrup_rst_n_sync ),
     .rst_n                      (rst_n_sync       ),
