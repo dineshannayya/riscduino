@@ -188,7 +188,7 @@ always_ff @(posedge clk, negedge rst_n) begin
     if (~rst_n) begin
 	exu2ialu_main_op1_ff <= '0;
         exu2ialu_main_op2_ff <= '0;
-        exu2ialu_cmd_ff      <= '0;
+        exu2ialu_cmd_ff      <= SCR1_IALU_CMD_NONE;
 	exu2ialu_rvm_cmd_vd_ff <= '0;
     end else begin
 	exu2ialu_main_op1_ff <= exu2ialu_main_op1_i;
