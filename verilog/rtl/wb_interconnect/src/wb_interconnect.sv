@@ -261,7 +261,7 @@ wire [3:0] m2_wbd_tid_i     = (m2_wbd_adr_i[31:28] ==  4'b0000 ) ? 4'b0000 :
 // Master Mapping
 // -------------------------------------
 assign m0_wb_wr.wbd_dat = m0_wbd_dat_i;
-assign m0_wb_wr.wbd_adr = m0_wbd_adr_i;
+assign m0_wb_wr.wbd_adr = {m0_wbd_adr_i[31:2],2'b00};
 assign m0_wb_wr.wbd_sel = m0_wbd_sel_i;
 assign m0_wb_wr.wbd_we  = m0_wbd_we_i;
 assign m0_wb_wr.wbd_cyc = m0_wbd_cyc_i;
@@ -269,7 +269,7 @@ assign m0_wb_wr.wbd_stb = m0_wbd_stb_i;
 assign m0_wb_wr.wbd_tid = m0_wbd_tid_i;
 
 assign m1_wb_wr.wbd_dat = m1_wbd_dat_i;
-assign m1_wb_wr.wbd_adr = m1_wbd_adr_i;
+assign m1_wb_wr.wbd_adr = {m1_wbd_adr_i[31:2],2'b00};
 assign m1_wb_wr.wbd_sel = m1_wbd_sel_i;
 assign m1_wb_wr.wbd_we  = m1_wbd_we_i;
 assign m1_wb_wr.wbd_cyc = m1_wbd_cyc_i;
@@ -277,7 +277,7 @@ assign m1_wb_wr.wbd_stb = m1_wbd_stb_i;
 assign m1_wb_wr.wbd_tid = m1_wbd_tid_i;
 
 assign m2_wb_wr.wbd_dat = m2_wbd_dat_i;
-assign m2_wb_wr.wbd_adr = m2_wbd_adr_i;
+assign m2_wb_wr.wbd_adr = {m2_wbd_adr_i[31:2],2'b00};
 assign m2_wb_wr.wbd_sel = m2_wbd_sel_i;
 assign m2_wb_wr.wbd_we  = m2_wbd_we_i;
 assign m2_wb_wr.wbd_cyc = m2_wbd_cyc_i;

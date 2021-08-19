@@ -446,10 +446,10 @@ assign reg_3[31:20] = '0;
 //-----------------------------------------------------------------------
 //   reg-4
 //   recommended Default value:
-//   1'b1,3'h3,2'h3,4'h1,4'h7',4'h2,4'h2,4'h4,2'b00,2'b10 = 32'h2F17_2242
+//   1'b1,3'h3,2'h3,4'h1,4'h7',4'h2,4'h2,4'h4,2'b01,2'b10 = 32'h2F17_2246
 //-----------------------------------------------------------------
 assign      cfg_sdr_width     = reg_4[1:0] ;  // 2'b10 // 2'b00 - 32 Bit SDR, 2'b01 - 16 Bit SDR, 2'b1x - 8 Bit
-assign      cfg_colbits       = reg_4[3:2] ;  // 2'b00 //  8 Bit column address, 
+assign      cfg_colbits       = reg_4[3:2] ;  // 2'b00 8 Bit column address, 2'b01 -  9 Bit column address, 
 assign      cfg_sdr_tras_d    = reg_4[7:4] ;  // 4'h4  // Active to precharge delay
 assign      cfg_sdr_trp_d     = reg_4[11:8];  // 4'h2  // Precharge to active delay
 assign      cfg_sdr_trcd_d    = reg_4[15:12]; // 4'h2  // Active to R/W delay
