@@ -65,6 +65,7 @@
       - Dinesh Annayya, dinesha@opencores.org                 
   Version  : 0.0 - 8th Jan 2012
              0.1 - 5th Feb 2012, column/row/bank address are register to improve the timing issue in FPGA synthesis
+	     0.2 - 19th Aug 2021, Address Mapping fix
                                                               
 
                                                              
@@ -206,11 +207,11 @@ always @(*) begin
       req_len_int      = req_len;
    end else if(sdr_width == 2'b01) begin // 16 Bit SDR Mode
       // Changed the address and length to match the 16 bit SDR Mode
-      req_addr_int     = {req_addr,1'b0};
+      req_addr_int     = {1'b0,req_addr};
       req_len_int      = {req_len,1'b0};
    end else  begin // 8 Bit SDR Mode
       // Changed the address and length to match the 16 bit SDR Mode
-      req_addr_int    = {req_addr,2'b0};
+      req_addr_int     = {1'b0,req_addr};
       req_len_int     = {req_len,2'b0};
    end
 end
