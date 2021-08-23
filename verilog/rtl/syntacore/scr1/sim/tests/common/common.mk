@@ -56,7 +56,8 @@ $(bld_dir)/%.elf: $(ld_script) $(c_objs) $(asm_objs)
 	$(RISCV_GCC) -o $@ -T $^ $(LDFLAGS)
 
 $(bld_dir)/%.hex: $(bld_dir)/%.elf
-	$(RISCV_OBJCOPY) $^ $@
+	$(RISCV_ROM_OBJCOPY) $^ $@
+	$(RISCV_RAM_OBJCOPY) $^ $@.ram
 
 $(bld_dir)/%.dump: $(bld_dir)/%.elf
 	$(RISCV_OBJDUMP) $^ > $@
