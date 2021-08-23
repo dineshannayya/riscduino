@@ -121,6 +121,7 @@ module scr1_intf (
 `endif
     // Memory-mapped external timer
     output   logic [63:0]                           timer_val,          // Machine timer value
+    output   logic                                  timer_irq,
     // Instruction Memory Interface
     output   logic                                  core_imem_req_ack,        // IMEM request acknowledge
     input    logic                                  core_imem_req,            // IMEM request
@@ -197,7 +198,6 @@ logic [`SCR1_DMEM_DWIDTH-1:0]                       timer_dmem_wdata;
 logic [`SCR1_DMEM_DWIDTH-1:0]                       timer_dmem_rdata;
 logic [1:0]                                         timer_dmem_resp;
 
-logic                                               timer_irq;
 
 
 //---------------------------------------------------------------------------------
