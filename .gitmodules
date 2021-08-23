@@ -2,3 +2,13 @@
 	path = caravel
 	url = https://github.com/efabless/caravel-lite.git
 	branch = mpw-two
+[submodule "verilog/rtl/syntacore/scr1/dependencies/riscv-tests"]
+	path = verilog/rtl/syntacore/scr1/dependencies/riscv-tests
+	url = https://github.com/riscv/riscv-tests
+[submodule "verilog/rtl/syntacore/scr1/dependencies/riscv-compliance"]
+	path = verilog/rtl/syntacore/scr1/dependencies/riscv-compliance
+	url = https://github.com/riscv/riscv-compliance
+	branch = d51259b2a949be3af02e776c39e135402675ac9b
+[submodule "verilog/rtl/syntacore/scr1/dependencies/coremark"]
+	path = verilog/rtl/syntacore/scr1/dependencies/coremark
+	url = https://github.com/eembc/coremark
