@@ -227,7 +227,7 @@ parameter bit [`SCR1_DMEM_AWIDTH-1:0]   SCR1_TIMER_ADDR_PATTERN     = 'h00490000
 // Addresses used in testbench
 localparam [`SCR1_XLEN-1:0]      SCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
 localparam [`SCR1_XLEN-1:0]      SCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
-localparam [`SCR1_XLEN-1:0]      SCR1_SIM_EXT_IRQ_ADDR   = 32'hF000_0100;
-localparam [`SCR1_XLEN-1:0]      SCR1_SIM_SOFT_IRQ_ADDR  = 32'hF000_0200;
+localparam [`SCR1_XLEN-1:0]      SCR1_SIM_EXT_IRQ_ADDR   = 32'h3000_000C; // Bit [15:0]
+localparam [`SCR1_XLEN-1:0]      SCR1_SIM_SOFT_IRQ_ADDR  = 32'h3000_000C; // Bit[16]
 
 `endif // SCR1_ARCH_DESCRIPTION_SVH

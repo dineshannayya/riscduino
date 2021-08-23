@@ -40,6 +40,8 @@
 ////             Async fifo added in imem and dmem path           ////
 ////     v2:    July 7, 2021, Dinesh A                            ////
 ////            64bit debug signal added                          ////
+////     v3:    Aug 23, 2021, Dinesh A                            ////
+////            timer_irq connective bug fix                      ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -293,6 +295,7 @@ scr1_intf u_intf (
 `endif
     // Memory-mapped external timer
     .timer_val                          (timer_val),          // Machine timer value
+    .timer_irq                          (timer_irq),          // Machine timer value
     // Instruction Memory Interface
     .core_imem_req_ack                  (core_imem_req_ack),  // IMEM request acknowledge
     .core_imem_req                      (core_imem_req),      // IMEM request

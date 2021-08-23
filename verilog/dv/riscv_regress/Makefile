@@ -172,14 +172,14 @@ endif
 ifeq (,$(findstring e,$(ARCH_lowercase)))
 	# These tests cannot be compiled for RVE
 	# Comment this target if you don't want to run the riscv_isa
-	TARGETS += riscv_isa
+	#TARGETS += riscv_isa
 
 	# Comment this target if you don't want to run the riscv_compliance
-	TARGETS += riscv_compliance
+	#TARGETS += riscv_compliance
 endif
 
 # Comment this target if you don't want to run the isr_sample
-#TARGETS += isr_sample
+TARGETS += isr_sample
 
 # Comment this target if you don't want to run the coremark
 #TARGETS += coremark
@@ -283,15 +283,20 @@ run_iverilog: $(test_info)
 	printf "$$(cat $(test_results)) \n"
 
 run_iverilog_wf: $(test_info)
-	$(MAKE) -C $(root_dir)/sim build_iverilog_wf SIM_CFG_DEF=$(SIM_CFG_DEF) SIM_TRACE_DEF=$(SIM_TRACE_DEF) SIM_BUILD_OPTS=$(SIM_BUILD_OPTS); \
-	printf "" > $(test_results); \
 	cd $(bld_dir); \
-        iverilog-vpi ../../sim/iverilog_vpi/system.c; \
+	iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
+	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
+	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
+	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
+	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_TESTS_PATH) \
+	$(sv_list) \
+	-o $(top_module).vvp; \
+	printf "" > $(test_results); \
+        iverilog-vpi ../../../vpi/system/system.c; \
 	vvp  -M. -msystem  $(top_module).vvp \
 	+test_info=$(test_info) \
 	+test_results=$(test_results) \
-	+imem_pattern=$(imem_pattern) \
-	+dmem_pattern=$(dmem_pattern) \
 	| tee $(sim_results)  ;\
 	printf "Simulation performed on $$(vvp -V) \n" ;\
 	printf "                          Test               | build | simulation \n" ; \
