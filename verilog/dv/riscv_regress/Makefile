@@ -194,7 +194,7 @@ endif
 # Targets
 .PHONY: tests run_iverilog run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf
 
-default: clean_test_list run_verilator
+default: clean_test_list run_iverilog
 
 clean_test_list:
 	rm -f $(test_info)
