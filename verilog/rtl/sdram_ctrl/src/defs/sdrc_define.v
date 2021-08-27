@@ -41,8 +41,10 @@
 `define SDR_MODE         4'b0000
 
 `define  ASIC            1'b1
-`define  FPGA            1'b0
-`define  TARGET_DESIGN   `FPGA
+`define  FPGA            1'b0 
+// Don't Enable FPGA mode, there is functional bug  in handling Active to
+// Precharge timing
+`define  TARGET_DESIGN   `ASIC
 // 12 bit subtractor is not feasibile for FPGA, so changed to 6 bits
 `define  REQ_BW    (`TARGET_DESIGN == `FPGA) ? 6 : 12   //  Request Width
 
