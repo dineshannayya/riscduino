@@ -34,6 +34,11 @@
   Author(s):                                                  
       - Dinesh Annayya, dinesha@opencores.org                 
   Version  :  1.0  - 8th Jan 2012
+  Version  :  1.1  - 27th Aug 2021
+       Disabling the `TARGET_DESIGN with FPGA, Breaking timing path creating functional issue
+       Recommnended to use onlt in ASIC Mode. In FPGA mode, tRAS violation are noticed and design
+       has corner case between Active to Pre-charge
+       ERROR: tRAS violation during Precharge all bank
                                                               
 
                                                              

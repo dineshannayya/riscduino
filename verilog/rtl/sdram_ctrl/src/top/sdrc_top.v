@@ -59,7 +59,11 @@
 	          Wishbone Stagging FF added to break timing path
              0.6 - 6th July 2021, Dinesh A
 	          32 bit debug port added
-
+	     0.7 - 27th Aug 2021, Dinesh A
+		  Disabling the `TARGET_DESIGN with FPGA define , Breaking timing path creating functional issue
+                  Recommnended to use onlt in ASIC Mode. In FPGA mode, tRAS violation are noticed and design
+                  has corner case between Active to Pre-charge
+                  ERROR: tRAS violation during Precharge all bank
                                                              
  Copyright (C) 2000 Authors and OPENCORES.ORG                
                                                              
