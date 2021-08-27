@@ -15,7 +15,7 @@ ifeq ($(CFG), MAX)
     override ARCH         := IMC
     override VECT_IRQ     := 1
     override IPIC         := 1
-    override TCM          := 1
+    override TCM          := 0
     override SIM_CFG_DEF  := SCR1_CFG_RV32IMC_MAX
 else
     ifeq ($(CFG), BASE)
@@ -23,7 +23,7 @@ else
         override ARCH         := IC
         override VECT_IRQ     := 1
         override IPIC         := 1
-        override TCM          := 1
+        override TCM          := 0
         override SIM_CFG_DEF  := SCR1_CFG_RV32IC_BASE
     else
         ifeq ($(CFG), MIN)
@@ -31,7 +31,7 @@ else
             override ARCH         := EC
             override VECT_IRQ     := 0
             override IPIC         := 0
-            override TCM          := 1
+            override TCM          := 0
             override SIM_CFG_DEF  := SCR1_CFG_RV32EC_MIN
         else
         # CUSTOM configuration. Parameters can be overwritten
@@ -156,8 +156,8 @@ todo_list    := $(bld_dir)/todo.txt
 export CROSS_PREFIX  ?= riscv64-unknown-elf-
 export RISCV_GCC     ?= $(CROSS_PREFIX)gcc
 export RISCV_OBJDUMP ?= $(CROSS_PREFIX)objdump -D
-export RISCV_ROM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -j .text.init -j .text -O verilog
-export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -O verilog
+export RISCV_ROM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -j .text.init -j .text -j .rodata -j .rodata.str1.4 -O verilog
+export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -O verilog
 export RISCV_READELF ?= $(CROSS_PREFIX)readelf -s
 
 ifneq (,$(findstring e,$(ARCH_lowercase)))
@@ -179,10 +179,10 @@ ifeq (,$(findstring e,$(ARCH_lowercase)))
 endif
 
 # Comment this target if you don't want to run the isr_sample
-TARGETS += isr_sample
+#TARGETS += isr_sample
 
 # Comment this target if you don't want to run the coremark
-#TARGETS += coremark
+TARGETS += coremark
 
 # Comment this target if you don't want to run the dhrystone
 #TARGETS += dhrystone21
@@ -215,7 +215,8 @@ dhrystone21: | $(bld_dir)
 	$(MAKE) -C $(tst_dir)/benchmarks/dhrystone21 EXT_CFLAGS="$(EXT_CFLAGS)" ARCH=$(ARCH)
 
 coremark: | $(bld_dir)
-	-$(MAKE) -C $(tst_dir)/benchmarks/coremark EXT_CFLAGS="$(EXT_CFLAGS)" ARCH=$(ARCH)
+	@echo "core marks"
+	$(MAKE) -C $(tst_dir)/benchmarks/coremark EXT_CFLAGS="$(EXT_CFLAGS)" ARCH=$(ARCH)
 
 riscv_isa: | $(bld_dir)
 	$(MAKE) -C $(tst_dir)/riscv_isa ARCH=$(ARCH)

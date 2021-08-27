@@ -177,9 +177,10 @@ module user_risc_regress_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(2, user_risc_regress_tb);
-	   	$dumpvars(3, user_risc_regress_tb.u_top.u_sdram_ctrl);
-	   	$dumpvars(4, user_risc_regress_tb.u_top.u_riscv_top);
+	   	$dumpvars(1, user_risc_regress_tb);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_sdram_ctrl);
+	   	$dumpvars(0, user_risc_regress_tb.u_sdram8);
+	   	//$dumpvars(1, user_risc_regress_tb.u_top.u_riscv_top);
 	   end
        `endif
 
@@ -234,7 +235,7 @@ module user_risc_regress_tb;
 	        repeat (2) @(posedge clock);
 		#1;
 		//------------ SDRAM Config - 1
-                wb_user_core_write('h3000_0010,'h2F17_2246);
+                wb_user_core_write('h3000_0010,'h2F17_2266);
 
 	        repeat (2) @(posedge clock);
 		#1;
@@ -293,7 +294,7 @@ user_project_wrapper u_top(
 );
 
 
-logic [15:0] riscv_dmem_req_cnt; // cnt dmem req
+logic [31:0] riscv_dmem_req_cnt; // cnt dmem req
 initial 
 begin
    riscv_dmem_req_cnt = 0;
@@ -302,6 +303,8 @@ end
 always @(posedge u_top.wbd_riscv_dmem_stb_i)
 begin
     riscv_dmem_req_cnt = riscv_dmem_req_cnt+1;
+    if((riscv_dmem_req_cnt %200) == 0)
+	$display("STATUS: Total Dmem Req Cnt: %d ",riscv_dmem_req_cnt);
 end
 
 
