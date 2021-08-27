@@ -114,6 +114,8 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
     // Internal system clock
     reg                           CkeZ, Sys_clk;
 
+    event                         error_detected;
+
     // Commands Decode
     wire      Active_enable    = ~Cs_n & ~Ras_n &  Cas_n &  We_n;
     wire      Aref_enable      = ~Cs_n & ~Ras_n & ~Cas_n &  We_n;
@@ -270,17 +272,17 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
             if (Debug) $display ("at time %t AREF : Auto Refresh", $time);
             // Auto Refresh to Auto Refresh
             if ($time - RC_chk < tRC) begin
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tRC violation during Auto Refresh", $time);
             end
             // Precharge to Auto Refresh
             if ($time - RP_chk0 < tRP || $time - RP_chk1 < tRP || $time - RP_chk2 < tRP || $time - RP_chk3 < tRP) begin
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tRP violation during Auto Refresh", $time);
             end
             // Precharge to Refresh
             if (Pc_b0 == 1'b0 || Pc_b1 == 1'b0 || Pc_b2 == 1'b0 || Pc_b3 == 1'b0) begin
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: All banks must be Precharge before Auto Refresh", $time);
             end
             // Record Current tRC time
@@ -331,19 +333,19 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 end
             end else begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: all banks must be Precharge before Load Mode Register", $time);
             end
             // REF to LMR
             if ($time - RC_chk < tRC) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tRC violation during Load Mode Register", $time);
             end
             // LMR to LMR
             if (MRD_chk < tMRD) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tMRD violation during Load Mode Register", $time);
             end
             MRD_chk = 0;
@@ -360,7 +362,7 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 // Precharge to Activate Bank 0
                 if ($time - RP_chk0 < tRP) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                    $display ("at time %t ERROR: tRP violation during Activate bank 0", $time);
                 end
             end else if (Ba == 2'b01 && Pc_b1 == 1'b1) begin
@@ -372,7 +374,7 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 // Precharge to Activate Bank 1
                 if ($time - RP_chk1 < tRP) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                     $display ("at time %t ERROR: tRP violation during Activate bank 1", $time);
                 end
             end else if (Ba == 2'b10 && Pc_b2 == 1'b1) begin
@@ -384,7 +386,7 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 // Precharge to Activate Bank 2
                 if ($time - RP_chk2 < tRP) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                     $display ("at time %t ERROR: tRP violation during Activate bank 2", $time);
                 end
             end else if (Ba == 2'b11 && Pc_b3 == 1'b1) begin
@@ -396,42 +398,42 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 // Precharge to Activate Bank 3
                 if ($time - RP_chk3 < tRP) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                     $display ("at time %t ERROR: tRP violation during Activate bank 3", $time);
                 end
             end else if (Ba == 2'b00 && Pc_b0 == 1'b0) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: Bank 0 is not Precharged.", $time);
             end else if (Ba == 2'b01 && Pc_b1 == 1'b0) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: Bank 1 is not Precharged.", $time);
             end else if (Ba == 2'b10 && Pc_b2 == 1'b0) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: Bank 2 is not Precharged.", $time);
             end else if (Ba == 2'b11 && Pc_b3 == 1'b0) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: Bank 3 is not Precharged.", $time);
             end
             // Active Bank A to Active Bank B
             if ((Previous_bank != Ba) && ($time - RRD_chk < tRRD)) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tRRD violation during Activate bank = %d", $time, Ba);
             end
             // Load Mode Register to Active
             if (MRD_chk < tMRD ) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tMRD violation during Activate bank = %d", $time, Ba);
             end
             // Auto Refresh to Activate
             if ($time - RC_chk < tRC) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display ("at time %t ERROR: tRC violation during Activate bank = %d", $time, Ba);
             end
             // Record variables for checking violation
@@ -453,14 +455,22 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                 if (($time - RAS_chk0 < tRAS) || ($time - RAS_chk1 < tRAS) ||
                     ($time - RAS_chk2 < tRAS) || ($time - RAS_chk3 < tRAS)) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                     $display ("at time %t ERROR: tRAS violation during Precharge all bank", $time);
+		    if($time - RAS_chk0 < tRAS)
+			    $display("ERROR: RAS_CHK0 Rxp: %t  Exd: %t",$time - RAS_chk0,tRAS);
+		    if($time - RAS_chk1 < tRAS)
+			    $display("ERROR: RAS_CHK1 Rxp: %t  Exd: %t",$time - RAS_chk1,tRAS);
+		    if($time - RAS_chk2 < tRAS)
+			    $display("ERROR: RAS_CHK2 Rxp: %t  Exd: %t",$time - RAS_chk2,tRAS);
+		    if($time - RAS_chk3 < tRAS)
+			    $display("ERROR: RAS_CHK3 Rxp: %t  Exd: %t",$time - RAS_chk3,tRAS);
                 end
                 // tWR violation check for write
                 if (($time - WR_chk[0] < tWRp) || ($time - WR_chk[1] < tWRp) ||
                     ($time - WR_chk[2] < tWRp) || ($time - WR_chk[3] < tWRp)) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                     $display ("at time %t ERROR: tWR violation during Precharge all bank", $time);
                 end
             end else if (Addr[10] == 1'b0) begin
@@ -471,7 +481,7 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                     // Activate to Precharge Bank 0
                     if ($time - RAS_chk0 < tRAS) begin
 
-		       //->tb.test_control.error_detected;
+		       ->error_detected;
                         $display ("at time %t ERROR: tRAS violation during Precharge bank 0", $time);
                     end
                 end else if (Ba == 2'b01) begin
@@ -481,7 +491,7 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                     // Activate to Precharge Bank 1
                     if ($time - RAS_chk1 < tRAS) begin
 
-		       //->tb.test_control.error_detected;
+		       ->error_detected;
                         $display ("at time %t ERROR: tRAS violation during Precharge bank 1", $time);
                     end
                 end else if (Ba == 2'b10) begin
@@ -491,7 +501,7 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                     // Activate to Precharge Bank 2
                     if ($time - RAS_chk2 < tRAS) begin
 
-		       //->tb.test_control.error_detected;
+		       ->error_detected;
                         $display ("at time %t ERROR: tRAS violation during Precharge bank 2", $time);
                     end
                 end else if (Ba == 2'b11) begin
@@ -501,14 +511,14 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
                     // Activate to Precharge Bank 3
                     if ($time - RAS_chk3 < tRAS) begin
 
-		       //->tb.test_control.error_detected;
+		       ->error_detected;
                         $display ("at time %t ERROR: tRAS violation during Precharge bank 3", $time);
                     end
                 end
                 // tWR violation check for write
                 if ($time - WR_chk[Ba] < tWRp) begin
 
-		   //->tb.test_control.error_detected;
+		   ->error_detected;
                     $display ("at time %t ERROR: tWR violation during Precharge bank %d", $time, Ba);
                 end
             end
@@ -549,13 +559,13 @@ module mt48lc8m8a2 (Dq, Addr, Ba, Clk, Cke, Cs_n, Ras_n, Cas_n, We_n, Dqm);
             if ((Ba == 2'b00 && Pc_b0 == 1'b1) || (Ba == 2'b01 && Pc_b1 == 1'b1) ||
                 (Ba == 2'b10 && Pc_b2 == 1'b1) || (Ba == 2'b11 && Pc_b3 == 1'b1)) begin
 
-	       //->tb.test_control.error_detected;
+	       ->error_detected;
                 $display("at time %t ERROR: Cannot Read or Write - Bank %d is not Activated", $time, Ba);
             end
             // Activate to Read or Write
             if ((Ba == 2'b00) && ($time - RCD_chk0 < tRCD))
 	      begin
-		 //->tb.test_control.error_detected;
+		 ->error_detected;
                  $display("at time %t ERROR: tRCD violation during Read or Write to Bank 0", $time);
 	      end
 	   

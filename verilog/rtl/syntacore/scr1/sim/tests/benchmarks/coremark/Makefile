@@ -1,5 +1,5 @@
 src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
-depend_dir := $(src_dir)/../../../dependencies/coremark
+depend_dir := $(src_dir)/../../../../dependencies/coremark
 
 ifeq ("$(ITERATIONS)","")
 ITERATIONS=1
@@ -15,10 +15,12 @@ c_src += core_list_join.c core_matrix.c core_main.c core_util.c core_state.c
 
 include $(inc_dir)/common.mk
 
+
 default: log_requested_tgt  $(bld_dir)/coremark.elf $(bld_dir)/coremark.hex $(bld_dir)/coremark.dump 
 
 log_requested_tgt:
 	echo coremark.hex>> $(bld_dir)/test_info
+	echo $(inc_dir)/common.mk
 
 clean:
 	$(RM) $(c_objs) $(asm_objs) $(bld_dir)/coremark.hex $(bld_dir)/coremark.dump 
