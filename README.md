@@ -1,5 +1,5 @@
 ```
-  YiFive SOC
+  Riscduino SOC
 
 
 Permission to use, copy, modify, and/or distribute this soc for any
@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Table of contents
 - [Overview](#overview)
-- [YiFive Block Diagram](#yifive-block-diagram)
+- [Riscduino Block Diagram](#Riscduino-block-diagram)
 - [Key Feature](#key-features)
 - [Sub IP Feature](#sub-ip-features)
 - [SOC Memory Map](#soc-memory-map)
@@ -32,9 +32,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Overview
 
-YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
+Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
 
-# YiFive Block Diagram
+# Riscduino Block Diagram
 
 <table>
   <tr>
@@ -48,9 +48,9 @@ YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program
 ```
     * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed.
     * industry-grade and silicon-proven Open-Source RISC-V core from syntacore 
-    * industry-graded and silicon-proven 8-bit SDRAM controller
     * Quad SPI Master
     * UART with 16Byte FIFO
+    * USB 1.1 Host
     * I2C Master
     * Wishbone compatible design
     * Written in System Verilog
@@ -65,7 +65,7 @@ YiFive is a 32 bit RISC V based SOC design targeted for efabless Shuttle program
 
 ## RISC V Core
 
-YiFive SOC Integrated Syntacore SCR1 Open-source RISV-V compatible MCU-class core.
+Riscduino SOC Integrated Syntacore SCR1 Open-source RISV-V compatible MCU-class core.
 It is industry-grade and silicon-proven IP. Git link: https://github.com/syntacore/scr1
 
 ### Block Diagram
@@ -85,39 +85,12 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
    * Optional on-chip Tightly-Coupled Memory
 ```
 
-### RISC V core customization YiFive SOC
+### RISC V core customization Riscduino SOC
   
 
 * **Update**: Modified some of the system verilog syntax to basic verilog syntax to compile/synthesis in open source tool like simulator (iverilog) and synthesis (yosys).
 * **Modification**: Modified the AXI/AHB interface to wishbone interface towards instruction & data memory interface
 
-## 8bit SDRAM Controller
-Due to number of pin limitation in carvel shuttle, YiFive SOC integrate 8bit SDRAM controller.
-This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
-
-### Block Diagram
-<table>
-  <tr>
-    <td  align="center"><img src="./docs/source/_static/sdram_controller.jpg" ></td>
-  </tr>
-</table>
-
-### SDRAM Controller key Feature
-```
-    * 8/16/32 Configurable SDRAM data width
-    * Wish Bone compatible
-    * Application clock and SDRAM clock can be async
-    * Programmable column address
-    * Support for industry-standard SDRAM devices and modules
-    * Supports all standard SDRAM functions.
-    * Fully Synchronous; All signals registered on positive edge of system clock.
-    * One chip-select signals
-    * Support SDRAM with four banks
-    * Programmable CAS latency
-    * Data mask signals for partial write operations
-    * Bank management architecture, which minimizes latency.
-    * Automatic controlled refresh
-```
 
 # SOC Memory Map
 
@@ -141,12 +114,6 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
     <td  align="center"> SPI Config Reg</td>
   </tr>
 
-  <tr>
-    <td  align="center"> 0x2000_0000 to 0x2FFF_FFFF  </td> 
-    <td  align="center"> 0x2000_0000 to 0x2FFF_FFFF  </td>
-    <td  align="center"> 0x6000_0000 to 0x6FFF_FFFF</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
   <tr>
     <td  align="center"> 0x3000_0000 to 0x3000_00FF</td> 
     <td  align="center"> 0x3000_0000 to 0x3000_00FF</td>
@@ -345,34 +312,9 @@ This is a silicon proven IP. IP Link: https://opencores.org/projects/sdr_ctrl
 | 16    | SOFT_IRQ    | Software Interrupt generation toward riscv     |
 | 15:0  | EXT_IRQ     | External Interrupt generation toward riscv     |
 
-##### Register: SDRAM_CTRL1
-
-| Bits  | Name        | Description    |
-| ----  | ----        | -------------- |
-| 31   | Reserved    | Unused         |
-| 30   | SDRAM_INIT_DONE    | SDRAM init done indication         |
-| 29   | SDR_EN    | SDRAM controller enable     |
-| 28:26| SDR_CAS   | SDRAM CAS latency     |
-| 25:24| SDR_REQ_DP| SDRAM Maximum Request accepted by SDRAM controller     |
-| 23:20| SDR_TWR   | SDRAM Write Recovery delay    |
-| 19:16| SDR_TRCAR | SDRAM Auto Refresh Period     |
-| 15:12| SDR_TRCD  | SDRAM Active ti R/W delay     |
-| 11:8 | SDR_TRP   | SDRAM Prechard to active delay     |
-| 7:4  | SDR_TRAS  | SDRAM Active to precharge     |
-| 3:2  | SDR_COL   | SDRAM Colum Address     |
-| 1:0  | SDR_WD    | SDRAM Interface Width, 0 - 32bit, 1 - 16 bit, 2 - 8 bit     |
-
-##### Register: SDRAM_CTRL2
-
-| Bits  | Name        | Description    |
-| ----  | ----        | -------------- |
-| 31:28 | Reserved    | Unused         |
-| 27:16 | SDRAM_REFRESH | SDRAM Refresh Rate per row  |
-| 15:3  | SDR_MODE_REG  | SDRAM Mode Register     |
-| 2:0   | SDR_MODE_REG  | Number of rows to rfsh at a time     |
 
 # SOC Pin Mapping
-Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Mapping as follows
+Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin Mapping as follows
 
 <table>
   <tr>
@@ -513,10 +455,8 @@ Carvel SOC provides 38 GPIO pins for user functionality. YiFive SOC GPIO Pin Map
 |   |- gl                                                  | ** GLS Source files **
 |
 |- openlane
-    |- sdram                                               | sdram openlane scripts   
     |- spi_master                                          | spi_master openlane scripts   
     |- syntacore                                           | Risc Core openlane scripts   
-    |- yifive                                              | yifive digital core openlane scripts
     |- user_project_wrapper                                | carvel user project wrapper 
 
 ```
@@ -558,7 +498,7 @@ Examples:
 
 # Tool Sets
 
-YiFive Soc flow uses Openlane tool sets.
+Riscduino Soc flow uses Openlane tool sets.
 
 1. **Synthesis**
     1. `yosys` - Performs RTL synthesis
@@ -605,11 +545,10 @@ We have modified these openlane changes in our git repo, you can use from these 
 
 ## Contacts
 
-Report an issue: <https://github.com/dineshannayya/yifive_r0/issues>
+Report an issue: <https://github.com/dineshannayya/riscduino/issues>
 
 # Documentation
 * **Syntacore Link** - https://github.com/syntacore/scr1
-* **SDRAM Controller** - https://opencores.org/projects/sdr_ctrl
 
 
 
