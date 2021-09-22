@@ -38,7 +38,7 @@ Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform
 
 <table>
   <tr>
-    <td  align="center"><img src="./docs/source/_static/YiFive_Soc.png" ></td>
+    <td  align="center"><img src="./docs/source/_static/Riscduino_Soc.png" ></td>
   </tr>
 
 </table>
