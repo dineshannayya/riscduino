@@ -8,3 +8,6 @@
 [submodule "verilog/rtl/syntacore/scr1/dependencies/coremark"]
 	path = verilog/rtl/syntacore/scr1/dependencies/coremark
 	url = https://github.com/eembc/coremark
+[submodule "caravel"]
+	path = caravel
+	url = https://github.com/efabless/caravel-lite

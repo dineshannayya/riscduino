@@ -87,62 +87,37 @@ module uart_i2c_usb_top
    input logic         reg_be,
 
         // Outputs
-   output logic [31:0]  reg_rdata,
+   output logic [31:0] reg_rdata,
    output logic        reg_ack,
+   /////////////////////////////////////////////////////////
+   // i2c interface
+   ///////////////////////////////////////////////////////
+   input logic         scl_pad_i              , // SCL-line input
+   output logic        scl_pad_o              , // SCL-line output (always 1'b0)
+   output logic        scl_pad_oen_o          , // SCL-line output enable (active low)
+   
+   input logic         sda_pad_i              , // SDA-line input
+   output logic        sda_pad_o              , // SDA-line output (always 1'b0)
+   output logic        sda_padoen_o           , // SDA-line output enable (active low)
 
-       // Pad Control
-   input  logic [1:0]  io_in,
-   output logic [1:0]  io_out,
-   output logic [1:0]  io_oeb
+   // UART I/F
+   input  logic        uart_rxd               , 
+   output logic        uart_txd               ,
+
+   input  logic        usb_in_dp              ,
+   input  logic        usb_in_dn              ,
+
+   output logic        usb_out_dp             ,
+   output logic        usb_out_dn             ,
+   output logic        usb_out_tx_oen       
 
      );
 
-/////////////////////////////////////////////////////////
-// uart interface
-///////////////////////////////////////////////////////
-
-logic             uart_rxd                  ; 
-logic             uart_txd                  ;
-/////////////////////////////////////////////////////////
-// i2c interface
-///////////////////////////////////////////////////////
-logic             scl_pad_i                 ; // SCL-line input
-logic             scl_pad_o                 ; // SCL-line output (always 1'b0)
-logic             scl_pad_oen_o             ; // SCL-line output enable (active low)
-
-logic             sda_pad_i                 ; // SDA-line input
-logic             sda_pad_o                 ; // SDA-line output (always 1'b0)
-logic             sda_padoen_o              ; // SDA-line output enable (active low)
-
-/////////////////////////////////////////////////////////
-// usb interface
-///////////////////////////////////////////////////////
-logic             usb_in_dp                ;
-logic             usb_in_dn                ;
-             
-logic             usb_out_dp               ;
-logic             usb_out_dn               ;
-logic             usb_out_tx_oen           ;
 
 `define SEL_UART 2'b00
 `define SEL_I2C  2'b01
 `define SEL_USB  2'b10
 
-assign  io_oeb[0]  =  (uart_i2c_usb_sel == `SEL_UART) ? 1'b1 : 
-	              (uart_i2c_usb_sel == `SEL_I2C) ? scl_pad_oen_o : usb_out_tx_oen ; 
-assign  uart_rxd   =  (uart_i2c_usb_sel == `SEL_UART) ? io_in[0]: 1'b0;
-assign  scl_pad_i  =  (uart_i2c_usb_sel == `SEL_I2C) ? io_in[0]: 1'b0;
-assign  usb_in_dn  =  (uart_i2c_usb_sel == `SEL_USB) ? io_in[0]: 1'b0;
-assign  io_out[0]  =  (uart_i2c_usb_sel == `SEL_UART) ? 1'b0 : 
-	              (uart_i2c_usb_sel == `SEL_I2C) ?  scl_pad_o :  usb_out_dn;
-
-
-assign  io_oeb[1] =  (uart_i2c_usb_sel == `SEL_UART) ? 1'b0 : 
-	             (uart_i2c_usb_sel == `SEL_I2C) ? sda_padoen_o : usb_out_tx_oen ; 
-assign  io_out[1]  = (uart_i2c_usb_sel == `SEL_UART) ? uart_txd: 
-	             (uart_i2c_usb_sel == `SEL_I2C) ? sda_pad_o : usb_out_dp;
-assign  sda_pad_i =  (uart_i2c_usb_sel == `SEL_I2C) ? io_in[1] : 1'b0;
-assign  usb_in_dp =  (uart_i2c_usb_sel == `SEL_USB) ? io_in[1] : 1'b0;
 
 
 //----------------------------------------

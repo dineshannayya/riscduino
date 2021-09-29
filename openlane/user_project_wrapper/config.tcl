@@ -49,8 +49,8 @@ set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro.cfg
 
 set ::env(PDN_CFG) $script_dir/pdn.tcl
 
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+#set ::env(SDC_FILE) "$script_dir/base.sdc"
+#set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
@@ -58,33 +58,33 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(VERILOG_FILES_BLACKBOX) "\
         $script_dir/../../verilog/gl/spi_master.v \
         $script_dir/../../verilog/gl/wb_interconnect.v \
-        $script_dir/../../verilog/gl/glbl_cfg.v     \
+        $script_dir/../../verilog/gl/pinmux.v     \
+        $script_dir/../../verilog/gl/sar_adc.v     \
         $script_dir/../../verilog/gl/uart_i2cm_usb.v     \
-	$script_dir/../../verilog/gl/sdram.v \
+	$script_dir/../../verilog/rtl/sar_adc/DAC_8BIT.v \
 	$script_dir/../../verilog/gl/wb_host.v \
-	$script_dir/../../verilog/gl/clk_skew_adjust.v \
 	$script_dir/../../verilog/gl/syntacore.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
 	$lef_root/spi_master.lef \
-	$lef_root/glbl_cfg.lef \
+	$lef_root/pinmux.lef \
 	$lef_root/wb_interconnect.lef \
-	$lef_root/sdram.lef \
 	$lef_root/uart_i2cm_usb.lef \
 	$lef_root/wb_host.lef \
-	$lef_root/clk_skew_adjust.lef \
+	$lef_root/sar_adc.lef \
+	$lef_root/DAC_8BIT.lef \
 	$lef_root/syntacore.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/spi_master.gds \
-	$gds_root/glbl_cfg.gds \
+	$gds_root/pinmux.gds \
 	$gds_root/wb_interconnect.gds \
 	$gds_root/uart_i2cm_usb.gds \
-	$gds_root/sdram.gds \
 	$gds_root/wb_host.gds \
-	$gds_root/clk_skew_adjust.gds \
+	$gds_root/sar_adc.gds \
+	$gds_root/DAC_8BIT.gds \
 	$gds_root/syntacore.gds \
 	"
 
@@ -101,8 +101,8 @@ set ::env(RUN_KLAYOUT_DRC) 0
 set ::env(VDD_PIN) [list {vdda1 vdda2 vccd1 vccd2}]
 set ::env(GND_PIN) [list {vssa1 vssa2 vssd1 vssd2}]
 
-set ::env(VDD_NETS) [list {vccd1}]
-set ::env(GND_NETS) [list {vssd1}]
+set ::env(VDD_NETS) [list {vdda1 vdda2 vccd1 vccd2}]
+set ::env(GND_NETS) [list {vssa1 vssa2 vssd1 vssd2}]
 
 
 
@@ -127,7 +127,7 @@ set ::env(PL_DIAMOND_SEARCH_HEIGHT) "250"
 
 
 set ::env(FP_PDN_HOFFSET) "5"
-set ::env(FP_PDN_HPITCH) "80"
+set ::env(FP_PDN_HPITCH) "120"
 set ::env(FP_PDN_HSPACING) "15"
 set ::env(FP_PDN_HWIDTH) "3"
 set ::env(FP_PDN_LOWER_LAYER) "met4"
@@ -136,6 +136,6 @@ set ::env(FP_PDN_RAIL_OFFSET) "0"
 set ::env(FP_PDN_RAIL_WIDTH) "0.48"
 set ::env(FP_PDN_UPPER_LAYER) "met5"
 set ::env(FP_PDN_VOFFSET) "5"
-set ::env(FP_PDN_VPITCH) "80"
+set ::env(FP_PDN_VPITCH) "120"
 set ::env(FP_PDN_VSPACING) "15"
 set ::env(FP_PDN_VWIDTH) "3"
