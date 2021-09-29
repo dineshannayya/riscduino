@@ -117,10 +117,11 @@ module spim_top
     output logic                 [31:0]  spi_debug,
 
     // PAD I/f
-    input  logic  [3:0]                  io_in    ,
-    output logic  [5:0]                  io_out   ,
-    output logic  [5:0]                  io_oeb
-
+    input logic [3:0]                    spi_sdi,
+    output logic                         spi_clk,
+    output logic                         spi_csn0,// No hold fix for CS#, as it asserted much eariler than SPI clock
+    output logic [3:0]                   spi_sdo,
+    output logic                         spi_oen
 );
 
 
@@ -218,16 +219,9 @@ logic                          spi_sdo0;
 logic                          spi_sdo1;
 logic                          spi_sdo2;
 logic                          spi_sdo3;
-logic                          spi_sdi0;
-logic                          spi_sdi1;
-logic                          spi_sdi2;
-logic                          spi_sdi3;
 logic                          spi_en_tx;
 logic                          spi_init_done;
-logic                          spi_sdo0_out;
-logic                          spi_sdo1_out;
-logic                          spi_sdo2_out;
-logic                          spi_sdo3_out;
+logic  [3:0]                   spi_sdo_int;
 
 logic                          spi_sdo0_dl;
 logic                          spi_sdo1_dl;
@@ -235,42 +229,26 @@ logic                          spi_sdo2_dl;
 logic                          spi_sdo3_dl;
 
 
-assign  spi_sdi0  =  io_in[0];
-assign  spi_sdi1  =  io_in[1];
-assign  spi_sdi2  =  io_in[2];
-assign  spi_sdi3  =  io_in[3];
-
-assign  io_out[0] =  spi_clk;
-assign  io_out[1] =  spi_csn0;// No hold fix for CS#, as it asserted much eariler than SPI clock
-assign  #1 io_out[2] =  spi_sdo0_out;
-assign  #1 io_out[3] =  spi_sdo1_out;
-assign  #1 io_out[4] =  spi_sdo2_out;
-assign  #1 io_out[5] =  spi_sdo3_out;
 
 // ADDing Delay cells for Interface hold fix
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio0 (.X(spi_sdo0_d1),.A(spi_sdo0));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio0 (.X(spi_sdo0_d1),.A(spi_sdo_int[0]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio0 (.X(spi_sdo0_d2),.A(spi_sdo0_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio0    (.X(spi_sdo0_out),.A(spi_sdo0_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio0    (.X(spi_sdo0),.A(spi_sdo0_d2));
 
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio1 (.X(spi_sdo1_d1),.A(spi_sdo1));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio1 (.X(spi_sdo1_d1),.A(spi_sdo_int[1]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio1 (.X(spi_sdo1_d2),.A(spi_sdo1_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio1    (.X(spi_sdo1_out),.A(spi_sdo1_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio1    (.X(spi_sdo1),.A(spi_sdo1_d2));
 
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio2 (.X(spi_sdo2_d1),.A(spi_sdo2));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio2 (.X(spi_sdo2_d1),.A(spi_sdo_int[2]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio2 (.X(spi_sdo2_d2),.A(spi_sdo2_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio2    (.X(spi_sdo2_out),.A(spi_sdo2_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio2    (.X(spi_sdo2),.A(spi_sdo2_d2));
 
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio3 (.X(spi_sdo3_d1),.A(spi_sdo3));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio3 (.X(spi_sdo3_d1),.A(spi_sdo_int[3]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio3 (.X(spi_sdo3_d2),.A(spi_sdo3_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio3    (.X(spi_sdo3_out),.A(spi_sdo3_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio3    (.X(spi_sdo3),.A(spi_sdo3_d2));
 
 
-assign  io_oeb[0] =  1'b0;         // spi_clk
-assign  io_oeb[1] =  1'b0;         // spi_csn
-assign  #1 io_oeb[2] =  !spi_en_tx;   // spi_dio0
-assign  #1 io_oeb[3] =  !spi_en_tx;   // spi_dio1
-assign  #1 io_oeb[4] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio2
-assign  #1 io_oeb[5] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // spi_dio3
+assign   spi_oen = !spi_en_tx;
 
 spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .mclk                           (mclk                         ),
@@ -485,15 +463,15 @@ spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .spi_csn2                       (spi_csn2                     ),
         .spi_csn3                       (spi_csn3                     ),
         .spi_mode                       (spi_mode                     ),
-        .spi_sdo0                       (spi_sdo0                     ),
-        .spi_sdo1                       (spi_sdo1                     ),
-        .spi_sdo2                       (spi_sdo2                     ),
-        .spi_sdo3                       (spi_sdo3                     ),
-        .spi_sdi0                       (spi_sdi0                     ),
-        .spi_sdi1                       (spi_sdi1                     ),
-        .spi_sdi2                       (spi_sdi2                     ),
-        .spi_sdi3                       (spi_sdi3                     ),
-	.spi_en_tx_out                      (spi_en_tx                    )
+        .spi_sdo0                       (spi_sdo_int[0]               ),
+        .spi_sdo1                       (spi_sdo_int[1]               ),
+        .spi_sdo2                       (spi_sdo_int[2]               ),
+        .spi_sdo3                       (spi_sdo_int[3]               ),
+        .spi_sdi0                       (spi_sdi[0]                   ),
+        .spi_sdi1                       (spi_sdi[1]                   ),
+        .spi_sdi2                       (spi_sdi[2]                   ),
+        .spi_sdi3                       (spi_sdi[3]                   ),
+	.spi_en_tx_out                  (spi_en_tx                    )
     );
 
 endmodule

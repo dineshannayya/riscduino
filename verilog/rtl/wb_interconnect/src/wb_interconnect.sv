@@ -160,7 +160,7 @@ module wb_interconnect(
          // input	logic 	s3_wbd_err_i,
          output	logic [31:0]	s3_wbd_dat_o,
          output	logic [7:0]	s3_wbd_adr_o, 
-         output	logic    	s3_wbd_sel_o,
+         output	logic [3:0]   	s3_wbd_sel_o,
          output	logic 	        s3_wbd_we_o,
          output	logic 	        s3_wbd_cyc_o,
          output	logic 	        s3_wbd_stb_o
@@ -323,7 +323,7 @@ assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
 
  assign  s3_wbd_dat_o =  s3_wb_wr.wbd_dat[31:0] ;
  assign  s3_wbd_adr_o =  s3_wb_wr.wbd_adr[7:0] ; // Global Reg Need 8 bit
- assign  s3_wbd_sel_o =  s3_wb_wr.wbd_sel[0] ;
+ assign  s3_wbd_sel_o =  s3_wb_wr.wbd_sel[3:0] ;
  assign  s3_wbd_we_o  =  s3_wb_wr.wbd_we  ;
  assign  s3_wbd_cyc_o =  s3_wb_wr.wbd_cyc ;
  assign  s3_wbd_stb_o =  s3_wb_wr.wbd_stb ;
