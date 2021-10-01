@@ -297,12 +297,12 @@ module risc_boot_tb;
 // Connect Quad Flash to for usr Risc Core
 //-----------------------------------------
 
-   wire user_flash_clk = mprj_io[30];
-   wire user_flash_csb = mprj_io[31];
-   //tri  user_flash_io0 = mprj_io[33];
-   //tri  user_flash_io1 = mprj_io[34];
-   //tri  user_flash_io2 = mprj_io[35];
-   //tri  user_flash_io3 = mprj_io[36];
+   wire user_flash_clk = mprj_io[24];
+   wire user_flash_csb = mprj_io[25];
+   //tri  user_flash_io0 = mprj_io[26];
+   //tri  user_flash_io1 = mprj_io[27];
+   //tri  user_flash_io2 = mprj_io[28];
+   //tri  user_flash_io3 = mprj_io[29];
 
 
    // Quard flash
@@ -311,68 +311,24 @@ module risc_boot_tb;
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
-       .SI      (mprj_io[32]),
-       .SO      (mprj_io[33]),
+       .SI      (mprj_io[26]),
+       .SO      (mprj_io[27]),
        // Controls
        .SCK     (user_flash_clk),
        .CSNeg   (user_flash_csb),
-       .WPNeg   (mprj_io[34]),
-       .HOLDNeg (mprj_io[35]),
+       .WPNeg   (mprj_io[28]),
+       .HOLDNeg (mprj_io[29]),
        .RSTNeg  (RSTB)
 
        );
-
-//------------------------------------------------
-// Integrate the SDRAM 8 BIT Memory
-// -----------------------------------------------
-
-tri [7:0]    Dq                  ; // SDRAM Read/Write Data Bus
-wire [0:0]    sdr_dqm            ; // SDRAM DATA Mask
-wire [1:0]    sdr_ba             ; // SDRAM Bank Select
-wire [12:0]   sdr_addr           ; // SDRAM ADRESS
-wire          sdr_cs_n           ; // chip select
-wire          sdr_cke            ; // clock gate
-wire          sdr_ras_n          ; // ras
-wire          sdr_cas_n          ; // cas
-wire          sdr_we_n           ; // write enable        
-wire          sdram_clk         ;      
-
-//assign  Dq[7:0]           =    mprj_io [7:0];
-assign  sdr_addr[12:0]    =    mprj_io [20:8]     ;
-assign  sdr_ba[1:0]       =    mprj_io [22:21]    ;
-assign  sdr_dqm[0]        =    mprj_io [23]       ;
-assign  sdr_we_n          =    mprj_io [24]       ;
-assign  sdr_cas_n         =    mprj_io [25]       ;
-assign  sdr_ras_n         =    mprj_io [26]       ;
-assign  sdr_cs_n          =    mprj_io [27]       ;
-assign  sdr_cke           =    mprj_io [28]       ;
-assign  sdram_clk         =    mprj_io [29]       ;
-
-// to fix the sdram interface timing issue
-wire #(2.0) sdram_clk_d   = sdram_clk;
-
-	// SDRAM 8bit
-mt48lc8m8a2 #(.data_bits(8)) u_sdram8 (
-          .Dq                 (mprj_io [7:0]      ) , 
-          .Addr               (sdr_addr[11:0]     ), 
-          .Ba                 (sdr_ba             ), 
-          .Clk                (sdram_clk_d        ), 
-          .Cke                (sdr_cke            ), 
-          .Cs_n               (sdr_cs_n           ), 
-          .Ras_n              (sdr_ras_n          ), 
-          .Cas_n              (sdr_cas_n          ), 
-          .We_n               (sdr_we_n           ), 
-          .Dqm                (sdr_dqm            )
-     );
-
 
 //---------------------------
 //  UART Agent integration
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = mprj_io[37];
-assign mprj_io[36]  = uart_rxd ;
+assign uart_txd   = mprj_io[2];
+assign mprj_io[1]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),

@@ -29,14 +29,14 @@ module pinmux (
 		       // SFLASH I/F
 		       input  logic            sflash_sck,
 		       input  logic            sflash_ss,
-		       input  logic            sflash_oen,
+		       input  logic [3:0]      sflash_oen,
 		       input  logic [3:0]      sflash_do,
 		       output logic [3:0]      sflash_di,
 
 		       // SSRAM I/F
 		       input  logic            ssram_sck,
 		       input  logic            ssram_ss,
-		       input  logic            ssram_oen,
+		       input  logic [3:0]      ssram_oen,
 		       input  logic [3:0]      ssram_do,
 		       output logic [3:0]      ssram_di,
 
@@ -75,7 +75,6 @@ module pinmux (
 /* clock pulse */
 //********************************************************
 logic           pulse1u_mclk            ;// 1 UsSecond Pulse for waveform Generator
-logic           pulse1m_mclk            ;// 1MilliSecond Pulse for waveform Generator
 logic           pulse1s_mclk            ;// 1Second Pulse for waveform Generator
 logic [9:0]     cfg_pulse_1us           ;// 1us pulse generation config
                 
@@ -344,14 +343,12 @@ pwm  u_pwm_5 (
 *                sflash_io1          digital_io[27]
 *                sflash_io2          digital_io[28]
 *                sflash_io3          digital_io[29]
-*
 *                ssram_sck           digital_io[30]
 *                ssram_ss            digital_io[31]
 *                ssram_io0           digital_io[32]
 *                ssram_io1           digital_io[33]
 *                ssram_io2           digital_io[34]
 *                ssram_io3           digital_io[35]
-*
 *                usb_dp              digital_io[36]
 *                usb_dn              digital_io[37]
 ****************************************************************
@@ -671,18 +668,18 @@ always_comb begin
      // Serial Flash
      digital_io_oen[24] = 1'b0   ;
      digital_io_oen[25] = 1'b0   ;
-     digital_io_oen[26] = sflash_oen;
-     digital_io_oen[27] = sflash_oen;
-     digital_io_oen[28] = sflash_oen;
-     digital_io_oen[29] = sflash_oen;
+     digital_io_oen[26] = sflash_oen[0];
+     digital_io_oen[27] = sflash_oen[1];
+     digital_io_oen[28] = sflash_oen[2];
+     digital_io_oen[29] = sflash_oen[3];
                        
      // Serail SRAM 
      digital_io_oen[30] = 1'b0  ;
      digital_io_oen[31] = 1'b0  ;
-     digital_io_oen[32] = ssram_oen;
-     digital_io_oen[33] = ssram_oen;
-     digital_io_oen[34] = ssram_oen;
-     digital_io_oen[35] = ssram_oen;
+     digital_io_oen[32] = ssram_oen[0];
+     digital_io_oen[33] = ssram_oen[1];
+     digital_io_oen[34] = ssram_oen[2];
+     digital_io_oen[35] = ssram_oen[3];
                   
      // USB 1.1     
      digital_io_oen[36] = usb_oen;

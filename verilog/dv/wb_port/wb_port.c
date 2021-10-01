@@ -23,22 +23,34 @@
 #define reg_mprj_slave (*(volatile uint32_t*)0x30000000)
 
 #define reg_mprj_wbhost_reg0 (*(volatile uint32_t*)0x30800000)
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30000000)
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30000004)
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30000008)
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x3000000C)
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x30000010)
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x30000014)
-#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x30000018)
-#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x3000001C)
-#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x30000020)
-#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x30000024)
-#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x30000028)
-#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x3000002C)
-#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x30000030)
-#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x30000034)
-#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30000038)
-#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3000003C)
+#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30030000)
+#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30030004)
+#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30030008)
+#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x3003000C)
+#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x30030010)
+#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x30030014)
+#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x30030018)
+#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x3003001C)
+#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x30030020)
+#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x30030024)
+#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x30030028)
+#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x3003002C)
+#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x30030030)
+#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x30030034)
+#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30030038)
+#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3003003C)
+#define reg_mprj_globl_reg16 (*(volatile uint32_t*)0x30030040)
+#define reg_mprj_globl_reg17 (*(volatile uint32_t*)0x30030044)
+#define reg_mprj_globl_reg18 (*(volatile uint32_t*)0x30030048)
+#define reg_mprj_globl_reg19 (*(volatile uint32_t*)0x3003004C)
+#define reg_mprj_globl_reg20 (*(volatile uint32_t*)0x30030050)
+#define reg_mprj_globl_reg21 (*(volatile uint32_t*)0x30030054)
+#define reg_mprj_globl_reg22 (*(volatile uint32_t*)0x30030058)
+#define reg_mprj_globl_reg23 (*(volatile uint32_t*)0x3003005C)
+#define reg_mprj_globl_reg24 (*(volatile uint32_t*)0x30030060)
+#define reg_mprj_globl_reg25 (*(volatile uint32_t*)0x30030064)
+#define reg_mprj_globl_reg26 (*(volatile uint32_t*)0x30030068)
+#define reg_mprj_globl_reg27 (*(volatile uint32_t*)0x3003006C)
 
 
 /*
@@ -106,41 +118,30 @@ void main()
     // Remove Wishbone Reset
     reg_mprj_wbhost_reg0 = 0x1;
 
+    if (reg_mprj_globl_reg0 != 0x89490201) bFail = 1;
     if (reg_mprj_globl_reg1 != 0xA55AA55A) bFail = 1;
-    if (reg_mprj_globl_reg2 != 0xAABBCCDD) bFail = 1;
 
     // Write software Write & Read Register
-    reg_mprj_globl_reg6  = 0x11223344; 
-    reg_mprj_globl_reg7  = 0x22334455; 
-    reg_mprj_globl_reg8  = 0x33445566; 
-    reg_mprj_globl_reg9  = 0x44556677; 
-    reg_mprj_globl_reg10 = 0x55667788; 
-    reg_mprj_globl_reg11 = 0x66778899; 
-    reg_mprj_globl_reg12 = 0x778899AA; 
-    reg_mprj_globl_reg13 = 0x8899AABB; 
-    reg_mprj_globl_reg14 = 0x99AABBCC; 
-    reg_mprj_globl_reg15 = 0xAABBCCDD; 
+    reg_mprj_globl_reg22  = 0x11223344; 
+    reg_mprj_globl_reg23  = 0x22334455; 
+    reg_mprj_globl_reg24  = 0x33445566; 
+    reg_mprj_globl_reg25  = 0x44556677; 
+    reg_mprj_globl_reg26  = 0x55667788; 
+    reg_mprj_globl_reg27  = 0x66778899; 
 
 
-    if (reg_mprj_globl_reg6  != 0x11223344) bFail = 1;
+    if (reg_mprj_globl_reg22  != 0x11223344) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB610000;
-    if (reg_mprj_globl_reg7  != 0x22334455) bFail = 1;
+    if (reg_mprj_globl_reg23  != 0x22334455) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB620000;
-    if (reg_mprj_globl_reg8  != 0x33445566) bFail = 1;
+    if (reg_mprj_globl_reg24  != 0x33445566) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB630000;
-    if (reg_mprj_globl_reg9  != 0x44556677) bFail = 1;
+    if (reg_mprj_globl_reg25  != 0x44556677) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB640000;
-    if (reg_mprj_globl_reg10 != 0x55667788) bFail = 1;
+    if (reg_mprj_globl_reg26 != 0x55667788) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB650000;
-    if (reg_mprj_globl_reg11 != 0x66778899) bFail = 1;
+    if (reg_mprj_globl_reg27 != 0x66778899) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB660000;
-    if (reg_mprj_globl_reg12 != 0x778899AA) bFail = 1;
-    if (bFail == 1) reg_mprj_datal = 0xAB670000;
-    if (reg_mprj_globl_reg13 != 0x8899AABB) bFail = 1;
-    if (bFail == 1) reg_mprj_datal = 0xAB680000;
-    if (reg_mprj_globl_reg14 != 0x99AABBCC) bFail = 1;
-    if (bFail == 1) reg_mprj_datal = 0xAB690000;
-    if (reg_mprj_globl_reg15 != 0xAABBCCDD) bFail = 1;
 
     if(bFail == 0) {
         reg_mprj_datal = 0xAB6A0000;

@@ -98,7 +98,7 @@
 // `define SCR1_TDU_ICOUNT_EN          // enable hardware triggers on instruction counter
   `define SCR1_IPIC_EN                // enable Integrated Programmable Interrupt Controller
   `define SCR1_IPIC_SYNC_EN           // enable IPIC synchronizer
-//  `define SCR1_TCM_EN
+  `define SCR1_TCM_EN
   `define SCR1_NEW_PC_REG             // enable register in IFU for New_PC value
   `define SCRC1_MPRF_STAGE            // enabled register at Read path of MPRF
 `elsif  SCR1_CFG_RV32IC_BASE

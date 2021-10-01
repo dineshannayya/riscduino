@@ -27,7 +27,7 @@ module sar_adc(
     input   logic           analog_dac_out, // DAC analog o/p for compare
 
     // ACMP (HD) Ports 
-    input   logic           analog_din        // (Analog)
+    input   logic    [5:0]  analog_din        // (Analog)
 
 );
 

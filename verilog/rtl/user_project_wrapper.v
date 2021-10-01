@@ -104,6 +104,8 @@
 ////          2. Removed the SDRAM controlled                     ////
 ////          3. Added PinMux                                     ////
 ////          4. Added SAR ADC for 6 channel                      ////
+////    1.3 - 30th Sept 2021, Dinesh.A                            ////
+////          2KB SRAM Interface added to RISC Core               ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -327,7 +329,7 @@ wire [63:0]                       riscv_debug         ;
 // SFLASH I/F
 wire                             sflash_sck          ;
 wire                             sflash_ss           ;
-wire                             sflash_oen          ;
+wire [3:0]                       sflash_oen          ;
 wire [3:0]                       sflash_do           ;
 wire [3:0]                       sflash_di           ;
 
@@ -367,6 +369,23 @@ wire [7:0]                       sar2dac             ;
 wire                             analog_dac_out      ;
 wire                             pulse1m_mclk        ;
 wire                             h_reset_n           ;
+
+`ifndef SCR1_TCM_MEM
+// SRAM PORT-0 - DMEM I/F
+wire                             sram_csb0           ; // CS#
+wire                             sram_web0           ; // WE#
+wire   [8:0]                     sram_addr0          ; // Address
+wire   [3:0]                     sram_wmask0         ; // WMASK#
+wire   [31:0]                    sram_din0           ; // Write Data
+wire   [31:0]                    sram_dout0          ; // Read Data
+
+// SRAM PORT-1, IMEM I/F
+wire                             sram_csb1           ; // CS#
+wire  [8:0]                      sram_addr1          ; // Address
+wire  [31:0]                     sram_dout1          ; // Read Data
+`endif
+
+
 /////////////////////////////////////////////////////////
 // Clock Skew Ctrl
 ////////////////////////////////////////////////////////
@@ -469,6 +488,20 @@ scr1_top_wb u_riscv_top (
     // .test_mode           (1'b0                      ), // Moved inside IP
     // .test_rst_n          (1'b1                      ), // Moved inside IP
 
+`ifndef SCR1_TCM_MEM
+    // SRAM PORT-0
+    .sram_csb0              (sram_csb0                 ),
+    .sram_web0              (sram_web0                 ),
+    .sram_addr0             (sram_addr0                ),
+    .sram_wmask0            (sram_wmask0               ),
+    .sram_din0              (sram_din0                 ),
+    .sram_dout0             (sram_dout0                ),
+    
+    // SRAM PORT-0
+    .sram_csb1              (sram_csb1                 ),
+    .sram_addr1             (sram_addr1                ),
+    .sram_dout1             (sram_dout1                ),
+`endif
     
     .wb_rst_n               (wbd_int_rst_n             ),
     .wb_clk                 (wbd_clk_int               ),
@@ -492,6 +525,30 @@ scr1_top_wb u_riscv_top (
     .wbd_dmem_ack_i         (wbd_riscv_dmem_ack_o      ),
     .wbd_dmem_err_i         (wbd_riscv_dmem_err_o      ) 
 );
+
+`ifndef SCR1_TCM_MEM
+sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_2kb(
+`ifdef USE_POWER_PINS
+    .vccd1 (vccd1),// User area 1 1.8V supply
+    .vssd1 (vssd1),// User area 1 digital ground
+`endif
+// Port 0: RW
+    .clk0     (cpu_clk),
+    .csb0     (sram_csb0),
+    .web0     (sram_web0),
+    .wmask0   (sram_wmask0),
+    .addr0    (sram_addr0),
+    .din0     (sram_din0),
+    .dout0    (sram_dout0),
+// Port 1: R
+    .clk1     (cpu_clk),
+    .csb1     (sram_csb1),
+    .addr1    (sram_addr1),
+    .dout1    (sram_dout1)
+  );
+
+`endif
+
 
 /*********************************************************
 * SPI Master
@@ -620,39 +677,38 @@ uart_i2c_usb_top   u_uart_i2c_usb (
         .uart_rstn              (uart_rst_n               ), // uart reset
         .i2c_rstn               (i2c_rst_n                ), // i2c reset
         .usb_rstn               (usb_rst_n                ), // i2c reset
-	.uart_i2c_usb_sel       (uart_i2c_usb_sel         ), // 0 - uart, 1 - I2C
         .app_clk                (wbd_clk_int              ),
 	.usb_clk                (usb_clk                  ),
 
         // Reg Bus Interface Signal
-       .reg_cs                (wbd_uart_stb_o            ),
-       .reg_wr                (wbd_uart_we_o             ),
-       .reg_addr              (wbd_uart_adr_o[5:2]       ),
-       .reg_wdata             (wbd_uart_dat_o            ),
-       .reg_be                (wbd_uart_sel_o            ),
+       .reg_cs                  (wbd_uart_stb_o           ),
+       .reg_wr                  (wbd_uart_we_o            ),
+       .reg_addr                (wbd_uart_adr_o[7:0]      ),
+       .reg_wdata               (wbd_uart_dat_o           ),
+       .reg_be                  (wbd_uart_sel_o           ),
 
        // Outputs
-       .reg_rdata             (wbd_uart_dat_i            ),
-       .reg_ack               (wbd_uart_ack_i            ),
+       .reg_rdata               (wbd_uart_dat_i           ),
+       .reg_ack                 (wbd_uart_ack_i           ),
 
        // Pad interface
-       .scl_pad_i             (i2cm_clk_i                ),
-       .scl_pad_o             (i2cm_clk_o                ),
-       .scl_pad_oen_o         (i2cm_clk_oen              ),
+       .scl_pad_i               (i2cm_clk_i               ),
+       .scl_pad_o               (i2cm_clk_o               ),
+       .scl_pad_oen_o           (i2cm_clk_oen             ),
 
-       .sda_pad_i             (i2cm_data_i               ),
-       .sda_pad_o             (i2cm_data_o               ),
-       .sda_padoen_o          (i2cm_data_oen             ),
+       .sda_pad_i               (i2cm_data_i              ),
+       .sda_pad_o               (i2cm_data_o              ),
+       .sda_padoen_o            (i2cm_data_oen            ),
 
-       .uart_rxd              (uart_rxd                  ),
-       .uart_txd              (uart_txd                  ),
+       .uart_rxd                (uart_rxd                 ),
+       .uart_txd                (uart_txd                 ),
 
-       .usb_in_dp             (usb_dp_i                  ),
-       .usb_in_dn             (usb_dn_i                  ),
+       .usb_in_dp               (usb_dp_i                 ),
+       .usb_in_dn               (usb_dn_i                 ),
 
-       .usb_out_dp            (usb_dp_o                  ),
-       .usb_out_dn            (usb_dn_o                  ),
-       .usb_out_tx_oen        (usb_oen                   )
+       .usb_out_dp              (usb_dp_o                 ),
+       .usb_out_dn              (usb_dn_o                 ),
+       .usb_out_tx_oen          (usb_oen                  )
 
      );
 
@@ -697,8 +753,8 @@ pinmux u_pinmux(
         .ssram_sck              (sflash_sck                ),
         .ssram_ss               (sflash_ss                 ),
         .ssram_oen              (sflash_oen                ),
-        .ssram_do               (                          ),
-        .ssram_di               (sflash_di                 ),
+        .ssram_do               (sflash_do                 ),
+        .ssram_di               (                          ),
 
        // USB I/F
         .usb_dp_o               (usb_dp_o                  ),
@@ -722,8 +778,8 @@ pinmux u_pinmux(
        // SPI MASTER
         .spim_sck               (sflash_sck                ),
         .spim_ss                (sflash_ss                 ),
-        .spim_miso              (                          ),
-        .spim_mosi              (sflash_di[0]              ),
+        .spim_miso              (sflash_do[0]              ),
+        .spim_mosi              (                          ),
 
 	.pulse1m_mclk           (pulse1m_mclk              ),
 
