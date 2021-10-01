@@ -100,6 +100,12 @@ reg [31:0]    reg_18; // PWN-2 Config
 reg [31:0]    reg_19; // PWN-3 Config
 reg [31:0]    reg_20; // PWN-4 Config
 reg [31:0]    reg_21; // PWN-5 Config
+reg [31:0]    reg_22; // Software-Reg1
+reg [31:0]    reg_23; // Software-Reg2
+reg [31:0]    reg_24; // Software-Reg3
+reg [31:0]    reg_25; // Software-Reg4
+reg [31:0]    reg_26; // Software-Reg5
+reg [31:0]    reg_27; // Software-Reg6
 
 
 reg          cs_int;
@@ -157,50 +163,34 @@ end
 // register read enable and write enable decoding logic
 //-----------------------------------------------------------------------
 wire   sw_wr_en_0 = sw_wr_en  & (sw_addr == 5'h0);
-wire   sw_rd_en_0 = sw_rd_en  & (sw_addr == 5'h0);
 wire   sw_wr_en_1 = sw_wr_en  & (sw_addr == 5'h1);
-wire   sw_rd_en_1 = sw_rd_en  & (sw_addr == 5'h1);
 wire   sw_wr_en_2 = sw_wr_en  & (sw_addr == 5'h2);
-wire   sw_rd_en_2 = sw_rd_en  & (sw_addr == 5'h2);
 wire   sw_wr_en_3 = sw_wr_en  & (sw_addr == 5'h3);
-wire   sw_rd_en_3 = sw_rd_en  & (sw_addr == 5'h3);
 wire   sw_wr_en_4 = sw_wr_en  & (sw_addr == 5'h4);
-wire   sw_rd_en_4 = sw_rd_en  & (sw_addr == 5'h4);
 wire   sw_wr_en_5 = sw_wr_en  & (sw_addr == 5'h5);
-wire   sw_rd_en_5 = sw_rd_en  & (sw_addr == 5'h5);
 wire   sw_wr_en_6 = sw_wr_en  & (sw_addr == 5'h6);
-wire   sw_rd_en_6 = sw_rd_en  & (sw_addr == 5'h6);
 wire   sw_wr_en_7 = sw_wr_en  & (sw_addr == 5'h7);
-wire   sw_rd_en_7 = sw_rd_en  & (sw_addr == 5'h7);
 wire   sw_wr_en_8 = sw_wr_en  & (sw_addr == 5'h8);
-wire   sw_rd_en_8 = sw_rd_en  & (sw_addr == 5'h8);
 wire   sw_wr_en_9 = sw_wr_en  & (sw_addr == 5'h9);
-wire   sw_rd_en_9 = sw_rd_en  & (sw_addr == 5'h9);
 wire   sw_wr_en_10 = sw_wr_en & (sw_addr == 5'hA);
-wire   sw_rd_en_10 = sw_rd_en & (sw_addr == 5'hA);
 wire   sw_wr_en_11 = sw_wr_en & (sw_addr == 5'hB);
-wire   sw_rd_en_11 = sw_rd_en & (sw_addr == 5'hB);
 wire   sw_wr_en_12 = sw_wr_en & (sw_addr == 5'hC);
-wire   sw_rd_en_12 = sw_rd_en & (sw_addr == 5'hC);
 wire   sw_wr_en_13 = sw_wr_en & (sw_addr == 5'hD);
-wire   sw_rd_en_13 = sw_rd_en & (sw_addr == 5'hD);
 wire   sw_wr_en_14 = sw_wr_en & (sw_addr == 5'hE);
-wire   sw_rd_en_14 = sw_rd_en & (sw_addr == 5'hE);
 wire   sw_wr_en_15 = sw_wr_en & (sw_addr == 5'hF);
-wire   sw_rd_en_15 = sw_rd_en & (sw_addr == 5'hF);
 wire   sw_wr_en_16 = sw_wr_en & (sw_addr == 5'h10);
-wire   sw_rd_en_16 = sw_rd_en & (sw_addr == 5'h10);
 wire   sw_wr_en_17 = sw_wr_en & (sw_addr == 5'h11);
-wire   sw_rd_en_17 = sw_rd_en & (sw_addr == 5'h11);
 wire   sw_wr_en_18 = sw_wr_en & (sw_addr == 5'h12);
-wire   sw_rd_en_18 = sw_rd_en & (sw_addr == 5'h12);
 wire   sw_wr_en_19 = sw_wr_en & (sw_addr == 5'h13);
-wire   sw_rd_en_19 = sw_rd_en & (sw_addr == 5'h13);
 wire   sw_wr_en_20 = sw_wr_en & (sw_addr == 5'h14);
-wire   sw_rd_en_20 = sw_rd_en & (sw_addr == 5'h14);
 wire   sw_wr_en_21 = sw_wr_en & (sw_addr == 5'h15);
-wire   sw_rd_en_21 = sw_rd_en & (sw_addr == 5'h15);
 
+wire   sw_wr_en_22 = sw_wr_en & (sw_addr == 5'h16);
+wire   sw_wr_en_23 = sw_wr_en & (sw_addr == 5'h17);
+wire   sw_wr_en_24 = sw_wr_en & (sw_addr == 5'h18);
+wire   sw_wr_en_25 = sw_wr_en & (sw_addr == 5'h19);
+wire   sw_wr_en_26 = sw_wr_en & (sw_addr == 5'h1A);
+wire   sw_wr_en_27 = sw_wr_en & (sw_addr == 5'h1B);
 
 
 //-----------------------------------------------------------------------
@@ -626,6 +616,95 @@ gen_32b_reg  #(32'h0) u_reg_21	(
 	      );
 
 
+//-----------------------------------------
+// Software Reg-1
+// ----------------------------------------
+gen_32b_reg  #(32'h0) u_reg_22	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_22   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_22       )
+	      );
+
+//-----------------------------------------
+// Software Reg-2
+// ----------------------------------------
+gen_32b_reg  #(32'h0) u_reg_23	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_23   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_23       )
+	      );
+
+//-----------------------------------------
+// Software Reg-3
+// ----------------------------------------
+gen_32b_reg  #(32'h0) u_reg_24	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_24   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_24       )
+	      );
+
+//-----------------------------------------
+// Software Reg-4
+// ----------------------------------------
+gen_32b_reg  #(32'h0) u_reg_25	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_25   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_25       )
+	      );
+
+//-----------------------------------------
+// Software Reg-5
+// ----------------------------------------
+gen_32b_reg  #(32'h0) u_reg_26	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_26   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_26       )
+	      );
+
+//-----------------------------------------
+// Software Reg-6
+// ----------------------------------------
+gen_32b_reg  #(32'h0) u_reg_27	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_27   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_27       )
+	      );
 
 //-----------------------------------------------------------------------
 // Register Read Path Multiplexer instantiation
@@ -653,11 +732,17 @@ begin
     5'b01110 : reg_out [31:0] = reg_14 [31:0];
     5'b01111 : reg_out [31:0] = reg_15 [31:0]; 
     5'b10000 : reg_out [31:0] = reg_16 [31:0];
-    5'b10010 : reg_out [31:0] = reg_17 [31:0];
-    5'b10011 : reg_out [31:0] = reg_18 [31:0];
-    5'b10100 : reg_out [31:0] = reg_19 [31:0];
-    5'b10101 : reg_out [31:0] = reg_20 [31:0];
-    5'b10110 : reg_out [31:0] = reg_21 [31:0];
+    5'b10001 : reg_out [31:0] = reg_17 [31:0];
+    5'b10010 : reg_out [31:0] = reg_18 [31:0];
+    5'b10011 : reg_out [31:0] = reg_19 [31:0];
+    5'b10100 : reg_out [31:0] = reg_20 [31:0];
+    5'b10101 : reg_out [31:0] = reg_21 [31:0];
+    5'b10110 : reg_out [31:0] = reg_22 [31:0];
+    5'b10111 : reg_out [31:0] = reg_23 [31:0];
+    5'b11000 : reg_out [31:0] = reg_24 [31:0];
+    5'b11001 : reg_out [31:0] = reg_25 [31:0];
+    5'b11010 : reg_out [31:0] = reg_26 [31:0];
+    5'b11011 : reg_out [31:0] = reg_27 [31:0];
     default  : reg_out [31:0] = 32'h0;
   endcase
 end

@@ -50,7 +50,6 @@ puts "\[INFO\]: Setting wb input delay to: $core_input_delay_value"
 set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {uart_rstn}
 set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {i2c_rstn}
 set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {usb_rstn}
-set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {uart_i2c_usb_sel*}
 
 set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_cs*]
 set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_addr*]

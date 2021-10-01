@@ -1,0 +1,6 @@
+make verify-wb_port
+make verify-user_spi
+make verify-user_i2cm 
+make verify-user_uart 
+make verify-user_risc_boot
+make verify-risc_boot

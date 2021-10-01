@@ -85,6 +85,21 @@ module scr1_intf (
     input   logic                                   trst_n,
 `endif // SCR1_DBG_EN
 
+`ifndef SCR1_TCM_MEM
+    // SRAM PORT-0
+    output  logic                           sram_csb0,
+    output  logic                           sram_web0,
+    output  logic   [8:0]                   sram_addr0,
+    output  logic   [3:0]                   sram_wmask0,
+    output  logic   [31:0]                  sram_din0,
+    input   logic   [31:0]                  sram_dout0,
+
+    // SRAM PORT-1
+    output  logic                           sram_csb1,
+    output  logic  [8:0]                    sram_addr1,
+    input   logic  [31:0]                   sram_dout1,
+`endif
+
     input   logic                                   wb_rst_n,       // Wish bone reset
     input   logic                                   wb_clk,         // wish bone clock
     // Instruction Memory Interface
@@ -268,6 +283,22 @@ scr1_tcm #(
 ) i_tcm (
     .clk            (core_clk        ),
     .rst_n          (core_rst_n_local),
+
+`ifndef SCR1_TCM_MEM
+    // SRAM PORT-0
+    .sram_csb0      (sram_csb0),
+    .sram_web0      (sram_web0),
+    .sram_addr0     (sram_addr0),
+    .sram_wmask0    (sram_wmask0),
+    .sram_din0      (sram_din0),
+    .sram_dout0     (sram_dout0),
+    
+    // SRAM PORT-0
+    .sram_csb1      (sram_csb1),
+    .sram_addr1     (sram_addr1),
+    .sram_dout1     (sram_dout1),
+`endif
+
 
     // Instruction interface to TCM
     .imem_req_ack   (tcm_imem_req_ack),

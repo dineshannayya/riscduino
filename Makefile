@@ -16,7 +16,8 @@
 
 CARAVEL_ROOT?=$(PWD)/caravel
 PRECHECK_ROOT?=${HOME}/open_mpw_precheck
-SIM ?= RTL
+SIM?=RTL
+DUMP?=OFF
 
 # Install lite version of caravel, (1): caravel-lite, (0): caravel
 CARAVEL_LITE?=1
@@ -43,7 +44,7 @@ SUBMODULE?=1
 .PHONY: verify
 verify:
 	cd ./verilog/dv/ && \
-	export SIM=${SIM} && \
+	export SIM=${SIM} DUMP=${DUMP} && \
 		$(MAKE) -j$(THREADS)
 
 # Install DV setup
@@ -55,7 +56,7 @@ PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
 TARGET_PATH=$(shell pwd)
 PDK_PATH=${PDK_ROOT}/sky130A
-VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} && make"
+VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} && make"
 $(DV_PATTERNS): verify-% : ./verilog/dv/% 
 	@if [ ! -d "$(PDK_ROOT)" ]; then \
 	docker run -v ${TARGET_PATH}:${TARGET_PATH}  \

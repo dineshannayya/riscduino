@@ -264,7 +264,7 @@ generic_register #(32,0  ) u_glb_ctrl (
 	      .data_out      (reg_0[31:0])
           );
 
-generic_register #(8,8'h30 ) u_bank_sel (
+generic_register #(8,8'h10 ) u_bank_sel (
 	      .we            ({8{sw_wr_en_1}}   ),		 
 	      .data_in       (wbm_dat_i[7:0]    ),
 	      .reset_n       (wbm_rst_n         ),

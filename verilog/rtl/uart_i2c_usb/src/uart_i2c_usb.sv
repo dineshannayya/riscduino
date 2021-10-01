@@ -77,12 +77,11 @@ module uart_i2c_usb_top
    input logic         usb_rstn  , // async reset
    input logic         app_clk ,
    input logic         usb_clk ,   // 48Mhz usb clock
-   input logic [1:0]   uart_i2c_usb_sel, // Uart Or I2C Or USB Interface Select
 
         // Reg Bus Interface Signal
    input logic         reg_cs,
    input logic         reg_wr,
-   input logic [3:0]   reg_addr,
+   input logic [7:0]   reg_addr,
    input logic [31:0]  reg_wdata,
    input logic         reg_be,
 
@@ -125,16 +124,16 @@ module uart_i2c_usb_top
 //  --------------------------------------
 logic [7:0]   reg_uart_rdata;
 logic [7:0]   reg_i2c_rdata;
-logic [31:0]   reg_usb_rdata;
+logic [31:0]  reg_usb_rdata;
 logic         reg_uart_ack;
 logic         reg_i2c_ack;
 logic         reg_usb_ack;
 
 
-assign reg_rdata = (uart_i2c_usb_sel == `SEL_UART) ? {24'h0,reg_uart_rdata} : 
-	           (uart_i2c_usb_sel == `SEL_I2C) ? {24'h0,reg_i2c_rdata} : reg_usb_rdata;
-assign reg_ack   = (uart_i2c_usb_sel == `SEL_UART) ? reg_uart_ack   : 
-	           (uart_i2c_usb_sel == `SEL_I2C) ? reg_i2c_ack   : reg_usb_ack;
+assign reg_rdata = (reg_addr[7:6] == `SEL_UART) ? {24'h0,reg_uart_rdata} : 
+	           (reg_addr[7:6] == `SEL_I2C) ? {24'h0,reg_i2c_rdata} : reg_usb_rdata;
+assign reg_ack   = (reg_addr[7:6] == `SEL_UART) ? reg_uart_ack   : 
+	           (reg_addr[7:6] == `SEL_I2C) ? reg_i2c_ack   : reg_usb_ack;
 
 uart_core  u_uart_core (  
 
@@ -144,7 +143,7 @@ uart_core  u_uart_core (
         // Reg Bus Interface Signal
         .reg_cs      (reg_cs           ),
         .reg_wr      (reg_wr           ),
-        .reg_addr    (reg_addr[3:0]    ),
+        .reg_addr    (reg_addr[5:2]    ),
         .reg_wdata   (reg_wdata[7:0]   ),
         .reg_be      (reg_be           ),
 
@@ -162,7 +161,7 @@ i2cm_top  u_i2cm (
 	.wb_clk_i      (app_clk        ), // master clock input
 	.sresetn       (1'b1           ), // synchronous reset
 	.aresetn       (i2c_rstn       ), // asynchronous reset
-	.wb_adr_i      (reg_addr[2:0]  ), // lower address bits
+	.wb_adr_i      (reg_addr[4:2]  ), // lower address bits
 	.wb_dat_i      (reg_wdata[7:0] ), // databus input
 	.wb_dat_o      (reg_i2c_rdata  ), // databus output
 	.wb_we_i       (reg_wr         ), // write enable input
@@ -201,8 +200,7 @@ usb1_host u_usb_host (
     .wbm_rst_n      (usb_rstn      ),  // Regular Reset signal
     .wbm_clk_i      (app_clk       ),  // System clock
     .wbm_stb_i      (reg_cs        ),  // strobe/request
-    .wbm_adr_i      ({reg_addr[3:0],
-                      2'b0}        ),  // address
+    .wbm_adr_i      (reg_addr[5:0]),  // address
     .wbm_we_i       (reg_wr        ),  // write
     .wbm_dat_i      (reg_wdata     ),  // data output
     .wbm_sel_i      (reg_be        ),  // byte enable

@@ -121,7 +121,7 @@ module spim_top
     output logic                         spi_clk,
     output logic                         spi_csn0,// No hold fix for CS#, as it asserted much eariler than SPI clock
     output logic [3:0]                   spi_sdo,
-    output logic                         spi_oen
+    output logic [3:0]                   spi_oen
 );
 
 
@@ -209,16 +209,10 @@ module spim_top
 // SPI Interface moved inside to support carvel IO pad 
 // -------------------------------------------------------
 
-logic                          spi_clk;
-logic                          spi_csn0;
 logic                          spi_csn1;
 logic                          spi_csn2;
 logic                          spi_csn3;
 logic                    [1:0] spi_mode;
-logic                          spi_sdo0;
-logic                          spi_sdo1;
-logic                          spi_sdo2;
-logic                          spi_sdo3;
 logic                          spi_en_tx;
 logic                          spi_init_done;
 logic  [3:0]                   spi_sdo_int;
@@ -233,22 +227,26 @@ logic                          spi_sdo3_dl;
 // ADDing Delay cells for Interface hold fix
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio0 (.X(spi_sdo0_d1),.A(spi_sdo_int[0]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio0 (.X(spi_sdo0_d2),.A(spi_sdo0_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio0    (.X(spi_sdo0),.A(spi_sdo0_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio0    (.X(spi_sdo[0]),.A(spi_sdo0_d2));
 
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio1 (.X(spi_sdo1_d1),.A(spi_sdo_int[1]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio1 (.X(spi_sdo1_d2),.A(spi_sdo1_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio1    (.X(spi_sdo1),.A(spi_sdo1_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio1    (.X(spi_sdo[1]),.A(spi_sdo1_d2));
 
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio2 (.X(spi_sdo2_d1),.A(spi_sdo_int[2]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio2 (.X(spi_sdo2_d2),.A(spi_sdo2_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio2    (.X(spi_sdo2),.A(spi_sdo2_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio2    (.X(spi_sdo[2]),.A(spi_sdo2_d2));
 
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_sdio3 (.X(spi_sdo3_d1),.A(spi_sdo_int[3]));
 sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_sdio3 (.X(spi_sdo3_d2),.A(spi_sdo3_d1));
-sky130_fd_sc_hd__clkbuf_16 u_buf_sdio3    (.X(spi_sdo3),.A(spi_sdo3_d2));
+sky130_fd_sc_hd__clkbuf_16 u_buf_sdio3    (.X(spi_sdo[3]),.A(spi_sdo3_d2));
 
 
-assign   spi_oen = !spi_en_tx;
+assign   #1 spi_oen[0] = !spi_en_tx;  // SPI_DIO0
+assign   #1 spi_oen[1] = !spi_en_tx;  // SPI_DIO1
+assign   #1 spi_oen[2] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // HOLD
+assign   #1 spi_oen[3] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // 
+
 
 spim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .mclk                           (mclk                         ),

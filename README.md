@@ -314,105 +314,53 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 
 
 # SOC Pin Mapping
-Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin Mapping as follows
+Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin Mapping as follows vs ATMEGA328 and Arudino
 
 <table>
-  <tr>
-    <td  align="center"> GPIO Pin Number</td> 
-    <td  align="center"> Direction</td>
-    <td  align="center"> Pad Name</td>
-    <td  align="center"> Block Name</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[7:0]</td> 
-    <td  align="center"> Inout</td>
-    <td  align="center"> SDRAM Data [7:0]</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[20:8]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM Address [12:0]</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[22:21]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM Bank Select [1:0]</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[23]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM Byte Mask</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[24]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM Write Enable</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[25]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM CAS </td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[26]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM RAS </td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[27]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM Chip Select </td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[28]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SDRAM CKE </td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[29]</td> 
-    <td  align="center"> Inout</td>
-    <td  align="center"> SDRAM Clock</td>
-    <td  align="center"> SDRAM</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[30]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SPI Clock</td>
-    <td  align="center"> SPI</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[31]</td> 
-    <td  align="center"> Output</td>
-    <td  align="center"> SPI Chip Select</td>
-    <td  align="center"> SPI</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[35:32]</td> 
-    <td  align="center"> Inout</td>
-    <td  align="center"> SPI Data</td>
-    <td  align="center"> SPI</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[36]</td> 
-    <td  align="center"> Inout</td>
-    <td  align="center"> Uart TX/I2C CLK</td>
-    <td  align="center"> UART/I2C</td>
-  </tr>
-  <tr>
-    <td  align="center"> gpio[37]</td> 
-    <td  align="center"> Inout</td>
-    <td  align="center"> Uart RX/I2C Data</td>
-    <td  align="center"> UART/I2C</td>
-  </tr>
+  <tr align="center"> <td> ATMGA328 Pin No</td> <td> Functionality           </td> <td> Arudino Pin Name</td> <td> Carvel Pin Mapping                   </td></tr>
+  <tr align="center"> <td> Pin-1           </td> <td> PC6/RESET              </td> <td>                 </td> <td> digital_io[0]                        </td></tr>
+  <tr align="center"> <td> Pin-2           </td> <td> PD0/RXD                </td> <td>  D0             </td> <td> digital_io[1]                        </td></tr>
+  <tr align="center"> <td> Pin-3           </td> <td> PD1/TXD                </td> <td>  D1             </td> <td> digital_io[2]                        </td></tr>
+  <tr align="center"> <td> Pin-4           </td> <td> PD2/INT0               </td> <td>  D2             </td> <td> digital_io[3]                        </td></tr>
+  <tr align="center"> <td> Pin-5           </td> <td> PD3/INT1/OC2B(PWM0)    </td> <td>  D3             </td> <td> digital_io[4]                        </td></tr>
+  <tr align="center"> <td> Pin-6           </td> <td> PD4                    </td> <td>  D4             </td> <td> digital_io[5]                        </td></tr>
+  <tr align="center"> <td> Pin-7           </td> <td> VCC                    </td> <td>                 </td> <td>  -                                   </td></tr>
+  <tr align="center"> <td> Pin-8           </td> <td> GND                    </td> <td>                 </td> <td>  -                                   </td></tr>
+  <tr align="center"> <td> Pin-9           </td> <td> PB6/XTAL1/TOSC1        </td> <td>                 </td> <td> digital_io[6]                        </td></tr>
+  <tr align="center"> <td> Pin-10          </td> <td> PB7/XTAL2/TOSC2        </td> <td>                 </td> <td> digital_io[7]                        </td></tr>
+  <tr align="center"> <td> Pin-11          </td> <td> PD5/OC0B(PWM1)/T1      </td> <td> D5              </td> <td> digital_io[8]                        </td></tr>
+  <tr align="center"> <td> Pin-12          </td> <td> PD6/OC0A(PWM2)/AIN0    </td> <td> D6              </td> <td> digital_io[9] /analog_io[2]          </td></tr>
+  <tr align="center"> <td> Pin-13          </td> <td> PD7/A1N1               </td> <td> D7              </td> <td> digital_io[10]/analog_io[3]          </td></tr>
+  <tr align="center"> <td> Pin-14          </td> <td> PB0/CLKO/ICP1          </td> <td> D8              </td> <td> digital_io[11]                       </td></tr>
+  <tr align="center"> <td> Pin-15          </td> <td> PB1/OC1A(PWM3)         </td> <td> D9              </td> <td> digital_io[12]                       </td></tr>
+  <tr align="center"> <td> Pin-16          </td> <td> PB2/SS/OC1B(PWM4)      </td> <td> D10             </td> <td> digital_io[13]                       </td></tr>
+  <tr align="center"> <td> Pin-17          </td> <td> PB3/MOSI/OC2A(PWM5)    </td> <td> D11             </td> <td> digital_io[14]                       </td></tr>
+  <tr align="center"> <td> Pin-18          </td> <td> PB4/MISO               </td> <td> D12             </td> <td> digital_io[15]                       </td></tr>
+  <tr align="center"> <td> Pin-19          </td> <td> PB5/SCK                </td> <td> D13             </td> <td> digital_io[16]                       </td></tr>
+  <tr align="center"> <td> Pin-20          </td> <td> AVCC                   </td> <td>                 </td> <td> -                                    </td></tr>
+  <tr align="center"> <td> Pin-21          </td> <td> AREF                   </td> <td>                 </td> <td> analog_io[10]                        </td></tr>
+  <tr align="center"> <td> Pin-22          </td> <td> GND                    </td> <td>                 </td> <td> -                                    </td></tr>
+  <tr align="center"> <td> Pin-23          </td> <td> PC0/ADC0               </td> <td>  A0             </td> <td> digital_io[18]/analog_io[11]         </td></tr>
+  <tr align="center"> <td> Pin-24          </td> <td> PC1/ADC1               </td> <td>  A1             </td> <td> digital_io[19]/analog_io[12]         </td></tr>
+  <tr align="center"> <td> Pin-25          </td> <td> PC2/ADC2               </td> <td>  A2             </td> <td> digital_io[20]/analog_io[13]         </td></tr>
+  <tr align="center"> <td> Pin-26          </td> <td> PC3/ADC3               </td> <td>  A3             </td> <td> digital_io[21]/analog_io[14]         </td></tr>
+  <tr align="center"> <td> Pin-27          </td> <td> PC4/ADC4/SDA           </td> <td>  A4             </td> <td> digital_io[22]/analog_io[15]         </td></tr>
+  <tr align="center"> <td> Pin-28          </td> <td> PC5/ADC5/SCL           </td> <td>  A5             </td> <td> digital_io[23]/analog_io[16]         </td></tr>
+  <tr align="center"> <td colspan="4">   Additional Pad used for Externam ROM/RAM/USB </td></tr>
+  <tr align="center"> <td> Sflash          </td> <td> sflash_sck             </td> <td>                 </td> <td> digital_io[24]                       </td></tr>
+  <tr align="center"> <td> SFlash          </td> <td> sflash_ss              </td> <td>                 </td> <td> digital_io[25]                       </td></tr>
+  <tr align="center"> <td> SFlash          </td> <td> sflash_io0             </td> <td>                 </td> <td> digital_io[26]                       </td></tr>
+  <tr align="center"> <td> SFlash          </td> <td> sflash_io1             </td> <td>                 </td> <td> digital_io[27]                       </td></tr>
+  <tr align="center"> <td> SFlash          </td> <td> sflash_io2             </td> <td>                 </td> <td> digital_io[28]                       </td></tr>
+  <tr align="center"> <td> SFlash          </td> <td> sflash_io3             </td> <td>                 </td> <td> digital_io[29]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> ssram_sck              </td> <td>                 </td> <td> digital_io[30]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> ssram_ss               </td> <td>                 </td> <td> digital_io[31]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> ssram_io0              </td> <td>                 </td> <td> digital_io[32]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> ssram_io1              </td> <td>                 </td> <td> digital_io[33]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> ssram_io2              </td> <td>                 </td> <td> digital_io[34]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> ssram_io3              </td> <td>                 </td> <td> digital_io[35]                       </td></tr>
+  <tr align="center"> <td> usb1.1          </td> <td> usb_dp                 </td> <td>                 </td> <td> digital_io[36]                       </td></tr>
+  <tr align="center"> <td> usb1.1          </td> <td> usb_dn                 </td> <td>                 </td> <td> digital_io[37]                       </td></tr>
 </table>
 
 
@@ -464,15 +412,45 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
 
 # Prerequisites
    - Docker (ensure docker daemon is running) -- tested with version 19.03.12, but any recent version should suffice.
+## Step-1: Docker in ubuntu 20.04 version
+```bash
+   sudo apt update
+   sudo apt-get install apt-transport-https curl rtificates -agent software-properties-common
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+   sudo apt update
+   apt-cache policy docker-ce
+   sudo apt install docker-ce
 
-## Environment setting
+   #Add User Name to docker
+   sudo usermod -aG docker <your user name>
+   # Reboot the system to enable the docker setup
+```
+##  Step-2: Update the Submodule, To to project area
+```bash
+   git submodule init
+   git submodule update
+```
+## Step-3: clone Openlane scripts under workarea
+```bash
+   git clone https://github.com/dineshannayya/OpenLane.git
+```
+## Step-4: Environment setting
    - Note: PDK alreay installed inside the docker, no need to define the PDK_ROOT, This will be point to /opt/pdk path inside the docker
-           if user define the PDK_ROOT path, then flow will use the user defined PDK PATH
+            if user define the PDK_ROOT path, then flow will use the user defined PDK PATH. Set these enviornmental variable in .bashrc file
 
 ```bash
     export CARAVEL_ROOT=<Carvel Installed Path>
     export OPENLANE_ROOT=<OpenLane Installed Path>
     export IMAGE_NAME=dineshannayya/openlane:rc7
+    export PDK_ROOT=<PDK Installed PATH>
+    export PDK_PATH=<PDK Install Path>/sky130A
+```
+## Step-5: To install the PDK
+```bash
+   source ~/.bashrc
+   cd OpenLane
+   make pdk
 ```
 
 # Tests preparation
@@ -494,6 +472,8 @@ Examples:
     make verify-user_spi
     make verify-user_i2cm
     make verify-user_risc_boot
+    make verify-wb_port SIM=RTL DUMP=OFF
+    make verify-wb_port SIM=RTL DUMP=ON
 ```
 
 # Tool Sets

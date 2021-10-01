@@ -34,6 +34,7 @@
         `include "syntacore.v"
         `include "wb_host.v"
 	`include "clk_skew_adjust.v"
+	`include "clk_buf.v"
 
 `else
      `include "libs.ref/sky130_fd_sc_hd/verilog/primitives.v"
@@ -41,6 +42,19 @@
      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
      `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
 
+     `include"sar_adc/SAR.sv"
+     `include"sar_adc/ACMP.sv"
+     `include"sar_adc/sar_adc.sv"
+     `include"sar_adc/adc_reg.sv"
+     `include"sar_adc/DAC_8BIT.v"
+
+     `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+     `include "pinmux/src/pinmux.sv"
+     `include "pinmux/src/pinmux_reg.sv"
+     `include "pinmux/src/gpio_intr.sv"
+     `include "pinmux/src/pwm.sv"
+     `include "lib/pulse_gen_type1.sv"
+     `include "lib/pulse_gen_type2.sv"
 
      `include "spi_master/src/spim_top.sv"
      `include "spi_master/src/spim_if.sv"
@@ -75,18 +89,9 @@
 
      `include "uart_i2c_usb/src/uart_i2c_usb.sv"
 
-     `include "sdram_ctrl/src/top/sdrc_top.v" 
-     `include "sdram_ctrl/src/wb2sdrc/wb2sdrc.v" 
-     `include "lib/async_fifo.sv"  
-     `include "sdram_ctrl/src/core/sdrc_core.v"
-     `include "sdram_ctrl/src/core/sdrc_bank_ctl.v"
-     `include "sdram_ctrl/src/core/sdrc_bank_fsm.v"
-     `include "sdram_ctrl/src/core/sdrc_bs_convert.v"
-     `include "sdram_ctrl/src/core/sdrc_req_gen.v"
-     `include "sdram_ctrl/src/core/sdrc_xfr_ctl.v"
-
      `include "lib/registers.v"
      `include "lib/clk_ctl.v"
+     `include "lib/async_fifo.sv"  
      `include "digital_core/src/glbl_cfg.sv"
 
      `include "wb_host/src/wb_host.sv"
@@ -121,6 +126,7 @@
      `include "syntacore/scr1/src/core/scr1_dmi.sv"
      `include "syntacore/scr1/src/core/scr1_scu.sv"
       
+     `include "syntacore/scr1/src/top/scr1_imem_router.sv"
      `include "syntacore/scr1/src/top/scr1_dmem_router.sv"
      `include "syntacore/scr1/src/top/scr1_dp_memory.sv"
      `include "syntacore/scr1/src/top/scr1_tcm.sv"

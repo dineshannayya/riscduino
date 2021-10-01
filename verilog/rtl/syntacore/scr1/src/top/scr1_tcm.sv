@@ -32,6 +32,21 @@ module scr1_tcm
     input   logic                           clk,
     input   logic                           rst_n,
 
+`ifndef SCR1_TCM_MEM
+    // SRAM PORT-0
+    output  logic                           sram_csb0,
+    output  logic                           sram_web0,
+    output  logic   [8:0]                   sram_addr0,
+    output  logic   [3:0]                   sram_wmask0,
+    output  logic   [31:0]                  sram_din0,
+    input   logic   [31:0]                  sram_dout0,
+
+    // SRAM PORT-1
+    output  logic                           sram_csb1,
+    output  logic  [8:0]                    sram_addr1,
+    input   logic  [31:0]                   sram_dout1,
+`endif
+
     // Core instruction interface
     output  logic                           imem_req_ack,
     input   logic                           imem_req,
@@ -89,10 +104,23 @@ assign dmem_req_ack = 1'b1;
 //-------------------------------------------------------------------------------
 // Memory data composing
 //-------------------------------------------------------------------------------
-assign imem_rd  = imem_req;
-assign dmem_rd  = dmem_req & (dmem_cmd == SCR1_MEM_CMD_RD);
-assign dmem_wr  = dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR);
+`ifndef SCR1_TCM_MEM
+// connect the TCM memory to SRAM
+assign sram_csb1 =!imem_req;
+assign sram_addr1 = imem_addr[10:2];
+assign imem_rdata  = sram_dout1;
 
+// SRAM Port 0 Control Generation
+assign sram_csb0   = !(dmem_req & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
+assign sram_web0   = !(dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR));
+assign sram_addr0  = dmem_addr[10:2];
+assign sram_wmask0 =  dmem_byteen;
+assign sram_din0   =  dmem_writedata;
+assign dmem_rdata_local = sram_dout0;
+
+`endif
+
+//------------------------------
 always_comb begin
     dmem_writedata = dmem_wdata;
     dmem_byteen    = 4'b1111;
@@ -112,6 +140,7 @@ end
 //-------------------------------------------------------------------------------
 // Memory instantiation
 //-------------------------------------------------------------------------------
+`ifdef SCR1_TCM_MEM
 scr1_dp_memory #(
     .SCR1_WIDTH ( 32            ),
     .SCR1_SIZE  ( SCR1_TCM_SIZE )
@@ -131,6 +160,8 @@ scr1_dp_memory #(
     .qb     ( dmem_rdata_local                      ),
     .datab  ( dmem_writedata                        )
 );
+`endif
+
 //-------------------------------------------------------------------------------
 // Data memory output generation
 //-------------------------------------------------------------------------------
