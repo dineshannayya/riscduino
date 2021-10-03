@@ -64,6 +64,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	$script_dir/../../verilog/rtl/sar_adc/DAC_8BIT.v \
 	$script_dir/../../verilog/gl/wb_host.v \
 	$script_dir/../../verilog/gl/syntacore.v \
+	$script_dir/../../verilog/rtl/sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
@@ -75,6 +76,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/sar_adc.lef \
 	$lef_root/DAC_8BIT.lef \
 	$lef_root/syntacore.lef \
+	$lef_root/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
@@ -85,7 +87,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/wb_host.gds \
 	$gds_root/sar_adc.gds \
 	$gds_root/DAC_8BIT.gds \
-	$gds_root/syntacore.gds \
+	$gds_root/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
