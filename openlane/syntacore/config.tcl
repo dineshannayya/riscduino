@@ -96,7 +96,7 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.45"
+set ::env(PL_TARGET_DENSITY) "0.40"
 set ::env(GLOBAL_ROUTER) "fastroute"
 set ::env(DETAILED_ROUTER) "tritonroute"
 set ::env(CELL_PAD) "4"
