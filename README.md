@@ -48,10 +48,14 @@ Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform
 ```
     * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed.
     * industry-grade and silicon-proven Open-Source RISC-V core from syntacore 
+    * 4KB SRAM for data memory
+    * Pin Compatbible to arudino uno
     * Quad SPI Master
     * UART with 16Byte FIFO
     * USB 1.1 Host
     * I2C Master
+    * 6 Channel ADC
+    * 6 PWM
     * Wishbone compatible design
     * Written in System Verilog
     * Open-source tool set
@@ -104,37 +108,66 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
   <tr>
     <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF  </td> 
     <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF  </td>
-    <td  align="center"> 0x4000_0000 to 0x4FFF_FFFF</td>
+    <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF</td>
     <td  align="center"> SPI FLASH MEMORY</td>
   </tr>
   <tr>
     <td  align="center"> 0x1000_0000 to 0x1000_00FF</td> 
     <td  align="center"> 0x1000_0000 to 0x1000_00FF</td>
-    <td  align="center"> 0x5000_0000 to 0x5000_00FF</td>
+    <td  align="center"> 0x1000_0000 to 0x1000_00FF</td>
     <td  align="center"> SPI Config Reg</td>
   </tr>
-
   <tr>
-    <td  align="center"> 0x3000_0000 to 0x3000_00FF</td> 
-    <td  align="center"> 0x3000_0000 to 0x3000_00FF</td>
-    <td  align="center"> 0x3000_0000 to 0x3000_00FF</td>
-    <td  align="center"> Global Register</td>
+    <td  align="center"> 0x1001_0000 to 0x1001_003F</td> 
+    <td  align="center"> 0x1001_0000 to 0x1001_003F</td>
+    <td  align="center"> 0x1001_0000 to 0x1001_003F</td>
+    <td  align="center"> UART</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1001_0040 to 0x1001_007F</td> 
+    <td  align="center"> 0x1001_0040 to 0x1001_007F</td>
+    <td  align="center"> 0x1001_0040 to 0x1001_007F</td>
+    <td  align="center"> I2C</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1001_0080 to 0x1001_00FF</td> 
+    <td  align="center"> 0x1001_0080 to 0x1001_00FF</td>
+    <td  align="center"> 0x1001_0080 to 0x1001_00FF</td>
+    <td  align="center"> USB</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1002_0080 to 0x1002_00FF</td> 
+    <td  align="center"> 0x1002_0080 to 0x1002_00FF</td>
+    <td  align="center"> 0x1002_0080 to 0x1002_00FF</td>
+    <td  align="center"> PINMUX</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1003_0080 to 0x1003_00FF</td> 
+    <td  align="center"> 0x1003_0080 to 0x1003_00FF</td>
+    <td  align="center"> 0x1003_0080 to 0x1003_00FF</td>
+    <td  align="center"> PINMUX</td>
+  </tr>
+  <tr>
+    <td  align="center"> -</td> 
+    <td  align="center"> -</td>
+    <td  align="center"> 0x3080_0000 to 0x3080_00FF</td>
+    <td  align="center"> WB HOST</td>
   </tr>
 </table>
 
 # SOC Size
 
-| Block       | Total Cell | Seq      | Combo   |
-| ------      | ---------  | -------- | -----   |
-| RISC        | 26642      | 3158     | 23484   |
-| GLOBAL REG  | 2753       | 575      | 2178    |
-| SDRAM       | 7198       | 1207     | 5991    |
-| SPI         | 7607       | 1279     | 6328    |
-| UART_I2C    | 3561       | 605      | 2956    |
-| WB_HOST     | 3073       | 515      | 2558    |
-| WB_INTC     | 1291       | 110      | 1181    |
-|             |            |          |         |
-| TOTAL       | 52125      | 7449     | 44676   |
+| Block         | Total Cell | Seq      | Combo   |
+| ------        | ---------  | -------- | -----   |
+| RISC          | 26919      | 3164     | 23755   |
+| PINMUX        | 5461       | 1022     |  4439   |
+| SPI           | 7597       | 1279     |  6318   |
+| UART_I2C_USB  | 12423      | 2230     | 10193   |
+| WB_HOST       | 3072       | 515      | 2557    |
+| WB_INTC       | 1356       | 108      | 1248    |
+| SAR_ADC       | 128        |  18      |  110    |
+|               |            |          |         |
+| TOTAL         | 56956      | 8336     | 44620   |
 
 
 
