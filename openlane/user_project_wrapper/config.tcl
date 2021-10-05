@@ -16,13 +16,14 @@
 # Base Configurations. Don't Touch
 # section begin
 set script_dir [file dirname [file normalize [info script]]]
+set proj_dir [file dirname [file normalize [info script]]]
 
 source $script_dir/../../caravel/openlane/user_project_wrapper_empty/fixed_wrapper_cfgs.tcl
 
 set ::env(DESIGN_NAME) user_project_wrapper
-set verilog_root $script_dir/../../verilog/
-set lef_root $script_dir/../../lef/
-set gds_root $script_dir/../../gds/
+set verilog_root $proj_dir/../../verilog/
+set lef_root $proj_dir/../../lef/
+set gds_root $proj_dir/../../gds/
 #section end
 
 # User Configurations
@@ -33,8 +34,8 @@ set ::env(FP_PDN_CORE_RING) 1
 
 ## Source Verilog Files
 set ::env(VERILOG_FILES) "\
-	$script_dir/../../caravel/verilog/rtl/defines.v \
-	$script_dir/../../verilog/rtl/user_project_wrapper.v"
+	$proj_dir/../../caravel/verilog/rtl/defines.v \
+	$proj_dir/../../verilog/rtl/user_project_wrapper.v"
 
 ## Clock configurations
 set ::env(CLOCK_PORT) "user_clock2 wb_clk_i"
@@ -45,26 +46,26 @@ set ::env(CLOCK_PERIOD) "10"
 ## Internal Macros
 ### Macro Placement
 set ::env(FP_SIZING) "absolute"
-set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro.cfg
+set ::env(MACRO_PLACEMENT_CFG) $proj_dir/macro.cfg
 
-set ::env(PDN_CFG) $script_dir/pdn.tcl
+set ::env(PDN_CFG) $proj_dir/pdn.tcl
 
-#set ::env(SDC_FILE) "$script_dir/base.sdc"
-#set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+#set ::env(SDC_FILE) "$proj_dir/base.sdc"
+#set ::env(BASE_SDC_FILE) "$proj_dir/base.sdc"
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 ### Black-box verilog and views
 set ::env(VERILOG_FILES_BLACKBOX) "\
-        $script_dir/../../verilog/gl/spi_master.v \
-        $script_dir/../../verilog/gl/wb_interconnect.v \
-        $script_dir/../../verilog/gl/pinmux.v     \
-        $script_dir/../../verilog/gl/sar_adc.v     \
-        $script_dir/../../verilog/gl/uart_i2cm_usb.v     \
-	$script_dir/../../verilog/rtl/sar_adc/DAC_8BIT.v \
-	$script_dir/../../verilog/gl/wb_host.v \
-	$script_dir/../../verilog/gl/syntacore.v \
-	$script_dir/../../verilog/rtl/sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v \
+        $proj_dir/../../verilog/gl/spi_master.v \
+        $proj_dir/../../verilog/gl/wb_interconnect.v \
+        $proj_dir/../../verilog/gl/pinmux.v     \
+        $proj_dir/../../verilog/gl/sar_adc.v     \
+        $proj_dir/../../verilog/gl/uart_i2cm_usb.v     \
+	$proj_dir/../../verilog/rtl/sar_adc/DAC_8BIT.v \
+	$proj_dir/../../verilog/gl/wb_host.v \
+	$proj_dir/../../verilog/gl/syntacore.v \
+	$proj_dir/../../verilog/rtl/sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
@@ -92,7 +93,7 @@ set ::env(EXTRA_GDS_FILES) "\
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/syntacore/scr1/src/includes $script_dir/../../verilog/rtl/sdram_ctrl/src/defs ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/syntacore/scr1/src/includes ]
 
 set ::env(GLB_RT_MAXLAYER) 5
 
