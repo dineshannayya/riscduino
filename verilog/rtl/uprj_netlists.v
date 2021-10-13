@@ -56,14 +56,14 @@
      `include "lib/pulse_gen_type1.sv"
      `include "lib/pulse_gen_type2.sv"
 
-     `include "spi_master/src/spim_top.sv"
-     `include "spi_master/src/spim_if.sv"
-     `include "spi_master/src/spim_fifo.sv"
-     `include "spi_master/src/spim_regs.sv"
-     `include "spi_master/src/spim_clkgen.sv"
-     `include "spi_master/src/spim_ctrl.sv"
-     `include "spi_master/src/spim_rx.sv"
-     `include "spi_master/src/spim_tx.sv"
+     `include "qspim/src/qspim_top.sv"
+     `include "qspim/src/qspim_if.sv"
+     `include "qspim/src/qspim_fifo.sv"
+     `include "qspim/src/qspim_regs.sv"
+     `include "qspim/src/qspim_clkgen.sv"
+     `include "qspim/src/qspim_ctrl.sv"
+     `include "qspim/src/qspim_rx.sv"
+     `include "qspim/src/qspim_tx.sv"
 
      `include "uart/src/uart_core.sv"
      `include "uart/src/uart_cfg.sv"
@@ -87,7 +87,13 @@
      `include "usb1_host/src/phy/usb_transceiver.v"
      `include "usb1_host/src/top/usb1_host.sv"
 
-     `include "uart_i2c_usb/src/uart_i2c_usb.sv"
+     `include "sspim/src/sspim_top.sv"  
+     `include "sspim/src/sspim_ctl.sv"  
+     `include "sspim/src/sspim_if.sv"
+     `include "sspim/src/sspim_cfg.sv"
+
+
+     `include "uart_i2c_usb_spi/src/uart_i2c_usb_spi.sv"
 
      `include "lib/async_fifo.sv"  
      `include "lib/registers.v"

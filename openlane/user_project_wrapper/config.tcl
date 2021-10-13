@@ -15,10 +15,15 @@
 
 # Base Configurations. Don't Touch
 # section begin
+
+# YOU ARE NOT ALLOWED TO CHANGE ANY VARIABLES DEFINED IN THE FIXED WRAPPER CFGS 
+source $::env(CARAVEL_ROOT)/openlane/user_project_wrapper_empty/fixed_wrapper_cfgs.tcl
+
+# YOU CAN CHANGE ANY VARIABLES DEFINED IN THE DEFAULT WRAPPER CFGS BY OVERRIDING THEM IN THIS CONFIG.TCL
+source $::env(CARAVEL_ROOT)/openlane/user_project_wrapper_empty/default_wrapper_cfgs.tcl
+
 set script_dir [file dirname [file normalize [info script]]]
 set proj_dir [file dirname [file normalize [info script]]]
-
-source $script_dir/../../caravel/openlane/user_project_wrapper_empty/fixed_wrapper_cfgs.tcl
 
 set ::env(DESIGN_NAME) user_project_wrapper
 set verilog_root $proj_dir/../../verilog/
@@ -57,11 +62,11 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 ### Black-box verilog and views
 set ::env(VERILOG_FILES_BLACKBOX) "\
-        $proj_dir/../../verilog/gl/spi_master.v \
+        $proj_dir/../../verilog/gl/qspim.v \
         $proj_dir/../../verilog/gl/wb_interconnect.v \
         $proj_dir/../../verilog/gl/pinmux.v     \
         $proj_dir/../../verilog/gl/sar_adc.v     \
-        $proj_dir/../../verilog/gl/uart_i2cm_usb.v     \
+        $proj_dir/../../verilog/gl/uart_i2cm_usb_spi.v     \
 	$proj_dir/../../verilog/rtl/sar_adc/DAC_8BIT.v \
 	$proj_dir/../../verilog/gl/wb_host.v \
 	$proj_dir/../../verilog/gl/syntacore.v \
@@ -69,10 +74,10 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	"
 
 set ::env(EXTRA_LEFS) "\
-	$lef_root/spi_master.lef \
+	$lef_root/qspim.lef \
 	$lef_root/pinmux.lef \
 	$lef_root/wb_interconnect.lef \
-	$lef_root/uart_i2cm_usb.lef \
+	$lef_root/uart_i2cm_usb_spi.lef \
 	$lef_root/wb_host.lef \
 	$lef_root/sar_adc.lef \
 	$lef_root/DAC_8BIT.lef \
@@ -81,10 +86,10 @@ set ::env(EXTRA_LEFS) "\
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
-	$gds_root/spi_master.gds \
+	$gds_root/qspim.gds \
 	$gds_root/pinmux.gds \
 	$gds_root/wb_interconnect.gds \
-	$gds_root/uart_i2cm_usb.gds \
+	$gds_root/uart_i2cm_usb_spi.gds \
 	$gds_root/wb_host.gds \
 	$gds_root/sar_adc.gds \
 	$gds_root/DAC_8BIT.gds \
@@ -101,12 +106,15 @@ set ::env(FP_PDN_CHECK_NODES) 0
 
 set ::env(RUN_KLAYOUT_DRC) 0
 
-set ::env(VDD_PIN) [list {vdda1 vdda2 vccd1 vccd2}]
-set ::env(GND_PIN) [list {vssa1 vssa2 vssd1 vssd2}]
+## Internal Macros
+### Macro PDN Connections
+set ::env(FP_PDN_ENABLE_MACROS_GRID) "0"
+set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 
-set ::env(VDD_NETS) [list {vdda1 vdda2 vccd1 vccd2}]
-set ::env(GND_NETS) [list {vssa1 vssa2 vssd1 vssd2}]
+set ::env(VDD_NETS) "vccd1 vccd2 vdda1 vdda2"
+set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 
+set ::env(FP_PDN_ENABLE_RAILS) 0
 
 
 # The following is because there are no std cells in the example wrapper project.
@@ -124,7 +132,7 @@ set ::env(FILL_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
 
 #set ::env(MAGIC_EXT_USE_GDS) "1"
-
+set ::env(QUIT_ON_LVS_ERROR) "1"
 
 set ::env(PL_DIAMOND_SEARCH_HEIGHT) "250"
 

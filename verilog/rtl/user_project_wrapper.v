@@ -26,8 +26,14 @@
 ////      This is digital core and integrate all the main block   ////
 ////      here.  Following block are integrated here              ////
 ////      1. Risc V Core                                          ////
-////      2. SPI Master                                           ////
+////      2. Quad SPI Master                                      ////
 ////      3. Wishbone Cross Bar                                   ////
+////      4. UART                                                 ////
+////      5, USB 1.1                                              ////
+////      6. SPI Master (Single)                                  ////
+////      7. SRAM 2KB                                             ////
+////      8. 6 Channel ADC                                        ////
+////      9. Pinmux with GPIO and 6 PWM                           ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -107,6 +113,8 @@
 ////    1.3 - 30th Sept 2021, Dinesh.A                            ////
 ////          2KB SRAM Interface added to RISC Core               ////
 ////                                                              ////
+////    1.4 - 13th Oct 2021, Dinesh A                             ////
+////          Basic verification and Synthesis cleanup            ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -280,8 +288,8 @@ wire                           wbd_uart_err_i;  // error
 //  CPU Configuration
 //----------------------------------------------------
 wire                              cpu_rst_n     ;
-wire                              spi_rst_n     ;
-wire                              sdram_rst_n   ;
+wire                              qspim_rst_n     ;
+wire                              sspim_rst_n     ;
 wire                              uart_rst_n    ;// uart reset
 wire                              i2c_rst_n     ;// i2c reset
 wire                              usb_rst_n     ;// i2c reset
@@ -385,7 +393,15 @@ wire  [8:0]                      sram_addr1          ; // Address
 wire  [31:0]                     sram_dout1          ; // Read Data
 `endif
 
+// SPIM I/F
+wire                             sspim_sck           ; // clock out
+wire                             sspim_so            ; // serial data out
+wire                             sspim_si            ; // serial data in
+wire                             sspim_ssn           ; // cs_n
 
+
+wire                             usb_intr_o          ;
+wire                             i2cm_intr_o         ;
 /////////////////////////////////////////////////////////
 // Clock Skew Ctrl
 ////////////////////////////////////////////////////////
@@ -422,8 +438,8 @@ wb_host u_wb_host(
 
        .wbd_int_rst_n    (wbd_int_rst_n        ),
        .cpu_rst_n        (cpu_rst_n            ),
-       .spi_rst_n        (spi_rst_n            ),
-       .sdram_rst_n      (sdram_rst_n          ),
+       .qspim_rst_n      (qspim_rst_n          ),
+       .sspim_rst_n      (sspim_rst_n          ), // spi reset
        .uart_rst_n       (uart_rst_n           ), // uart reset
        .i2cm_rst_n       (i2c_rst_n            ), // i2c reset
        .usb_rst_n        (usb_rst_n            ), // usb reset
@@ -557,15 +573,15 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_sram_2kb(
 * It supports both the normal SPI mode and QPI mode with 4 data lines.
 * *******************************************************/
 
-spim_top
+qspim_top
 #(
 `ifndef SYNTHESIS
     .WB_WIDTH  (WB_WIDTH)
 `endif
-) u_spi_master
+) u_qspi_master
 (
     .mclk                   (wbd_clk_int               ),
-    .rst_n                  (spi_rst_n                 ),
+    .rst_n                  (qspim_rst_n                 ),
 
     .wbd_stb_i              (wbd_spim_stb_o            ),
     .wbd_adr_i              (wbd_spim_adr_o            ),
@@ -673,10 +689,11 @@ wb_interconnect  u_intercon (
 	);
 
 
-uart_i2c_usb_top   u_uart_i2c_usb (
+uart_i2c_usb_spi_top   u_uart_i2c_usb_spi (
         .uart_rstn              (uart_rst_n               ), // uart reset
         .i2c_rstn               (i2c_rst_n                ), // i2c reset
-        .usb_rstn               (usb_rst_n                ), // i2c reset
+        .usb_rstn               (usb_rst_n                ), // USB reset
+        .spi_rstn               (sspim_rst_n              ), // SPI reset
         .app_clk                (wbd_clk_int              ),
 	.usb_clk                (usb_clk                  ),
 
@@ -699,6 +716,8 @@ uart_i2c_usb_top   u_uart_i2c_usb (
        .sda_pad_i               (i2cm_data_i              ),
        .sda_pad_o               (i2cm_data_o              ),
        .sda_padoen_o            (i2cm_data_oen            ),
+     
+       .i2cm_intr_o             (i2cm_intr_o              ),
 
        .uart_rxd                (uart_rxd                 ),
        .uart_txd                (uart_txd                 ),
@@ -708,7 +727,15 @@ uart_i2c_usb_top   u_uart_i2c_usb (
 
        .usb_out_dp              (usb_dp_o                 ),
        .usb_out_dn              (usb_dn_o                 ),
-       .usb_out_tx_oen          (usb_oen                  )
+       .usb_out_tx_oen          (usb_oen                  ),
+       
+       .usb_intr_o              (usb_intr_o               ),
+
+      // SPIM Master
+       .sspim_sck               (sspim_sck                ), 
+       .sspim_so                (sspim_so                 ),  
+       .sspim_si                (sspim_si                 ),  
+       .sspim_ssn               (sspim_ssn                )  
 
      );
 
@@ -736,6 +763,8 @@ pinmux u_pinmux(
         .irq_lines              (irq_lines                 ),
         .soft_irq               (soft_irq                  ),
         .user_irq               (user_irq                  ),
+        .usb_intr               (usb_intr_o                ),
+        .i2cm_intr              (i2cm_intr_o               ),
 
        // Digital IO
         .digital_io_out         (io_out                    ),
@@ -776,10 +805,10 @@ pinmux u_pinmux(
         .i2cm_data_i            (i2cm_data_i               ),
 
        // SPI MASTER
-        .spim_sck               (sflash_sck                ),
-        .spim_ss                (sflash_ss                 ),
-        .spim_miso              (sflash_do[0]              ),
-        .spim_mosi              (                          ),
+        .spim_sck               (sspim_sck                 ),
+        .spim_ss                (sspim_ssn                 ),
+        .spim_miso              (sspim_so                  ),
+        .spim_mosi              (sspim_si                  ),
 
 	.pulse1m_mclk           (pulse1m_mclk              ),
 
@@ -814,14 +843,16 @@ sar_adc  u_adc (
 
 	// DAC I/F
         .sar2dac         (sar2dac       ), 
-        .analog_dac_out  (analog_dac_out) , 
+        //.analog_dac_out  (analog_dac_out) ,  // TODO: Need to connect to DAC O/P
+        .analog_dac_out  (analog_io[6]) , 
 
         // ADC Input 
         .analog_din(analog_io[5:0])    // (Analog)
 
 );
 
-
+/****
+* TODO: Need to uncomment the DAC
 DAC_8BIT u_dac (
      `ifdef USE_POWER_PINS
         .vdd(vccd2),
@@ -839,7 +870,6 @@ DAC_8BIT u_dac (
         .out_v(analog_dac_out)
     );
 
-
-
+**/
 
 endmodule : user_project_wrapper
