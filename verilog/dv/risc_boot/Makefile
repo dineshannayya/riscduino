@@ -44,6 +44,7 @@ PDK_PATH?=/ef/tech/SW/sky130A
 
 ## Simulation mode: RTL/GL
 SIM?=RTL
+DUMP?=OFF
 
 .SUFFIXES:
 

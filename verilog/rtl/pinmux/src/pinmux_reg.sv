@@ -23,6 +23,8 @@ module pinmux_reg (
                        output logic [15:0]     irq_lines,
                        output logic            soft_irq,
                        output logic [2:0]      user_irq,
+		       input  logic            usb_intr,
+		       input  logic            i2cm_intr,
 
                        output logic [9:0]      cfg_pulse_1us,
 		       
@@ -300,9 +302,9 @@ gen_32b_reg  #(32'h0) u_reg_5	(
 //-----------------------------------------------------------------------
 //   reg-6
 //-----------------------------------------------------------------
-assign  irq_lines     = reg_6[15:0]; 
-assign  soft_irq      = reg_6[16]; 
-assign  user_irq      = {gpio_intr,ext_intr_in}; 
+assign  irq_lines     = {gpio_intr,ext_intr_in[1:0],usb_intr,i2cm_intr,reg_6[10:0]}; 
+assign  soft_irq      = reg_6[11]; 
+assign  user_irq      = reg_6[14:12]; 
 
 generic_register #(8,0  ) u_reg6_be0 (
 	      .we            ({8{sw_wr_en_6 & 
@@ -315,18 +317,18 @@ generic_register #(8,0  ) u_reg6_be0 (
 	      .data_out      (reg_6[7:0]        )
           );
 
-generic_register #(8,0  ) u_reg6_be1 (
-	      .we            ({8{sw_wr_en_6 & 
+generic_register #(7,0  ) u_reg6_be1 (
+	      .we            ({7{sw_wr_en_6 & 
                                  wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[15:8]),
+	      .data_in       (sw_reg_wdata[14:8]),
 	      .reset_n       (h_reset_n           ),
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_6[15:8]        )
+	      .data_out      (reg_6[14:8]        )
           );
 
-assign reg_6[31:16] = '0;
+assign reg_6[31:15] = '0;
 
 //  Register-7
 gen_32b_reg  #(32'h0) u_reg_7	(

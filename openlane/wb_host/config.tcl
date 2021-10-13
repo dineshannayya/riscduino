@@ -23,7 +23,6 @@ set script_dir [file dirname [file normalize [info script]]]
 set ::env(DESIGN_NAME) wb_host
 
 set ::env(DESIGN_IS_CORE) "0"
-set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
@@ -62,15 +61,14 @@ set ::env(DIE_AREA) "0 0 500 200"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
-set ::env(RUN_CVC) 0
+set ::env(RUN_CVC) 1
 
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 
 set ::env(PL_ROUTABILITY_DRIVEN) 1
 
-# helps in anteena fix
-set ::env(USE_ARC_ANTENNA_CHECK) "0"
+
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4
@@ -80,9 +78,9 @@ set ::env(FP_PDN_HPITCH) 100
 set ::env(FP_PDN_VWIDTH) 5
 set ::env(FP_PDN_HWIDTH) 5
 
-set ::env(GLB_RT_MAXLAYER) 4
+set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
-set ::env(DIODE_INSERTION_STRATEGY) 5
+set ::env(DIODE_INSERTION_STRATEGY) 4
 
 

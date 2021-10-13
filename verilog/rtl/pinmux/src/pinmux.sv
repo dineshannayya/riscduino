@@ -20,6 +20,8 @@ module pinmux (
                        output logic [15:0]     irq_lines,
                        output logic            soft_irq,
                        output logic [2:0]      user_irq,
+		       input  logic            usb_intr,
+		       input  logic            i2cm_intr,
 
                        // Digital IO
                        output logic [37:0]     digital_io_out,
@@ -209,6 +211,8 @@ pinmux_reg u_pinmux_reg(
 	  .irq_lines                    (irq_lines               ),
 	  .soft_irq                     (soft_irq                ),
 	  .user_irq                     (user_irq                ),
+          .usb_intr                     (usb_intr                ),
+          .i2cm_intr                    (i2cm_intr               ),
 
 	  .cfg_pulse_1us                (cfg_pulse_1us           ),
 
