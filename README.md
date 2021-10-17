@@ -471,16 +471,14 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 ```
 ## Step-3: clone Openlane scripts under workarea
 ```bash
-   git clone https://github.com/dineshannayya/OpenLane.git
+   git clone https://github.com/The-OpenROAD-Project/OpenLane.git
 ```
-## Step-4: Environment setting
-   - Note: PDK alreay installed inside the docker, no need to define the PDK_ROOT, This will be point to /opt/pdk path inside the docker
-            if user define the PDK_ROOT path, then flow will use the user defined PDK PATH. Set these enviornmental variable in .bashrc file
 
+## Step-4: add Environment setting
 ```bash
     export CARAVEL_ROOT=<Carvel Installed Path>
     export OPENLANE_ROOT=<OpenLane Installed Path>
-    export IMAGE_NAME=dineshannayya/openlane:rc7
+    export OPENLANE_IMAGE_NAME=efabless/openlane:latest
     export PDK_ROOT=<PDK Installed PATH>
     export PDK_PATH=<PDK Install Path>/sky130A
 ```
@@ -549,15 +547,6 @@ Riscduino Soc flow uses Openlane tool sets.
     4. `CVC` - Performs Circuit Validity Checks
 
 
-## **important Note**
-
-Following tools in openlane docker is older version, we need to update these tool set.
-* Icarus Verilog version 12.0 (devel) (s20150603-1107-ga446c34d)
-* Yosys 0.9+4081 (git sha1 b6721aa9, clang 10.0.0-4ubuntu1 -fPIC -Os)
-
-We have modified these openlane changes in our git repo, you can use from these path
-     git clone https://github.com/dineshannayya/openlane.git
-    docker pull dineshannayya/openlane:rc7
 
 
 
