@@ -55,8 +55,8 @@ set ::env(MACRO_PLACEMENT_CFG) $proj_dir/macro.cfg
 
 set ::env(PDN_CFG) $proj_dir/pdn.tcl
 
-#set ::env(SDC_FILE) "$proj_dir/base.sdc"
-#set ::env(BASE_SDC_FILE) "$proj_dir/base.sdc"
+set ::env(SDC_FILE) "$proj_dir/base.sdc"
+set ::env(BASE_SDC_FILE) "$proj_dir/base.sdc"
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
@@ -104,49 +104,55 @@ set ::env(GLB_RT_MAXLAYER) 5
 
 set ::env(FP_PDN_CHECK_NODES) 0
 
-set ::env(RUN_KLAYOUT_DRC) 0
 
 ## Internal Macros
 ### Macro PDN Connections
-set ::env(FP_PDN_ENABLE_MACROS_GRID) "0"
-set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
+#set ::env(FP_PDN_ENABLE_MACROS_GRID) "0"
+#set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 
 set ::env(VDD_NETS) "vccd1 vccd2 vdda1 vdda2"
 set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 
-set ::env(FP_PDN_ENABLE_RAILS) 0
+set ::env(GLB_RT_OBS) "li1 2200.00 1200.00 2883.10 1616.54,  \
+	               met1 2200.00 1200.00 2883.10 1616.54, \
+	               met2 2200.00 1200.00 2883.10 1616.54, \
+	               met3 2200.00 1200.00 2883.10 1616.54, \
+		       met5 0 0 2920 3520"
+
+set ::env(FP_PDN_MACROS) "\
+	u_adc vccd1 vssd1 \
+	u_adc vccd2 vssd2 \
+	u_intercon vccd1 vssd1 \
+	u_pinmux vccd1 vssd1 \
+	u_qspi_master vccd1 vssd1 \
+	u_riscv_top vccd1 vssd1 \
+	u_sram_2kb vccd1 vssd1 \
+	u_uart_i2c_usb_spi vccd1 vssd1 \
+	u_wb_host vccd1 vssd1 \
+	"
 
 
 # The following is because there are no std cells in the example wrapper project.
-#set ::env(SYNTH_TOP_LEVEL) 1
-#set ::env(PL_RANDOM_GLB_PLACEMENT) 1
+set ::env(SYNTH_TOP_LEVEL) 1
+set ::env(PL_RANDOM_GLB_PLACEMENT) 1
 
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) 0
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) 0
 
-set ::env(TAP_DECAP_INSERTION) "0"
+set ::env(FP_PDN_ENABLE_RAILS) 0
+
 set ::env(DIODE_INSERTION_STRATEGY) 0
 set ::env(FILL_INSERTION) 0
+set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
 
-#set ::env(MAGIC_EXT_USE_GDS) "1"
-set ::env(QUIT_ON_LVS_ERROR) "1"
+set ::env(QUIT_ON_LVS_ERROR) "0"
+set ::env(QUIT_ON_MAGIC_DRC) "0"
+set ::env(QUIT_ON_NEGATIVE_WNS) "0"
+set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
+set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
+set ::env(QUIT_ON_TR_DRC) "0"
 
-set ::env(PL_DIAMOND_SEARCH_HEIGHT) "250"
 
-
-set ::env(FP_PDN_HOFFSET) "5"
-set ::env(FP_PDN_HPITCH) "120"
-set ::env(FP_PDN_HSPACING) "15"
-set ::env(FP_PDN_HWIDTH) "3"
-set ::env(FP_PDN_LOWER_LAYER) "met4"
-set ::env(FP_PDN_RAILS_LAYER) "met1"
-set ::env(FP_PDN_RAIL_OFFSET) "0"
-set ::env(FP_PDN_RAIL_WIDTH) "0.48"
-set ::env(FP_PDN_UPPER_LAYER) "met5"
-set ::env(FP_PDN_VOFFSET) "5"
-set ::env(FP_PDN_VPITCH) "120"
-set ::env(FP_PDN_VSPACING) "15"
-set ::env(FP_PDN_VWIDTH) "3"
