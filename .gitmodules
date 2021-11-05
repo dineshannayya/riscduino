@@ -1,15 +1,3 @@
-[submodule "verilog/rtl/syntacore/scr1/dependencies/riscv-tests"]
-	path = verilog/rtl/syntacore/scr1/dependencies/riscv-tests
-	url = https://github.com/riscv/riscv-tests
-	branch = e30978a71921159aec38eeefd848fca4ed39a826
-[submodule "verilog/rtl/syntacore/scr1/dependencies/riscv-compliance"]
-	path = verilog/rtl/syntacore/scr1/dependencies/riscv-compliance
-	url = https://github.com/riscv/riscv-compliance
-	branch = 9141cf9274b610d059199e8aa2e21f54a0bc6a6e
-[submodule "verilog/rtl/syntacore/scr1/dependencies/coremark"]
-	path = verilog/rtl/syntacore/scr1/dependencies/coremark
-	url = https://github.com/eembc/coremark
-	branch = 7f420b6bdbff436810ef75381059944e2b0d79e8
 [submodule "caravel"]
 	path = caravel
 	url = https://github.com/efabless/caravel-lite.git
