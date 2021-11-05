@@ -159,8 +159,8 @@ uart_core  u_uart_core (
 i2cm_top  u_i2cm (
 	// wishbone signals
 	.wb_clk_i      (app_clk        ), // master clock input
-	.sresetn       (1'b1           ), // synchronous reset
-	.aresetn       (i2c_rstn       ), // asynchronous reset
+	.sresetn       (i2c_rstn       ), // synchronous reset
+	.aresetn       (1'b1           ), // asynchronous reset
 	.wb_adr_i      (reg_addr[4:2]  ), // lower address bits
 	.wb_dat_i      (reg_wdata[7:0] ), // databus input
 	.wb_dat_o      (reg_i2c_rdata  ), // databus output
