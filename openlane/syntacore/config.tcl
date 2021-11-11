@@ -35,6 +35,7 @@ set ::env(SYNTH_MAX_FANOUT) 4
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
+        $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/pipeline/scr1_pipe_top.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/scr1_core_top.sv  \
 	$script_dir/../../verilog/rtl/syntacore/scr1/src/core/scr1_dm.sv  \
@@ -68,6 +69,7 @@ set ::env(VERILOG_FILES) "\
 	$script_dir/../../verilog/rtl/lib/async_fifo.sv "
 
 set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/syntacore/scr1/src/includes ]
+set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"

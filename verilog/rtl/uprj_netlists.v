@@ -146,5 +146,5 @@
      `include "user_project_wrapper.v"
      // we are using netlist file for clk_skew_adjust as it has 
      // standard cell + power pin
-     `include "gl/clk_skew_adjust.v"
+     `include "clk_skew_adjust/src/clk_skew_adjust.v"
 `endif

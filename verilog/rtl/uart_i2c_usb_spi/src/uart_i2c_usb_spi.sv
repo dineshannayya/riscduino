@@ -66,6 +66,14 @@
 module uart_i2c_usb_spi_top 
 
      (  
+`ifdef USE_POWER_PINS
+   input logic         vccd1,// User area 1 1.8V supply
+   input logic         vssd1,// User area 1 digital ground
+`endif
+    // clock skew adjust
+   input logic [3:0]   cfg_cska_uart,
+   input logic	       wbd_clk_int,
+   output logic	       wbd_clk_uart,
 
    input logic         uart_rstn  , // async reset
    input logic         i2c_rstn  ,  // async reset
@@ -79,7 +87,7 @@ module uart_i2c_usb_spi_top
    input logic         reg_wr,
    input logic [7:0]   reg_addr,
    input logic [31:0]  reg_wdata,
-   input logic         reg_be,
+   input logic [3:0]   reg_be,
 
         // Outputs
    output logic [31:0] reg_rdata,
@@ -119,6 +127,17 @@ module uart_i2c_usb_spi_top
 
      );
 
+// uart clock skew control
+clk_skew_adjust u_skew_uart
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int                 ), 
+	       .sel        (cfg_cska_uart               ), 
+	       .clk_out    (wbd_clk_uart                ) 
+       );
 
 `define SEL_UART 2'b00
 `define SEL_I2C  2'b01
@@ -162,7 +181,7 @@ uart_core  u_uart_core (
         .reg_wr      (reg_wr           ),
         .reg_addr    (reg_addr[5:2]    ),
         .reg_wdata   (reg_wdata[7:0]   ),
-        .reg_be      (reg_be           ),
+        .reg_be      (reg_be[0]        ),
 
         // Outputs
         .reg_rdata   (reg_uart_rdata[7:0]),

@@ -340,63 +340,63 @@ uart_agent tb_uart(
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
-	force uut.mprj.u_spi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio0.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay1_sdio0.VNB  = VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio0.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio0.VNB  = VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio0.VPWR    =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio0.VPB     =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio0.VGND    =VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio0.VNB     =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio0.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio0.VNB  = VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio0.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio0.VNB  = VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio0.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio0.VPB     =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio0.VGND    =VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio0.VNB     =VSS;
 
 
-	force uut.mprj.u_spi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio1.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay1_sdio1.VNB = VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio1.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio1.VNB = VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio1.VPWR    =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio1.VPB     =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio1.VGND    =VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio1.VNB     =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio1.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio1.VNB = VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio1.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio1.VNB = VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio1.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio1.VPB     =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio1.VGND    =VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio1.VNB     =VSS;
 
-	force uut.mprj.u_spi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio2.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay1_sdio2.VNB = VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio2.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio2.VNB = VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio2.VPWR    =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio2.VPB     =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio2.VGND    =VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio2.VNB     =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio2.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio2.VNB = VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio2.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio2.VNB = VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio2.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio2.VPB     =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio2.VGND    =VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio2.VNB     =VSS;
 
-	force uut.mprj.u_spi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay1_sdio3.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay1_sdio3.VNB = VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_delay2_sdio3.VGND =VSS;
-	force uut.mprj.u_spi_master.u_delay2_sdio3.VNB = VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio3.VPWR    =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio3.VPB     =USER_VDD1V8;
-	force uut.mprj.u_spi_master.u_buf_sdio3.VGND    =VSS;
-	force uut.mprj.u_spi_master.u_buf_sdio3.VNB     =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay1_sdio3.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay1_sdio3.VNB = VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_delay2_sdio3.VGND =VSS;
+	force uut.mprj.u_qspi_master.u_delay2_sdio3.VNB = VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio3.VPWR    =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio3.VPB     =USER_VDD1V8;
+	force uut.mprj.u_qspi_master.u_buf_sdio3.VGND    =VSS;
+	force uut.mprj.u_qspi_master.u_buf_sdio3.VNB     =VSS;
           
-	force uut.mprj.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
-	force uut.mprj.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
-	force uut.mprj.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VGND =VSS;
-	force uut.mprj.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VNB = VSS;
+	force uut.mprj.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
+	force uut.mprj.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
+	force uut.mprj.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VGND =VSS;
+	force uut.mprj.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VNB = VSS;
 
 	force uut.mprj.u_wb_host.u_buf_wb_rst.VPWR =USER_VDD1V8;
 	force uut.mprj.u_wb_host.u_buf_wb_rst.VPB  =USER_VDD1V8;
@@ -408,15 +408,15 @@ uart_agent tb_uart(
 	force uut.mprj.u_wb_host.u_buf_cpu_rst.VGND =VSS;
 	force uut.mprj.u_wb_host.u_buf_cpu_rst.VNB = VSS;
 
-	force uut.mprj.u_wb_host.u_buf_spi_rst.VPWR =USER_VDD1V8;
-	force uut.mprj.u_wb_host.u_buf_spi_rst.VPB  =USER_VDD1V8;
-	force uut.mprj.u_wb_host.u_buf_spi_rst.VGND =VSS;
-	force uut.mprj.u_wb_host.u_buf_spi_rst.VNB = VSS;
+	force uut.mprj.u_wb_host.u_buf_qspim_rst.VPWR =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_buf_qspim_rst.VPB  =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_buf_qspim_rst.VGND =VSS;
+	force uut.mprj.u_wb_host.u_buf_qspim_rst.VNB = VSS;
 
-	force uut.mprj.u_wb_host.u_buf_sdram_rst.VPWR =USER_VDD1V8;
-	force uut.mprj.u_wb_host.u_buf_sdram_rst.VPB  =USER_VDD1V8;
-	force uut.mprj.u_wb_host.u_buf_sdram_rst.VGND =VSS;
-	force uut.mprj.u_wb_host.u_buf_sdram_rst.VNB = VSS;
+	force uut.mprj.u_wb_host.u_buf_sspim_rst.VPWR =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_buf_sspim_rst.VPB  =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_buf_sspim_rst.VGND =VSS;
+	force uut.mprj.u_wb_host.u_buf_sspim_rst.VNB = VSS;
 
 	force uut.mprj.u_wb_host.u_buf_uart_rst.VPWR =USER_VDD1V8;
 	force uut.mprj.u_wb_host.u_buf_uart_rst.VPB  =USER_VDD1V8;
