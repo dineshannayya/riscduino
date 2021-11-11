@@ -99,6 +99,11 @@ module wb_host (
        output  logic               wbm_ack_o        ,  // acknowlegement
        output  logic               wbm_err_o        ,  // error
 
+    // Clock Skew Adjust
+       input   logic               wbd_clk_int      , 
+       output  logic               wbd_clk_wh       ,
+       input   logic [3:0]         cfg_cska_wh      , // clock skew adjust for web host
+
     // Slave Port
        output  logic               wbs_clk_out      ,  // System clock
        input   logic               wbs_clk_i        ,  // System clock
@@ -165,6 +170,18 @@ sky130_fd_sc_hd__bufbuf_16 u_buf_sspim_rst     (.A(cfg_glb_ctrl[3]),.X(sspim_rst
 sky130_fd_sc_hd__bufbuf_16 u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
 sky130_fd_sc_hd__bufbuf_16 u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
 sky130_fd_sc_hd__bufbuf_16 u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
+
+// wb_host clock skew control
+clk_skew_adjust u_skew_wh
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int               ), 
+	       .sel        (cfg_cska_wh               ), 
+	       .clk_out    (wbd_clk_wh                ) 
+       );
 
 
 // To reduce the load/Timing Wishbone I/F, Strobe is register to create
@@ -255,8 +272,8 @@ end
 
 
 generic_register #(32,0  ) u_glb_ctrl (
-	      .we            ({24{sw_wr_en_0}}   ),		 
-	      .data_in       (wbm_dat_i[23:0]    ),
+	      .we            ({32{sw_wr_en_0}}   ),		 
+	      .data_in       (wbm_dat_i[31:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      

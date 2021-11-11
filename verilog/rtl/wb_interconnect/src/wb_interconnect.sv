@@ -52,6 +52,10 @@
 ////          m0: external host                                   ////
 ////          m1: risc imem                                       ////
 ////          m2: risc dmem                                       ////
+////   0.6 - 06 Nov 2021, Dinesh A                                ////
+////          Push the clock skew logic inside the block due to   ////
+////          global power hooking challanges for small block at  ////
+////          top level                                           ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -83,6 +87,16 @@
 
 
 module wb_interconnect(
+`ifdef USE_POWER_PINS
+         input logic            vccd1,    // User area 1 1.8V supply
+         input logic            vssd1,    // User area 1 digital ground
+`endif
+         // Clock Skew Adjust
+         input logic [3:0]      cfg_cska_wi,
+         input logic            wbd_clk_int,
+	 output logic           wbd_clk_wi,
+
+
          input logic		clk_i, 
          input logic            rst_n,
          
@@ -220,6 +234,17 @@ type_wb_rd_intf  m_bus_rd;  // Multiplexed Slave I/F
 type_wb_wr_intf  s_bus_wr;  // Multiplexed Master I/F
 type_wb_rd_intf  s_bus_rd;  // Multiplexed Slave I/F
 
+// Wishbone interconnect clock skew control
+clk_skew_adjust u_skew_wi
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int                 ), 
+	       .sel        (cfg_cska_wi                 ), 
+	       .clk_out    (wbd_clk_wi                  ) 
+       );
 
 //-------------------------------------------------------------------
 // EXTERNAL MEMORY MAP

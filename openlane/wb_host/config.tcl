@@ -35,6 +35,7 @@ set ::env(SYNTH_MAX_FANOUT) 4
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
+     $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
      $script_dir/../../verilog/rtl/wb_host/src/wb_host.sv \
      $script_dir/../../verilog/rtl/lib/async_fifo.sv      \
      $script_dir/../../verilog/rtl/lib/async_wb.sv        \
@@ -59,6 +60,7 @@ set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 500 200"
 
+set ::env(PL_TARGET_DENSITY) "0.40"
 
 # If you're going to use multiple power domains, then keep this disabled.
 set ::env(RUN_CVC) 1
@@ -80,7 +82,10 @@ set ::env(FP_PDN_HWIDTH) 5
 
 set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
-
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 
+set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
+set ::env(QUIT_ON_MAGIC_DRC) "1"
+set ::env(QUIT_ON_LVS_ERROR) "0"
+set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"

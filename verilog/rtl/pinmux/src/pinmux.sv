@@ -1,4 +1,12 @@
 module pinmux (
+                    `ifdef USE_POWER_PINS
+                       input logic         vccd1,// User area 1 1.8V supply
+                       input logic         vssd1,// User area 1 digital ground
+                    `endif
+                        // clock skew adjust
+                       input logic [3:0]        cfg_cska_pinmux,
+                       input logic	        wbd_clk_int,
+                       output logic	        wbd_clk_pinmux,
                        // System Signals
                        // Inputs
 		       input logic             mclk,
@@ -35,12 +43,12 @@ module pinmux (
 		       input  logic [3:0]      sflash_do,
 		       output logic [3:0]      sflash_di,
 
-		       // SSRAM I/F
-		       input  logic            ssram_sck,
-		       input  logic            ssram_ss,
-		       input  logic [3:0]      ssram_oen,
-		       input  logic [3:0]      ssram_do,
-		       output logic [3:0]      ssram_di,
+		       // SSRAM I/F - Temp Masked
+		       //input  logic            ssram_sck,
+		       //input  logic            ssram_ss,
+		       //input  logic [3:0]      ssram_oen,
+		       //input  logic [3:0]      ssram_do,
+		       //output logic [3:0]      ssram_di,
 
 		       // USB I/F
 		       input   logic           usb_dp_o,
@@ -136,6 +144,30 @@ assign      port_c_out           = pad_gpio_out[23:16];
 assign      port_d_out           = pad_gpio_out[31:24];
 
 assign      pinmux_debug = '0; // Todo: Need to fix
+
+// SSRAM I/F - Temp masked
+//input  logic            ssram_sck,
+//input  logic            ssram_ss,
+//input  logic [3:0]      ssram_oen,
+//input  logic [3:0]      ssram_do,
+//output logic [3:0]      ssram_di,
+wire         ssram_sck = 1'b0;
+wire         ssram_ss = 1'b0;
+wire [3:0]   ssram_oen = 1'b0;
+wire [3:0]   ssram_do  = 4'b0;
+wire [3:0]   ssram_di;
+
+// pinmux clock skew control
+clk_skew_adjust u_skew_pinmux
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int                 ), 
+	       .sel        (cfg_cska_pinmux             ), 
+	       .clk_out    (wbd_clk_pinmux              ) 
+       );
 
 gpio_intr u_gpio_intr (
    // System Signals

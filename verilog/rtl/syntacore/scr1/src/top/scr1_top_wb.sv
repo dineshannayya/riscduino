@@ -88,6 +88,15 @@
 `endif // SCR1_TCM_EN
 
 module scr1_top_wb (
+
+`ifdef USE_POWER_PINS
+         input logic            vccd1,    // User area 1 1.8V supply
+         input logic            vssd1,    // User area 1 digital ground
+`endif
+    input  logic   [3:0]                 cfg_cska_riscv,
+    input  logic                         wbd_clk_int,
+    output logic                         wbd_clk_riscv,
+
     // Control
     input   logic                                   pwrup_rst_n,            // Power-Up Reset
     input   logic                                   rst_n,                  // Regular Reset signal
@@ -257,6 +266,17 @@ logic                                               timer_irq;
 logic [63:0]                                        timer_val;
 logic [48:0]                                        core_debug;
 
+// spi clock skew control
+clk_skew_adjust u_skew_riscv
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int                ), 
+	       .sel        (cfg_cska_riscv             ), 
+	       .clk_out    (wbd_clk_riscv              ) 
+       );
 //-------------------------------------------------------------------------------
 // SCR1 Intf instance
 //-------------------------------------------------------------------------------

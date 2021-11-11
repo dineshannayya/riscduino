@@ -36,6 +36,7 @@ set ::env(SYNTH_MAX_FANOUT) 4
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
+     $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
      $script_dir/../../verilog/rtl/pinmux/src/pinmux.sv \
      $script_dir/../../verilog/rtl/pinmux/src/pinmux_reg.sv \
      $script_dir/../../verilog/rtl/pinmux/src/gpio_intr.sv \

@@ -75,7 +75,18 @@
 // Clock-in is east pad direction
 // clock out give in other three direction for better placement
 /////////////////////////////////////////////////////////////////////
-module clk_skew_adjust(clk_in, sel, clk_out);
+module clk_skew_adjust(
+`ifdef USE_POWER_PINS
+     vccd1,// User area 1 1.8V supply
+     vssd1,// User area 1 digital ground
+`endif
+clk_in, sel, clk_out);
+
+
+`ifdef USE_POWER_PINS
+     input vccd1;// User area 1 1.8V supply
+     input vssd1;// User area 1 digital ground
+`endif
   input  clk_in;
   output clk_out;
   input [3:0] sel;

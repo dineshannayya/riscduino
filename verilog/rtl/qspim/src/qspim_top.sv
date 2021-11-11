@@ -68,6 +68,8 @@
 ////            to partial reading of data                        ////
 ////     V.4  -  July 26, 2021                                    ////
 ////             QDDR (0xED) supported is added                   ////
+////     V.5  -  Nov 6, 2021                                      ////
+////             Clock Skew Moves inside the block                ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -101,9 +103,17 @@
 module qspim_top
 #( parameter WB_WIDTH = 32)
 (
+`ifdef USE_POWER_PINS
+         input logic            vccd1,    // User area 1 1.8V supply
+         input logic            vssd1,    // User area 1 digital ground
+`endif
     input  logic                          mclk,
     input  logic                          rst_n,
 
+    input  logic   [3:0]                 cfg_cska_sp_co, // spi clock skew adjust
+    input  logic   [3:0]                 cfg_cska_spi,
+    input  logic                         wbd_clk_int,
+    output logic                         wbd_clk_spi,
 
     input  logic                         wbd_stb_i, // strobe/request
     input  logic   [WB_WIDTH-1:0]        wbd_adr_i, // address
@@ -216,7 +226,7 @@ logic                    [1:0] spi_mode;
 logic                          spi_en_tx;
 logic                          spi_init_done;
 logic  [3:0]                   spi_sdo_int;
-
+logic                          spi_clk_int;
 logic                          spi_sdo0_dl;
 logic                          spi_sdo1_dl;
 logic                          spi_sdo2_dl;
@@ -247,7 +257,29 @@ assign   #1 spi_oen[1] = !spi_en_tx;  // SPI_DIO1
 assign   #1 spi_oen[2] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // HOLD
 assign   #1 spi_oen[3] =  (spi_mode == 0) ? 1 'b0 : !spi_en_tx;   // 
 
+// spi clock skew control
+clk_skew_adjust u_skew_spi
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (wbd_clk_int                ), 
+	       .sel        (cfg_cska_spi               ), 
+	       .clk_out    (wbd_clk_spi                ) 
+       );
 
+// Clock Skey for SPI clock out
+clk_skew_adjust u_skew_sp_co
+       (
+`ifdef USE_POWER_PINS
+               .vccd1      (vccd1                      ),// User area 1 1.8V supply
+               .vssd1      (vssd1                      ),// User area 1 digital ground
+`endif
+	       .clk_in     (spi_clk_int                ), 
+	       .sel        (cfg_cska_sp_co             ), 
+	       .clk_out    (spi_clk                    ) 
+       );
 qspim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .mclk                           (mclk                         ),
         .rst_n                          (rst_n                        ),
@@ -455,7 +487,7 @@ qspim_ctrl u_spictrl
 
 	.ctrl_state                     (ctrl_state                   ),
 
-        .spi_clk                        (spi_clk                      ),
+        .spi_clk                        (spi_clk_int                  ),
         .spi_csn0                       (spi_csn0                     ),
         .spi_csn1                       (spi_csn1                     ),
         .spi_csn2                       (spi_csn2                     ),
