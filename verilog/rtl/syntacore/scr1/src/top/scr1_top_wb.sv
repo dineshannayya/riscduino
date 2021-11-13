@@ -42,6 +42,8 @@
 ////            64bit debug signal added                          ////
 ////     v3:    Aug 23, 2021, Dinesh A                            ////
 ////            timer_irq connective bug fix                      ////
+////     v3:    Nov 12, 2021, Dinesh A                            ////
+////            2KB SRAM Integrated at TCM Interface              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -266,7 +268,7 @@ logic                                               timer_irq;
 logic [63:0]                                        timer_val;
 logic [48:0]                                        core_debug;
 
-// spi clock skew control
+// riscv clock skew control
 clk_skew_adjust u_skew_riscv
        (
 `ifdef USE_POWER_PINS

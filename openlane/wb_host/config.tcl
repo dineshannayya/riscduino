@@ -40,6 +40,7 @@ set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/lib/async_fifo.sv      \
      $script_dir/../../verilog/rtl/lib/async_wb.sv        \
      $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
+     $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
      $script_dir/../../verilog/rtl/lib/registers.v"
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
@@ -58,9 +59,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 500 200"
-
-set ::env(PL_TARGET_DENSITY) "0.40"
+set ::env(DIE_AREA) "0 0 500 300"
 
 # If you're going to use multiple power domains, then keep this disabled.
 set ::env(RUN_CVC) 1
@@ -68,7 +67,8 @@ set ::env(RUN_CVC) 1
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 
-set ::env(PL_ROUTABILITY_DRIVEN) 1
+set ::env(PL_TIME_DRIVEN) 1
+set ::env(PL_TARGET_DENSITY) "0.30"
 
 
 
@@ -84,6 +84,8 @@ set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
+#To fix the metal density issue in tapeout check -recommded by jeffdi 
+#set ::env(DECAP_CELL) "sky130_ef_sc_hd__decap_12 sky130_fd_sc_hd__decap_3 sky130_fd_sc_hd__decap_4 sky130_fd_sc_hd__decap_6 sky130_fd_sc_hd__decap_8"
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"

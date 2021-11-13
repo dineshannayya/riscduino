@@ -155,7 +155,7 @@ wire         ssram_sck = 1'b0;
 wire         ssram_ss = 1'b0;
 wire [3:0]   ssram_oen = 1'b0;
 wire [3:0]   ssram_do  = 4'b0;
-wire [3:0]   ssram_di;
+logic [3:0]  ssram_di;
 
 // pinmux clock skew control
 clk_skew_adjust u_skew_pinmux
