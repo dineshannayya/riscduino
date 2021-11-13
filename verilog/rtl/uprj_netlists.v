@@ -147,4 +147,5 @@
      // we are using netlist file for clk_skew_adjust as it has 
      // standard cell + power pin
      `include "clk_skew_adjust/src/clk_skew_adjust.v"
+     `include "lib/ctech_cells.sv"
 `endif

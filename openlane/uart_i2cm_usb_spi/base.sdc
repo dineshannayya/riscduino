@@ -1,82 +1,315 @@
-# SPDX-FileCopyrightText:  2021 , Dinesh Annayya
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# SPDX-License-Identifier: Apache-2.0
-# SPDX-FileContributor: Modified by Dinesh Annayya <dinesha@opencores.org>
+###############################################################################
+# Created by write_sdc
+# Wed Nov 10 17:08:57 2021
+###############################################################################
+current_design uart_i2c_usb_spi_top
+###############################################################################
+# Timing Constraints
+###############################################################################
+create_clock -name app_clk -period 10.0000 [get_ports {app_clk}]
+create_clock -name line_clk -period 100.0000 [get_pins {u_uart_core.u_lineclk_buf/X}]
+create_clock -name usb_clk -period 100.0000 [get_ports {usb_clk}]
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -hold  0.1000
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -hold  0.1000
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -setup 0.2000
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -hold  0.1000
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -setup 0.2000
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -hold  0.1000
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -hold  0.1000
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -hold  0.1000
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -setup 0.2000
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -hold  0.1000
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -setup 0.2000
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -hold  0.1000
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -setup 0.2000
+set_clock_groups -name async_clock -asynchronous \
+ -group [get_clocks {app_clk}]\
+ -group [get_clocks {line_clk}] -comment {Async Clock group}
+set_input_delay 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {i2c_rstn}]
+set_input_delay 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {uart_rstn}]
+set_input_delay 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {usb_rstn}]
 
 
-set_units -time ns
-set ::env(CORE_CLOCK_PERIOD) "10"
-set ::env(CORE_CLOCK_PORT)   "app_clk"
-set ::env(CORE_CLOCK_NAME)   "app_clk"
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[0]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[1]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[2]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[3]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[4]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[5]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[6]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[7]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[0]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[1]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[2]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[3]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_cs}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[0]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[10]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[11]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[12]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[13]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[14]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[15]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[16]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[17]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[18]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[19]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[1]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[20]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[21]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[22]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[23]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[24]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[25]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[26]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[27]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[28]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[29]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[2]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[30]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[31]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[3]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[4]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[5]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[6]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[7]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[8]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[9]}]
+set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wr}]
 
-set ::env(LINE_CLOCK_PERIOD) "100"
-set ::env(LINE_CLOCK_PORT)   "u_uart_core.u_lineclk_buf/X"
-set ::env(LINE_CLOCK_NAME)   "line_clk"
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[0]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[1]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[2]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[3]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[4]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[5]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[6]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[7]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[0]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[1]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[2]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[3]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_cs}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[0]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[10]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[11]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[12]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[13]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[14]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[15]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[16]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[17]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[18]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[19]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[1]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[20]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[21]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[22]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[23]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[24]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[25]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[26]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[27]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[28]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[29]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[2]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[30]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[31]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[3]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[4]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[5]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[6]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[7]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[8]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[9]}]
+set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wr}]
 
-set ::env(USB_CLOCK_PERIOD) "100"
-set ::env(USB_CLOCK_PORT)   "usb_clk"
-set ::env(USB_CLOCK_NAME)   "usb_clk"
 
-######################################
-# WB Clock domain input output
-######################################
-create_clock [get_ports $::env(CORE_CLOCK_PORT)]  -name $::env(CORE_CLOCK_NAME)  -period $::env(CORE_CLOCK_PERIOD)
-create_clock [get_pins  $::env(LINE_CLOCK_PORT)]  -name $::env(LINE_CLOCK_NAME)  -period $::env(LINE_CLOCK_PERIOD)
-create_clock [get_ports $::env(USB_CLOCK_PORT)]  -name $::env(USB_CLOCK_NAME)  -period $::env(USB_CLOCK_PERIOD)
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_ack}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[0]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[10]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[11]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[12]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[13]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[14]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[15]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[16]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[17]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[18]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[19]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[1]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[20]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[21]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[22]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[23]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[24]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[25]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[26]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[27]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[28]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[29]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[2]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[30]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[31]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[3]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[4]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[5]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[6]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[7]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[8]}]
+set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[9]}]
 
-set core_input_delay_value [expr $::env(CORE_CLOCK_PERIOD) * 0.6]
-set core_output_delay_value [expr $::env(CORE_CLOCK_PERIOD) * 0.6]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_ack}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[0]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[10]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[11]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[12]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[13]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[14]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[15]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[16]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[17]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[18]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[19]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[1]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[20]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[21]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[22]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[23]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[24]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[25]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[26]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[27]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[28]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[29]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[2]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[30]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[31]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[3]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[4]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[5]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[6]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[7]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[8]}]
+set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[9]}]
 
-set line_input_delay_value  [expr $::env(LINE_CLOCK_PERIOD) * 0.6]
-set line_output_delay_value [expr $::env(LINE_CLOCK_PERIOD) * 0.6]
+###############################################################################
+# Environment
+###############################################################################
+set_load -pin_load 0.0334 [get_ports {i2cm_intr_o}]
+set_load -pin_load 0.0334 [get_ports {reg_ack}]
+set_load -pin_load 0.0334 [get_ports {scl_pad_o}]
+set_load -pin_load 0.0334 [get_ports {scl_pad_oen_o}]
+set_load -pin_load 0.0334 [get_ports {sda_pad_o}]
+set_load -pin_load 0.0334 [get_ports {sda_padoen_o}]
+set_load -pin_load 0.0334 [get_ports {sspim_sck}]
+set_load -pin_load 0.0334 [get_ports {sspim_so}]
+set_load -pin_load 0.0334 [get_ports {sspim_ssn}]
+set_load -pin_load 0.0334 [get_ports {uart_txd}]
+set_load -pin_load 0.0334 [get_ports {usb_intr_o}]
+set_load -pin_load 0.0334 [get_ports {usb_out_dn}]
+set_load -pin_load 0.0334 [get_ports {usb_out_dp}]
+set_load -pin_load 0.0334 [get_ports {usb_out_tx_oen}]
+set_load -pin_load 0.0334 [get_ports {wbd_clk_uart}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[31]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[30]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[29]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[28]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[27]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[26]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[25]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[24]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[23]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[22]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[21]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[20]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[19]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[18]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[17]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[16]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[15]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[14]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[13]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[12]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[11]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[10]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[9]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[8]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[7]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[6]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[5]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[4]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[3]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[2]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[1]}]
+set_load -pin_load 0.0334 [get_ports {reg_rdata[0]}]
 
-set usb_input_delay_value  [expr $::env(USB_CLOCK_PERIOD) * 0.6]
-set usb_output_delay_value [expr $::env(USB_CLOCK_PERIOD) * 0.6]
-puts "\[INFO\]: Setting wb output delay to:$core_output_delay_value"
-puts "\[INFO\]: Setting wb input delay to: $core_input_delay_value"
-
-
-set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {uart_rstn}
-set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {i2c_rstn}
-set_input_delay 2.0 -clock [get_clocks $::env(CORE_CLOCK_NAME)] {usb_rstn}
-
-set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_cs*]
-set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_addr*]
-set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_wr*]
-set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_be*]
-set_input_delay  $core_input_delay_value   -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_wdata*]
-
-
-set_output_delay $core_output_delay_value  -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_rdata*]
-set_output_delay $core_output_delay_value  -clock [get_clocks $::env(CORE_CLOCK_NAME)] [get_port reg_ack*]
-
-set_input_delay  $line_input_delay_value   -clock [get_clocks $::env(LINE_CLOCK_NAME)] [get_port io_in*]
-set_output_delay $line_input_delay_value   -clock [get_clocks $::env(LINE_CLOCK_NAME)] [get_port io_oeb*]
-set_output_delay $line_output_delay_value  -clock [get_clocks $::env(LINE_CLOCK_NAME)] [get_port io_out*]
-
-
-set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks $::env(CORE_CLOCK_NAME)] -group [get_clocks $::env(LINE_CLOCK_NAME)] 
-
-set_clock_uncertainty -from $::env(CORE_CLOCK_NAME)   -to $::env(CORE_CLOCK_NAME)  -setup 0.400
-set_clock_uncertainty -from $::env(LINE_CLOCK_NAME)   -to $::env(LINE_CLOCK_NAME) -setup 0.400
-
-set_clock_uncertainty -from $::env(CORE_CLOCK_NAME)   -to $::env(CORE_CLOCK_NAME)  -hold 0.050
-set_clock_uncertainty -from $::env(LINE_CLOCK_NAME)   -to $::env(LINE_CLOCK_NAME) -hold 0.050
-
-# TODO set this as parameter
-set_driving_cell -lib_cell $::env(SYNTH_DRIVING_CELL) -pin $::env(SYNTH_DRIVING_CELL_PIN) [all_inputs]
-set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
-puts "\[INFO\]: Setting load to: $cap_load"
-set_load  $cap_load [all_outputs]
-
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {app_clk}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {i2c_rstn}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_cs}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wr}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {scl_pad_i}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {sda_pad_i}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {spi_rstn}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {sspim_si}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {uart_rstn}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {uart_rxd}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {usb_clk}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {usb_in_dn}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {usb_in_dp}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {usb_rstn}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {wbd_clk_int}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_uart[3]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_uart[2]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_uart[1]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_uart[0]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[7]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[6]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[5]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[4]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[3]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[2]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[1]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_addr[0]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_be[3]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_be[2]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_be[1]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_be[0]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[31]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[30]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[29]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[28]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[27]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[26]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[25]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[24]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[23]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[22]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[21]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[20]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[19]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[18]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[17]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[16]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[15]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[14]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[13]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[12]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[11]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[10]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[9]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[8]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[7]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[6]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[5]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[4]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[3]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[2]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[1]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_wdata[0]}]
+###############################################################################
+# Design Rules
+###############################################################################

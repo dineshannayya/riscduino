@@ -14,7 +14,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileContributor: Modified by Dinesh Annayya <dinesha@opencores.org>
 
-
 set ::env(LIB_FASTEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ff_n40C_1v95.lib"
 set ::env(LIB_TYPICAL) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
 set ::env(LIB_SLOWEST) "$::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__ss_100C_1v60.lib"
@@ -39,7 +38,7 @@ read_lib  -corner tt   ../../lib/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.l
 
 read_verilog netlist/qspim.v
 read_verilog netlist/syntacore.v  
-read_verilog netlist/uart_i2cm_usb.v  
+read_verilog netlist/uart_i2cm_usb_spi.v
 read_verilog netlist/wb_host.v  
 read_verilog netlist/wb_interconnect.v
 read_verilog netlist/pinmux.v
@@ -61,7 +60,7 @@ read_spef ../..//spef/user_project_wrapper.spef
 read_sdc -echo $::env(BASE_SDC_FILE)
 
 # check for missing constraints
-#check_setup  -verbose > unconstraints.rpt
+check_setup  -verbose > unconstraints.rpt
 
 set_operating_conditions -analysis_type single
 # Propgate the clock
@@ -70,36 +69,61 @@ set_propagated_clock [all_clocks]
 report_tns
 report_wns
 #report_power 
+#
+echo "################ CORNER : WC (MAX) TIMING Report ###################"                                              > timing_ss_max.rpt
+report_checks -unique -slack_max -0.0 -path_delay max -group_count 100          -corner wc  -format full_clock_expanded >> timing_ss_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  wbm_clk_i   -corner wc  -format full_clock_expanded >> timing_ss_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  wbs_clk_i   -corner wc  -format full_clock_expanded >> timing_ss_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  cpu_clk     -corner wc  -format full_clock_expanded >> timing_ss_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  rtc_clk     -corner wc  -format full_clock_expanded >> timing_ss_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  line_clk    -corner wc  -format full_clock_expanded >> timing_ss_max.rpt
+report_checks                         -path_delay max                           -corner wc                              >> timing_ss_max.rpt
 
-echo "################ CORNER : WC (SLOW) TIMING Report ###################" > timing_ss_max.rpt
-report_checks -unique -path_delay max -slack_max -0.0 -group_count 100 -corner wc >> timing_ss_max.rpt
-report_checks -group_count 100 -path_delay max  -path_group $::env(WBM_CLOCK_NAME)  -corner wc  >> timing_ss_max.rpt
-report_checks -group_count 100 -path_delay max  -path_group $::env(WBS_CLOCK_NAME)  -corner wc  >> timing_ss_max.rpt
-report_checks -group_count 100 -path_delay max  -path_group $::env(BIST_CLOCK_NAME) -corner wc  >> timing_ss_max.rpt
-report_checks -path_delay max   -corner wc >> timing_ff_max.rpt
+echo "################ CORNER : WC (MIN) TIMING Report ###################"                                              > timing_ss_min.rpt
+report_checks -unique -slack_max -0.0 -path_delay min -group_count 100          -corner wc  -format full_clock_expanded >> timing_ss_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  wbm_clk_i   -corner wc  -format full_clock_expanded >> timing_ss_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  wbs_clk_i   -corner wc  -format full_clock_expanded >> timing_ss_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  cpu_clk     -corner wc  -format full_clock_expanded >> timing_ss_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  rtc_clk     -corner wc  -format full_clock_expanded >> timing_ss_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  line_clk    -corner wc  -format full_clock_expanded >> timing_ss_min.rpt
+report_checks                         -path_delay min                           -corner wc                              >> timing_ss_min.rpt
 
-echo "################ CORNER : BC (SLOW) TIMING Report ###################" > timing_ff_min.rpt
-report_checks -unique -path_delay min -slack_min -0.0 -group_count 100 -corner bc >> timing_ff_min.rpt
-report_checks -group_count 100  -path_delay min -path_group $::env(WBM_CLOCK_NAME)  -corner bc  >> timing_ff_min.rpt
-report_checks -group_count 100  -path_delay min -path_group $::env(WBS_CLOCK_NAME)  -corner bc  >> timing_ff_min.rpt
-report_checks -group_count 100  -path_delay min -path_group $::env(BIST_CLOCK_NAME) -corner bc  >> timing_ff_min.rpt
-report_checks -path_delay min  -corner bc >> timing_min.rpt
+echo "################ CORNER : BC (MAX) TIMING Report ###################"                                              > timing_ff_max.rpt
+report_checks -unique -slack_max -0.0 -path_delay max -group_count 100          -corner bc  -format full_clock_expanded >> timing_ff_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  wbm_clk_i   -corner bc  -format full_clock_expanded >> timing_ff_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  wbs_clk_i   -corner bc  -format full_clock_expanded >> timing_ff_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  cpu_clk     -corner bc  -format full_clock_expanded >> timing_ff_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  rtc_clk     -corner bc  -format full_clock_expanded >> timing_ff_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  line_clk    -corner bc  -format full_clock_expanded >> timing_ff_max.rpt
+report_checks                         -path_delay max                           -corner bc                              >> timing_ff_max.rpt
 
-echo "################ CORNER : TT (MAX) TIMING Report ###################" > timing_tt_max.rpt
-report_checks -unique -path_delay min -slack_min -0.0 -group_count 100 -corner tt >> timing_tt_max.rpt
-report_checks -group_count 100  -path_delay max -path_group $::env(WBM_CLOCK_NAME)  -corner tt  >> timing_tt_max.rpt
-report_checks -group_count 100  -path_delay max -path_group $::env(WBS_CLOCK_NAME)  -corner tt  >> timing_tt_max.rpt
-report_checks -group_count 100  -path_delay max -path_group $::env(BIST_CLOCK_NAME) -corner tt  >> timing_tt_max.rpt
-report_checks -path_delay min  -corner tt >> timing_min.rpt
-
-echo "################ CORNER : TT (MIN) TIMING Report ###################" > timing_tt_min.rpt
-report_checks -unique -path_delay min -slack_min -0.0 -group_count 100 -corner tt >> timing_tt_min.rpt
-report_checks -group_count 100  -path_delay min -path_group $::env(WBM_CLOCK_NAME)  -corner tt  >> timing_tt_min.rpt
-report_checks -group_count 100  -path_delay min -path_group $::env(WBS_CLOCK_NAME)  -corner tt  >> timing_tt_min.rpt
-report_checks -group_count 100  -path_delay min -path_group $::env(BIST_CLOCK_NAME) -corner tt  >> timing_tt_min.rpt
-report_checks -path_delay min  -corner tt >> timing_min.rpt
+echo "################ CORNER : BC (MIN) TIMING Report ###################"                                              > timing_ff_min.rpt
+report_checks -unique -slack_max -0.0 -path_delay min -group_count 100          -corner bc  -format full_clock_expanded >> timing_ff_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  wbm_clk_i   -corner bc  -format full_clock_expanded >> timing_ff_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  wbs_clk_i   -corner bc  -format full_clock_expanded >> timing_ff_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  cpu_clk     -corner bc  -format full_clock_expanded >> timing_ff_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  rtc_clk     -corner bc  -format full_clock_expanded >> timing_ff_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  line_clk    -corner bc  -format full_clock_expanded >> timing_ff_min.rpt
+report_checks                         -path_delay min                           -corner bc                              >> timing_ff_min.rpt
 
 
+echo "################ CORNER : TT (MAX) TIMING Report ###################"                                              > timing_tt_max.rpt
+report_checks -unique -slack_max -0.0 -path_delay max -group_count 100          -corner tt  -format full_clock_expanded >> timing_tt_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  wbm_clk_i   -corner tt  -format full_clock_expanded >> timing_tt_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  wbs_clk_i   -corner tt  -format full_clock_expanded >> timing_tt_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  cpu_clk     -corner tt  -format full_clock_expanded >> timing_tt_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  rtc_clk     -corner tt  -format full_clock_expanded >> timing_tt_max.rpt
+report_checks -group_count 100        -path_delay max  -path_group  line_clk    -corner tt  -format full_clock_expanded >> timing_tt_max.rpt
+report_checks                         -path_delay max                           -corner tt                              >> timing_tt_max.rpt
+
+echo "################ CORNER : TT (MIN) TIMING Report ###################"                                              > timing_tt_min.rpt
+report_checks -unique -slack_max -0.0 -path_delay min -group_count 100          -corner tt  -format full_clock_expanded >> timing_tt_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  wbm_clk_i   -corner tt  -format full_clock_expanded >> timing_tt_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  wbs_clk_i   -corner tt  -format full_clock_expanded >> timing_tt_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  cpu_clk     -corner tt  -format full_clock_expanded >> timing_tt_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  rtc_clk     -corner tt  -format full_clock_expanded >> timing_tt_min.rpt
+report_checks -group_count 100        -path_delay min  -path_group  line_clk    -corner tt  -format full_clock_expanded >> timing_tt_min.rpt
+report_checks                         -path_delay min                           -corner tt                              >> timing_tt_min.rpt
 
 
 report_checks -path_delay min_max 

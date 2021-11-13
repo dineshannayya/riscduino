@@ -85,7 +85,6 @@ set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
 set ::env(DIE_AREA) [list 0.0 0.0 600.0 700.0]
 
-set ::env(PL_TARGET_DENSITY) "0.45"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -94,7 +93,8 @@ set ::env(RUN_CVC) 0
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 
-set ::env(PL_ROUTABILITY_DRIVEN) 1
+set ::env(PL_TIME_DRIVEN) 1
+set ::env(PL_TARGET_DENSITY) "0.45"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
@@ -111,6 +111,8 @@ set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
+#To fix the metal density issue in tapeout check -recommded by jeffdi 
+#set ::env(DECAP_CELL) "sky130_ef_sc_hd__decap_12 sky130_fd_sc_hd__decap_3 sky130_fd_sc_hd__decap_4 sky130_fd_sc_hd__decap_6 sky130_fd_sc_hd__decap_8"
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"

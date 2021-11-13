@@ -71,7 +71,7 @@ set ::env(RUN_CVC) 0
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 
-set ::env(PL_ROUTABILITY_DRIVEN) 1
+set ::env(PL_TIME_DRIVEN) 1
 set ::env(PL_TARGET_DENSITY) "0.35"
 set ::env(CELL_PAD) "4"
 
