@@ -36,6 +36,9 @@
 ////  Revision :                                                  ////
 ////    0.1 - 25th Feb 2021, Dinesh A                             ////
 ////          initial version                                     ////
+////    0.2 - Nov 14 2021, Dinesh A                               ////
+////          Reset connectivity bug fix clk_ctl in u_sdramclk    ////
+////          u_cpuclk,u_rtcclk,u_usbclk
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -398,7 +401,7 @@ clk_ctl #(1) u_cpuclk (
        .clk_o         (cpu_clk_div      ),
    // Inputs
        .mclk          (cpu_ref_clk      ),
-       .reset_n       (reset_n          ), 
+       .reset_n       (wbm_rst_n        ), 
        .clk_div_ratio (cfg_cpu_clk_ratio)
    );
 
@@ -416,7 +419,7 @@ clk_ctl #(7) u_rtcclk (
        .clk_o         (rtc_clk_div      ),
    // Inputs
        .mclk          (user_clock2      ),
-       .reset_n       (reset_n          ), 
+       .reset_n       (wbm_rst_n        ), 
        .clk_div_ratio (cfg_rtc_clk_ratio)
    );
 
@@ -443,7 +446,7 @@ clk_ctl #(2) u_usbclk (
        .clk_o         (usb_clk_div      ),
    // Inputs
        .mclk          (usb_ref_clk      ),
-       .reset_n       (reset_n          ), 
+       .reset_n       (wbm_rst_n        ), 
        .clk_div_ratio (cfg_usb_clk_ratio)
    );
 

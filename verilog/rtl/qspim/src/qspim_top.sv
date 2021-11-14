@@ -231,6 +231,7 @@ logic                          spi_sdo0_dl;
 logic                          spi_sdo1_dl;
 logic                          spi_sdo2_dl;
 logic                          spi_sdo3_dl;
+logic                          rst_ss_n;
 
 
 
@@ -280,9 +281,18 @@ clk_skew_adjust u_skew_sp_co
 	       .sel        (cfg_cska_sp_co             ), 
 	       .clk_out    (spi_clk                    ) 
        );
+//###################################
+// Application Reset Synchronization
+//###################################
+reset_sync  u_app_rst (
+	      .scan_mode  (1'b0        ),
+              .dclk       (mclk        ), // Destination clock domain
+	      .arst_n     (rst_n       ), // active low async reset
+              .srst_n     (rst_ss_n    )
+          );
 qspim_if #( .WB_WIDTH(WB_WIDTH)) u_wb_if(
         .mclk                           (mclk                         ),
-        .rst_n                          (rst_n                        ),
+        .rst_n                          (rst_ss_n                     ),
 
         .wbd_stb_i                      (wbd_stb_i                    ), // strobe/request
         .wbd_adr_i                      (wbd_adr_i                    ), // address
@@ -335,7 +345,7 @@ qspim_regs
     u_spim_regs
     (
         .mclk                           (mclk                         ),
-        .rst_n                          (rst_n                        ),
+        .rst_n                          (rst_ss_n                     ),
 	.fast_sim_mode                  (1'b0                         ),
 
         .spi_clk_div                    (spi_clk_div                  ),
@@ -389,7 +399,7 @@ qspim_regs
  // Master 0 Command FIFO
 qspim_fifo #(.W(34), .DP(2)) u_m0_cmd_fifo (
 	 .clk                           (mclk                        ),
-         .reset_n                       (rst_n                       ),
+         .reset_n                       (rst_ss_n                    ),
 	 .flush                         (1'b0                        ),
          .wr_en                         (m0_cmd_fifo_wr              ),
          .wr_data                       (m0_cmd_fifo_wdata           ),
@@ -404,7 +414,7 @@ qspim_fifo #(.W(34), .DP(2)) u_m0_cmd_fifo (
  // Master 0 Response FIFO
 qspim_fifo #(.W(32), .DP(8)) u_m0_res_fifo (
 	 .clk                           (mclk                        ),
-         .reset_n                       (rst_n                       ),
+         .reset_n                       (rst_ss_n                    ),
 	 .flush                         (m0_res_fifo_flush           ),
          .wr_en                         (m0_res_fifo_wr              ),
          .wr_data                       (m0_res_fifo_wdata           ),
@@ -419,7 +429,7 @@ qspim_fifo #(.W(32), .DP(8)) u_m0_res_fifo (
  // Master 1 Command FIFO
 qspim_fifo #(.W(34), .DP(4)) u_m1_cmd_fifo (
 	 .clk                           (mclk                        ),
-         .reset_n                       (rst_n                       ),
+         .reset_n                       (rst_ss_n                    ),
 	 .flush                         (1'b0                        ),
          .wr_en                         (m1_cmd_fifo_wr              ),
          .wr_data                       (m1_cmd_fifo_wdata           ),
@@ -433,7 +443,7 @@ qspim_fifo #(.W(34), .DP(4)) u_m1_cmd_fifo (
  // Master 1 Response FIFO
 qspim_fifo #(.W(32), .DP(8)) u_m1_res_fifo (
 	 .clk                           (mclk                        ),
-         .reset_n                       (rst_n                       ),
+         .reset_n                       (rst_ss_n                    ),
 	 .flush                         (m1_res_fifo_flush           ),
          .wr_en                         (m1_res_fifo_wr              ),
          .wr_data                       (m1_res_fifo_wdata           ),
@@ -449,7 +459,7 @@ qspim_fifo #(.W(32), .DP(8)) u_m1_res_fifo (
 qspim_ctrl u_spictrl
     (
         .clk                            (mclk                         ),
-        .rstn                           (rst_n                        ),
+        .rstn                           (rst_ss_n                     ),
 
         .spi_clk_div                    (spi_clk_div                  ),
         .spi_status                     (spi_ctrl_status              ),
