@@ -117,6 +117,9 @@
 ////    1.5 - 6th Nov 2021, Dinesh A                              ////
 ////          Clock Skew block moved inside respective block due  ////
 //            to top-level power hook-up challenges for small IP  ////
+////    1.6   Nov 14, 2021, Dinesh A                              ////
+////          Major bug, clock divider inside the wb_host reset   ////
+////          connectivity open is fixed                          ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

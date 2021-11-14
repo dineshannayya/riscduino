@@ -54,7 +54,7 @@ read_spef -path u_qspi_master ../../spef/qspim_top.spef
 read_spef -path u_uart_i2c_usb_spi  ../../spef/uart_i2c_usb_spi_top.spef
 read_spef -path u_wb_host    ../../spef/wb_host.spef
 read_spef -path u_intercon   ../../spef/wb_interconnect.spef
-read_spef ../..//spef/user_project_wrapper.spef  
+read_spef ../../spef/user_project_wrapper.spef  
 
 
 read_sdc -echo $::env(BASE_SDC_FILE)
