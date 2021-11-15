@@ -116,10 +116,13 @@
 ////          Basic verification and Synthesis cleanup            ////
 ////    1.5 - 6th Nov 2021, Dinesh A                              ////
 ////          Clock Skew block moved inside respective block due  ////
-//            to top-level power hook-up challenges for small IP  ////
+////          to top-level power hook-up challenges for small IP  ////
 ////    1.6   Nov 14, 2021, Dinesh A                              ////
 ////          Major bug, clock divider inside the wb_host reset   ////
 ////          connectivity open is fixed                          ////
+////    1.7   Nov 15, 2021, Dinesh A                              ////
+////           Bug fix in clk_ctrl High/Low counter width         ////
+////           Removed sram_clock                                 ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -299,7 +302,6 @@ wire                              uart_rst_n    ;// uart reset
 wire                              i2c_rst_n     ;// i2c reset
 wire                              usb_rst_n     ;// i2c reset
 wire   [1:0]                      uart_i2c_usb_sel  ;// 0 - uart, 1 - I2C, 2- USb
-wire                              sdram_clk           ;
 wire                              cpu_clk       ;
 wire                              rtc_clk       ;
 wire                              usb_clk       ;
@@ -331,7 +333,6 @@ wire                              wbd_clk_wi    ; // clock for wishbone intercon
 wire                              wbd_clk_riscv ; // clock for riscv
 wire                              wbd_clk_uart  ; // clock for uart
 wire                              wbd_clk_spi   ; // clock for spi
-wire                              wbd_clk_sdram ; // clock for sdram
 wire                              wbd_clk_glbl  ; // clock for global reg
 wire                              wbd_clk_wh    ; // clock for global reg
 
@@ -439,7 +440,6 @@ wb_host u_wb_host(
        .user_clock1      (wb_clk_i             ),
        .user_clock2      (user_clock2          ),
 
-       .sdram_clk        (sdram_clk            ),
        .cpu_clk          (cpu_clk              ),
        .rtc_clk          (rtc_clk              ),
        .usb_clk          (usb_clk              ),

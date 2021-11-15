@@ -31,7 +31,11 @@
 ////  Author(s):                                                  ////
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
-////  Revision : Mar 2, 2011                                      //// 
+////  Revision :                                                  ////
+////      1.0    Mar 2, 2011,Dinesh.A                             ////
+////              Initial Version                                 ////
+////      1.1   Nov 15,2021,Dinesh A                              //// 
+////            Bug fix in High and Low count width               ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -102,8 +106,8 @@ parameter  WD = 'h1;
 //------------------------------------
 // Clock Divide func is done here
 //------------------------------------
-reg  [WD-1:0]    high_count       ; // high level counter
-reg  [WD-1:0]    low_count        ; // low level counter
+reg  [WD:0]      high_count       ; // high level counter
+reg  [WD:0]      low_count        ; // low level counter
 reg              mclk_div         ; // divided clock
 
 
