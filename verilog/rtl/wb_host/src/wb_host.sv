@@ -75,7 +75,6 @@ module wb_host (
        input logic                 user_clock1      ,
        input logic                 user_clock2      ,
 
-       output logic                sdram_clk        ,
        output logic                cpu_clk          ,
        output logic                rtc_clk          ,
        output logic                usb_clk          ,
@@ -156,7 +155,6 @@ logic               wbm_stb_int;
 logic [31:0]        reg_0;  // Software_Reg_0
 
 logic  [2:0]        cfg_wb_clk_ctrl;
-logic  [3:0]        cfg_sdram_clk_ctrl;
 logic  [3:0]        cfg_cpu_clk_ctrl;
 logic  [7:0]        cfg_rtc_clk_ctrl;
 logic  [3:0]        cfg_usb_clk_ctrl;
@@ -255,7 +253,6 @@ assign uart_i2c_usb_sel     = reg_0[8:7];
 assign cfg_wb_clk_ctrl      = reg_0[11:9];
 assign cfg_rtc_clk_ctrl     = reg_0[19:12];
 assign cfg_cpu_clk_ctrl     = reg_0[23:20];
-assign cfg_sdram_clk_ctrl   = reg_0[27:24];
 assign cfg_usb_clk_ctrl     = reg_0[31:28];
 
 
@@ -384,9 +381,9 @@ wire   cpu_clk_div;
 wire   cpu_ref_clk;
 wire   cpu_clk_int;
 
-wire       cfg_cpu_clk_src_sel   = cfg_cpu_clk_ctrl[0];
-wire       cfg_cpu_clk_div       = cfg_cpu_clk_ctrl[1];
-wire [1:0] cfg_cpu_clk_ratio     = cfg_cpu_clk_ctrl[3:2];
+wire       cfg_cpu_clk_src_sel   = cfg_cpu_clk_ctrl[3];
+wire       cfg_cpu_clk_div       = cfg_cpu_clk_ctrl[2];
+wire [1:0] cfg_cpu_clk_ratio     = cfg_cpu_clk_ctrl[1:0];
 
 //assign cpu_ref_clk = (cfg_cpu_clk_src_sel) ? user_clock2 : user_clock1;
 //assign cpu_clk_int = (cfg_cpu_clk_div)     ? cpu_clk_div : cpu_ref_clk;
@@ -431,8 +428,8 @@ wire   usb_clk_div;
 wire   usb_ref_clk;
 wire   usb_clk_int;
 
-wire       cfg_usb_clk_div       = cfg_usb_clk_ctrl[0];
-wire [2:0] cfg_usb_clk_ratio     = cfg_usb_clk_ctrl[3:1];
+wire       cfg_usb_clk_div       = cfg_usb_clk_ctrl[3];
+wire [2:0] cfg_usb_clk_ratio     = cfg_usb_clk_ctrl[2:0];
 
 assign usb_ref_clk = user_clock2 ;
 //assign usb_clk_int = (cfg_usb_clk_div)     ? usb_clk_div : usb_ref_clk;
