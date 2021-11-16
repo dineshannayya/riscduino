@@ -38,7 +38,9 @@
 ////          initial version                                     ////
 ////    0.2 - Nov 14 2021, Dinesh A                               ////
 ////          Reset connectivity bug fix clk_ctl in u_sdramclk    ////
-////          u_cpuclk,u_rtcclk,u_usbclk
+////          u_cpuclk,u_rtcclk,u_usbclk                          ////
+////    0.3 - Nov 16 2021, Dinesh A                               ////
+////          Wishbone out are register for better timing         ////   
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -187,18 +189,25 @@ clk_skew_adjust u_skew_wh
 
 // To reduce the load/Timing Wishbone I/F, Strobe is register to create
 // multi-cycle
+wire [31:0]  wbm_dat_o1   = (reg_sel) ? reg_rdata : wbm_dat_int;  // data input
+wire         wbm_ack_o1   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegement
+wire         wbm_err_o1   = (reg_sel) ? 1'b0      : wbm_err_int;  // error
+
 logic wb_req;
 always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
     if ( wbm_rst_n == 1'b0 ) begin
-        wb_req   <= '0;
+        wb_req    <= '0;
+	wbm_dat_o <= '0;
+	wbm_ack_o <= '0;
+	wbm_err_o <= '0;
    end else begin
-       wb_req   <= wbm_stb_i && (wbm_ack_o == 0) ;
+       wb_req    <= wbm_stb_i && ((wbm_ack_o == 0) && (wbm_ack_o1 == 0)) ;
+       wbm_dat_o <= wbm_dat_o1;
+       wbm_ack_o <= wbm_ack_o1;
+       wbm_err_o <= wbm_err_o1;
    end
 end
 
-assign  wbm_dat_o   = (reg_sel) ? reg_rdata : wbm_dat_int;  // data input
-assign  wbm_ack_o   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegement
-assign  wbm_err_o   = (reg_sel) ? 1'b0      : wbm_err_int;  // error
 
 //-----------------------------------------------------------------------
 // Local register decide based on address[31] == 1
