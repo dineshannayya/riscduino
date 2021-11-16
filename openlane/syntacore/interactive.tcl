@@ -334,12 +334,12 @@ proc run_flow {args} {
 			set arg_values(-save_path) ""
 		}
 		save_views 	-lef_path $::env(magic_result_file_tag).lef \
-			-def_path $::env(tritonRoute_result_file_tag).def \
+			-def_path $::env(CURRENT_DEF) \
 			-gds_path $::env(magic_result_file_tag).gds \
 			-mag_path $::env(magic_result_file_tag).mag \
 			-maglef_path $::env(magic_result_file_tag).lef.mag \
 			-spice_path $::env(magic_result_file_tag).spice \
-			-spef_path $::env(tritonRoute_result_file_tag).spef \
+			-spef_path $::env(CURRENT_SPEF) \
 			-verilog_path $::env(CURRENT_NETLIST) \
 			-save_path $arg_values(-save_path) \
 			-tag $::env(RUN_TAG)
@@ -349,6 +349,8 @@ proc run_flow {args} {
 	calc_total_runtime
 	save_state
 	generate_final_summary_report
+	
+	check_timing_violations
 
 	puts_success "Flow Completed Without Fatal Errors."
 
