@@ -61,6 +61,7 @@ set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 400 300"
 
+
 # If you're going to use multiple power domains, then keep this disabled.
 set ::env(RUN_CVC) 1
 
@@ -82,11 +83,13 @@ set ::env(FP_PDN_HWIDTH) 5
 
 set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
-#To fix the metal density issue in tapeout check -recommded by jeffdi 
-#set ::env(DECAP_CELL) "sky130_ef_sc_hd__decap_12 sky130_fd_sc_hd__decap_3 sky130_fd_sc_hd__decap_4 sky130_fd_sc_hd__decap_6 sky130_fd_sc_hd__decap_8"
-
+set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
+set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
+set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
+set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) "1"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_LVS_ERROR) "0"

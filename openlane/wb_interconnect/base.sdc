@@ -16,13 +16,18 @@ set_clock_uncertainty -fall_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_
 set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -hold 0.1000
 set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -setup 0.2000
 
-#Static Signal Clock Skew adjustment
-set_false_path -from [get_ports {cfg_cska_wi[0]}]
-set_false_path -from [get_ports {cfg_cska_wi[1]}]
-set_false_path -from [get_ports {cfg_cska_wi[2]}]
-set_false_path -from [get_ports {cfg_cska_wi[3]}]
-set_max_delay   2 -from [get_ports {wbd_clk_int}]
+#Clock Skew adjustment
+set_case_analysis 0 [get_ports {cfg_cska_wi[0]}]
+set_case_analysis 0 [get_ports {cfg_cska_wi[1]}]
+set_case_analysis 0 [get_ports {cfg_cska_wi[2]}]
+set_case_analysis 0 [get_ports {cfg_cska_wi[3]}]
+
+
+# Set max delay for clock skew
+set_max_delay   3.5 -from [get_ports {wbd_clk_int}]
 set_max_delay   2 -to   [get_ports {wbd_clk_wi}]
+set_max_delay 3.5 -from wbd_clk_int -to wbd_clk_wi
+##
 set_input_delay -max 2.0000 -clock [get_clocks {clk_i}] -add_delay [get_ports {rst_n}]
 
 set_input_delay -max 6.0000 -clock [get_clocks {clk_i}] -add_delay [get_ports {m0_wbd_adr_i[0]}]

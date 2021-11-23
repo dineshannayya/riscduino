@@ -467,7 +467,23 @@ uart_agent tb_uart(
 	force uut.mprj.u_wb_host.u_usb_clk_sel.u_mux.VPWR =USER_VDD1V8;
 	force uut.mprj.u_wb_host.u_usb_clk_sel.u_mux.VPB  =USER_VDD1V8;
 	force uut.mprj.u_wb_host.u_usb_clk_sel.u_mux.VGND =VSS;
-	force uut.mprj.u_wb_host.u_usb_clk_sel.u_mux.VNB = VSS;    end
+	force uut.mprj.u_wb_host.u_usb_clk_sel.u_mux.VNB = VSS;
+	
+	force uut.mprj.u_wb_host.u_delay1_stb0.VPWR =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_delay1_stb0.VPB  =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_delay1_stb0.VGND =VSS;
+	force uut.mprj.u_wb_host.u_delay1_stb0.VNB = VSS;
+	
+	force uut.mprj.u_wb_host.u_delay2_stb1.VPWR =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_delay2_stb1.VPB  =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_delay2_stb1.VGND =VSS;
+	force uut.mprj.u_wb_host.u_delay2_stb1.VNB = VSS;
+
+	force uut.mprj.u_wb_host.u_delay2_stb2.VPWR =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_delay2_stb2.VPB  =USER_VDD1V8;
+	force uut.mprj.u_wb_host.u_delay2_stb2.VGND =VSS;
+	force uut.mprj.u_wb_host.u_delay2_stb2.VNB = VSS;
+end
 `endif    
 
 

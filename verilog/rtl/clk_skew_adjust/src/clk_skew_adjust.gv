@@ -140,7 +140,7 @@ clk_in, sel, clk_out);
   wire d30;
 
 
-  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_1  (.A(clk_in),  .X(clk_d1));
+  sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_1  (.A(clk_in),    .X(clk_d1));
   sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_2  (.A(clk_d1),    .X(clk_d2));
   sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_3  (.A(clk_d2),    .X(clk_d3));
   sky130_fd_sc_hd__clkdlybuf4s15_2 clkbuf_4  (.A(clk_d3),    .X(clk_d4));

@@ -137,7 +137,7 @@ proc run_flow {args} {
 	prep {*}$args
 
         set LVS_ENABLED 1
-        set DRC_ENABLED 0
+        set DRC_ENABLED 1
         set ANTENNACHECK_ENABLED 1
 
         set steps [dict create "synthesis" {run_synthesis "" } \

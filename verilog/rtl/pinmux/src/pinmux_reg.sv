@@ -619,9 +619,9 @@ gen_32b_reg  #(32'h0) u_reg_21	(
 
 
 //-----------------------------------------
-// Software Reg-1
+// Software Reg-1 : ASCI Representation of RISC = 32'h8273_8343
 // ----------------------------------------
-gen_32b_reg  #(32'h0) u_reg_22	(
+gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -634,9 +634,9 @@ gen_32b_reg  #(32'h0) u_reg_22	(
 	      );
 
 //-----------------------------------------
-// Software Reg-2
+// Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h0) u_reg_23	(
+gen_32b_reg  #(32'h2311_2021) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -649,9 +649,9 @@ gen_32b_reg  #(32'h0) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3
+// Software Reg-3: Poject Revison 1.8 = 0001800
 // ----------------------------------------
-gen_32b_reg  #(32'h0) u_reg_24	(
+gen_32b_reg  #(32'h0001_8000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
