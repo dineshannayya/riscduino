@@ -1,0 +1,35 @@
+
+\rm -rf netlist
+\rm -rf logs
+\rm -rf reports
+mkdir  netlist
+mkdir  logs
+mkdir  reports
+
+echo "#################################################"
+echo "Genenerating Netlist winout power ports"
+echo "#################################################"
+export MERGED_LEF_UNPADDED=../lef/merged_unpadded.lef
+
+export DESIGN_NAME=sar_adc
+openroad -exit scripts/or_write_verilog.tcl 
+
+export DESIGN_NAME=wb_interconnect
+openroad -exit scripts/or_write_verilog.tcl 
+
+export DESIGN_NAME=syntacore
+openroad -exit scripts/or_write_verilog.tcl 
+
+export DESIGN_NAME=qspim
+openroad -exit scripts/or_write_verilog.tcl 
+
+export DESIGN_NAME=uart_i2cm_usb_spi
+openroad -exit scripts/or_write_verilog.tcl 
+
+export DESIGN_NAME=pinmux
+openroad -exit scripts/or_write_verilog.tcl 
+
+export DESIGN_NAME=wb_host
+openroad -exit scripts/or_write_verilog.tcl 
+
+sta scripts/sta.tcl | tee logs/sta.log
