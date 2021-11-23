@@ -194,6 +194,11 @@ wire         wbm_ack_o1   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegeme
 wire         wbm_err_o1   = (reg_sel) ? 1'b0      : wbm_err_int;  // error
 
 logic wb_req;
+// Hold fix for STROBE
+wire  wbm_stb_d1,wbm_stb_d2,wbm_stb_d3;
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_stb0 (.X(wbm_stb_d1),.A(wbm_stb_i));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_stb1 (.X(wbm_stb_d2),.A(wbm_stb_d1));
+sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_stb2 (.X(wbm_stb_d3),.A(wbm_stb_d2));
 always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
     if ( wbm_rst_n == 1'b0 ) begin
         wb_req    <= '0;
@@ -201,7 +206,7 @@ always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
 	wbm_ack_o <= '0;
 	wbm_err_o <= '0;
    end else begin
-       wb_req    <= wbm_stb_i && ((wbm_ack_o == 0) && (wbm_ack_o1 == 0)) ;
+       wb_req    <= wbm_stb_d3 && ((wbm_ack_o == 0) && (wbm_ack_o1 == 0)) ;
        wbm_dat_o <= wbm_dat_o1;
        wbm_ack_o <= wbm_ack_o1;
        wbm_err_o <= wbm_err_o1;

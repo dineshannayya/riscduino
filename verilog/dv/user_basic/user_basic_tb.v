@@ -235,6 +235,16 @@ begin
 	  test_step = 10;
           wb_user_core_write('h3080_0000,{4'hF,4'h0,4'h7,8'hFF,3'b111,2'b00,7'h00});
 	  clock_monitor(5*CLK1_PERIOD,257*CLK2_PERIOD,9*CLK2_PERIOD,5*CLK1_PERIOD);
+
+         $display("###################################################");
+         $display("Monitor: Checking the chip signature :");
+         // Remove Wb/PinMux Reset
+         wb_user_core_write('h3080_0000,'h1);
+
+	 wb_user_core_read_check(32'h30030058,read_data,32'h8273_8343);
+	 wb_user_core_read_check(32'h3003005C,read_data,32'h2311_2021);
+	 wb_user_core_read_check(32'h30030060,read_data,32'h0001_8000);
+
       end
    
       begin
@@ -436,6 +446,22 @@ user_project_wrapper u_top(
 	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VPB  =USER_VDD1V8;
 	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VGND =VSS;
 	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VNB = VSS;
+
+	force u_top.u_wb_host.u_delay1_stb0.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay1_stb0.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay1_stb0.VGND =VSS;
+	force u_top.u_wb_host.u_delay1_stb0.VNB = VSS;
+	
+	force u_top.u_wb_host.u_delay2_stb1.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb1.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb1.VGND =VSS;
+	force u_top.u_wb_host.u_delay2_stb1.VNB = VSS;
+
+	force u_top.u_wb_host.u_delay2_stb2.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb2.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb2.VGND =VSS;
+	force u_top.u_wb_host.u_delay2_stb2.VNB = VSS;
+
     end
 `endif    
 
@@ -544,6 +570,40 @@ begin
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
   $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  repeat (2) @(posedge clock);
+end
+endtask
+
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
   repeat (2) @(posedge clock);
 end
 endtask

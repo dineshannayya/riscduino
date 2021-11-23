@@ -196,25 +196,7 @@ module user_risc_regress_tb;
                 $write("\033[0;34m---Initializing the SPI Memory with Hexfile: %s\033[0m\n", test_file);
                 $readmemh(test_file,u_spi_flash_256mb.Mem);
 
-		// some of the RISCV test need SRAM area for specific
-		// instruction execution like fence
-		$sformat(test_ram_file, "%s.ram",test_file);
-		//--------------------------------------------------------------
-		// SDRAM Bank are 512Byte, But Risc compliance test has
-		// more than 512byte of init data, so we are locally copying
-		// it temp memory and then spliting into two banks
-		// --------------------------------------------------------------
-                $readmemh(test_ram_file,tem_mem);
-		$writememh("sdram_bank0.hex",tem_mem,0,511);
-		$writememh("sdram_bank1.hex",tem_mem,512,1023);
-		$writememh("sdram_bank2.hex",tem_mem,1024,1535);
-		$writememh("sdram_bank3.hex",tem_mem,1536,2047);
-                $readmemh("sdram_bank0.hex",u_sdram8.Bank0,0,511);
-                $readmemh("sdram_bank1.hex",u_sdram8.Bank1,0,511);
-                $readmemh("sdram_bank2.hex",u_sdram8.Bank2,0,511);
-                $readmemh("sdram_bank3.hex",u_sdram8.Bank3,0,511);
-		//for(i =32'h00; i < 32'h100; i = i+1)
-                //    $display("Location: %x, Data: %x", i, u_sdram8.Bank0[i]);
+
 
 		#200; 
 	        repeat (10) @(posedge clock);
@@ -227,15 +209,6 @@ module user_risc_regress_tb;
 		//------------ fuse_mhartid= 0x00
                 wb_user_core_write('h3000_0004,'h0);
 
-	        repeat (2) @(posedge clock);
-		#1;
-		//------------ SDRAM Config - 2
-                wb_user_core_write('h3000_0014,'h100_019E);
-
-	        repeat (2) @(posedge clock);
-		#1;
-		//------------ SDRAM Config - 1
-                wb_user_core_write('h3000_0010,'h2F17_2266);
 
 	        repeat (2) @(posedge clock);
 		#1;
@@ -311,62 +284,62 @@ end
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
-	force u_top.u_spi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio0.VGND =VSS;
-	force u_top.u_spi_master.u_delay1_sdio0.VNB = VSS;
-	force u_top.u_spi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio0.VGND =VSS;
-	force u_top.u_spi_master.u_delay2_sdio0.VNB = VSS;
-	force u_top.u_spi_master.u_buf_sdio0.VPWR   =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio0.VPB    =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio0.VGND   =VSS;
-	force u_top.u_spi_master.u_buf_sdio0.VNB    =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio0.VGND =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio0.VNB = VSS;
+	force u_top.u_qspi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio0.VGND =VSS;
+	force u_top.u_qspi_master.u_delay2_sdio0.VNB = VSS;
+	force u_top.u_qspi_master.u_buf_sdio0.VPWR   =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio0.VPB    =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio0.VGND   =VSS;
+	force u_top.u_qspi_master.u_buf_sdio0.VNB    =VSS;
 
-	force u_top.u_spi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio1.VGND =VSS;
-	force u_top.u_spi_master.u_delay1_sdio1.VNB = VSS;
-	force u_top.u_spi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio1.VGND =VSS;
-	force u_top.u_spi_master.u_delay2_sdio1.VNB = VSS;
-	force u_top.u_spi_master.u_buf_sdio1.VPWR   =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio1.VPB    =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio1.VGND   =VSS;
-	force u_top.u_spi_master.u_buf_sdio1.VNB    =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio1.VGND =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio1.VNB = VSS;
+	force u_top.u_qspi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio1.VGND =VSS;
+	force u_top.u_qspi_master.u_delay2_sdio1.VNB = VSS;
+	force u_top.u_qspi_master.u_buf_sdio1.VPWR   =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio1.VPB    =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio1.VGND   =VSS;
+	force u_top.u_qspi_master.u_buf_sdio1.VNB    =VSS;
 
-	force u_top.u_spi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio2.VGND =VSS;
-	force u_top.u_spi_master.u_delay1_sdio2.VNB = VSS;
-	force u_top.u_spi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio2.VGND =VSS;
-	force u_top.u_spi_master.u_delay2_sdio2.VNB = VSS;
-	force u_top.u_spi_master.u_buf_sdio2.VPWR   =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio2.VPB    =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio2.VGND   =VSS;
-	force u_top.u_spi_master.u_buf_sdio2.VNB    =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio2.VGND =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio2.VNB = VSS;
+	force u_top.u_qspi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio2.VGND =VSS;
+	force u_top.u_qspi_master.u_delay2_sdio2.VNB = VSS;
+	force u_top.u_qspi_master.u_buf_sdio2.VPWR   =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio2.VPB    =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio2.VGND   =VSS;
+	force u_top.u_qspi_master.u_buf_sdio2.VNB    =VSS;
 
-	force u_top.u_spi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay1_sdio3.VGND =VSS;
-	force u_top.u_spi_master.u_delay1_sdio3.VNB = VSS;
-	force u_top.u_spi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
-	force u_top.u_spi_master.u_delay2_sdio3.VGND =VSS;
-	force u_top.u_spi_master.u_delay2_sdio3.VNB = VSS;
-	force u_top.u_spi_master.u_buf_sdio3.VPWR   =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio3.VPB    =USER_VDD1V8;
-	force u_top.u_spi_master.u_buf_sdio3.VGND   =VSS;
-	force u_top.u_spi_master.u_buf_sdio3.VNB    =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay1_sdio3.VGND =VSS;
+	force u_top.u_qspi_master.u_delay1_sdio3.VNB = VSS;
+	force u_top.u_qspi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
+	force u_top.u_qspi_master.u_delay2_sdio3.VGND =VSS;
+	force u_top.u_qspi_master.u_delay2_sdio3.VNB = VSS;
+	force u_top.u_qspi_master.u_buf_sdio3.VPWR   =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio3.VPB    =USER_VDD1V8;
+	force u_top.u_qspi_master.u_buf_sdio3.VGND   =VSS;
+	force u_top.u_qspi_master.u_buf_sdio3.VNB    =VSS;
           
-	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
-	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
-	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VGND =VSS;
-	force u_top.u_uart_i2c_usb.u_uart_core.u_lineclk_buf.VNB = VSS;
+	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
+	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
+	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VGND =VSS;
+	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VNB = VSS;
 
 	force u_top.u_wb_host.u_buf_wb_rst.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_buf_wb_rst.VPB  =USER_VDD1V8;
@@ -378,15 +351,15 @@ end
 	force u_top.u_wb_host.u_buf_cpu_rst.VGND =VSS;
 	force u_top.u_wb_host.u_buf_cpu_rst.VNB = VSS;
 
-	force u_top.u_wb_host.u_buf_spi_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_spi_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_spi_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_spi_rst.VNB = VSS;
+	force u_top.u_wb_host.u_buf_qspim_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_qspim_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_qspim_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_qspim_rst.VNB = VSS;
 
-	force u_top.u_wb_host.u_buf_sdram_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_sdram_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_sdram_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_sdram_rst.VNB = VSS;
+	force u_top.u_wb_host.u_buf_sspim_rst.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_sspim_rst.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_buf_sspim_rst.VGND =VSS;
+	force u_top.u_wb_host.u_buf_sspim_rst.VNB = VSS;
 
 	force u_top.u_wb_host.u_buf_uart_rst.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_buf_uart_rst.VPB  =USER_VDD1V8;
@@ -403,10 +376,7 @@ end
 	force u_top.u_wb_host.u_buf_usb_rst.VGND =VSS;
 	force u_top.u_wb_host.u_buf_usb_rst.VNB = VSS;
 
-	force u_top.u_wb_host.u_clkbuf_sdram.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_sdram.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_sdram.VGND =VSS;
-	force u_top.u_wb_host.u_clkbuf_sdram.VNB = VSS;
+
 
 	force u_top.u_wb_host.u_clkbuf_cpu.VPWR =USER_VDD1V8;
 	force u_top.u_wb_host.u_clkbuf_cpu.VPB  =USER_VDD1V8;
@@ -422,6 +392,41 @@ end
 	force u_top.u_wb_host.u_clkbuf_usb.VPB  =USER_VDD1V8;
 	force u_top.u_wb_host.u_clkbuf_usb.VGND =VSS;
 	force u_top.u_wb_host.u_clkbuf_usb.VNB = VSS;
+
+	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VGND =VSS;
+	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VNB = VSS;
+
+	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VGND =VSS;
+	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VNB = VSS;
+
+	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VGND =VSS;
+	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VNB = VSS;
+
+	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VGND =VSS;
+	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VNB = VSS;
+
+	force u_top.u_wb_host.u_delay1_stb0.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay1_stb0.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay1_stb0.VGND =VSS;
+	force u_top.u_wb_host.u_delay1_stb0.VNB = VSS;
+	
+	force u_top.u_wb_host.u_delay2_stb1.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb1.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb1.VGND =VSS;
+	force u_top.u_wb_host.u_delay2_stb1.VNB = VSS;
+
+	force u_top.u_wb_host.u_delay2_stb2.VPWR =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb2.VPB  =USER_VDD1V8;
+	force u_top.u_wb_host.u_delay2_stb2.VGND =VSS;
+	force u_top.u_wb_host.u_delay2_stb2.VNB = VSS;
     end
 `endif    
 
@@ -430,22 +435,22 @@ end
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[30];
-   wire flash_csb = io_out[31];
+   wire flash_clk = io_out[24];
+   wire flash_csb = io_out[25];
    // Creating Pad Delay
-   wire #1 io_oeb_32 = io_oeb[32];
-   wire #1 io_oeb_33 = io_oeb[33];
-   wire #1 io_oeb_34 = io_oeb[34];
-   wire #1 io_oeb_35 = io_oeb[35];
-   tri  flash_io0 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
-   tri  flash_io1 = (io_oeb_33== 1'b0) ? io_out[33] : 1'bz;
-   tri  flash_io2 = (io_oeb_34== 1'b0) ? io_out[34] : 1'bz;
-   tri  flash_io3 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
+   wire #1 io_oeb_26 = io_oeb[26];
+   wire #1 io_oeb_27 = io_oeb[27];
+   wire #1 io_oeb_28 = io_oeb[28];
+   wire #1 io_oeb_29 = io_oeb[29];
+   tri  flash_io0 = (io_oeb_26== 1'b0) ? io_out[26] : 1'bz;
+   tri  flash_io1 = (io_oeb_27== 1'b0) ? io_out[27] : 1'bz;
+   tri  flash_io2 = (io_oeb_28== 1'b0) ? io_out[28] : 1'bz;
+   tri  flash_io3 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
 
-   assign io_in[32] = flash_io0;
-   assign io_in[33] = flash_io1;
-   assign io_in[34] = flash_io2;
-   assign io_in[35] = flash_io3;
+   assign io_in[26] = flash_io0;
+   assign io_in[27] = flash_io1;
+   assign io_in[28] = flash_io2;
+   assign io_in[29] = flash_io3;
 
 
    // Quard flash
@@ -467,50 +472,6 @@ end
 
 
 
-//------------------------------------------------
-// Integrate the SDRAM 8 BIT Memory
-// -----------------------------------------------
-
-wire [7:0]    Dq                 ; // SDRAM Read/Write Data Bus
-wire [0:0]    sdr_dqm            ; // SDRAM DATA Mask
-wire [1:0]    sdr_ba             ; // SDRAM Bank Select
-wire [12:0]   sdr_addr           ; // SDRAM ADRESS
-wire          sdr_cs_n           ; // chip select
-wire          sdr_cke            ; // clock gate
-wire          sdr_ras_n          ; // ras
-wire          sdr_cas_n          ; // cas
-wire          sdr_we_n           ; // write enable        
-wire          sdram_clk         ;      
-
-assign  Dq[7:0]           =  (io_oeb[7:0] == 8'h0) ? io_out [7:0] : 8'hZZ;
-assign  sdr_addr[12:0]    =    io_out [20:8]     ;
-assign  sdr_ba[1:0]       =    io_out [22:21]    ;
-assign  sdr_dqm[0]        =    io_out [23]       ;
-assign  sdr_we_n          =    io_out [24]       ;
-assign  sdr_cas_n         =    io_out [25]       ;
-assign  sdr_ras_n         =    io_out [26]       ;
-assign  sdr_cs_n          =    io_out [27]       ;
-assign  sdr_cke           =    io_out [28]       ;
-assign  sdram_clk         =    io_out [29]       ;
-assign  io_in[29]         =    sdram_clk;
-assign  #(1) io_in[7:0]   =    Dq;
-
-// to fix the sdram interface timing issue
-wire #(1) sdram_clk_d   = sdram_clk;
-
-	// SDRAM 8bit
-mt48lc8m8a2 #(.data_bits(8)) u_sdram8 (
-          .Dq                 (Dq                 ) , 
-          .Addr               (sdr_addr[11:0]     ), 
-          .Ba                 (sdr_ba             ), 
-          .Clk                (sdram_clk_d        ), 
-          .Cke                (sdr_cke            ), 
-          .Cs_n               (sdr_cs_n           ), 
-          .Ras_n              (sdr_ras_n          ), 
-          .Cas_n              (sdr_cas_n          ), 
-          .We_n               (sdr_we_n           ), 
-          .Dqm                (sdr_dqm            )
-     );
 
 
 task wb_user_core_write;

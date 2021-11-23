@@ -123,6 +123,9 @@
 ////    1.7   Nov 15, 2021, Dinesh A                              ////
 ////           Bug fix in clk_ctrl High/Low counter width         ////
 ////           Removed sram_clock                                 ////
+////    1.8  Nov 23, 2021, Dinesh A                               ////
+////          Three Chip Specific Signature added at PinMux Reg   ////
+////          reg_22,reg_23,reg_24                                ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
