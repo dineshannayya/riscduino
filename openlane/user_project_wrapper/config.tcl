@@ -107,11 +107,14 @@ set ::env(FP_PDN_CHECK_NODES) 0
 
 ## Internal Macros
 ### Macro PDN Connections
-#set ::env(FP_PDN_ENABLE_MACROS_GRID) "0"
-#set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
+set ::env(FP_PDN_ENABLE_MACROS_GRID) "1"
+set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 
 set ::env(VDD_NETS) "vccd1 vccd2 vdda1 vdda2"
 set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
+
+set ::env(VDD_PIN) "vccd1 vccd2 vdda1 vdda2"
+set ::env(GND_PIN) "vssd1 vssd2 vssa1 vssa2"
 
 set ::env(GLB_RT_OBS) " li1  1200 200  1883.1 616.54,\
                         met1 1200 200  1883.1 616.54,\
@@ -120,7 +123,7 @@ set ::env(GLB_RT_OBS) " li1  1200 200  1883.1 616.54,\
 			met4 1200 200  1883.1 616.54,\
 	                met5 0 0 2920 3520"
 
-set ::env(FP_PDN_MACROS) "\
+set ::env(FP_PDN_MACRO_HOOKS) "\
 	u_adc vccd1 vssd1 \
 	u_adc vccd2 vssd2 \
 	u_intercon vccd1 vssd1 \
@@ -155,5 +158,9 @@ set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_TR_DRC) "0"
+
+
+set ::env(FP_PDN_HPITCH) "140"
+set ::env(FP_PDN_VPITCH) "140"
 
 
