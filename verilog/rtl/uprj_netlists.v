@@ -98,6 +98,7 @@
      `include "lib/async_fifo.sv"  
      `include "lib/registers.v"
      `include "lib/clk_ctl.v"
+     `include "lib/ser_inf_32b.sv"
      `include "digital_core/src/glbl_cfg.sv"
 
      `include "wb_host/src/wb_host.sv"
@@ -142,6 +143,18 @@
      `include "syntacore/scr1/src/top/scr1_intf.sv"
      `include "syntacore/scr1/src/top/scr1_top_wb.sv"
      `include "lib/sync_fifo.sv"
+
+     `include "mbist/src/core/mbist_addr_gen.sv"
+     `include "mbist/src/core/mbist_fsm.sv" 
+     `include "mbist/src/core/mbist_op_sel.sv" 
+     `include "mbist/src/core/mbist_repair_addr.sv" 
+     `include "mbist/src/core/mbist_sti_sel.sv" 
+     `include "mbist/src/core/mbist_pat_sel.sv"
+     `include "mbist/src/core/mbist_mux.sv"
+     `include "mbist/src/core/mbist_data_cmp.sv"
+     `include "mbist/src/core/mbist_mem_wrapper.sv"
+
+    `include "mbist/src/top/mbist_top1.sv" 
 
      `include "user_project_wrapper.v"
      // we are using netlist file for clk_skew_adjust as it has 

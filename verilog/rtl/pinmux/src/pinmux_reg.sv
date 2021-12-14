@@ -61,7 +61,25 @@ module pinmux_reg (
                        output  logic [31:0]     cfg_multi_func_sel       ,// multifunction pins
                         
                        // Outputs
-                       output logic [31:0]      gpio_prev_indata       // prv data from GPIO I/P pins
+                       output logic [31:0]      gpio_prev_indata,       // prv data from GPIO I/P pins
+
+		// BIST I/F
+	               output logic [3:0]      bist_en,
+	               output logic [3:0]      bist_run,
+	               output logic [3:0]      bist_load,
+
+	               output logic [3:0]      bist_sdi,
+	               output logic [3:0]      bist_shift,
+	               input  logic [3:0]      bist_sdo,
+
+	               input logic [3:0]       bist_done,
+	               input logic [3:0]       bist_error,
+	               input logic [3:0]       bist_correct,
+	               input logic [3:0]       bist_error_cnt0,
+	               input logic [3:0]       bist_error_cnt1,
+	               input logic [3:0]       bist_error_cnt2,
+	               input logic [3:0]       bist_error_cnt3
+
    ); 
 
 
@@ -70,95 +88,100 @@ module pinmux_reg (
 // Internal Wire Declarations
 //-----------------------------------------------------------------------
 
-reg           sw_rd_en               ;
-reg           sw_wr_en;
-reg  [4:0]    sw_addr; // addressing 16 registers
-reg  [31:0]   sw_reg_wdata;
-reg    [3:0]  wr_be  ;
-reg          reg_cs_l;
-reg          reg_cs_2l;
+logic          sw_rd_en               ;
+logic          sw_wr_en;
+logic [4:0]    sw_addr; // addressing 16 registers
+logic [31:0]   sw_reg_wdata;
+logic [3:0]    wr_be  ;
 
-reg [31:0]   reg_out;
-
-wire [31:0]   reg_0; // Chip ID
-wire [31:0]   reg_1; // Risc Fuse Id
-reg [31:0]    reg_2; // GPIO Read Data
-reg [31:0]    reg_3; // GPIO Output Data
-reg [31:0]    reg_4; // GPIO Dir Sel
-reg [31:0]    reg_5; // GPIO Type
-reg [31:0]    reg_6; // Interrupt
-reg [31:0]    reg_7; // 
-reg [31:0]    reg_8; // 
-reg [31:0]    reg_9; // GPIO Interrupt Status
-wire [31:0]   reg_10; // GPIO Interrupt Status
-reg [31:0]    reg_11; // GPIO Interrupt Mask
-reg [31:0]    reg_12; // GPIO Posedge Interrupt Select
-reg [31:0]    reg_13; // GPIO Negedge Interrupt Select
-reg [31:0]    reg_14; // Software-Reg_14
-reg [31:0]    reg_15; // Software-Reg_15
-reg [31:0]    reg_16; // PWN-0 Config
-reg [31:0]    reg_17; // PWN-1 Config
-reg [31:0]    reg_18; // PWN-2 Config
-reg [31:0]    reg_19; // PWN-3 Config
-reg [31:0]    reg_20; // PWN-4 Config
-reg [31:0]    reg_21; // PWN-5 Config
-reg [31:0]    reg_22; // Software-Reg1
-reg [31:0]    reg_23; // Software-Reg2
-reg [31:0]    reg_24; // Software-Reg3
-reg [31:0]    reg_25; // Software-Reg4
-reg [31:0]    reg_26; // Software-Reg5
-reg [31:0]    reg_27; // Software-Reg6
+logic [31:0]   reg_out;
+logic  [31:0]   reg_0; // Chip ID
+logic  [31:0]   reg_1; // Risc Fuse Id
+logic [31:0]    reg_2; // GPIO Read Data
+logic [31:0]    reg_3; // GPIO Output Data
+logic [31:0]    reg_4; // GPIO Dir Sel
+logic [31:0]    reg_5; // GPIO Type
+logic [31:0]    reg_6; // Interrupt
+logic [31:0]    reg_7; // 
+logic [31:0]    reg_8; // 
+logic [31:0]    reg_9; // GPIO Interrupt Status
+logic  [31:0]   reg_10; // GPIO Interrupt Status
+logic [31:0]    reg_11; // GPIO Interrupt Mask
+logic [31:0]    reg_12; // GPIO Posedge Interrupt Select
+logic [31:0]    reg_13; // GPIO Negedge Interrupt Select
+logic [31:0]    reg_14; // Software-Reg_14
+logic [31:0]    reg_15; // Software-Reg_15
+logic [31:0]    reg_16; // PWN-0 Config
+logic [31:0]    reg_17; // PWN-1 Config
+logic [31:0]    reg_18; // PWN-2 Config
+logic [31:0]    reg_19; // PWN-3 Config
+logic [31:0]    reg_20; // PWN-4 Config
+logic [31:0]    reg_21; // PWN-5 Config
+logic [31:0]    reg_22; // Software-Reg1
+logic [31:0]    reg_23; // Software-Reg2
+logic [31:0]    reg_24; // Software-Reg3
+logic [31:0]    reg_25; // Software-Reg4
+logic [31:0]    reg_26; // Software-Reg5
+logic [31:0]    reg_27; // Software-Reg6
 
 
-reg          cs_int;
-wire         gpio_intr;
+logic           cs_int;
+logic           gpio_intr;
 
 
+assign       sw_addr       = reg_addr [6:2];
+assign       sw_rd_en      = reg_cs & !reg_wr;
+assign       sw_wr_en      = reg_cs & reg_wr;
+assign       wr_be         = reg_be;
+assign       sw_reg_wdata  = reg_wdata;
 
-//-----------------------------------------------------------------------
-// To avoid interface timing, all the content are registered
-//-----------------------------------------------------------------------
-always @ (posedge mclk or negedge h_reset_n)
-begin 
-   if (h_reset_n == 1'b0)
-   begin
-    sw_addr       <= '0;
-    sw_rd_en      <= '0;
-    sw_wr_en      <= '0;
-    sw_reg_wdata  <= '0;
-    wr_be         <= '0;
-    reg_cs_l      <= '0;
-    reg_cs_2l     <= '0;
-  end else begin
-    sw_addr       <= reg_addr [6:2];
-    sw_rd_en      <= reg_cs & !reg_wr;
-    sw_wr_en      <= reg_cs & reg_wr;
-    sw_reg_wdata  <= reg_wdata;
-    wr_be         <= reg_be;
-    reg_cs_l      <= reg_cs;
-    reg_cs_2l     <= reg_cs_l;
-  end
+
+//-----------------------------------
+// Edge detection for Logic Bist
+// ----------------------------------
+
+logic wb_req;
+logic wb_req_d;
+logic wb_req_pedge;
+
+always_ff @(negedge h_reset_n or posedge mclk) begin
+    if ( h_reset_n == 1'b0 ) begin
+        wb_req    <= '0;
+	wb_req_d  <= '0;
+   end else begin
+       wb_req   <= reg_cs && (reg_ack == 0) ;
+       wb_req_d <= wb_req;
+   end
 end
 
+// Detect pos edge of request
+assign wb_req_pedge = (wb_req_d ==0) && (wb_req==1'b1);
 
-//-----------------------------------------------------------------------
-// Read path mux
-//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------
+// Reg 4/5 are BIST Serial I/F register and it takes minimum 32
+// cycle to respond ACK back
+// ----------------------------------------------------------------
+wire ser_acc     = sw_wr_en_30 | sw_rd_en_31;
+wire non_ser_acc = reg_cs ? !ser_acc : 1'b0;
+wire serial_ack;
 
 always @ (posedge mclk or negedge h_reset_n)
 begin : preg_out_Seq
    if (h_reset_n == 1'b0) begin
-      reg_rdata [31:0]  <= 32'h0000_0000;
-      reg_ack           <= 1'b0;
-   end else if (sw_rd_en && !reg_ack && !reg_cs_2l) begin
-      reg_rdata [31:0]  <= reg_out [31:0];
-      reg_ack           <= 1'b1;
-   end else if (sw_wr_en && !reg_ack && !reg_cs_2l) begin 
-      reg_ack           <= 1'b1;
+      reg_rdata  <= 'h0;
+      reg_ack    <= 1'b0;
+   end else if (ser_acc && serial_ack)  begin
+      reg_rdata <= serail_dout ;
+      reg_ack   <= 1'b1;
+   end else if (non_ser_acc && !reg_ack) begin
+      reg_rdata <= reg_out ;
+      reg_ack   <= 1'b1;
    end else begin
       reg_ack        <= 1'b0;
    end
 end
+
 
 
 //-----------------------------------------------------------------------
@@ -193,6 +216,15 @@ wire   sw_wr_en_24 = sw_wr_en & (sw_addr == 5'h18);
 wire   sw_wr_en_25 = sw_wr_en & (sw_addr == 5'h19);
 wire   sw_wr_en_26 = sw_wr_en & (sw_addr == 5'h1A);
 wire   sw_wr_en_27 = sw_wr_en & (sw_addr == 5'h1B);
+wire   sw_wr_en_28 = sw_wr_en & (sw_addr == 5'h1C);
+wire   sw_wr_en_29 = sw_wr_en & (sw_addr == 5'h1D);
+wire   sw_wr_en_30 = sw_wr_en & (sw_addr == 5'h1E);
+wire   sw_wr_en_31 = sw_wr_en & (sw_addr == 5'h1F);
+
+wire   sw_rd_en_28 = sw_rd_en & (sw_addr == 5'h1C);
+wire   sw_rd_en_29 = sw_rd_en & (sw_addr == 5'h1D);
+wire   sw_rd_en_30 = sw_rd_en & (sw_addr == 5'h1E);
+wire   sw_rd_en_31 = sw_rd_en & (sw_addr == 5'h1F);
 
 
 //-----------------------------------------------------------------------
@@ -636,7 +668,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h2311_2021) u_reg_23	(
+gen_32b_reg  #(32'h1312_2021) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -649,9 +681,9 @@ gen_32b_reg  #(32'h2311_2021) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 1.8 = 0001800
+// Software Reg-3: Poject Revison 2.0 = 0002000
 // ----------------------------------------
-gen_32b_reg  #(32'h0001_8000) u_reg_24	(
+gen_32b_reg  #(32'h0002_0000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -708,6 +740,102 @@ gen_32b_reg  #(32'h0) u_reg_27	(
 	      .data_out   (reg_27       )
 	      );
 
+
+//-----------------------------------------------------------------------
+//   reg-28
+//   -----------------------------------------------------------------
+logic [31:0] cfg_bist_ctrl_1;
+
+gen_32b_reg  #(32'h0) u_reg_28	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_28   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (cfg_bist_ctrl_1[31:0]  )
+	      );
+
+
+wire [3:0] bist_serial_sel  = cfg_bist_ctrl_1[31:28];
+
+assign bist_en[0]           = cfg_bist_ctrl_1[0];
+assign bist_run[0]          = cfg_bist_ctrl_1[1];
+assign bist_load[0]         = cfg_bist_ctrl_1[2];
+
+assign bist_en[1]           = cfg_bist_ctrl_1[4];
+assign bist_run[1]          = cfg_bist_ctrl_1[5];
+assign bist_load[1]         = cfg_bist_ctrl_1[6];
+
+assign bist_en[2]           = cfg_bist_ctrl_1[8];
+assign bist_run[2]          = cfg_bist_ctrl_1[9];
+assign bist_load[2]         = cfg_bist_ctrl_1[10];
+
+assign bist_en[3]           = cfg_bist_ctrl_1[12];
+assign bist_run[3]          = cfg_bist_ctrl_1[13];
+assign bist_load[3]         = cfg_bist_ctrl_1[14];
+
+//-----------------------------------------------------------------------
+//   reg-29
+//-----------------------------------------------------------------
+logic [31:0] cfg_bist_status_1;
+
+assign cfg_bist_status_1 = {  16'h0,
+	                      bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done[3],
+	                      bist_error_cnt2, 1'b0, bist_correct[2], bist_error[2], bist_done[2],
+	                      bist_error_cnt1, 1'b0, bist_correct[1], bist_error[1], bist_done[1],
+	                      bist_error_cnt0, 1'b0, bist_correct[0], bist_error[0], bist_done[0]
+			   };
+
+//-----------------------------------------------------------------------
+//   reg-30 => Write to Serail I/F
+//   reg-31 => READ  from Serail I/F
+//-----------------------------------------------------------------
+logic        bist_sdi_int;
+logic        bist_shift_int;
+logic        bist_sdo_int;
+logic [31:0] serail_dout;
+
+assign bist_sdo_int = (bist_serial_sel == 4'b0000) ? bist_sdo[0] :
+                      (bist_serial_sel == 4'b0001) ? bist_sdo[1] :
+                      (bist_serial_sel == 4'b0010) ? bist_sdo[2] :
+                      (bist_serial_sel == 4'b0011) ? bist_sdo[3] :
+		      1'b0;
+
+assign  bist_shift[0] = (bist_serial_sel == 4'b0000) ? bist_shift_int : 1'b0;
+assign  bist_shift[1] = (bist_serial_sel == 4'b0001) ? bist_shift_int : 1'b0;
+assign  bist_shift[2] = (bist_serial_sel == 4'b0010) ? bist_shift_int : 1'b0;
+assign  bist_shift[3] = (bist_serial_sel == 4'b0011) ? bist_shift_int : 1'b0;
+
+assign  bist_sdi[0]   = (bist_serial_sel == 4'b0000) ? bist_sdi_int : 1'b0;
+assign  bist_sdi[1]   = (bist_serial_sel == 4'b0001) ? bist_sdi_int : 1'b0;
+assign  bist_sdi[2]   = (bist_serial_sel == 4'b0010) ? bist_sdi_int : 1'b0;
+assign  bist_sdi[3]   = (bist_serial_sel == 4'b0011) ? bist_sdi_int : 1'b0;
+
+ser_inf_32b u_ser_intf
+       (
+
+    // Master Port
+       .rst_n       (h_reset_n),  // Regular Reset signal
+       .clk         (mclk),  // System clock
+       .reg_wr      (sw_wr_en_30 & wb_req_pedge),  // Write Request
+       .reg_rd      (sw_rd_en_31 & wb_req_pedge),  // Read Request
+       .reg_wdata   (sw_reg_wdata) ,  // data output
+       .reg_rdata   (serail_dout),  // data input
+       .reg_ack     (serial_ack),  // acknowlegement
+
+    // Slave Port
+       .sdi         (bist_sdi_int),    // Serial SDI
+       .shift       (bist_shift_int),  // Shift Signal
+       .sdo         (bist_sdo_int) // Serial SDO
+
+    );
+
+
+
+
 //-----------------------------------------------------------------------
 // Register Read Path Multiplexer instantiation
 //-----------------------------------------------------------------------
@@ -745,6 +873,10 @@ begin
     5'b11001 : reg_out [31:0] = reg_25 [31:0];
     5'b11010 : reg_out [31:0] = reg_26 [31:0];
     5'b11011 : reg_out [31:0] = reg_27 [31:0];
+    5'b11100 : reg_out [31:0] = cfg_bist_ctrl_1 [31:0];
+    5'b11101 : reg_out [31:0] = cfg_bist_status_1 [31:0];
+    5'b11110 : reg_out [31:0] = serail_dout [31:0]; // Previous Shift Data
+    5'b11111 : reg_out [31:0] = serail_dout [31:0]; // Latest Shift Data
     default  : reg_out [31:0] = 32'h0;
   endcase
 end

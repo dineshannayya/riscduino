@@ -19,8 +19,8 @@ BLOCKS = $(shell find * -maxdepth 0 -type d)
 CONFIG = $(foreach block,$(BLOCKS), ./$(block)/config.tcl)
 CLEAN = $(foreach block,$(BLOCKS), clean-$(block))
 
-OPENLANE_TAG = mpw4
-OPENLANE_IMAGE_NAME = dineshannayya/openlane:$(OPENLANE_TAG)
+OPENLANE_TAG ?= mpw4
+OPENLANE_IMAGE_NAME ?= dineshannayya/openlane:$(OPENLANE_TAG)
 OPENLANE_BASIC_COMMAND = "cd /project/openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
 OPENLANE_INTERACTIVE_COMMAND = "cd /project/openlane && flow.tcl -it -file ./$*/interactive.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
 
@@ -31,29 +31,32 @@ $(CONFIG) :
 	@exit 1
 
 $(BLOCKS) : % : ./%/config.tcl FORCE
-#ifeq ($(OPENLANE_ROOT),)
-#	@echo "Please export OPENLANE_ROOT"
-#	@exit 1
-#endif
-#ifeq ($(PDK_ROOT),)
-#	@echo "Please export PDK_ROOT"
-#	@exit 1
-#endif
+ifeq ($(OPENLANE_ROOT),)
+	@echo "Please export OPENLANE_ROOT"
+	@exit 1
+endif
+ifeq ($(PDK_ROOT),)
+	@echo "Please export PDK_ROOT"
+	@exit 1
+endif
 	@echo "###############################################"
 	@sleep 1
 
 	@if [ -f ./$*/interactive.tcl ]; then\
-		docker run -it \
+		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
 		-v $(PDK_ROOT):$(PDK_ROOT) \
 		-v $(PWD)/..:/project \
 		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
+		-e PDK_ROOT=$(PDK_ROOT) \
 		-e CARAVEL_ROOT=$(CARAVEL_ROOT) \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_INTERACTIVE_COMMAND);\
 	else\
-		docker run -it \
+		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
+		-v $(PDK_ROOT):$(PDK_ROOT) \
 		-v $(PWD)/..:/project \
 		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
+		-e PDK_ROOT=$(PDK_ROOT) \
 		-e CARAVEL_ROOT=$(CARAVEL_ROOT) \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_BASIC_COMMAND);\
@@ -69,7 +72,7 @@ ifeq ($(OPENLANE_ROOT),)
 	@echo "Please export OPENLANE_ROOT"
 	@exit 1
 endif
-	git clone https://github.com/The-OpenROAD-Project/OpenLane --branch=$(OPENLANE_TAG) --depth=1 $(OPENLANE_ROOT) && \
+	git clone https://github.com/efabless/OpenLane --branch=$(OPENLANE_TAG) --depth=1 $(OPENLANE_ROOT) && \
 		cd $(OPENLANE_ROOT) && \
 		export IMAGE_NAME=efabless/openlane:$(OPENLANE_TAG) && \
 		make openlane

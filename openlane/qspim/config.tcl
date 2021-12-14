@@ -46,8 +46,10 @@ set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/qspim/src/qspim_ctrl.sv \
         $script_dir/../../verilog/rtl/qspim/src/qspim_rx.sv \
         $script_dir/../../verilog/rtl/qspim/src/qspim_tx.sv \
+	$script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
 	"
 
+set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"

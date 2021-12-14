@@ -27,7 +27,7 @@ set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "app_clk usb_clk"
+set ::env(CLOCK_PORT) "app_clk usb_clk u_uart_core.line_clk_16x"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 
@@ -64,10 +64,12 @@ set ::env(VERILOG_FILES) "\
     $script_dir/../../verilog/rtl/sspim/src/sspim_if.sv              \
     $script_dir/../../verilog/rtl/sspim/src/sspim_cfg.sv             \
     $script_dir/../../verilog/rtl/uart_i2c_usb_spi/src/uart_i2c_usb_spi.sv\
+    $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
     "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/i2cm/src/includes $script_dir/../../verilog/rtl/usb1_host/src/includes ]
+set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"

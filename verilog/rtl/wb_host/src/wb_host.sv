@@ -88,7 +88,7 @@ module wb_host (
        output logic                uart_rst_n       ,
        output logic                i2cm_rst_n       ,
        output logic                usb_rst_n        ,
-       output logic  [1:0]         uart_i2c_usb_sel ,
+       output logic                bist_rst_n        ,
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -160,19 +160,20 @@ logic  [2:0]        cfg_wb_clk_ctrl;
 logic  [3:0]        cfg_cpu_clk_ctrl;
 logic  [7:0]        cfg_rtc_clk_ctrl;
 logic  [3:0]        cfg_usb_clk_ctrl;
-logic  [6:0]        cfg_glb_ctrl;
+logic  [8:0]        cfg_glb_ctrl;
 
 
 assign wbm_rst_n = !wbm_rst_i;
 assign wbs_rst_n = !wbm_rst_i;
 
-sky130_fd_sc_hd__bufbuf_16 u_buf_wb_rst        (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_cpu_rst       (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_qspim_rst     (.A(cfg_glb_ctrl[2]),.X(qspim_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_sspim_rst     (.A(cfg_glb_ctrl[3]),.X(sspim_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
-sky130_fd_sc_hd__bufbuf_16 u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
+ctech_buf u_buf_wb_rst        (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
+ctech_buf u_buf_cpu_rst       (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
+ctech_buf u_buf_qspim_rst     (.A(cfg_glb_ctrl[2]),.X(qspim_rst_n));
+ctech_buf u_buf_sspim_rst     (.A(cfg_glb_ctrl[3]),.X(sspim_rst_n));
+ctech_buf u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
+ctech_buf u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
+ctech_buf u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
+ctech_buf u_buf_bist_rst      (.A(cfg_glb_ctrl[7]),.X(bist_rst_n));
 
 // wb_host clock skew control
 clk_skew_adjust u_skew_wh
@@ -196,9 +197,9 @@ wire         wbm_err_o1   = (reg_sel) ? 1'b0      : wbm_err_int;  // error
 logic wb_req;
 // Hold fix for STROBE
 wire  wbm_stb_d1,wbm_stb_d2,wbm_stb_d3;
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay1_stb0 (.X(wbm_stb_d1),.A(wbm_stb_i));
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_stb1 (.X(wbm_stb_d2),.A(wbm_stb_d1));
-sky130_fd_sc_hd__dlygate4sd3_1 u_delay2_stb2 (.X(wbm_stb_d3),.A(wbm_stb_d2));
+ctech_delay_buf u_delay1_stb0 (.X(wbm_stb_d1),.A(wbm_stb_i));
+ctech_delay_buf u_delay2_stb1 (.X(wbm_stb_d2),.A(wbm_stb_d1));
+ctech_delay_buf u_delay2_stb2 (.X(wbm_stb_d3),.A(wbm_stb_d2));
 always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
     if ( wbm_rst_n == 1'b0 ) begin
         wb_req    <= '0;
@@ -262,8 +263,7 @@ end
 //-------------------------------------
 // Global + Clock Control
 // -------------------------------------
-assign cfg_glb_ctrl         = reg_0[6:0];
-assign uart_i2c_usb_sel     = reg_0[8:7];
+assign cfg_glb_ctrl         = reg_0[8:0];
 assign cfg_wb_clk_ctrl      = reg_0[11:9];
 assign cfg_rtc_clk_ctrl     = reg_0[19:12];
 assign cfg_cpu_clk_ctrl     = reg_0[23:20];
@@ -405,7 +405,7 @@ wire [1:0] cfg_cpu_clk_ratio     = cfg_cpu_clk_ctrl[1:0];
 ctech_mux2x1 u_cpu_ref_sel (.A0 (user_clock1), .A1 (user_clock2), .S  (cfg_cpu_clk_src_sel), .X  (cpu_ref_clk));
 ctech_mux2x1 u_cpu_clk_sel (.A0 (cpu_ref_clk), .A1 (cpu_clk_div), .S  (cfg_cpu_clk_div),     .X  (cpu_clk_int));
 
-sky130_fd_sc_hd__clkbuf_16 u_clkbuf_cpu (.A (cpu_clk_int), . X(cpu_clk));
+ctech_clk_buf u_clkbuf_cpu (.A (cpu_clk_int), . X(cpu_clk));
 
 clk_ctl #(1) u_cpuclk (
    // Outputs
@@ -423,7 +423,7 @@ wire   rtc_clk_div;
 wire [7:0] cfg_rtc_clk_ratio     = cfg_rtc_clk_ctrl[7:0];
 
 
-sky130_fd_sc_hd__clkbuf_16 u_clkbuf_rtc (.A (rtc_clk_div), . X(rtc_clk));
+ctech_clk_buf u_clkbuf_rtc (.A (rtc_clk_div), . X(rtc_clk));
 
 clk_ctl #(7) u_rtcclk (
    // Outputs
@@ -450,7 +450,7 @@ assign usb_ref_clk = user_clock2 ;
 ctech_mux2x1 u_usb_clk_sel (.A0 (usb_ref_clk), .A1 (usb_clk_div), .S  (cfg_usb_clk_div), .X  (usb_clk_int));
 
 
-sky130_fd_sc_hd__clkbuf_16 u_clkbuf_usb (.A (usb_clk_int), . X(usb_clk));
+ctech_clk_buf u_clkbuf_usb (.A (usb_clk_int), . X(usb_clk));
 
 clk_ctl #(2) u_usbclk (
    // Outputs
