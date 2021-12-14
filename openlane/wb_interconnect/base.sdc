@@ -7,14 +7,19 @@ current_design wb_interconnect
 # Timing Constraints
 ###############################################################################
 create_clock -name clk_i -period 10.0000 [get_ports {clk_i}]
-set_clock_uncertainty -rise_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_i}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -setup 0.2500
+
+set ::env(SYNTH_TIMING_DERATE) 0.05
+puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
+set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
+set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
 #Clock Skew adjustment
 set_case_analysis 0 [get_ports {cfg_cska_wi[0]}]

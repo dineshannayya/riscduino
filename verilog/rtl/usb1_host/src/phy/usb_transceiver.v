@@ -120,8 +120,11 @@ assign usb_phy_rx_rcv_o = (in_dp == 1'b1 && in_dn == 1'b0) ? 1'b1 : 1'b0;
 //      0    1    Differential Logic '1'
 //      1    0    Differential Logic '0'
 //      1    1    Illegal State
-always @ (mode_i or usb_phy_tx_dp_i or usb_phy_tx_dn_i)
+always_comb 
 begin : MUX
+// Logic "0"
+out_dp = 1'b0;
+out_dn = 1'b1;
  case(mode_i)
     1'b0:
     begin

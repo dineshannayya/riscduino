@@ -19,7 +19,7 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = wb_port risc_boot user_risc_boot user_uart user_spi user_i2cm riscv_regress user_basic
+PATTERNS = wb_port risc_boot user_risc_boot user_uart user_spi user_i2cm riscv_regress user_basic user_mbist_test1 user_risc_soft_boot
 
 all:  ${PATTERNS}
 	for i in ${PATTERNS}; do \

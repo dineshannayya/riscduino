@@ -22,22 +22,27 @@ set_case_analysis 0 [get_ports {cfg_cska_sp_co[1]}]
 set_case_analysis 0 [get_ports {cfg_cska_sp_co[0]}]
 
 set_propagated_clock [get_clocks {spiclk}]
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -setup 0.2500
+
+set ::env(SYNTH_TIMING_DERATE) 0.05
+puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
+set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
+set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
 ### ClkSkew Adjust
 set_case_analysis 0 [get_ports {cfg_cska_spi[0]}]

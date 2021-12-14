@@ -44,6 +44,7 @@ set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/lib/registers.v"
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
+set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
@@ -59,7 +60,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 400 300"
+set ::env(DIE_AREA) "0 0 350 250"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -69,7 +70,7 @@ set ::env(RUN_CVC) 1
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.30"
+set ::env(PL_TARGET_DENSITY) "0.41"
 
 
 

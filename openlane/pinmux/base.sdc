@@ -8,15 +8,20 @@ current_design pinmux
 ###############################################################################
 create_clock -name mclk -period 10.0000 [get_ports {mclk}]
 set_propagated_clock [get_clocks {mclk}]
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2500
 
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold 0.1000
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold  0.2500
+
+set ::env(SYNTH_TIMING_DERATE) 0.05
+puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
+set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
+set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
 ### ClkSkew Adjust
 set_case_analysis 0 [get_ports {cfg_cska_pinmux[0]}]

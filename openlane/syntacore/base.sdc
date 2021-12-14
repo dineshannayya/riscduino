@@ -9,30 +9,37 @@ current_design scr1_top_wb
 create_clock -name core_clk -period 20.0000 [get_ports {core_clk}]
 create_clock -name rtc_clk -period 40.0000 [get_ports {rtc_clk}]
 create_clock -name wb_clk -period 10.0000 [get_ports {wb_clk}]
-set_clock_uncertainty -rise_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]  -hold 0.1000
-set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]  -hold 0.1000
-set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]  -setup 0.2000
+set_clock_uncertainty -rise_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {core_clk}] -rise_to [get_clocks {core_clk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {core_clk}] -fall_to [get_clocks {core_clk}]  -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]    -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]    -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]    -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]    -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]    -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -rise_to [get_clocks {rtc_clk}]    -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]    -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {rtc_clk}] -fall_to [get_clocks {rtc_clk}]    -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]      -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]      -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]      -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]      -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]      -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -rise_to [get_clocks {wb_clk}]      -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]      -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {wb_clk}] -fall_to [get_clocks {wb_clk}]      -setup 0.2500
+
+
+set ::env(SYNTH_TIMING_DERATE) 0.05
+puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
+set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
+set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
+
 set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {core_clk}]\
  -group [get_clocks {rtc_clk}]\

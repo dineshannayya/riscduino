@@ -37,15 +37,17 @@ set ::env(SYNTH_MAX_FANOUT) 4
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-     $script_dir/../../verilog/rtl/pinmux/src/pinmux.sv \
+     $script_dir/../../verilog/rtl/pinmux/src/pinmux.sv     \
      $script_dir/../../verilog/rtl/pinmux/src/pinmux_reg.sv \
-     $script_dir/../../verilog/rtl/pinmux/src/gpio_intr.sv \
-     $script_dir/../../verilog/rtl/pinmux/src/pwm.sv \
-     $script_dir/../../verilog/rtl/lib/pulse_gen_type1.sv      \
-     $script_dir/../../verilog/rtl/lib/pulse_gen_type2.sv        \
+     $script_dir/../../verilog/rtl/pinmux/src/gpio_intr.sv  \
+     $script_dir/../../verilog/rtl/pinmux/src/pwm.sv        \
+     $script_dir/../../verilog/rtl/lib/pulse_gen_type1.sv   \
+     $script_dir/../../verilog/rtl/lib/pulse_gen_type2.sv   \
+     $script_dir/../../verilog/rtl/lib/ser_inf_32b.sv       \
      $script_dir/../../verilog/rtl/lib/registers.v"
 
 
+set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
@@ -62,7 +64,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 500 400"
+set ::env(DIE_AREA) "0 0 550 450"
 
 
 # If you're going to use multiple power domains, then keep this disabled.

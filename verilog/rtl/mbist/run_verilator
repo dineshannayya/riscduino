@@ -1,0 +1,17 @@
+verilator -cc  \
+src/top/mbist_top1.sv \
+src/core/mbist_addr_gen.sv \
+src/core/mbist_fsm.sv \
+src/core/mbist_op_sel.sv \
+src/core/mbist_repair_addr.sv \
+src/core/mbist_data_cmp.sv \
+src/core/mbist_mux.sv \
+src/core/mbist_pat_sel.sv \
+src/core/mbist_sti_sel.sv \
++incdir+include/ \
+../lib/ctech_cells.sv \
+../lib/reset_sync.sv \
+-v $PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v \
+-v $PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v \
+--timescale 1ns/100ps \
+--bbox-unsup

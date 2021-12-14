@@ -41,13 +41,13 @@ set ::env(CLOCK_NET)  "clk"
 set ::env(CLOCK_PERIOD) "100"
 
 set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
-#set ::env(PDN_CFG) $script_dir/pdn.tcl
+set ::env(PDN_CFG) $script_dir/pdn.tcl
 
 set ::env(FP_SIZING) "absolute"
 set ::env(DIE_AREA) "0 0 500 300"
 
-set ::env(FP_HORIZONTAL_HALO) 15
-set ::env(FP_VERTICAL_HALO)   15
+#set ::env(FP_HORIZONTAL_HALO) 15
+#set ::env(FP_VERTICAL_HALO)   15
 
 #set ::env(GLB_RT_OBS) "met2 109.85000 19.89500 171.54500 69.22000"
 set ::env(CLOCK_TREE_SYNTH) 0
@@ -59,7 +59,7 @@ set ::env(GLB_RT_ADJUSTMENT) 0.15
 set ::env(FP_PDN_CHECK_NODES) 0
 set ::env(FP_PDN_VPITCH) "45"
 set ::env(FP_PDN_VWIDTH) "3.5"
-
+#
 set ::env(FP_PDN_HPITCH) "40"
 set ::env(FP_PDN_HWIDTH) "6.5"
 
@@ -68,8 +68,8 @@ set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 1
 
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
-set ::env(FP_VERTICAL_HALO) "35"
-set ::env(FP_HERTICAL_HALO) "35"
+#set ::env(FP_VERTICAL_HALO) "35"
+#set ::env(FP_HERTICAL_HALO) "35"
 
 
 ## Internal Macros

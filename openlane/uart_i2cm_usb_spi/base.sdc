@@ -7,24 +7,31 @@ current_design uart_i2c_usb_spi_top
 # Timing Constraints
 ###############################################################################
 create_clock -name app_clk -period 10.0000 [get_ports {app_clk}]
-create_clock -name line_clk -period 100.0000 [get_pins {u_uart_core.u_lineclk_buf/X}]
+create_clock -name line_clk -period 100.0000 [get_pins {u_uart_core.u_lineclk_buf.u_buf/X}]
 create_clock -name usb_clk -period 100.0000 [get_ports {usb_clk}]
-set_clock_uncertainty -rise_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -hold  0.1000
-set_clock_uncertainty -rise_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -hold  0.1000
-set_clock_uncertainty -rise_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -hold  0.1000
-set_clock_uncertainty -fall_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -hold  0.1000
-set_clock_uncertainty -fall_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -hold  0.1000
-set_clock_uncertainty -rise_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -setup 0.2000
-set_clock_uncertainty -rise_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -hold  0.1000
-set_clock_uncertainty -rise_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -hold  0.1000
-set_clock_uncertainty -fall_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -setup 0.2000
-set_clock_uncertainty -fall_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -hold  0.1000
-set_clock_uncertainty -fall_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -setup 0.2000
+
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -rise_to [get_clocks {app_clk}]    -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {app_clk}] -fall_to [get_clocks {app_clk}]    -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -setup 0.2500
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -hold  0.2500
+set_clock_uncertainty -rise_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -rise_to [get_clocks {line_clk}]  -setup 0.2500
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -hold  0.2500
+set_clock_uncertainty -fall_from [get_clocks {line_clk}] -fall_to [get_clocks {line_clk}]  -setup 0.2500
+
+set ::env(SYNTH_TIMING_DERATE) 0.05
+puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
+set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
+set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
+
 set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {app_clk}]\
  -group [get_clocks {line_clk}] -comment {Async Clock group}

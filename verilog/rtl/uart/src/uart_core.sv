@@ -192,7 +192,7 @@ uart_cfg u_cfg (
 
 wire line_clk_16x_in;
 
-sky130_fd_sc_hd__clkbuf_16 u_lineclk_buf  (.A(line_clk_16x_in),  .X(line_clk_16x));
+ctech_clk_buf u_lineclk_buf  (.A(line_clk_16x_in),  .X(line_clk_16x));
 
 clk_ctl #(11) u_clk_ctl (
    // Outputs
