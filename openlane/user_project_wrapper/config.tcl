@@ -108,17 +108,18 @@ set ::env(FP_PDN_CHECK_NODES) 0
 set ::env(FP_PDN_ENABLE_MACROS_GRID) "1"
 set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 
-set ::env(VDD_NETS) "vccd1"
-set ::env(GND_NETS) "vssd1"
-
-set ::env(VDD_PIN) "vccd1"
-set ::env(GND_PIN) "vssd1"
+set ::env(VDD_NETS) "vccd1 vccd2 vdda1 vdda2"
+set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
+#
+set ::env(VDD_PIN) "vccd1 vccd2 vdda1 vdda2"
+set ::env(GND_PIN) "vssd1 vssd2 vssa1 vssa2"
 
 set ::env(GLB_RT_OBS) " 
                         li1  200 175  883.1 591.54,\
                         met1 200 175  883.1 591.54,\
 	                met2 200 175  883.1 591.54,\
 	                met3 200 175  883.1 591.54,\
+	                met4 200 175  883.1 591.54,\
                         li1  200 1300  883.1 1716.54,\
                         met1 200 1300  883.1 1716.54,\
 	                met2 200 1300  883.1 1716.54,\
@@ -180,7 +181,8 @@ set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_TR_DRC) "0"
 
 
-set ::env(FP_PDN_HPITCH) "100"
+set ::env(FP_PDN_HPITCH) "80"
 set ::env(FP_PDN_VPITCH) "180"
+set ::env(FP_PDN_HSPACING) "6"
 
 
