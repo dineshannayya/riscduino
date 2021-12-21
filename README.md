@@ -49,13 +49,16 @@ Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform
     * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed.
     * industry-grade and silicon-proven Open-Source RISC-V core from syntacore 
     * 4KB SRAM for data memory
-    * Pin Compatbible to arudino uno
+    * 8KB SRAM for program memory
     * Quad SPI Master
     * UART with 16Byte FIFO
     * USB 1.1 Host
     * I2C Master
-    * 6 Channel ADC
+    * Simple SPI Master
+    * MBIST controller for 8KB Program memory
+    * 6 Channel ADC (in Progress)
     * 6 PWM
+    * Pin Compatbible to arudino uno
     * Wishbone compatible design
     * Written in System Verilog
     * Open-source tool set
@@ -164,13 +167,13 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
     <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF  </td> 
     <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF  </td>
     <td  align="center"> 0x0000_0000 to 0x0FFF_FFFF</td>
-    <td  align="center"> SPI FLASH MEMORY</td>
+    <td  align="center"> QSPI FLASH MEMORY</td>
   </tr>
   <tr>
     <td  align="center"> 0x1000_0000 to 0x1000_00FF</td> 
     <td  align="center"> 0x1000_0000 to 0x1000_00FF</td>
     <td  align="center"> 0x1000_0000 to 0x1000_00FF</td>
-    <td  align="center"> SPI Config Reg</td>
+    <td  align="center"> QSPI Config Reg</td>
   </tr>
   <tr>
     <td  align="center"> 0x1001_0000 to 0x1001_003F</td> 
@@ -185,10 +188,16 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
     <td  align="center"> I2C</td>
   </tr>
   <tr>
-    <td  align="center"> 0x1001_0080 to 0x1001_00FF</td> 
-    <td  align="center"> 0x1001_0080 to 0x1001_00FF</td>
-    <td  align="center"> 0x1001_0080 to 0x1001_00FF</td>
+    <td  align="center"> 0x1001_0080 to 0x1001_00BF</td> 
+    <td  align="center"> 0x1001_0080 to 0x1001_00BF</td>
+    <td  align="center"> 0x1001_0080 to 0x1001_00BF</td>
     <td  align="center"> USB</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1001_00C0 to 0x1001_00FF</td> 
+    <td  align="center"> 0x1001_00C0 to 0x1001_00FF</td>
+    <td  align="center"> 0x1001_00C0 to 0x1001_00FF</td>
+    <td  align="center"> SSPI</td>
   </tr>
   <tr>
     <td  align="center"> 0x1002_0080 to 0x1002_00FF</td> 
@@ -197,10 +206,28 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
     <td  align="center"> PINMUX</td>
   </tr>
   <tr>
-    <td  align="center"> 0x1003_0080 to 0x1003_00FF</td> 
-    <td  align="center"> 0x1003_0080 to 0x1003_00FF</td>
-    <td  align="center"> 0x1003_0080 to 0x1003_00FF</td>
-    <td  align="center"> PINMUX</td>
+    <td  align="center"> 0x1003_0080 to 0x1003_07FF</td> 
+    <td  align="center"> 0x1003_0080 to 0x1003_07FF</td>
+    <td  align="center"> 0x1003_0080 to 0x1003_07FF</td>
+    <td  align="center"> SRAM-0 (2KB)</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1003_0800 to 0x1003_0FFF</td> 
+    <td  align="center"> 0x1003_0800 to 0x1003_0FFF</td>
+    <td  align="center"> 0x1003_0800 to 0x1003_0FFF</td>
+    <td  align="center"> SRAM-1 (2KB)</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1003_1000 to 0x1003_17FF</td> 
+    <td  align="center"> 0x1003_1000 to 0x1003_17FF</td>
+    <td  align="center"> 0x1003_1000 to 0x1003_17FF</td>
+    <td  align="center"> SRAM-2 (2KB)</td>
+  </tr>
+  <tr>
+    <td  align="center"> 0x1003_1800 to 0x1003_1FFF</td> 
+    <td  align="center"> 0x1003_1800 to 0x1003_1FFF</td>
+    <td  align="center"> 0x1003_1800 to 0x1003_1FFF</td>
+    <td  align="center"> SRAM-3 (2KB)</td>
   </tr>
   <tr>
     <td  align="center"> -</td> 
@@ -212,17 +239,18 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 
 # SOC Size
 
-| Block         | Total Cell | Seq      | Combo   |
-| ------        | ---------  | -------- | -----   |
-| RISC          | 26919      | 3164     | 23755   |
-| PINMUX        | 5461       | 1022     |  4439   |
-| SPI           | 7597       | 1279     |  6318   |
-| UART_I2C_USB  | 12423      | 2230     | 10193   |
-| WB_HOST       | 3072       | 515      | 2557    |
-| WB_INTC       | 1356       | 108      | 1248    |
-| SAR_ADC       | 128        |  18      |  110    |
-|               |            |          |         |
-| TOTAL         | 56956      | 8336     | 44620   |
+| Block             | Total Cell | Seq      | Combo   |
+| ------            | ---------  | -------- | -----   |
+| RISC              | 20982      | 3164     | 17818   |
+| PINMUX            | 5693       | 1022     |  4671   |
+| SPI               | 7120       | 1281     |  5839   |
+| UART_I2C_USB_SPI  | 11196      | 2448     |  8748   |
+| WB_HOST           | 2796       | 588      |  2208   |
+| WB_INTC           | 1878       | 108      |  1770   |
+| SAR_ADC           | 118        |  18      |   100   |
+| MBIST             | 3125       | 543      |  2582   |
+|                   |            |          |         |
+| TOTAL             | 52908      | 9172     | 43736   |
 
 
 
@@ -417,16 +445,7 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 |   |     |     |    |   ├─ core                           | Core top source files
 |   |     |     |    |   ├─ top                            | Cluster source files
 |   |     |     |    |─  **synth**                         | **SCR1 RTL Synthesis files **
-|   |     |- sdram_ctrl
-|   |     |     |- **src**
-|   |     |     |   |- **docs**                            | **SDRAM Controller Documentation**
-|   |     |     |   |     |- sdram_controller_specs.pdf    | SDRAM Controller Design Specification
-|   |     |     |   |             
-|   |     |     |   |- core                                | SDRAM Core integration source files                          
-|   |     |     |   |- defs                                | SDRAM Core defines
-|   |     |     |   |- top                                 | SDRAM Top integration source files
-|   |     |     |   |- wb2sdrc                             | SDRAM Wishbone source files
-|   |     |- spi_master
+|   |     |- Qspi_master
 |   |     |     |- src                                     | Qard SPI Master Source files
 |   |     |-wb_interconnect
 |   |     |     |- src                                     | 3x4 Wishbone Interconnect
@@ -493,9 +512,13 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
 
 The simulation package includes the following tests:
 
-* **risc_boot**      - Simple User Risc core boot 
-* **wb_port**        - User Wishbone validation
-* **user_risc_boot** - Standalone User Risc core boot
+* **risc_boot**           - Simple User Risc core boot 
+* **wb_port**             - User Wishbone validation
+* **user_risc_boot**      - Standalone User Risc core boot
+* **user_mbist_test1**    - Standalone MBIST test
+* **user_spi**            - Standalone SPI test
+* **user_i2c**            - Standalone I2C test
+* **user_risc_soft_boot** - Standalone Risc with SRAM as Boot
 
 
 # Running Simulation
@@ -545,8 +568,6 @@ Riscduino Soc flow uses Openlane tool sets.
     2. `Klayout` - Performs DRC Checks
     3. `Netgen` - Performs LVS Checks
     4. `CVC` - Performs Circuit Validity Checks
-
-
 
 
 
