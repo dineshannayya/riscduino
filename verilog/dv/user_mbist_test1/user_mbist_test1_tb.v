@@ -42,14 +42,10 @@
 
 `define WB_MAP           `30080_0000
 `define GLBL_FUNC_MAP    'h3002_0000
-`define MBIST1_FUNC_MAP  'h3003_0000
-`define MBIST2_FUNC_MAP  'h3004_0000
-`define MBIST3_FUNC_MAP  'h3005_0000
-`define MBIST4_FUNC_MAP  'h3006_0000
-`define MBIST5_FUNC_MAP  'h3007_0000
-`define MBIST6_FUNC_MAP  'h3008_0000
-`define MBIST7_FUNC_MAP  'h3009_0000
-`define MBIST8_FUNC_MAP  'h300A_0000
+`define MBIST1_FUNC_MAP  'h3003_0000  // 0x3003_0000 to 0x3003_07FF
+`define MBIST2_FUNC_MAP  'h3003_0800  // 0x3003_0800 to 0x3003_0FFF
+`define MBIST3_FUNC_MAP  'h3003_1000  // 0x3003_1000 to 0x3003_17FF
+`define MBIST4_FUNC_MAP  'h3003_1800  // 0x3003_1800 to 0x3003_1FFF
 
 `define GLBL_BIST_CTRL1  'h3002_0070    
 `define GLBL_BIST_STAT1  'h3002_0074
@@ -59,7 +55,7 @@
 
 `define WB_GLBL_CTRL     'h3080_0000
 
-`define NO_SRAM          2 // 8
+`define NO_SRAM          4 // 8
 
 
 
@@ -115,7 +111,9 @@ module user_mbist_test1_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(5, user_mbist_test1_tb);
+	   	$dumpvars(2, user_mbist_test1_tb);
+	   	$dumpvars(0, user_mbist_test1_tb.u_top.u_mbist);
+	   	$dumpvars(0, user_mbist_test1_tb.u_top.u_intercon);
 		$dumpoff;
 	   end
        `endif
@@ -144,16 +142,81 @@ module user_mbist_test1_tb;
 		// [2]   - Bist Correct   - 0
 		// [3]   - Reserved       - 0
 		// [7:4] - Bist Error Cnt - 4'h0
-		insert_fault(0,0,64'h01010101_01010101);
+		insert_fault(0,0,0,0,0,32'h01010101);
 
           	if(test_fail == 0) begin
 	    	    $display("Monitor: Step-1: BIST Test without any Memory Error insertion test Passed");
 	        end else begin
 	    	    $display("Monitor: Step-1: BIST Test without any Memory Error insertion test Failed");
 		end
-		$dumpon;
 	    	$display("###################################################");
-	    	$display(" MBIST Test with Single Address Failure");
+	    	
+		$display("#########################################################");
+	    	$display(" MBIST Test with With Single Address Failure for MEM-0");
+	    	$display("#########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h1
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(1,0,0,0,0,32'h01010115);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-2.1: BIST Test with Single Address Failure at MEM0 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-2.1: BIST Test with Single Address Failure at MEM0 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Single Address Failure for MEM-0/1");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h1
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(1,1,0,0,0,32'h01011515);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-2.2: BIST Test with Single Address Failure at MEM0/1 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-2.2: BIST Test with Single Address Failure at MEM0/1 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Single Address Failure for MEM-0/1/2");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h1
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(1,1,1,0,0,32'h01151515);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-2.3: BIST Test with Single Address Failure at MEM0/1/2 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-2.3: BIST Test with Single Address Failure at MEM0/1/2 Error insertion test Failed");
+		end
+
+	    	$display("###################################################");
+	    	$display(" MBIST Test with Single Address Failure to All Memory");
 	    	$display("###################################################");
 		   // Check Is there is any BIST Error
 		   // [0]   - Bist Done      - 1
@@ -163,17 +226,84 @@ module user_mbist_test1_tb;
 		   // [7:4] - Bist Error Cnt - 4'h1
 		   //if(read_data[6:0]  != 7'b0001101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x1
 		faultaddr[0] = 9'h10;
-		insert_fault(1,1,64'h15151515_15151515);
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(1,1,1,1,1,32'h15151515);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-2: BIST Test with One Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-2.4: BIST Test with One Memory Error insertion test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-2: BIST Test with One Memory Error insertion test Failed");
-		 end
+	    	    $display("Monitor: Step-2.4: BIST Test with One Memory Error insertion test Failed");
+		end
 	    	$display("###################################################");
-		$dumpoff;
+
+		$display("#########################################################");
+	    	$display(" MBIST Test with With Two Address Failure for MEM-0");
+	    	$display("#########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h2
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(2,0,0,0,0,32'h01010125);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-3.1: BIST Test with Two Address Failure at MEM0 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-3.1: BIST Test with Two Address Failure at MEM0 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Two Address Failure for MEM-0/1");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h2
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(2,2,0,0,0,32'h01012525);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-3.2: BIST Test with Two Address Failure at MEM0/1 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-3.2: BIST Test with Two Address Failure at MEM0/1 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Two Address Failure for MEM-0/1/2");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h2
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(2,2,2,0,0,32'h01252525);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-3.3: BIST Test with Two Address Failure at MEM0/1/2 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-3.3: BIST Test with Two Address Failure at MEM0/1/2 Error insertion test Failed");
+		end
+
 	    	$display("###################################################");
-	    	$display(" MBIST Test with Two Address Failure");
+	    	$display(" MBIST Test with Two Address Failure to All Memory");
 	    	$display("###################################################");
 		// Check Is there is any BIST Error
 		// [0]   - Bist Done      - 1
@@ -181,19 +311,23 @@ module user_mbist_test1_tb;
 		// [2]   - Bist Correct   - 1
 		// [3]   - Reserved       - 0
 		// [7:4] - Bist Error Cnt - 4'h2
-		//if(read_data[6:0]  != 7'b0010101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x2
+		   //if(read_data[6:0]  != 7'b0001101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x1
 		faultaddr[0] = 9'h10;
 		faultaddr[1] = 9'h20;
-		insert_fault(2,0,64'h25252525_25252525);
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(2,2,2,2,1,32'h25252525);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-3: BIST Test with Two Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-3.4: BIST Test with Two Memory Error insertion test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-3: BIST Test with Two Memory Error insertion test Failed");
-		 end
+	    	    $display("Monitor: Step-3.4: BIST Test with Two Memory Error insertion test Failed");
+		end
 	    	$display("###################################################");
-	    	$display(" MBIST Test with Three Address Failure");
-	    	$display("###################################################");
+
+		$display("#########################################################");
+	    	$display(" MBIST Test with With Three Address Failure for MEM-0");
+	    	$display("#########################################################");
 
 		// Check Is there is any BIST Error
 		// [0]   - Bist Done      - 1
@@ -201,41 +335,171 @@ module user_mbist_test1_tb;
 		// [2]   - Bist Correct   - 1
 		// [3]   - Reserved       - 0
 		// [7:4] - Bist Error Cnt - 4'h3
-		//if(read_data[6:0]  != 7'b0011101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x3
 		faultaddr[0] = 9'h10;
 		faultaddr[1] = 9'h20;
 		faultaddr[2] = 9'h30;
-		insert_fault(3,1,64'h35353535_35353535);
+		faultaddr[3] = 9'h40;
+		insert_fault(3,0,0,0,0,32'h01010135);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-4: BIST Test with Three Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-4.1: BIST Test with Three Address Failure at MEM0 Error insertion test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-4: BIST Test with Three Memory Error insertion test Failed");
-		 end
-                $dumpoff;
+	    	    $display("Monitor: Step-4.1: BIST Test with Three Address Failure at MEM0 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Three Address Failure for MEM-0/1");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h3
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(3,3,0,0,0,32'h01013535);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-4.2: BIST Test with Three Address Failure at MEM0/1 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-4.2: BIST Test with Three Address Failure at MEM0/1 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Three Address Failure for MEM-0/1/2");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h3
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(3,3,3,0,0,32'h01353535);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-4.3: BIST Test with Three Address Failure at MEM0/1/2 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-4.3: BIST Test with Three Address Failure at MEM0/1/2 Error insertion test Failed");
+		end
+
 	    	$display("###################################################");
-	    	$display(" MBIST Test with Fours Address Failure");
+	    	$display(" MBIST Test with Three Address Failure to All Memory");
 	    	$display("###################################################");
+		   // Check Is there is any BIST Error
+		   // [0]   - Bist Done      - 1
+		   // [1]   - Bist Error     - 0
+		   // [2]   - Bist Correct   - 1
+		   // [3]   - Reserved       - 0
+		   // [7:4] - Bist Error Cnt - 4'h3
+		   //if(read_data[6:0]  != 7'b0001101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x1
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(3,3,3,3,1,32'h35353535);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-4.4: BIST Test with Three Memory Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-4.4: BIST Test with Three Memory Error insertion test Failed");
+		end
+	    	$display("###################################################");
+
+		$display("#########################################################");
+	    	$display(" MBIST Test with With Four Address Failure for MEM-0");
+	    	$display("#########################################################");
+
 		// Check Is there is any BIST Error
 		// [0]   - Bist Done      - 1
 		// [1]   - Bist Error     - 0
 		// [2]   - Bist Correct   - 1
 		// [3]   - Reserved       - 0
 		// [7:4] - Bist Error Cnt - 4'h4
-		//if(read_data[6:0]  != 7'b0100101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x4
 		faultaddr[0] = 9'h10;
 		faultaddr[1] = 9'h20;
 		faultaddr[2] = 9'h30;
 		faultaddr[3] = 9'h40;
-		insert_fault(4,0,64'h45454545_45454545);
+		insert_fault(4,0,0,0,0,32'h01010145);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-5: BIST Test with Four Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-4.1: BIST Test with Four Address Failure at MEM0 Error insertion test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-5: BIST Test with Four Memory Error insertion test Failed");
+	    	    $display("Monitor: Step-4.1: BIST Test with Four Address Failure at MEM0 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Four Address Failure for MEM-0/1");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h4
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(4,4,0,0,0,32'h01014545);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-4.2: BIST Test with Four Address Failure at MEM0/1 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-4.2: BIST Test with Four Address Failure at MEM0/1 Error insertion test Failed");
+		end
+		$display("##########################################################");
+	    	$display(" MBIST Test with With Four Address Failure for MEM-0/1/2");
+	    	$display("##########################################################");
+
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 0
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h3
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(4,4,4,0,0,32'h01454545);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-4.3: BIST Test with Four Address Failure at MEM0/1/2 Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-4.3: BIST Test with Four Address Failure at MEM0/1/2 Error insertion test Failed");
 		end
 
-		$dumpon;
+	    	$display("###################################################");
+	    	$display(" MBIST Test with Four Address Failure to All Memory");
+	    	$display("###################################################");
+		   // Check Is there is any BIST Error
+		   // [0]   - Bist Done      - 1
+		   // [1]   - Bist Error     - 0
+		   // [2]   - Bist Correct   - 1
+		   // [3]   - Reserved       - 0
+		   // [7:4] - Bist Error Cnt - 4'h3
+		   //if(read_data[6:0]  != 7'b0001101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x1
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		insert_fault(4,4,4,4,1,32'h45454545);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-4.4: BIST Test with Four Memory Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-4.4: BIST Test with Four Memory Error insertion test Failed");
+		end
+	    	$display("###################################################");
+
+
 	    	$display("###################################################");
 	    	$display(" MBIST Test with Fours Address(Continous Starting Addrsess) Failure");
 	    	$display("###################################################");
@@ -250,12 +514,12 @@ module user_mbist_test1_tb;
 		faultaddr[1] = 9'h1;
 		faultaddr[2] = 9'h2;
 		faultaddr[3] = 9'h3;
-		insert_fault(4,0,64'h45454545_45454545);
+		insert_fault(4,4,4,4,0,32'h45454545);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-5.2: BIST Test with Four Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-5.1: BIST Test with Four Memory Error insertion test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-5.2: BIST Test with Four Memory Error insertion test Failed");
+	    	    $display("Monitor: Step-5.1: BIST Test with Four Memory Error insertion test Failed");
 		end
 
 	    	$display("###################################################");
@@ -272,15 +536,16 @@ module user_mbist_test1_tb;
 		faultaddr[1] = 9'hF1;
 		faultaddr[2] = 9'hF2;
 		faultaddr[3] = 9'hF3;
-		insert_fault(4,0,64'h45454545_45454545);
+		insert_fault(4,4,4,4,0,32'h45454545);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-5.3: BIST Test with Four Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-5.2: BIST Test with Four Memory Error insertion test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-5.3: BIST Test with Four Memory Error insertion test Failed");
+	    	    $display("Monitor: Step-5.2: BIST Test with Four Memory Error insertion test Failed");
 		end
-	    	$display("###################################################");
-	    	$display(" MBIST Test with Five Address Failure");
+	    	
+		$display("###################################################");
+	    	$display(" MBIST Test with Five Address Failure for MEM0");
 	    	$display("###################################################");
 		// Check Is there is any BIST Error
 		// [0]   - Bist Done      - 1
@@ -294,19 +559,87 @@ module user_mbist_test1_tb;
 		faultaddr[2] = 9'h30;
 		faultaddr[3] = 9'h40;
 		faultaddr[4] = 9'h50;
-		insert_fault(5,1,64'h47474747_47474747);
+		insert_fault(5,0,0,0,1,32'h01010147);
 
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-5: BIST Test with Five Memory Error insertion test Passed");
+	    	    $display("Monitor: Step-6.1: BIST Test with Five Memory Error insertion for MEM0 test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-5: BIST Test with Five Memory Error insertion test Failed");
+	    	    $display("Monitor: Step-6.1: BIST Test with Five Memory Error insertion for MEM0 test Failed");
+		 end
+
+		$display("###################################################");
+	    	$display(" MBIST Test with Five Address Failure for MEM0/1");
+	    	$display("###################################################");
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 1
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h4
+		//if(read_data[6:0]  != 7'b0100101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x4
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		faultaddr[4] = 9'h50;
+		insert_fault(5,5,0,0,1,32'h01014747);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-6.2: BIST Test with Five Memory Error insertion for MEM0/1 test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-6.2: BIST Test with Five Memory Error insertion for MEM0/1 test Failed");
+		 end
+
+        	$display("###################################################");
+	    	$display(" MBIST Test with Five Address Failure for MEM0/1/2");
+	    	$display("###################################################");
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 1
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h4
+		//if(read_data[6:0]  != 7'b0100101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x4
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		faultaddr[4] = 9'h50;
+		insert_fault(5,5,5,0,1,32'h01474747);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-6.3: BIST Test with Five Memory Error insertion for MEM0/1/2 test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-6.3: BIST Test with Five Memory Error insertion for MEM0/1/2 test Failed");
+		 end
+
+	    	$display("###################################################");
+	    	$display(" MBIST Test with Five Address Failure for All Memory");
+	    	$display("###################################################");
+		// Check Is there is any BIST Error
+		// [0]   - Bist Done      - 1
+		// [1]   - Bist Error     - 1
+		// [2]   - Bist Correct   - 1
+		// [3]   - Reserved       - 0
+		// [7:4] - Bist Error Cnt - 4'h4
+		//if(read_data[6:0]  != 7'b0100101) test_fail = 1; // Bist correct = 1 and Bist Err Cnt - 0x4
+		faultaddr[0] = 9'h10;
+		faultaddr[1] = 9'h20;
+		faultaddr[2] = 9'h30;
+		faultaddr[3] = 9'h40;
+		faultaddr[4] = 9'h50;
+		insert_fault(5,5,5,5,1,32'h47474747);
+
+          	if(test_fail == 0) begin
+	    	    $display("Monitor: Step-6.4: BIST Test with Five Memory Error insertion test Passed");
+	        end else begin
+	    	    $display("Monitor: Step-6.4: BIST Test with Five Memory Error insertion test Failed");
 		 end
 
 		$dumpon;
 	    	$display("###################################################");
 	    	$display(" MBIST Test with Functional Access, continuation of previous MBIST Signature");
 	    	$display("###################################################");
-		$dumpon;
 		fork
 		begin
 		    // Remove the Bist Enable and Bist Run
@@ -401,9 +734,9 @@ module user_mbist_test1_tb;
                 join_any
                 disable fork; //disable pending fork activity
           	if(test_fail == 0) begin
-	    	    $display("Monitor: Step-5: BIST Test with Functional access test Passed");
+	    	    $display("Monitor: Step-7: BIST Test with Functional access test Passed");
 	        end else begin
-	    	    $display("Monitor: Step-5: BIST Test with Functional access test failed");
+	    	    $display("Monitor: Step-7: BIST Test with Functional access test failed");
 		 end
 
 	    	$display("###################################################");
@@ -463,16 +796,24 @@ user_project_wrapper u_top(
 // -----------------------------------
 
 task insert_fault;
-input [3:0]  num_fault;
+input [3:0]  num0_fault;
+input [3:0]  num1_fault;
+input [3:0]  num2_fault;
+input [3:0]  num3_fault;
 input        fault_type; // 0 -> struck at 0 and 1 -> struck at 1
-input [63:0]  mbist_signature;
+input [31:0]  mbist_signature;
 reg [31:0] datain;
 reg [8:0]  fail_addr1;
 reg [8:0]  fail_addr2;
 reg [8:0]  fail_addr3;
 reg [8:0]  fail_addr4;
+reg [3:0]  num_fault[0:3];
 integer j;
 begin
+   num_fault[0] = num0_fault;
+   num_fault[1] = num1_fault;
+   num_fault[2] = num2_fault;
+   num_fault[3] = num3_fault;
    repeat (2) @(posedge clock);
    fork
    begin
@@ -481,7 +822,7 @@ begin
        // Remove WB and BIST RESET
        wb_user_core_write(`WB_GLBL_CTRL,'h001);
        // Set the Bist Enable and Bist Run
-       wb_user_core_write(`GLBL_BIST_CTRL1,'h00003333);
+       wb_user_core_write(`GLBL_BIST_CTRL1,'h00000003);
        // Remove WB and BIST RESET
        wb_user_core_write(`WB_GLBL_CTRL,'h081);
       // Check for MBIST Done
@@ -491,6 +832,9 @@ begin
       end
       // wait for some time for all the BIST to complete
       repeat (1000) @(posedge clock);
+      // Toggle the Bist Load for update the shift data
+      wb_user_core_write(`GLBL_BIST_CTRL1,'h00000004);
+      wb_user_core_write(`GLBL_BIST_CTRL1,'h00000000);
       // Check Is there is any BIST Error
       // [0]   - Bist Done      
       // [1]   - Bist Error     
@@ -506,80 +850,80 @@ begin
          repeat (1) @(posedge clock);
          #1;
 
-         if(u_top.u_sram1_2kb.web0 == 1'b0 && 
-	   ((num_fault > 0 && u_top.u_sram1_2kb.addr0 == faultaddr[0]) ||
-	    (num_fault > 1 && u_top.u_sram1_2kb.addr0 == faultaddr[1]) ||
-	    (num_fault > 2 && u_top.u_sram1_2kb.addr0 == faultaddr[2]) ||
-	    (num_fault > 3 && u_top.u_sram1_2kb.addr0 == faultaddr[3]) ||
-	    (num_fault > 4 && u_top.u_sram1_2kb.addr0 == faultaddr[4]) ||
-	    (num_fault > 5 && u_top.u_sram1_2kb.addr0 == faultaddr[5]) ||
-	    (num_fault > 6 && u_top.u_sram1_2kb.addr0 == faultaddr[6]) ||
-	    (num_fault > 7 && u_top.u_sram1_2kb.addr0 == faultaddr[7])))
+         if(u_top.u_sram0_2kb.web0 == 1'b0 && 
+	   ((num_fault[0] > 0 && u_top.u_sram0_2kb.addr0 == faultaddr[0]) ||
+	    (num_fault[0] > 1 && u_top.u_sram0_2kb.addr0 == faultaddr[1]) ||
+	    (num_fault[0] > 2 && u_top.u_sram0_2kb.addr0 == faultaddr[2]) ||
+	    (num_fault[0] > 3 && u_top.u_sram0_2kb.addr0 == faultaddr[3]) ||
+	    (num_fault[0] > 4 && u_top.u_sram0_2kb.addr0 == faultaddr[4]) ||
+	    (num_fault[0] > 5 && u_top.u_sram0_2kb.addr0 == faultaddr[5]) ||
+	    (num_fault[0] > 6 && u_top.u_sram0_2kb.addr0 == faultaddr[6]) ||
+	    (num_fault[0] > 7 && u_top.u_sram0_2kb.addr0 == faultaddr[7])))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_sram1_2kb.din0 = u_top.mem1_din_b  & 32'hFFFF_FFFE;
+	      force u_top.u_sram0_2kb.din0 = u_top.mem0_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_sram1_2kb.din0 = u_top.mem1_din_b | 32'h1;
+	      force u_top.u_sram0_2kb.din0 = u_top.mem0_din_a | 32'h1;
+   	   -> error_insert;
+         end else begin
+            release u_top.u_sram0_2kb.din0;
+         end
+
+         if(u_top.u_sram1_2kb.web0 == 1'b0 && 
+	   ((num_fault[1] > 0 && u_top.u_sram1_2kb.addr0 == faultaddr[0]+1) ||
+	    (num_fault[1] > 1 && u_top.u_sram1_2kb.addr0 == faultaddr[1]+1) ||
+	    (num_fault[1] > 2 && u_top.u_sram1_2kb.addr0 == faultaddr[2]+1) ||
+	    (num_fault[1] > 3 && u_top.u_sram1_2kb.addr0 == faultaddr[3]+1) ||
+	    (num_fault[1] > 4 && u_top.u_sram1_2kb.addr0 == faultaddr[4]+1) ||
+	    (num_fault[1] > 5 && u_top.u_sram1_2kb.addr0 == faultaddr[5]+1) ||
+	    (num_fault[1] > 6 && u_top.u_sram1_2kb.addr0 == faultaddr[6]+1) ||
+	    (num_fault[1] > 7 && u_top.u_sram1_2kb.addr0 == faultaddr[7]+1)))
+             begin
+	   if(fault_type == 0) // Struck at 0
+	      force u_top.u_sram1_2kb.din0 = u_top.mem1_din_a  & 32'hFFFF_FFFE;
+	   else
+	      force u_top.u_sram1_2kb.din0 = u_top.mem1_din_a | 32'h1;
    	   -> error_insert;
          end else begin
             release u_top.u_sram1_2kb.din0;
          end
 
          if(u_top.u_sram2_2kb.web0 == 1'b0 && 
-	   ((num_fault > 0 && u_top.u_sram2_2kb.addr0 == faultaddr[0]+1) ||
-	    (num_fault > 1 && u_top.u_sram2_2kb.addr0 == faultaddr[1]+1) ||
-	    (num_fault > 2 && u_top.u_sram2_2kb.addr0 == faultaddr[2]+1) ||
-	    (num_fault > 3 && u_top.u_sram2_2kb.addr0 == faultaddr[3]+1) ||
-	    (num_fault > 4 && u_top.u_sram2_2kb.addr0 == faultaddr[4]+1) ||
-	    (num_fault > 5 && u_top.u_sram2_2kb.addr0 == faultaddr[5]+1) ||
-	    (num_fault > 6 && u_top.u_sram2_2kb.addr0 == faultaddr[6]+1) ||
-	    (num_fault > 7 && u_top.u_sram2_2kb.addr0 == faultaddr[7]+1)))
+	   ((num_fault[2] > 0 && u_top.u_sram2_2kb.addr0 == faultaddr[0]+2) ||
+	    (num_fault[2] > 1 && u_top.u_sram2_2kb.addr0 == faultaddr[1]+2) ||
+	    (num_fault[2] > 2 && u_top.u_sram2_2kb.addr0 == faultaddr[2]+2) ||
+	    (num_fault[2] > 3 && u_top.u_sram2_2kb.addr0 == faultaddr[3]+2) ||
+	    (num_fault[2] > 4 && u_top.u_sram2_2kb.addr0 == faultaddr[4]+2) ||
+	    (num_fault[2] > 5 && u_top.u_sram2_2kb.addr0 == faultaddr[5]+2) ||
+	    (num_fault[2] > 6 && u_top.u_sram2_2kb.addr0 == faultaddr[6]+2) ||
+	    (num_fault[2] > 7 && u_top.u_sram2_2kb.addr0 == faultaddr[7]+2)))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_sram2_2kb.din0 = u_top.mem2_din_b  & 32'hFFFF_FFFE;
+	      force u_top.u_sram2_2kb.din0 = u_top.mem2_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_sram2_2kb.din0 = u_top.mem2_din_b | 32'h1;
+	      force u_top.u_sram2_2kb.din0 = u_top.mem2_din_a | 32'h1;
    	   -> error_insert;
          end else begin
             release u_top.u_sram2_2kb.din0;
          end
 
          if(u_top.u_sram3_2kb.web0 == 1'b0 && 
-	   ((num_fault > 0 && u_top.u_sram3_2kb.addr0 == faultaddr[0]+2) ||
-	    (num_fault > 1 && u_top.u_sram3_2kb.addr0 == faultaddr[1]+2) ||
-	    (num_fault > 2 && u_top.u_sram3_2kb.addr0 == faultaddr[2]+2) ||
-	    (num_fault > 3 && u_top.u_sram3_2kb.addr0 == faultaddr[3]+2) ||
-	    (num_fault > 4 && u_top.u_sram3_2kb.addr0 == faultaddr[4]+2) ||
-	    (num_fault > 5 && u_top.u_sram3_2kb.addr0 == faultaddr[5]+2) ||
-	    (num_fault > 6 && u_top.u_sram3_2kb.addr0 == faultaddr[6]+2) ||
-	    (num_fault > 7 && u_top.u_sram3_2kb.addr0 == faultaddr[7]+2)))
+	   ((num_fault[3] > 0 && u_top.u_sram3_2kb.addr0 == faultaddr[0]+3) ||
+	    (num_fault[3] > 1 && u_top.u_sram3_2kb.addr0 == faultaddr[1]+3) ||
+	    (num_fault[3] > 2 && u_top.u_sram3_2kb.addr0 == faultaddr[2]+3) ||
+	    (num_fault[3] > 3 && u_top.u_sram3_2kb.addr0 == faultaddr[3]+3) ||
+	    (num_fault[3] > 4 && u_top.u_sram3_2kb.addr0 == faultaddr[4]+3) ||
+	    (num_fault[3] > 5 && u_top.u_sram3_2kb.addr0 == faultaddr[5]+3) ||
+	    (num_fault[3] > 6 && u_top.u_sram3_2kb.addr0 == faultaddr[6]+3) ||
+	    (num_fault[3] > 7 && u_top.u_sram3_2kb.addr0 == faultaddr[7]+3)))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_sram3_2kb.din0 = u_top.mem3_din_b  & 32'hFFFF_FFFE;
+	      force u_top.u_sram3_2kb.din0 = u_top.mem3_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_sram3_2kb.din0 = u_top.mem3_din_b | 32'h1;
+	      force u_top.u_sram3_2kb.din0 = u_top.mem3_din_a | 32'h1;
    	   -> error_insert;
          end else begin
             release u_top.u_sram3_2kb.din0;
-         end
-
-         if(u_top.u_sram4_2kb.web0 == 1'b0 && 
-	   ((num_fault > 0 && u_top.u_sram4_2kb.addr0 == faultaddr[0]+3) ||
-	    (num_fault > 1 && u_top.u_sram4_2kb.addr0 == faultaddr[1]+3) ||
-	    (num_fault > 2 && u_top.u_sram4_2kb.addr0 == faultaddr[2]+3) ||
-	    (num_fault > 3 && u_top.u_sram4_2kb.addr0 == faultaddr[3]+3) ||
-	    (num_fault > 4 && u_top.u_sram4_2kb.addr0 == faultaddr[4]+3) ||
-	    (num_fault > 5 && u_top.u_sram4_2kb.addr0 == faultaddr[5]+3) ||
-	    (num_fault > 6 && u_top.u_sram4_2kb.addr0 == faultaddr[6]+3) ||
-	    (num_fault > 7 && u_top.u_sram4_2kb.addr0 == faultaddr[7]+3)))
-             begin
-	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_sram4_2kb.din0 = u_top.mem4_din_b  & 32'hFFFF_FFFE;
-	   else
-	      force u_top.u_sram4_2kb.din0 = u_top.mem4_din_b | 32'h1;
-   	   -> error_insert;
-         end else begin
-            release u_top.u_sram4_2kb.din0;
          end
 
          //if(u_top.u_sram5_1kb.web0 == 1'b0 && 
@@ -670,25 +1014,28 @@ begin
    disable fork; //disable pending fork activity
 
    // Read Back the Failure Address and cross-check all the 8 MBIST
-   for(j=0; j < `NO_SRAM; j=j+1) begin
-      fail_addr1 = faultaddr[0]+j;
-      fail_addr2 = faultaddr[1]+j;
-      fail_addr3 = faultaddr[2]+j;
-      fail_addr4 = faultaddr[3]+j;
+   // Read Signature is comming is reverse order, MBIST4 => MBIST3 => MBIST2
+   for(j=`NO_SRAM; j > 0; j=j-1) begin
+      fail_addr1 = faultaddr[0]+j-1;
+      fail_addr2 = faultaddr[1]+j-1;
+      fail_addr3 = faultaddr[2]+j-1;
+      fail_addr4 = faultaddr[3]+j-1;
 
-      // Select the Serial SDI/SDO interface
-      wb_user_core_write(`GLBL_BIST_CTRL1,j << 28); 
-      if(num_fault == 1)
-          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{16'h0,7'h0,fail_addr1},32'h0000_FFFF);
-      if(num_fault == 2)
-          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
-      if(num_fault == 3) begin
-          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
-          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{16'h0,7'h0,fail_addr3},32'h0000_FFFF);
-      end
-      if(num_fault >= 4) begin
-          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr2,7'h0,fail_addr1},32'hFFFF_FFFF);
-          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,faultaddr[3]+j,7'h0,fail_addr3},32'hFFFF_FFFF);
+      if(num_fault[j-1] == 1) begin
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{32'h0},32'hFFFF_FFFF);
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr1,16'h0},32'hFFFF_FFFF);
+      end else if(num_fault[j-1] == 2) begin
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{32'h0},32'hFFFF_FFFF);
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr1,7'h0,fail_addr2},32'hFFFF_FFFF);
+     end else if(num_fault[j-1] == 3) begin
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr3,16'h0},32'hFFFF_FFFF);
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr1,7'h0,fail_addr2},32'hFFFF_FFFF);
+      end else if(num_fault[j-1] >= 4) begin
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr3,7'h0,fail_addr4},32'hFFFF_FFFF);
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,{7'h0,fail_addr1,7'h0,fail_addr2},32'hFFFF_FFFF);
+      end else begin
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,32'h0,32'hFFFF_FFFF);
+          wb_user_core_read_check(`GLBL_BIST_SRDATA,read_data,32'h0,32'hFFFF_FFFF);
       end
    end
 end

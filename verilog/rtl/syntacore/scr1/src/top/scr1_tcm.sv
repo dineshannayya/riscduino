@@ -33,18 +33,36 @@ module scr1_tcm
     input   logic                           rst_n,
 
 `ifndef SCR1_TCM_MEM
-    // SRAM PORT-0
-    output  logic                           sram_csb0,
-    output  logic                           sram_web0,
-    output  logic   [8:0]                   sram_addr0,
-    output  logic   [3:0]                   sram_wmask0,
-    output  logic   [31:0]                  sram_din0,
-    input   logic   [31:0]                  sram_dout0,
+    // SRAM0 PORT-0
+    output  logic                           sram0_clk0,
+    output  logic                           sram0_csb0,
+    output  logic                           sram0_web0,
+    output  logic   [8:0]                   sram0_addr0,
+    output  logic   [3:0]                   sram0_wmask0,
+    output  logic   [31:0]                  sram0_din0,
+    input   logic   [31:0]                  sram0_dout0,
 
-    // SRAM PORT-1
-    output  logic                           sram_csb1,
-    output  logic  [8:0]                    sram_addr1,
-    input   logic  [31:0]                   sram_dout1,
+    // SRAM-0 PORT-1
+    output  logic                           sram0_clk1,
+    output  logic                           sram0_csb1,
+    output  logic  [8:0]                    sram0_addr1,
+    input   logic  [31:0]                   sram0_dout1,
+
+    // SRAM1 PORT-0
+    output  logic                           sram1_clk0,
+    output  logic                           sram1_csb0,
+    output  logic                           sram1_web0,
+    output  logic   [8:0]                   sram1_addr0,
+    output  logic   [3:0]                   sram1_wmask0,
+    output  logic   [31:0]                  sram1_din0,
+    input   logic   [31:0]                  sram1_dout0,
+
+    // SRAM-1 PORT-1
+    output  logic                           sram1_clk1,
+    output  logic                           sram1_csb1,
+    output  logic  [8:0]                    sram1_addr1,
+    input   logic  [31:0]                   sram1_dout1,
+
 `endif
 
     // Core instruction interface
@@ -105,18 +123,38 @@ assign dmem_req_ack = 1'b1;
 // Memory data composing
 //-------------------------------------------------------------------------------
 `ifndef SCR1_TCM_MEM
-// connect the TCM memory to SRAM
-assign sram_csb1 =!imem_req;
-assign sram_addr1 = imem_addr[10:2];
-assign imem_rdata  = sram_dout1;
+// connect the TCM memory to SRAM-0
+assign sram0_clk1 = clk;
+assign sram0_csb1 =!(imem_req & imem_addr[11] == 1'b0);
+assign sram0_addr1 = imem_addr[10:2];
 
-// SRAM Port 0 Control Generation
-assign sram_csb0   = !(dmem_req & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
-assign sram_web0   = !(dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR));
-assign sram_addr0  = dmem_addr[10:2];
-assign sram_wmask0 =  dmem_byteen;
-assign sram_din0   =  dmem_writedata;
-assign dmem_rdata_local = sram_dout0;
+// connect the TCM memory to SRAM-1
+assign sram1_clk1 = clk;
+assign sram1_csb1 =!(imem_req & imem_addr[11] == 1'b1);
+assign sram1_addr1 = imem_addr[10:2];
+
+// IMEM Read Data Selection Based on Address bit[11]
+assign imem_rdata  = (imem_addr[11] == 1'b0) ?  sram0_dout1: sram1_dout1;
+
+// SRAM-0 Port 0 Control Generation
+assign sram0_clk0 = clk;
+assign sram0_csb0   = !(dmem_req & (imem_addr[11] == 1'b0) & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
+assign sram0_web0   = !(dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR));
+assign sram0_addr0  = dmem_addr[10:2];
+assign sram0_wmask0 =  dmem_byteen;
+assign sram0_din0   =  dmem_writedata;
+
+// SRAM-1 Port 0 Control Generation
+assign sram1_clk0 = clk;
+assign sram1_csb0   = !(dmem_req & (imem_addr[11] == 1'b1) & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
+assign sram1_web0   = !(dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR));
+assign sram1_addr0  = dmem_addr[10:2];
+assign sram1_wmask0 =  dmem_byteen;
+assign sram1_din0   =  dmem_writedata;
+
+
+// DMEM Read Data Selection Based on Address bit[11]
+assign dmem_rdata_local = (dmem_addr[11] == 1'b0) ? sram0_dout0: sram1_dout0;
 
 `endif
 

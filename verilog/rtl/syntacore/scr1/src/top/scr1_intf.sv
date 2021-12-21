@@ -73,87 +73,104 @@
 
 module scr1_intf (
     // Control
-    input   logic                                   pwrup_rst_n,            // Power-Up Reset
-    input   logic                                   rst_n,                  // Regular Reset signal
-    input   logic                                   cpu_rst_n,              // CPU Reset (Core Reset)
-    input   logic                                   core_clk,               // Core clock
-    input   logic                                   rtc_clk,                // Real-time clock
-    output  logic [63:0]                            riscv_debug,
+    input   logic                           pwrup_rst_n,            // Power-Up Reset
+    input   logic                           rst_n,                  // Regular Reset signal
+    input   logic                           cpu_rst_n,              // CPU Reset (Core Reset)
+    input   logic                           core_clk,               // Core clock
+    input   logic                           rtc_clk,                // Real-time clock
+    output  logic [63:0]                    riscv_debug,
 
 `ifdef SCR1_DBG_EN
     // -- JTAG I/F
-    input   logic                                   trst_n,
+    input   logic                           trst_n,
 `endif // SCR1_DBG_EN
 
 `ifndef SCR1_TCM_MEM
-    // SRAM PORT-0
-    output  logic                           sram_csb0,
-    output  logic                           sram_web0,
-    output  logic   [8:0]                   sram_addr0,
-    output  logic   [3:0]                   sram_wmask0,
-    output  logic   [31:0]                  sram_din0,
-    input   logic   [31:0]                  sram_dout0,
+    // SRAM-0 PORT-0
+    output  logic                           sram0_clk0,
+    output  logic                           sram0_csb0,
+    output  logic                           sram0_web0,
+    output  logic   [8:0]                   sram0_addr0,
+    output  logic   [3:0]                   sram0_wmask0,
+    output  logic   [31:0]                  sram0_din0,
+    input   logic   [31:0]                  sram0_dout0,
 
-    // SRAM PORT-1
-    output  logic                           sram_csb1,
-    output  logic  [8:0]                    sram_addr1,
-    input   logic  [31:0]                   sram_dout1,
+    // SRAM-0 PORT-1
+    output  logic                           sram0_clk1,
+    output  logic                           sram0_csb1,
+    output  logic  [8:0]                    sram0_addr1,
+    input   logic  [31:0]                   sram0_dout1,
+
+    // SRAM-1 PORT-0
+    output  logic                           sram1_clk0,
+    output  logic                           sram1_csb0,
+    output  logic                           sram1_web0,
+    output  logic   [8:0]                   sram1_addr0,
+    output  logic   [3:0]                   sram1_wmask0,
+    output  logic   [31:0]                  sram1_din0,
+    input   logic   [31:0]                  sram1_dout0,
+
+    // SRAM-1 PORT-1
+    output  logic                           sram1_clk1,
+    output  logic                           sram1_csb1,
+    output  logic  [8:0]                    sram1_addr1,
+    input   logic  [31:0]                   sram1_dout1,
 `endif
 
-    input   logic                                   wb_rst_n,       // Wish bone reset
-    input   logic                                   wb_clk,         // wish bone clock
+    input   logic                           wb_rst_n,       // Wish bone reset
+    input   logic                           wb_clk,         // wish bone clock
     // Instruction Memory Interface
-    output  logic                                   wbd_imem_stb_o, // strobe/request
-    output  logic   [SCR1_WB_WIDTH-1:0]             wbd_imem_adr_o, // address
-    output  logic                                   wbd_imem_we_o,  // write
-    output  logic   [SCR1_WB_WIDTH-1:0]             wbd_imem_dat_o, // data output
-    output  logic   [3:0]                           wbd_imem_sel_o, // byte enable
-    input   logic   [SCR1_WB_WIDTH-1:0]             wbd_imem_dat_i, // data input
-    input   logic                                   wbd_imem_ack_i, // acknowlegement
-    input   logic                                   wbd_imem_err_i,  // error
+    output  logic                           wbd_imem_stb_o, // strobe/request
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_adr_o, // address
+    output  logic                           wbd_imem_we_o,  // write
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_dat_o, // data output
+    output  logic   [3:0]                   wbd_imem_sel_o, // byte enable
+    input   logic   [SCR1_WB_WIDTH-1:0]     wbd_imem_dat_i, // data input
+    input   logic                           wbd_imem_ack_i, // acknowlegement
+    input   logic                           wbd_imem_err_i,  // error
 
     // Data Memory Interface
-    output  logic                                   wbd_dmem_stb_o, // strobe/request
-    output  logic   [SCR1_WB_WIDTH-1:0]             wbd_dmem_adr_o, // address
-    output  logic                                   wbd_dmem_we_o,  // write
-    output  logic   [SCR1_WB_WIDTH-1:0]             wbd_dmem_dat_o, // data output
-    output  logic   [3:0]                           wbd_dmem_sel_o, // byte enable
-    input   logic   [SCR1_WB_WIDTH-1:0]             wbd_dmem_dat_i, // data input
-    input   logic                                   wbd_dmem_ack_i, // acknowlegement
-    input   logic                                   wbd_dmem_err_i, // error
+    output  logic                           wbd_dmem_stb_o, // strobe/request
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_dmem_adr_o, // address
+    output  logic                           wbd_dmem_we_o,  // write
+    output  logic   [SCR1_WB_WIDTH-1:0]     wbd_dmem_dat_o, // data output
+    output  logic   [3:0]                   wbd_dmem_sel_o, // byte enable
+    input   logic   [SCR1_WB_WIDTH-1:0]     wbd_dmem_dat_i, // data input
+    input   logic                           wbd_dmem_ack_i, // acknowlegement
+    input   logic                           wbd_dmem_err_i, // error
 
     // Common
-    output   logic                                  pwrup_rst_n_sync,                // Power-Up reset
-    output   logic                                  rst_n_sync,                      // Regular reset
-    output   logic                                  cpu_rst_n_sync,                  // CPU reset
-    output   logic                                  test_mode,                  // DFT Test Mode
-    output   logic                                  test_rst_n,                 // DFT Test Reset
-    input    logic                                  core_rst_n_local,               // Core reset
-    input    logic   [48:0]                         core_debug  ,
+    output   logic                          pwrup_rst_n_sync,                // Power-Up reset
+    output   logic                          rst_n_sync,                      // Regular reset
+    output   logic                          cpu_rst_n_sync,                  // CPU reset
+    output   logic                          test_mode,                  // DFT Test Mode
+    output   logic                          test_rst_n,                 // DFT Test Reset
+    input    logic                          core_rst_n_local,               // Core reset
+    input    logic   [48:0]                 core_debug  ,
 `ifdef SCR1_DBG_EN
     // Debug Interface
-    output   logic                                  tapc_trst_n,                // Test Reset (TRSTn)
+    output   logic                          tapc_trst_n,                // Test Reset (TRSTn)
 `endif
     // Memory-mapped external timer
-    output   logic [63:0]                           timer_val,          // Machine timer value
-    output   logic                                  timer_irq,
+    output   logic [63:0]                   timer_val,          // Machine timer value
+    output   logic                          timer_irq,
     // Instruction Memory Interface
-    output   logic                                  core_imem_req_ack,        // IMEM request acknowledge
-    input    logic                                  core_imem_req,            // IMEM request
-    input    logic                                  core_imem_cmd,            // IMEM command
-    input    logic [`SCR1_IMEM_AWIDTH-1:0]          core_imem_addr,           // IMEM address
-    output   logic [`SCR1_IMEM_DWIDTH-1:0]          core_imem_rdata,          // IMEM read data
-    output   logic [1:0]                            core_imem_resp,           // IMEM response
+    output   logic                          core_imem_req_ack,        // IMEM request acknowledge
+    input    logic                          core_imem_req,            // IMEM request
+    input    logic                          core_imem_cmd,            // IMEM command
+    input    logic [`SCR1_IMEM_AWIDTH-1:0]  core_imem_addr,           // IMEM address
+    output   logic [`SCR1_IMEM_DWIDTH-1:0]  core_imem_rdata,          // IMEM read data
+    output   logic [1:0]                    core_imem_resp,           // IMEM response
 
     // Data Memory Interface
-    output   logic                                  core_dmem_req_ack,        // DMEM request acknowledge
-    input    logic                                  core_dmem_req,            // DMEM request
-    input    logic                                  core_dmem_cmd,            // DMEM command
-    input    logic[1:0]                             core_dmem_width,          // DMEM data width
-    input    logic [`SCR1_DMEM_AWIDTH-1:0]          core_dmem_addr,           // DMEM address
-    input    logic [`SCR1_DMEM_DWIDTH-1:0]          core_dmem_wdata,          // DMEM write data
-    output   logic [`SCR1_DMEM_DWIDTH-1:0]          core_dmem_rdata,          // DMEM read data
-    output   logic [1:0]                            core_dmem_resp            // DMEM response
+    output   logic                          core_dmem_req_ack,        // DMEM request acknowledge
+    input    logic                          core_dmem_req,            // DMEM request
+    input    logic                          core_dmem_cmd,            // DMEM command
+    input    logic[1:0]                     core_dmem_width,          // DMEM data width
+    input    logic [`SCR1_DMEM_AWIDTH-1:0]  core_dmem_addr,           // DMEM address
+    input    logic [`SCR1_DMEM_DWIDTH-1:0]  core_dmem_wdata,          // DMEM write data
+    output   logic [`SCR1_DMEM_DWIDTH-1:0]  core_dmem_rdata,          // DMEM read data
+    output   logic [1:0]                    core_dmem_resp            // DMEM response
 
 );
 //-------------------------------------------------------------------------------
@@ -285,18 +302,36 @@ scr1_tcm #(
     .rst_n          (core_rst_n_local),
 
 `ifndef SCR1_TCM_MEM
-    // SRAM PORT-0
-    .sram_csb0      (sram_csb0),
-    .sram_web0      (sram_web0),
-    .sram_addr0     (sram_addr0),
-    .sram_wmask0    (sram_wmask0),
-    .sram_din0      (sram_din0),
-    .sram_dout0     (sram_dout0),
+    // SRAM-0 PORT-0
+    .sram0_clk0      (sram0_clk0),
+    .sram0_csb0      (sram0_csb0),
+    .sram0_web0      (sram0_web0),
+    .sram0_addr0     (sram0_addr0),
+    .sram0_wmask0    (sram0_wmask0),
+    .sram0_din0      (sram0_din0),
+    .sram0_dout0     (sram0_dout0),
     
-    // SRAM PORT-0
-    .sram_csb1      (sram_csb1),
-    .sram_addr1     (sram_addr1),
-    .sram_dout1     (sram_dout1),
+    // SRAM-0 PORT-1
+    .sram0_clk1      (sram0_clk1),
+    .sram0_csb1      (sram0_csb1),
+    .sram0_addr1     (sram0_addr1),
+    .sram0_dout1     (sram0_dout1),
+
+    // SRAM-1 PORT-0
+    .sram1_clk0      (sram1_clk0),
+    .sram1_csb0      (sram1_csb0),
+    .sram1_web0      (sram1_web0),
+    .sram1_addr0     (sram1_addr0),
+    .sram1_wmask0    (sram1_wmask0),
+    .sram1_din0      (sram1_din0),
+    .sram1_dout0     (sram1_dout0),
+    
+    // SRAM-1 PORT-1
+    .sram1_clk1      (sram1_clk1),
+    .sram1_csb1      (sram1_csb1),
+    .sram1_addr1     (sram1_addr1),
+    .sram1_dout1     (sram1_dout1),
+
 `endif
 
 

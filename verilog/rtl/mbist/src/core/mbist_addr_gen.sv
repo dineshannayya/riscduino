@@ -55,8 +55,8 @@ module mbist_addr_gen
    input   logic                    rst_n,       //  asynchronous reset 
    input   logic                    run,         //  stop or start state machine 
    input   logic                    updown,      //  count up or down 
-   input   logic                    scan_shift,  //  shift scan input
-   input   logic                    scan_load,   //  load scan input
+   input   logic                    bist_shift,  //  shift scan input
+   input   logic                    bist_load,   //  load scan input
    input   logic                    sdi          //  scan data input 
 
 );
@@ -78,7 +78,7 @@ assign last_addr = (((updown == 1'b1)&&(bist_addr == end_addr))||((updown == 1'b
 
 always @(posedge clk or negedge rst_n) begin
   if(!rst_n)          bist_addr <= BIST_ADDR_START ;
-  else if(scan_load)  bist_addr <= start_addr;
+  else if(bist_load)  bist_addr <= start_addr;
   else                bist_addr <= next_addr;
 end
 
@@ -100,15 +100,14 @@ end
 
 always @(posedge clk or negedge rst_n) begin
   if(!rst_n)           start_addr <= BIST_ADDR_START ;
-  else if(scan_shift)  start_addr <= {sdi, start_addr[BIST_ADDR_WD-1:1]};
+  else if(bist_shift)  start_addr <= {sdi, start_addr[BIST_ADDR_WD-1:1]};
 end
 
 /* Start register */
 always @(posedge clk or negedge rst_n) begin
   if(!rst_n)           end_addr <= BIST_ADDR_END ;
-  else if(scan_shift)  end_addr <= {start_addr[0], end_addr[BIST_ADDR_WD-1:1]};
+  else if(bist_shift)  end_addr <= {start_addr[0], end_addr[BIST_ADDR_WD-1:1]};
 end
-
 
 
 assign sdo   = end_addr[0];

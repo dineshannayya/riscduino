@@ -65,7 +65,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $proj_dir/../../verilog/gl/qspim.v \
         $proj_dir/../../verilog/gl/wb_interconnect.v \
         $proj_dir/../../verilog/gl/pinmux.v     \
-        $proj_dir/../../verilog/gl/mbist1.v     \
+        $proj_dir/../../verilog/gl/mbist.v     \
         $proj_dir/../../verilog/gl/uart_i2cm_usb_spi.v     \
 	$proj_dir/../../verilog/gl/wb_host.v \
 	$proj_dir/../../verilog/gl/syntacore.v \
@@ -78,7 +78,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/wb_interconnect.lef \
 	$lef_root/uart_i2cm_usb_spi.lef \
 	$lef_root/wb_host.lef \
-	$lef_root/mbist1.lef \
+	$lef_root/mbist.lef \
 	$lef_root/syntacore.lef \
 	$lef_root/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
 	"
@@ -89,7 +89,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/wb_interconnect.gds \
 	$gds_root/uart_i2cm_usb_spi.gds \
 	$gds_root/wb_host.gds \
-	$gds_root/mbist1.gds \
+	$gds_root/mbist.gds \
 	$gds_root/syntacore.gds \
 	$gds_root/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	"
@@ -114,44 +114,39 @@ set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 set ::env(VDD_PIN) "vccd1 vccd2 vdda1 vdda2"
 set ::env(GND_PIN) "vssd1 vssd2 vssa1 vssa2"
 
-set ::env(GLB_RT_OBS) " 
-                        li1  200 165  883.1 581.54,\
-                        met1 200 165  883.1 581.54,\
-	                met2 200 165  883.1 581.54,\
-	                met3 200 165  883.1 581.54,\
-	                met4 200 195  883.1 581.54,\
-                        li1  200 1325  883.1 1741.54,\
-                        met1 200 1325  883.1 1741.54,\
-	                met2 200 1325  883.1 1741.54,\
-	                met3 200 1325  883.1 1741.54,\
-                        li1  200 1850  883.1 2266.54,\
-                        met1 200 1850  883.1 2266.54,\
-	                met2 200 1850  883.1 2266.54,\
-	                met3 200 1850  883.1 2266.54,\
-                        li1  200 2400  883.1 2816.54,\
-                        met1 200 2400  883.1 2816.54,\
-	                met2 200 2400  883.1 2816.54,\
-	                met3 200 2400  883.1 2816.54,\
-                        li1  200 2950  883.1 3366.54,\
-                        met1 200 2950  883.1 3366.54,\
-	                met2 200 2950  883.1 3366.54,\
-	                met3 200 2950  883.1 3366.54,\
-	                met5 0 0 2920 3520"
+set ::env(GLB_RT_OBS) " li1   150 1300  833.1  1716.54,\
+	                met1  150 1300  833.1  1716.54,\
+	                met3  150 1300  833.1  1716.54,\
+                        li1   950 1300 1633.1  1716.54,\
+                        met1  950 1300 1633.1  1716.54,\
+                        met2  950 1300 1633.1  1716.54,\
+                        met3  950 1300 1633.1  1716.54,\
+                        li1   150 1900  833.1  2316.54,\
+                        met1  150 1900  833.1  2316.54,\
+                        met3  150 1900  833.1  2316.54,\
+                        li1  950  1900 1633.1  2316.54,\
+                        met1 950  1900 1633.1  2316.54,\
+                        met3 950  1900 1633.1  2316.54,\
+                        li1  150  2900  833.1  3316.54,\
+                        met1 150  2900  833.1  3316.54,\
+                        met3 150  2900  833.1  3316.54,\
+                        li1  950  2900 1633.1  3316.54,\
+                        met1 950  2900 1633.1  3316.54,\
+                        met3 950  2900 1633.1  3316.54,\
+	                met5  0 0 2920 3520"
 
 set ::env(FP_PDN_MACRO_HOOKS) "\
 	u_intercon vccd1 vssd1 \
 	u_pinmux vccd1 vssd1 \
 	u_qspi_master vccd1 vssd1 \
 	u_riscv_top vccd1 vssd1 \
-	u_sram_2kb vccd1 vssd1 \
-	u_mbist1 vccd1 vssd1 \
-	u_mbist2 vccd1 vssd1 \
-	u_mbist3 vccd1 vssd1 \
-	u_mbist4 vccd1 vssd1 \
+	u_tsram0_2kb vccd1 vssd1 \
+	u_tsram1_2kb vccd1 vssd1 \
+	u_mbist vccd1 vssd1 \
+	u_sram0_2kb vccd1 vssd1 \
 	u_sram1_2kb vccd1 vssd1 \
 	u_sram2_2kb vccd1 vssd1 \
 	u_sram3_2kb vccd1 vssd1 \
-	u_sram4_2kb vccd1 vssd1 \
 	u_uart_i2c_usb_spi vccd1 vssd1 \
 	u_wb_host vccd1 vssd1 \
 	"

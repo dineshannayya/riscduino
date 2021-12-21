@@ -61,12 +61,15 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 module mbist_mem_wrapper #(
+	parameter BIST_NO_SRAM=4,
 	parameter BIST_ADDR_WD=10,
 	parameter BIST_DATA_WD=32) (
 	input   logic                          rst_n           ,
           // WB I/F
+	input   logic [(BIST_NO_SRAM+1)/2-1:0] sram_id         ,
         input   logic                          wb_clk_i        ,  // System clock
         input   logic                          wb_cyc_i        ,  // strobe/request
+        input   logic [(BIST_NO_SRAM+1)/2-1:0] wb_cs_i         ,  // Chip Select
         input   logic                          wb_stb_i        ,  // strobe/request
         input   logic [BIST_ADDR_WD-1:0]       wb_adr_i        ,  // address
         input   logic                          wb_we_i         ,  // write
@@ -75,35 +78,26 @@ module mbist_mem_wrapper #(
         output  logic [BIST_DATA_WD-1:0]       wb_dat_o        ,  // data input
         output  logic                          wb_ack_o        ,  // acknowlegement
         output  logic                          wb_err_o        ,  // error
-      // MEM A PORT 
-        output   logic                         func_clk_a      ,
-        output   logic                         func_cen_a      ,
-        output   logic  [BIST_ADDR_WD-1:0]     func_addr_a     ,
-        input    logic  [BIST_DATA_WD-1:0]     func_dout_a     ,
-
-       // Functional B Port
-        output   logic                         func_clk_b     ,
-        output   logic                         func_cen_b     ,
-        output   logic                         func_web_b     ,
-        output   logic [BIST_DATA_WD/8-1:0]    func_mask_b    ,
-        output   logic  [BIST_ADDR_WD-1:0]     func_addr_b    ,
-        output   logic  [BIST_DATA_WD-1:0]     func_din_b     
+      // MEM PORT 
+        output   logic                         func_clk        ,
+        output   logic                         func_cen        ,
+        output   logic                         func_web        ,
+        output   logic [BIST_DATA_WD/8-1:0]    func_mask       ,
+        output   logic  [BIST_ADDR_WD-1:0]     func_addr       ,
+        input    logic  [BIST_DATA_WD-1:0]     func_dout       ,
+        output   logic  [BIST_DATA_WD-1:0]     func_din        
 
 );
 
 
 // Memory Write PORT
-assign func_clk_b    = wb_clk_i;
-assign func_cen_b    = !wb_stb_i;
-assign func_web_b    = !wb_we_i;
-assign func_mask_b   = wb_sel_i;
-assign func_addr_b   = wb_adr_i;
-assign func_din_b    = wb_dat_i;
-
-assign func_clk_a    = wb_clk_i;
-assign func_cen_a    = (wb_stb_i == 1'b1 && wb_we_i == 1'b0 && wb_ack_o ==0) ? 1'b0 : 1'b1;
-assign func_addr_a   = wb_adr_i;
-assign wb_dat_o      = func_dout_a;
+assign func_clk    = wb_clk_i;
+assign func_cen    = (wb_cs_i == sram_id) ? !wb_stb_i : 1'b1;
+assign func_web    = (wb_cs_i == sram_id) ? !wb_we_i  : 1'b1;
+assign func_mask   = wb_sel_i;
+assign func_addr   = wb_adr_i;
+assign func_din    = wb_dat_i;
+assign wb_dat_o      = func_dout;
 
 assign wb_err_o      = 1'b0;
 
@@ -112,7 +106,7 @@ always_ff @(negedge rst_n or posedge wb_clk_i) begin
     if ( rst_n == 1'b0 ) begin
       wb_ack_o<= 'h0;
    end else begin
-      wb_ack_o <= (wb_stb_i == 1'b1) & (wb_ack_o == 0);
+      wb_ack_o <= (wb_cs_i == sram_id) & (wb_stb_i == 1'b1) & (wb_ack_o == 0);
    end
 end
 

@@ -64,21 +64,21 @@ module pinmux_reg (
                        output logic [31:0]      gpio_prev_indata,       // prv data from GPIO I/P pins
 
 		// BIST I/F
-	               output logic [3:0]      bist_en,
-	               output logic [3:0]      bist_run,
-	               output logic [3:0]      bist_load,
+	               output logic             bist_en,
+	               output logic             bist_run,
+	               output logic             bist_load,
 
-	               output logic [3:0]      bist_sdi,
-	               output logic [3:0]      bist_shift,
-	               input  logic [3:0]      bist_sdo,
+	               output logic             bist_sdi,
+	               output logic             bist_shift,
+	               input  logic             bist_sdo,
 
-	               input logic [3:0]       bist_done,
-	               input logic [3:0]       bist_error,
-	               input logic [3:0]       bist_correct,
-	               input logic [3:0]       bist_error_cnt0,
-	               input logic [3:0]       bist_error_cnt1,
-	               input logic [3:0]       bist_error_cnt2,
-	               input logic [3:0]       bist_error_cnt3
+	               input logic              bist_done,
+	               input logic [3:0]        bist_error,
+	               input logic [3:0]        bist_correct,
+	               input logic [3:0]        bist_error_cnt0,
+	               input logic [3:0]        bist_error_cnt1,
+	               input logic [3:0]        bist_error_cnt2,
+	               input logic [3:0]        bist_error_cnt3
 
    ); 
 
@@ -668,7 +668,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h1312_2021) u_reg_23	(
+gen_32b_reg  #(32'h2012_2021) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -681,9 +681,9 @@ gen_32b_reg  #(32'h1312_2021) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 2.0 = 0002000
+// Software Reg-3: Poject Revison 2.1 = 0002200
 // ----------------------------------------
-gen_32b_reg  #(32'h0002_0000) u_reg_24	(
+gen_32b_reg  #(32'h0002_2000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -759,23 +759,11 @@ gen_32b_reg  #(32'h0) u_reg_28	(
 	      );
 
 
-wire [3:0] bist_serial_sel  = cfg_bist_ctrl_1[31:28];
 
-assign bist_en[0]           = cfg_bist_ctrl_1[0];
-assign bist_run[0]          = cfg_bist_ctrl_1[1];
-assign bist_load[0]         = cfg_bist_ctrl_1[2];
+assign bist_en             = cfg_bist_ctrl_1[0];
+assign bist_run            = cfg_bist_ctrl_1[1];
+assign bist_load           = cfg_bist_ctrl_1[2];
 
-assign bist_en[1]           = cfg_bist_ctrl_1[4];
-assign bist_run[1]          = cfg_bist_ctrl_1[5];
-assign bist_load[1]         = cfg_bist_ctrl_1[6];
-
-assign bist_en[2]           = cfg_bist_ctrl_1[8];
-assign bist_run[2]          = cfg_bist_ctrl_1[9];
-assign bist_load[2]         = cfg_bist_ctrl_1[10];
-
-assign bist_en[3]           = cfg_bist_ctrl_1[12];
-assign bist_run[3]          = cfg_bist_ctrl_1[13];
-assign bist_load[3]         = cfg_bist_ctrl_1[14];
 
 //-----------------------------------------------------------------------
 //   reg-29
@@ -783,10 +771,10 @@ assign bist_load[3]         = cfg_bist_ctrl_1[14];
 logic [31:0] cfg_bist_status_1;
 
 assign cfg_bist_status_1 = {  16'h0,
-	                      bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done[3],
-	                      bist_error_cnt2, 1'b0, bist_correct[2], bist_error[2], bist_done[2],
-	                      bist_error_cnt1, 1'b0, bist_correct[1], bist_error[1], bist_done[1],
-	                      bist_error_cnt0, 1'b0, bist_correct[0], bist_error[0], bist_done[0]
+	                      bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done,
+	                      bist_error_cnt2, 1'b0, bist_correct[2], bist_error[2], bist_done,
+	                      bist_error_cnt1, 1'b0, bist_correct[1], bist_error[1], bist_done,
+	                      bist_error_cnt0, 1'b0, bist_correct[0], bist_error[0], bist_done
 			   };
 
 //-----------------------------------------------------------------------
@@ -798,21 +786,9 @@ logic        bist_shift_int;
 logic        bist_sdo_int;
 logic [31:0] serail_dout;
 
-assign bist_sdo_int = (bist_serial_sel == 4'b0000) ? bist_sdo[0] :
-                      (bist_serial_sel == 4'b0001) ? bist_sdo[1] :
-                      (bist_serial_sel == 4'b0010) ? bist_sdo[2] :
-                      (bist_serial_sel == 4'b0011) ? bist_sdo[3] :
-		      1'b0;
-
-assign  bist_shift[0] = (bist_serial_sel == 4'b0000) ? bist_shift_int : 1'b0;
-assign  bist_shift[1] = (bist_serial_sel == 4'b0001) ? bist_shift_int : 1'b0;
-assign  bist_shift[2] = (bist_serial_sel == 4'b0010) ? bist_shift_int : 1'b0;
-assign  bist_shift[3] = (bist_serial_sel == 4'b0011) ? bist_shift_int : 1'b0;
-
-assign  bist_sdi[0]   = (bist_serial_sel == 4'b0000) ? bist_sdi_int : 1'b0;
-assign  bist_sdi[1]   = (bist_serial_sel == 4'b0001) ? bist_sdi_int : 1'b0;
-assign  bist_sdi[2]   = (bist_serial_sel == 4'b0010) ? bist_sdi_int : 1'b0;
-assign  bist_sdi[3]   = (bist_serial_sel == 4'b0011) ? bist_sdi_int : 1'b0;
+assign bist_sdo_int = bist_sdo;
+assign  bist_shift = bist_shift_int;
+assign  bist_sdi   = bist_sdi_int ;
 
 ser_inf_32b u_ser_intf
        (

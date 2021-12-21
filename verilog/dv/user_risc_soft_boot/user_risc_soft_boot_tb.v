@@ -155,13 +155,13 @@ module user_risc_soft_boot_tb;
 		   tem_mem_32b[i] = {tem_mem[(i*4)+3],tem_mem[(i*4)+2],tem_mem[(i*4)+1],tem_mem[(i*4)]};
 
 	        $writememh("sram_bank0.hex",tem_mem_32b,0,511);
-	        $readmemh("sram_bank0.hex",u_top.u_sram1_2kb.mem,0,511);
+	        $readmemh("sram_bank0.hex",u_top.u_sram0_2kb.mem,0,511);
 
 		for(i =512; i < 1023; i = i+1)
 		   tem_mem_32b[i-512] = {tem_mem[(i*4)+3],tem_mem[(i*4)+2],tem_mem[(i*4)+1],tem_mem[(i*4)]};
 
 	        $writememh("sram_bank1.hex",tem_mem_32b,0,511);
-	        $readmemh("sram_bank1.hex",u_top.u_sram2_2kb.mem,0,511);
+	        $readmemh("sram_bank1.hex",u_top.u_sram1_2kb.mem,0,511);
 
 		// Enable the SRAM Remap to boot region
 		wb_user_core_write('h3080_000C,{4'b1111,28'h0});
@@ -189,23 +189,12 @@ module user_risc_soft_boot_tb;
                 // 0x3000002C = 0x66778899; 
 
                 test_fail = 0;
-		wb_user_core_read(32'h30020058,read_data);
-		if(read_data != 32'h11223344) test_fail = 1;
-
-		wb_user_core_read(32'h3002005C,read_data);
-		if(read_data != 32'h22334455) test_fail = 1;
-
-		wb_user_core_read(32'h30020060,read_data);
-	        if(read_data != 32'h33445566) test_fail = 1;
-
-		wb_user_core_read(32'h30020064,read_data);
-                if(read_data!= 32'h44556677) test_fail = 1;
-
-		wb_user_core_read(32'h30020068,read_data);
-                if(read_data!= 32'h55667788) test_fail = 1;
-
-		wb_user_core_read(32'h3002006C,read_data) ;
-	        if(read_data != 32'h66778899) test_fail = 1;
+		wb_user_core_read_check(32'h30020058,read_data,32'h11223344);
+		wb_user_core_read_check(32'h3002005C,read_data,32'h22334455);
+		wb_user_core_read_check(32'h30020060,read_data,32'h33445566);
+		wb_user_core_read_check(32'h30020064,read_data,32'h44556677);
+		wb_user_core_read_check(32'h30020068,read_data,32'h55667788);
+		wb_user_core_read_check(32'h3002006C,read_data,32'h66778899) ;
 
 	   
 	    	$display("###################################################");
@@ -328,6 +317,40 @@ begin
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
   $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  repeat (2) @(posedge clock);
+end
+endtask
+
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
   repeat (2) @(posedge clock);
 end
 endtask

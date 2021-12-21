@@ -141,18 +141,35 @@ module scr1_top_wb (
 `endif // SCR1_DBG_EN
 
 `ifndef SCR1_TCM_MEM
-    // SRAM PORT-0
-    output  logic                           sram_csb0,
-    output  logic                           sram_web0,
-    output  logic   [8:0]                   sram_addr0,
-    output  logic   [3:0]                   sram_wmask0,
-    output  logic   [31:0]                  sram_din0,
-    input   logic   [31:0]                  sram_dout0,
+    // SRAM-0 PORT-0
+    output  logic                           sram0_clk0,
+    output  logic                           sram0_csb0,
+    output  logic                           sram0_web0,
+    output  logic   [8:0]                   sram0_addr0,
+    output  logic   [3:0]                   sram0_wmask0,
+    output  logic   [31:0]                  sram0_din0,
+    input   logic   [31:0]                  sram0_dout0,
 
-    // SRAM PORT-1
-    output  logic                           sram_csb1,
-    output  logic  [8:0]                    sram_addr1,
-    input   logic  [31:0]                   sram_dout1,
+    // SRAM-0 PORT-1
+    output  logic                           sram0_clk1,
+    output  logic                           sram0_csb1,
+    output  logic  [8:0]                    sram0_addr1,
+    input   logic  [31:0]                   sram0_dout1,
+
+    // SRAM-1 PORT-0
+    output  logic                           sram1_clk0,
+    output  logic                           sram1_csb0,
+    output  logic                           sram1_web0,
+    output  logic   [8:0]                   sram1_addr0,
+    output  logic   [3:0]                   sram1_wmask0,
+    output  logic   [31:0]                  sram1_din0,
+    input   logic   [31:0]                  sram1_dout0,
+
+    // SRAM-1 PORT-1
+    output  logic                           sram1_clk1,
+    output  logic                           sram1_csb1,
+    output  logic  [8:0]                    sram1_addr1,
+    input   logic  [31:0]                   sram1_dout1,
 `endif
 
 
@@ -297,18 +314,35 @@ scr1_intf u_intf (
 `endif // SCR1_DBG_EN
 
 `ifndef SCR1_TCM_MEM
-    // SRAM PORT-0
-    .sram_csb0      (sram_csb0),
-    .sram_web0      (sram_web0),
-    .sram_addr0     (sram_addr0),
-    .sram_wmask0    (sram_wmask0),
-    .sram_din0      (sram_din0),
-    .sram_dout0     (sram_dout0),
+    // SRAM-0 PORT-0
+    .sram0_clk0      (sram0_clk0),
+    .sram0_csb0      (sram0_csb0),
+    .sram0_web0      (sram0_web0),
+    .sram0_addr0     (sram0_addr0),
+    .sram0_wmask0    (sram0_wmask0),
+    .sram0_din0      (sram0_din0),
+    .sram0_dout0     (sram0_dout0),
     
-    // SRAM PORT-0
-    .sram_csb1      (sram_csb1),
-    .sram_addr1     (sram_addr1),
-    .sram_dout1     (sram_dout1),
+    // SRAM-0 PORT-1
+    .sram0_clk1      (sram0_clk1),
+    .sram0_csb1      (sram0_csb1),
+    .sram0_addr1     (sram0_addr1),
+    .sram0_dout1     (sram0_dout1),
+    
+    // SRAM-1 PORT-0
+    .sram1_clk0      (sram1_clk0),
+    .sram1_csb0      (sram1_csb0),
+    .sram1_web0      (sram1_web0),
+    .sram1_addr0     (sram1_addr0),
+    .sram1_wmask0    (sram1_wmask0),
+    .sram1_din0      (sram1_din0),
+    .sram1_dout0     (sram1_dout0),
+    
+    // SRAM-1 PORT-1
+    .sram1_clk1      (sram1_clk1),
+    .sram1_csb1      (sram1_csb1),
+    .sram1_addr1     (sram1_addr1),
+    .sram1_dout1     (sram1_dout1),
 `endif
 
     .wb_rst_n                           (wb_rst_n),           // Wish bone reset

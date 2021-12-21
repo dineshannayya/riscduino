@@ -60,18 +60,14 @@ module mbist_repair_addr
     input logic                      rst_n,
     input logic                      Error,
     input logic [BIST_RAD_WD_I-1:0]  ErrorAddr,
-    input logic                      scan_shift,  //  shift scan input
+    input logic                      bist_load,
+    input logic                      bist_shift,  //  shift scan input
     input logic                      sdi          //  scan data input 
 
 
 );
 
 logic [3:0]   ErrorCnt; // Assumed Maximum Error correction is less than 16
-logic [15:0]  shift_reg;
-logic [15:0]  shift_load;
-logic [7:0]   shift_cnt;
-logic         scan_shift_d;
-logic         shift_pos_edge;
 
 logic [BIST_RAD_WD_I-1:0] RepairMem [0:BIST_ERR_LIMIT-1];
 integer i;
@@ -110,39 +106,39 @@ end
 /********************************************
 * Serial shifting the Repair address
 * *******************************************/
-
-always@(posedge clk or negedge rst_n)
-begin
-   if(!rst_n) begin
-     shift_reg   <= '0;
-     shift_cnt   <= '0;
-     scan_shift_d <= 1'b0;
-   end else begin
-      if(scan_shift && (shift_cnt[7:4] < BIST_ERR_LIMIT)) begin
-         shift_cnt <= shift_cnt+1;
-      end
-      scan_shift_d <= scan_shift;
-      shift_reg <= shift_load;
+integer j;
+logic [0:BIST_ERR_LIMIT-1] sdi_in;
+logic [0:BIST_ERR_LIMIT-1] sdo_out;
+// Daisy chain the Serial In/OUT 
+always_comb begin
+   for(j =0; j < BIST_ERR_LIMIT; j=j+1) begin
+      sdi_in[j] =(j==0) ?  sdi :  sdo_out[j-1];
    end
 end
 
-// Detect scan_shift pos edge
-assign shift_pos_edge = (scan_shift_d ==0) && (scan_shift);
+assign  sdo = sdo_out[BIST_ERR_LIMIT-1];
 
-always_comb 
-begin
-  shift_load = shift_reg;
-  // Block the data reloading every pos edge of shift
-  if(scan_shift && ((shift_cnt[7:4]+1) < BIST_ERR_LIMIT) && (shift_cnt[3:0] == 4'b1111))
-     shift_load = {RepairMem[shift_cnt[7:4]+1]};
-  else if(scan_shift)
-     shift_load = {sdi,shift_reg[15:1]};
-  else
-     shift_load = {RepairMem[shift_cnt[7:4]]};
-  
+genvar no;
+generate 
+for (no = 0; $unsigned(no) < BIST_ERR_LIMIT; no=no+1) begin : num
+
+ ser_shift
+     #(.WD(16)) u_shift(
+
+    // Master Port
+       .rst_n       (rst_n         ),
+       .clk         (clk           ), 
+       .load        (bist_load     ),
+       .shift       (bist_shift    ),
+       .load_data   (RepairMem[no] ), 
+       .sdi         (sdi_in[no]    ),  
+       .sdo         (sdo_out[no]   )  
+
+
+    );
 end
+endgenerate
 
-assign sdo   = shift_reg[0];
 endmodule
 
 
