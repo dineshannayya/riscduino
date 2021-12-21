@@ -287,7 +287,10 @@ clk_skew_adjust u_skew_wi
 // 0x1001_0080 to 0x1001_00BF  - USB
 // 0x1001_00C0 to 0x1001_00FF  - SSPIM
 // 0x1002_0000 to 0x1002_00FF  - PINMUX
-// 0x1003_0000 to 0x1003_1FFF  - MBIST
+// 0x1003_0000 to 0x1003_07FF  - SRAM-0 (2KB)
+// 0x1003_0800 to 0x1003_0FFF  - SRAM-1 (2KB)
+// 0x1003_1000 to 0x1003_17FF  - SRAM-2 (2KB)
+// 0x1003_1800 to 0x1003_1FFF  - SRAM-3 (2KB)
 // 0x3080_0000 to 0x3080_00FF  - WB HOST (This decoding happens at wb_host block)
 // ---------------------------------------------------------------------------
 //
@@ -307,7 +310,10 @@ wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[31:28] == 4'b0000   ) ? TARGET_SPI
 // 0x1001_0080 to 0x1001_00BF  - USB
 // 0x1001_00C0 to 0x1001_00FF  - SSPIM
 // 0x1002_0000 to 0x1002_00FF  - PINMUX
-// 0x1003_0000 to 0x1003_1FFF  - MBIST
+// 0x1003_0000 to 0x1003_07FF  - SRAM-0 (2KB)
+// 0x1003_0800 to 0x1003_0FFF  - SRAM-1 (2KB)
+// 0x1003_1000 to 0x1003_17FF  - SRAM-2 (2KB)
+// 0x1003_1800 to 0x1003_1FFF  - SRAM-3 (2KB)
 //-----------------------------
 // 
 wire [3:0] m1_wbd_tid_i     = (boot_remap[0] && m1_wbd_adr_i[31:11] == 21'h0) ? TARGET_MBIST:
