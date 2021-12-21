@@ -20,13 +20,16 @@
 set script_dir [file dirname [file normalize [info script]]]
 # Name
 
-set ::env(DESIGN_NAME) wb_host
+set ::env(DESIGN_NAME) mbist_top
 
 set ::env(DESIGN_IS_CORE) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "wbm_clk_i wbs_clk_i"
+#set ::env(CLOCK_PORT) "u_cts_wb_clk_b1.u_buf/X  \
+#	               u_cts_wb_clk_b2.u_buf/X  \
+#		       "
+set ::env(CLOCK_PORT) { wb_clk_i mem_no\[3\].u_mem_sel.u_mem_clk_sel.u_mux/X mem_no\[2\].u_mem_sel.u_mem_clk_sel.u_mux/X mem_no\[1\].u_mem_sel.u_mem_clk_sel.u_mux/X mem_no\[0\].u_mem_sel.u_mem_clk_sel.u_mux/X  }
 
 set ::env(SYNTH_MAX_FANOUT) 4
 
@@ -35,21 +38,42 @@ set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbu
 set ::env(CTS_SINK_CLUSTERING_SIZE) "16"
 set ::env(CLOCK_BUFFER_FANOUT) "8"
 
+
 # Sources
 # -------
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-     $script_dir/../../verilog/rtl/wb_host/src/wb_host.sv \
-     $script_dir/../../verilog/rtl/lib/async_fifo.sv      \
-     $script_dir/../../verilog/rtl/lib/async_wb.sv        \
-     $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_addr_gen.sv \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_fsm.sv     \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_op_sel.sv  \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_repair_addr.sv \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_sti_sel.sv \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_pat_sel.sv \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_mux.sv \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_data_cmp.sv \
+     $script_dir/../../verilog/rtl/mbist/src/core/mbist_mem_wrapper.sv \
+     $script_dir/../../verilog/rtl/mbist/src/top/mbist_top.sv  \
      $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
-     $script_dir/../../verilog/rtl/lib/registers.v"
+     $script_dir/../../verilog/rtl/lib/reset_sync.sv \
+     $script_dir/../../verilog/rtl/lib/ser_shift.sv \
+	     "
+
+set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/mbist/include ]
+set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
+
+
+set ::env(SYNTH_PARAMS) "BIST_ADDR_WD 9,\
+	                 BIST_DATA_WD 32,\
+		         BIST_ADDR_START 9'h000,\
+			 BIST_ADDR_END 9'h1FB,\
+			 BIST_REPAIR_ADDR_START 9'h1FC,\
+			 BIST_RAD_WD_I 9,\
+			 BIST_RAD_WD_O 9\
+			 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
-set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SDC_FILE) "$script_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
 
@@ -65,7 +89,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 450 200"
+set ::env(DIE_AREA) "0 0 1500 200"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -75,15 +99,15 @@ set ::env(RUN_CVC) 1
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.41"
+set ::env(PL_TARGET_DENSITY) "0.30"
 
 
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4
 
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VPITCH) 140
+set ::env(FP_PDN_HPITCH) 140
 set ::env(FP_PDN_VWIDTH) 5
 set ::env(FP_PDN_HWIDTH) 5
 
@@ -92,10 +116,7 @@ set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
-set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
-set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
-set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
-set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) "1"
+
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_LVS_ERROR) "0"

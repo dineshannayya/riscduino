@@ -192,7 +192,10 @@ uart_cfg u_cfg (
 
 wire line_clk_16x_in;
 
-ctech_clk_buf u_lineclk_buf  (.A(line_clk_16x_in),  .X(line_clk_16x));
+// OpenSource CTS tool does not work with buffer as source point
+// changed buf to max with select tied=0
+//ctech_clk_buf u_lineclk_buf  (.A(line_clk_16x_in),  .X(line_clk_16x));
+ctech_mux2x1 u_lineclk_buf  (.A0(line_clk_16x_in), .A1(1'b0), .S(1'b0), .X(line_clk_16x));
 
 clk_ctl #(11) u_clk_ctl (
    // Outputs

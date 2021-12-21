@@ -1,5 +1,5 @@
-iverilog -g2005-sv \
-src/top/mbist_top1.sv \
+iverilog -g2005-sv -DFUNCTIONAL -D UNIT_DELAY=#0.1 \
+src/top/mbist_top.sv \
 src/core/mbist_addr_gen.sv \
 src/core/mbist_fsm.sv \
 src/core/mbist_op_sel.sv \
@@ -12,7 +12,6 @@ src/core/mbist_mem_wrapper.sv \
 -I include/ \
 ../lib/ctech_cells.sv \
 ../lib/reset_sync.sv \
+../clk_skew_adjust/src/clk_skew_adjust.gv \
 $PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v \
-$PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v \
---timescale 1ns/100ps \
---bbox-unsup
+$PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v 

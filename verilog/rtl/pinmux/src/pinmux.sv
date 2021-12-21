@@ -79,15 +79,15 @@ module pinmux (
 	               output  logic [31:0]    pinmux_debug,	       
 
 		// BIST I/F
-	               output logic [3:0]      bist_en,
-	               output logic [3:0]      bist_run,
-	               output logic [3:0]      bist_load,
+	               output logic            bist_en,
+	               output logic            bist_run,
+	               output logic            bist_load,
 
-	               output logic [3:0]      bist_sdi,
-	               output logic [3:0]      bist_shift,
-	               input  logic [3:0]      bist_sdo,
+	               output logic            bist_sdi,
+	               output logic            bist_shift,
+	               input  logic            bist_sdo,
 
-	               input logic [3:0]       bist_done,
+	               input logic             bist_done,
 	               input logic [3:0]       bist_error,
 	               input logic [3:0]       bist_correct,
 	               input logic [3:0]       bist_error_cnt0,

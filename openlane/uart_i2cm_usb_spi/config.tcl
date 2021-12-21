@@ -27,9 +27,14 @@ set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "app_clk usb_clk u_uart_core.line_clk_16x"
+set ::env(CLOCK_PORT) "app_clk usb_clk u_uart_core.u_lineclk_buf.u_mux/X"
 
 set ::env(SYNTH_MAX_FANOUT) 4
+
+## CTS BUFFER
+set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"
+set ::env(CTS_SINK_CLUSTERING_SIZE) "16"
+set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Sources
 # -------
