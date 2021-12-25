@@ -16,10 +16,7 @@ set_clock_uncertainty -fall_from [get_clocks {clk_i}] -rise_to [get_clocks {clk_
 set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -hold  0.2500
 set_clock_uncertainty -fall_from [get_clocks {clk_i}] -fall_to [get_clocks {clk_i}]  -setup 0.2500
 
-set ::env(SYNTH_TIMING_DERATE) 0.05
-puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
-set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
-set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
+
 
 #Clock Skew adjustment
 set_case_analysis 0 [get_ports {cfg_cska_wi[0]}]
@@ -141,6 +138,11 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin $::env(SYNTH_DRIVING_CELL
 set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
+
+set ::env(SYNTH_TIMING_DERATE) 0.05
+puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
+set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
+set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 ###############################################################################
 # Design Rules
 ###############################################################################

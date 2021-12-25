@@ -122,7 +122,12 @@ module wb_host (
        input   logic               wbs_err_i        ,  // error
 
        output logic [31:0]         cfg_clk_ctrl1    ,
-       output logic [31:0]         cfg_clk_ctrl2    
+       output logic [31:0]         cfg_clk_ctrl2    ,
+
+       input  logic [17:0]         la_data_in       ,
+
+       input  logic                uartm_rxd        ,
+       output logic                uartm_txd        
 
     );
 
@@ -133,9 +138,6 @@ module wb_host (
 //--------------------------------
 logic               wbm_rst_n;
 logic               wbs_rst_n;
-logic [31:0]        wbm_dat_int; // data input
-logic               wbm_ack_int; // acknowlegement
-logic               wbm_err_int; // error
 
 logic               reg_sel    ;
 logic [1:0]         sw_addr    ;
@@ -152,8 +154,6 @@ logic               sw_wr_en_1;
 logic               sw_wr_en_2;
 logic               sw_wr_en_3;
 logic [7:0]         cfg_bank_sel;
-logic [31:0]        wbm_adr_int;
-logic               wbm_stb_int;
 logic [31:0]        reg_0;  // Software_Reg_0
 
 logic  [2:0]        cfg_wb_clk_ctrl;
@@ -162,6 +162,32 @@ logic  [7:0]        cfg_rtc_clk_ctrl;
 logic  [3:0]        cfg_usb_clk_ctrl;
 logic  [8:0]        cfg_glb_ctrl;
 
+// uart Master Port
+logic               wbm_uart_cyc_i        ;  // strobe/request
+logic               wbm_uart_stb_i        ;  // strobe/request
+logic [31:0]        wbm_uart_adr_i        ;  // address
+logic               wbm_uart_we_i         ;  // write
+logic [31:0]        wbm_uart_dat_i        ;  // data output
+logic [3:0]         wbm_uart_sel_i        ;  // byte enable
+logic [31:0]        wbm_uart_dat_o        ;  // data input
+logic               wbm_uart_ack_o        ;  // acknowlegement
+logic               wbm_uart_err_o        ;  // error
+
+// Selected Master Port
+logic               wb_cyc_i              ;  // strobe/request
+logic               wb_stb_i              ;  // strobe/request
+logic [31:0]        wb_adr_i              ;  // address
+logic               wb_we_i               ;  // write
+logic [31:0]        wb_dat_i              ;  // data output
+logic [3:0]         wb_sel_i              ;  // byte enable
+logic [31:0]        wb_dat_o              ;  // data input
+logic               wb_ack_o              ;  // acknowlegement
+logic               wb_err_o              ;  // error
+logic [31:0]        wb_adr_int            ;
+logic               wb_stb_int            ;
+logic [31:0]        wb_dat_int            ; // data input
+logic               wb_ack_int            ; // acknowlegement
+logic               wb_err_int            ; // error
 
 assign wbm_rst_n = !wbm_rst_i;
 assign wbs_rst_n = !wbm_rst_i;
@@ -174,6 +200,73 @@ ctech_buf u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
 ctech_buf u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
 ctech_buf u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
 ctech_buf u_buf_bist_rst      (.A(cfg_glb_ctrl[7]),.X(bist_rst_n));
+
+
+// UART Master
+uart2wb u_uart2wb (  
+        .arst_n          (wbm_rst_n          ), //  sync reset
+        .app_clk         (wbm_clk_i          ), //  sys clock    
+
+	// configuration control
+       .cfg_tx_enable    (la_data_in[0]      ), // Enable Transmit Path
+       .cfg_rx_enable    (la_data_in[1]      ), // Enable Received Path
+       .cfg_stop_bit     (la_data_in[2]    ), // 0 -> 1 Start , 1 -> 2 Stop Bits
+       .cfg_baud_16x     (la_data_in[15:4]   ), // 16x Baud clock generation
+       .cfg_pri_mod      (la_data_in[17:16] ), // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
+
+    // Master Port
+       .wbm_cyc_o        (wbm_uart_cyc_i ),  // strobe/request
+       .wbm_stb_o        (wbm_uart_stb_i ),  // strobe/request
+       .wbm_adr_o        (wbm_uart_adr_i ),  // address
+       .wbm_we_o         (wbm_uart_we_i  ),  // write
+       .wbm_dat_o        (wbm_uart_dat_i ),  // data output
+       .wbm_sel_o        (wbm_uart_sel_i ),  // byte enable
+       .wbm_dat_i        (wbm_uart_dat_o ),  // data input
+       .wbm_ack_i        (wbm_uart_ack_o ),  // acknowlegement
+       .wbm_err_i        (wbm_uart_err_o ),  // error
+
+       // Status information
+       .frm_error        (), // framing error
+       .par_error        (), // par error
+
+       .baud_clk_16x     (), // 16x Baud clock
+
+       // Line Interface
+       .rxd              (uartm_rxd) , // uart rxd
+       .txd              (uartm_txd)   // uart txd
+
+     );
+
+
+// Arbitor to select between external wb vs uart wb
+wire [1:0] grnt;
+wb_arb u_arb(
+	.clk      (wbm_clk_i), 
+	.rstn     (wbm_rst_n), 
+	.req      ({1'b0,wbm_uart_stb_i,wbm_stb_i}), 
+	.gnt      (grnt)
+        );
+
+// Select  the master based on the grant
+assign wb_cyc_i = (grnt == 2'b00) ? wbm_cyc_i : wbm_uart_cyc_i; 
+assign wb_stb_i = (grnt == 2'b00) ? wbm_stb_i : wbm_uart_stb_i; 
+assign wb_adr_i = (grnt == 2'b00) ? wbm_adr_i : wbm_uart_adr_i; 
+assign wb_we_i  = (grnt == 2'b00) ? wbm_we_i  : wbm_uart_we_i; 
+assign wb_dat_i = (grnt == 2'b00) ? wbm_dat_i : wbm_uart_dat_i; 
+assign wb_sel_i = (grnt == 2'b00) ? wbm_sel_i : wbm_uart_sel_i; 
+
+assign wbm_dat_o = (grnt == 2'b00) ? wb_dat_o : 'h0;
+assign wbm_ack_o = (grnt == 2'b00) ? wb_ack_o : 'h0;
+assign wbm_err_o = (grnt == 2'b00) ? wb_err_o : 'h0;
+
+
+assign wbm_uart_dat_o = (grnt == 2'b01) ? wb_dat_o : 'h0;
+assign wbm_uart_ack_o = (grnt == 2'b01) ? wb_ack_o : 'h0;
+assign wbm_uart_err_o = (grnt == 2'b01) ? wb_err_o : 'h0;
+
+
+
+
 
 // wb_host clock skew control
 clk_skew_adjust u_skew_wh
@@ -190,27 +283,28 @@ clk_skew_adjust u_skew_wh
 
 // To reduce the load/Timing Wishbone I/F, Strobe is register to create
 // multi-cycle
-wire [31:0]  wbm_dat_o1   = (reg_sel) ? reg_rdata : wbm_dat_int;  // data input
-wire         wbm_ack_o1   = (reg_sel) ? reg_ack   : wbm_ack_int; // acknowlegement
-wire         wbm_err_o1   = (reg_sel) ? 1'b0      : wbm_err_int;  // error
+wire [31:0]  wb_dat_o1   = (reg_sel) ? reg_rdata : wb_dat_int;  // data input
+wire         wb_ack_o1   = (reg_sel) ? reg_ack   : wb_ack_int; // acknowlegement
+wire         wb_err_o1   = (reg_sel) ? 1'b0      : wb_err_int;  // error
 
 logic wb_req;
 // Hold fix for STROBE
-wire  wbm_stb_d1,wbm_stb_d2,wbm_stb_d3;
-ctech_delay_buf u_delay1_stb0 (.X(wbm_stb_d1),.A(wbm_stb_i));
-ctech_delay_buf u_delay2_stb1 (.X(wbm_stb_d2),.A(wbm_stb_d1));
-ctech_delay_buf u_delay2_stb2 (.X(wbm_stb_d3),.A(wbm_stb_d2));
+wire  wb_stb_d1,wb_stb_d2,wb_stb_d3;
+ctech_delay_buf u_delay1_stb0 (.X(wb_stb_d1),.A(wb_stb_i));
+ctech_delay_buf u_delay2_stb1 (.X(wb_stb_d2),.A(wb_stb_d1));
+ctech_delay_buf u_delay2_stb2 (.X(wb_stb_d3),.A(wb_stb_d2));
 always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
     if ( wbm_rst_n == 1'b0 ) begin
         wb_req    <= '0;
-	wbm_dat_o <= '0;
-	wbm_ack_o <= '0;
-	wbm_err_o <= '0;
+	wb_dat_o <= '0;
+	wb_ack_o <= '0;
+	wb_err_o <= '0;
    end else begin
-       wb_req    <= wbm_stb_d3 && ((wbm_ack_o == 0) && (wbm_ack_o1 == 0)) ;
-       wbm_dat_o <= wbm_dat_o1;
-       wbm_ack_o <= wbm_ack_o1;
-       wbm_err_o <= wbm_err_o1;
+       wb_req   <= wb_stb_d3 && ((wb_ack_o == 0) && (wb_ack_o1 == 0)) ;
+       wb_ack_o <= wb_ack_o1;
+       wb_err_o <= wb_err_o1;
+       if(wb_ack_o1) // Keep last data in the bus
+          wb_dat_o <= wb_dat_o1;
    end
 end
 
@@ -228,11 +322,11 @@ end
 // added indirect MSB 8 bit address select option
 // So Address will be {Bank_Sel[7:0], wbm_adr_i[23:0}
 // ---------------------------------------------------------------------
-assign reg_sel       = wb_req & (wbm_adr_i[23] == 1'b1);
+assign reg_sel       = wb_req & (wb_adr_i[23] == 1'b1);
 
-assign sw_addr       = wbm_adr_i [3:2];
-assign sw_rd_en      = reg_sel & !wbm_we_i;
-assign sw_wr_en      = reg_sel & wbm_we_i;
+assign sw_addr       = wb_adr_i [3:2];
+assign sw_rd_en      = reg_sel & !wb_we_i;
+assign sw_wr_en      = reg_sel & wb_we_i;
 
 assign  sw_wr_en_0 = sw_wr_en && (sw_addr==0);
 assign  sw_wr_en_1 = sw_wr_en && (sw_addr==1);
@@ -287,7 +381,7 @@ end
 
 generic_register #(32,0  ) u_glb_ctrl (
 	      .we            ({32{sw_wr_en_0}}   ),		 
-	      .data_in       (wbm_dat_i[31:0]    ),
+	      .data_in       (wb_dat_i[31:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
@@ -297,7 +391,7 @@ generic_register #(32,0  ) u_glb_ctrl (
 
 generic_register #(8,8'h10 ) u_bank_sel (
 	      .we            ({8{sw_wr_en_1}}   ),		 
-	      .data_in       (wbm_dat_i[7:0]    ),
+	      .data_in       (wb_dat_i[7:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
@@ -308,7 +402,7 @@ generic_register #(8,8'h10 ) u_bank_sel (
 
 generic_register #(32,0  ) u_clk_ctrl1 (
 	      .we            ({32{sw_wr_en_2}}   ),		 
-	      .data_in       (wbm_dat_i[31:0]    ),
+	      .data_in       (wb_dat_i[31:0]    ),
 	      .reset_n       (wbm_rst_n          ),
 	      .clk           (wbm_clk_i          ),
 	      
@@ -318,7 +412,7 @@ generic_register #(32,0  ) u_clk_ctrl1 (
 
 generic_register #(32,0  ) u_clk_ctrl2 (
 	      .we            ({32{sw_wr_en_3}}  ),		 
-	      .data_in       (wbm_dat_i[31:0]   ),
+	      .data_in       (wb_dat_i[31:0]   ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
@@ -327,25 +421,25 @@ generic_register #(32,0  ) u_clk_ctrl2 (
           );
 
 
-assign wbm_stb_int = wb_req & !reg_sel;
+assign wb_stb_int = wb_req & !reg_sel;
 
 // Since design need more than 16MB address space, we have implemented
 // indirect access
-assign wbm_adr_int = {cfg_bank_sel[7:0],wbm_adr_i[23:0]};  
+assign wb_adr_int = {cfg_bank_sel[7:0],wb_adr_i[23:0]};  
 
 async_wb u_async_wb(
 // Master Port
        .wbm_rst_n   (wbm_rst_n     ),  
        .wbm_clk_i   (wbm_clk_i     ),  
-       .wbm_cyc_i   (wbm_cyc_i     ),  
-       .wbm_stb_i   (wbm_stb_int   ),  
-       .wbm_adr_i   (wbm_adr_int   ),  
-       .wbm_we_i    (wbm_we_i      ),  
-       .wbm_dat_i   (wbm_dat_i     ),  
-       .wbm_sel_i   (wbm_sel_i     ),  
-       .wbm_dat_o   (wbm_dat_int   ),  
-       .wbm_ack_o   (wbm_ack_int   ),  
-       .wbm_err_o   (wbm_err_int   ),  
+       .wbm_cyc_i   (wb_cyc_i      ),  
+       .wbm_stb_i   (wb_stb_int    ),  
+       .wbm_adr_i   (wb_adr_int    ),  
+       .wbm_we_i    (wb_we_i       ),  
+       .wbm_dat_i   (wb_dat_i      ),  
+       .wbm_sel_i   (wb_sel_i      ),  
+       .wbm_dat_o   (wb_dat_int    ),  
+       .wbm_ack_o   (wb_ack_int    ),  
+       .wbm_err_o   (wb_err_int    ),  
 
 // Slave Port
        .wbs_rst_n   (wbs_rst_n     ),  

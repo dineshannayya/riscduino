@@ -157,6 +157,12 @@
 
     `include "mbist/src/top/mbist_top.sv" 
 
+
+    `include "uart2wb/src/uart2wb.sv" 
+    `include "uart2wb/src/uart2_core.sv" 
+    `include "uart2wb/src/uart_msg_handler.v" 
+     `include "lib/async_reg_bus.sv"
+
      `include "user_project_wrapper.v"
      // we are using netlist file for clk_skew_adjust as it has 
      // standard cell + power pin

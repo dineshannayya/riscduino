@@ -46,11 +46,13 @@ reg	   stop_err_check;
 integer timeout_count;
 integer data_bit_number;
 reg [15:0] clk_count;
+reg        debug_mode;
 
 reg      error_ind; // 1 indicate error
 
 initial 
 begin
+	debug_mode = 1; // Keep in debug mode and enable display
 	txd = 1'b1;
  	uart_clk = 0;
 	clk_count = 0;
@@ -144,7 +146,203 @@ begin
 fork	
    begin : loop_1
         @(abort)
+	if(debug_mode)
          $display ("%m: >>>>> Exceed time limit, uart no responce.\n");
+         ->uart_timeout_error;
+         disable loop_2;
+   end
+
+   begin : loop_2
+
+// start cycle
+	@(negedge rxd) 
+	 disable loop_1;
+	 read <= 1;
+
+// data cycle
+	@(posedge uart_rx_clk);
+	 for (i = 0; i < data_bit_number; i = i + 1)
+	  begin
+	    @(posedge uart_rx_clk)
+	    data[i] <=  rxd;
+	    parity <= parity ^ rxd;
+	  end		
+
+// parity cycle
+	if(control_setup.parity_en)
+	begin
+          @(posedge uart_rx_clk);
+	  if ((control_setup.even_odd_parity && (rxd == parity)) ||
+	     (!control_setup.even_odd_parity && (rxd != parity)))
+	     begin
+		   $display ("%m: >>>>>  Parity Error");	
+ 		-> error_detected;
+		-> uart_parity_error;
+	     end
+	end
+
+// stop cycle 1
+        @(posedge uart_rx_clk);	
+	  if (!rxd)
+	     begin
+		$display ("%m: >>>>>  Stop signal 1 Error");	
+ 		-> error_detected;
+		-> uart_stop_error1;
+	     end
+
+// stop cycle 2
+	if (control_setup.stop_bit_number)
+	begin
+	      @(posedge uart_rx_clk);	// stop cycle 2
+		if (!rxd)
+		  begin
+		    $display ("%m: >>>>>  Stop signal 2 Error");	
+ 		    -> error_detected;
+		    -> uart_stop_error2;
+		  end
+	end
+
+
+// wait another half cycle for tx_done signal
+		@(negedge uart_rx_clk);
+	read <= 0;
+	-> uart_read_done;
+
+	if (expected_data != data)
+	begin
+		$display ("%m: Error! Data return is %h, expecting %h", data, expected_data);
+		-> error_detected;
+	end
+	else begin
+	        if(debug_mode)
+		  $display ("%m: Data match  %h", expected_data);
+	end
+
+	if(debug_mode)
+	   $display ("%m:... Read Data from UART done cnt :%d...",rx_count +1);
+   end
+join
+
+end
+
+endtask
+
+////////////////////////////////////////////////////////////////////////////////
+task read_char2;
+output [7:0]	rxd_data;
+output          timeout; // 1-> timeout
+integer i;
+reg	[7:0] rxd_data;
+reg 	[7:0] data;
+reg	parity;
+
+begin
+	data <= 8'h0;
+	parity <= 1;
+	timeout_count = 0;
+	timeout = 0;
+
+   fork	
+   begin 
+        @(abort)
+         //$display (">>>>>  Exceed time limit, uart no responce.\n");
+         //->uart_timeout_error;
+	  timeout = 1;
+   end
+
+   begin
+
+// start cycle
+	@(negedge rxd) 
+	 read <= 1;
+
+// data cycle
+	@(posedge uart_rx_clk );
+	 for (i = 0; i < data_bit_number; i = i + 1)
+	  begin
+	    @(posedge uart_rx_clk)
+	    data[i] <=  rxd;
+	    parity <= parity ^ rxd;
+	  end		
+
+// parity cycle
+	if(control_setup.parity_en)
+	begin
+          @(posedge uart_rx_clk);
+	  if ((control_setup.even_odd_parity && (rxd == parity)) ||
+	     (!control_setup.even_odd_parity && (rxd != parity)))
+	     begin
+		$display (">>>>>  Parity Error");	
+ 		-> error_detected;
+		-> uart_parity_error;
+	     end
+	end
+
+// stop cycle 1
+        @(posedge uart_rx_clk);	
+	  if (!rxd)
+	     begin
+		$display (">>>>>  Stop signal 1 Error");	
+ 		-> error_detected;
+		-> uart_stop_error1;
+	     end
+
+// stop cycle 2
+	if (control_setup.stop_bit_number)
+	begin
+	      @(posedge uart_rx_clk);	// stop cycle 2
+		if (!rxd)
+		  begin
+		    $display (">>>>>  Stop signal 2 Error");	
+ 		    -> error_detected;
+		    -> uart_stop_error2;
+		  end
+	end
+
+// wait another half cycle for tx_done signal
+		@(negedge uart_rx_clk);
+	read <= 0;
+	-> uart_read_done;
+
+//      $display ("(%m) Received Data  %c", data);
+//	$display ("... Read Data from UART done cnt :%d...",rx_count +1);
+        $write ("%c",data);
+	rxd_data = data;
+   end
+   join_any
+   disable fork; //disable pending fork activity
+
+end
+
+endtask
+
+
+////////////////////////////////////////////////////////////////////////////////
+task read_char;
+output [7:0]	rxd_data;
+output          timeout; // 1-> timeout
+
+reg	[7:0] rxd_data;
+
+
+integer i;
+reg	[7:0] expected_data;
+reg 	[7:0] data;
+reg	parity;
+
+begin
+	data <= 8'h0;
+	parity <= 1;
+	timeout_count = 0;
+	timeout = 0;
+
+
+fork	
+   begin : loop_1
+        @(abort)
+	 if(debug_mode)
+             $display ("%m: >>>>> Exceed time limit, uart no responce.\n");
+	 timeout = 1;
          ->uart_timeout_error;
          disable loop_2;
    end
@@ -205,22 +403,19 @@ fork
 	read <= 0;
 	-> uart_read_done;
 
-	if (expected_data != data)
-	begin
-		$display ("%m: Error! Data return is %h, expecting %h", data, expected_data);
-		-> error_detected;
-	end
-	else
-		$display ("%m: Data match  %h", expected_data);
+	rxd_data = data;
 
-	$display ("%m:... Read Data from UART done cnt :%d...",rx_count +1);
+
+	if(debug_mode) begin
+	   $display ("%m: Received Data %h", rxd_data);
+	   $display ("%m:... Read Data from UART done cnt :%d...",rx_count +1);
+        end
    end
 join
 
 end
 
 endtask
-
 
 ////////////////////////////////////////////////////////////////////////////////
 task write_char;
@@ -271,7 +466,10 @@ begin
 		@(posedge uart_clk);
 
 	write <= #1 0;
-	$display ("%m:... Write data %h to UART done cnt : %d ...\n", data,tx_count+1);
+	if(debug_mode)
+	   $display ("%m:... Write data %h to UART done cnt : %d ...\n", data,tx_count+1);
+        else
+	   $write ("%c",data);
 	-> uart_write_done;
 end
 endtask
