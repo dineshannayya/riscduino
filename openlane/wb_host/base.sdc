@@ -8,22 +8,11 @@ current_design wb_host
 ###############################################################################
 create_clock -name wbm_clk_i -period 10.0000 [get_ports {wbm_clk_i}]
 create_clock -name wbs_clk_i -period 10.0000 [get_ports {wbs_clk_i}]
-set_clock_uncertainty -rise_from [get_clocks {wbm_clk_i}] -rise_to [get_clocks {wbm_clk_i}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbm_clk_i}] -rise_to [get_clocks {wbm_clk_i}]  -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbm_clk_i}] -fall_to [get_clocks {wbm_clk_i}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbm_clk_i}] -fall_to [get_clocks {wbm_clk_i}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbm_clk_i}] -rise_to [get_clocks {wbm_clk_i}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbm_clk_i}] -rise_to [get_clocks {wbm_clk_i}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbm_clk_i}] -fall_to [get_clocks {wbm_clk_i}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbm_clk_i}] -fall_to [get_clocks {wbm_clk_i}]  -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbs_clk_i}] -rise_to [get_clocks {wbs_clk_i}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbs_clk_i}] -rise_to [get_clocks {wbs_clk_i}]  -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbs_clk_i}] -fall_to [get_clocks {wbs_clk_i}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {wbs_clk_i}] -fall_to [get_clocks {wbs_clk_i}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbs_clk_i}] -rise_to [get_clocks {wbs_clk_i}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbs_clk_i}] -rise_to [get_clocks {wbs_clk_i}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbs_clk_i}] -fall_to [get_clocks {wbs_clk_i}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {wbs_clk_i}] -fall_to [get_clocks {wbs_clk_i}]  -setup 0.2500
+create_clock -name uart_clk -period 100.0000 [get_pins {u_uart2wb.u_core.u_uart_clk.u_mux/X}]
+
+set_clock_transition 0.1500 [all_clocks]
+set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05
 puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
@@ -31,7 +20,8 @@ set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
 set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
 set_clock_groups -name async_clock -asynchronous \
- -group [get_clocks {wbs_clk_i}]\
+ -group [get_clocks {uart_clk}]  \
+ -group [get_clocks {wbs_clk_i}] \
  -group [get_clocks {wbm_clk_i}] -comment {Async Clock group}
 
 ### ClkSkew Adjust

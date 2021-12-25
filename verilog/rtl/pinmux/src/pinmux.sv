@@ -75,6 +75,10 @@ module pinmux (
 		       input   logic           spim_miso,
 		       output  logic           spim_mosi,
 
+                       // UART MASTER I/F
+                       output  logic            uartm_rxd ,
+                       input logic              uartm_txd  ,       
+
 		       output  logic           pulse1m_mclk,
 	               output  logic [31:0]    pinmux_debug,	       
 
@@ -168,11 +172,6 @@ assign      pinmux_debug = '0; // Todo: Need to fix
 //input  logic [3:0]      ssram_oen,
 //input  logic [3:0]      ssram_do,
 //output logic [3:0]      ssram_di,
-wire         ssram_sck = 1'b0;
-wire         ssram_ss = 1'b0;
-wire [3:0]   ssram_oen = 1'b0;
-wire [3:0]   ssram_do  = 4'b0;
-logic [3:0]  ssram_di;
 
 // pinmux clock skew control
 clk_skew_adjust u_skew_pinmux
@@ -414,12 +413,12 @@ pwm  u_pwm_5 (
 *                sflash_io1          digital_io[27]
 *                sflash_io2          digital_io[28]
 *                sflash_io3          digital_io[29]
-*                ssram_sck           digital_io[30]
-*                ssram_ss            digital_io[31]
-*                ssram_io0           digital_io[32]
-*                ssram_io1           digital_io[33]
-*                ssram_io2           digital_io[34]
-*                ssram_io3           digital_io[35]
+*                reserved            digital_io[30]
+*                reserved            digital_io[31]
+*                reserved            digital_io[32]
+*                reserved            digital_io[33]
+*                uartm_rxd           digital_io[34]
+*                uartm_txd           digital_io[35]
 *                usb_dp              digital_io[36]
 *                usb_dn              digital_io[37]
 ****************************************************************
@@ -531,10 +530,8 @@ always_comb begin
      sflash_di[2] = digital_io_in[28];
      sflash_di[3] = digital_io_in[29];
 
-     ssram_di[0]  = digital_io_in[32];
-     ssram_di[1]  = digital_io_in[33];
-     ssram_di[2]  = digital_io_in[34];
-     ssram_di[3]  = digital_io_in[35];
+     // UAR MASTER I/F
+     uartm_rxd    = digital_io_in[34];
 
      usb_dp_i    = digital_io_in[36];
      usb_dn_i    = digital_io_in[37];
@@ -635,13 +632,15 @@ always_comb begin
      digital_io_out[28] = sflash_do[2] ;
      digital_io_out[29] = sflash_do[3] ;
                        
-     // Serail SRAM 
-     digital_io_out[30] = ssram_sck   ;
-     digital_io_out[31] = ssram_ss    ;
-     digital_io_out[32] = ssram_do[0]  ;
-     digital_io_out[33] = ssram_do[1]  ;
-     digital_io_out[34] = ssram_do[2]  ;
-     digital_io_out[35] = ssram_do[3]  ;
+     // Reserved
+     digital_io_out[30] = 1'b0;
+     digital_io_out[31] = 1'b0;
+     digital_io_out[32] = 1'b0;
+     digital_io_out[33] = 1'b0;
+
+     // UART MASTER I/f
+     digital_io_out[34] = 1'b0         ; // RXD
+     digital_io_out[35] = uartm_txd    ; // TXD
                   
      // USB 1.1     
      digital_io_out[36] = usb_dp_o     ;
@@ -744,13 +743,14 @@ always_comb begin
      digital_io_oen[28] = sflash_oen[2];
      digital_io_oen[29] = sflash_oen[3];
                        
-     // Serail SRAM 
+     // Reserved
      digital_io_oen[30] = 1'b0  ;
      digital_io_oen[31] = 1'b0  ;
-     digital_io_oen[32] = ssram_oen[0];
-     digital_io_oen[33] = ssram_oen[1];
-     digital_io_oen[34] = ssram_oen[2];
-     digital_io_oen[35] = ssram_oen[3];
+     digital_io_oen[32] = 1'b0  ;
+     digital_io_oen[33] = 1'b0  ;
+     // UART MASTER
+     digital_io_oen[34] = 1'b1; // RXD
+     digital_io_oen[35] = 1'b0; // TXD
                   
      // USB 1.1     
      digital_io_oen[36] = usb_oen;

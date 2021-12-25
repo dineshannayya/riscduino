@@ -1,0 +1,1 @@
+iverilog uart2wb.sv uart2_core.sv uart_msg_handler.v  ../../uart/src/uart_rxfsm.sv ../../uart/src/uart_txfsm.sv ../../lib/double_sync_low.v ../../lib/clk_ctl.v ../../lib/reset_sync.sv

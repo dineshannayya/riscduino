@@ -139,6 +139,8 @@
 ////    2.2  Dec 20, 2021, Dinesh A                               ////
 ////      1. MBIST design issue fix for yosys                     ////
 ////      2. Full chip Timing and Transition clean-up             ////                   
+////    2.3  Dec 24, 2021, Dinesh A                               ////
+////      UART Master added with message handler at wb_host       ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -496,6 +498,12 @@ wire                             sspim_ssn           ; // cs_n
 wire                             usb_intr_o          ;
 wire                             i2cm_intr_o         ;
 
+//----------------------------------------------------------------
+//  UART Master I/F
+//  -------------------------------------------------------------
+wire                             uartm_rxd           ;
+wire                             uartm_txd           ;
+
 //----------------------------------------------------------
 // BIST I/F
 // ---------------------------------------------------------
@@ -643,7 +651,13 @@ wb_host u_wb_host(
        .wbs_err_i        (wbd_int_err_o        ),  
 
        .cfg_clk_ctrl1    (cfg_clk_ctrl1        ),
-       .cfg_clk_ctrl2    (cfg_clk_ctrl2        )
+       .cfg_clk_ctrl2    (cfg_clk_ctrl2        ),
+
+       .la_data_in       (la_data_in[17:0]     ),
+
+       .uartm_rxd        (uartm_rxd            ),
+       .uartm_txd        (uartm_txd            )
+
 
     );
 
@@ -1157,6 +1171,11 @@ pinmux u_pinmux(
         .spim_ss                (sspim_ssn                 ),
         .spim_miso              (sspim_so                  ),
         .spim_mosi              (sspim_si                  ),
+
+      // UART MASTER I/F
+        .uartm_rxd              (uartm_rxd                 ),
+        .uartm_txd              (uartm_txd                 ),
+
 
 	.pulse1m_mclk           (pulse1m_mclk              ),
 

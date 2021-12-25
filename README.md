@@ -114,12 +114,12 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
   <tr align="center"> <td> SFlash          </td> <td> sflash_io1             </td> <td>                 </td> <td> digital_io[27]                       </td></tr>
   <tr align="center"> <td> SFlash          </td> <td> sflash_io2             </td> <td>                 </td> <td> digital_io[28]                       </td></tr>
   <tr align="center"> <td> SFlash          </td> <td> sflash_io3             </td> <td>                 </td> <td> digital_io[29]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> ssram_sck              </td> <td>                 </td> <td> digital_io[30]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> ssram_ss               </td> <td>                 </td> <td> digital_io[31]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> ssram_io0              </td> <td>                 </td> <td> digital_io[32]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> ssram_io1              </td> <td>                 </td> <td> digital_io[33]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> ssram_io2              </td> <td>                 </td> <td> digital_io[34]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> ssram_io3              </td> <td>                 </td> <td> digital_io[35]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> Reserved               </td> <td>                 </td> <td> digital_io[30]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> Reserved               </td> <td>                 </td> <td> digital_io[31]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> Reserved               </td> <td>                 </td> <td> digital_io[32]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> Reserved               </td> <td>                 </td> <td> digital_io[33]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> uartm rxd              </td> <td>                 </td> <td> digital_io[34]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> uartm txd              </td> <td>                 </td> <td> digital_io[35]                       </td></tr>
   <tr align="center"> <td> usb1.1          </td> <td> usb_dp                 </td> <td>                 </td> <td> digital_io[36]                       </td></tr>
   <tr align="center"> <td> usb1.1          </td> <td> usb_dn                 </td> <td>                 </td> <td> digital_io[37]                       </td></tr>
 </table>

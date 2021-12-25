@@ -668,7 +668,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h2012_2021) u_reg_23	(
+gen_32b_reg  #(32'h2412_2021) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -681,9 +681,9 @@ gen_32b_reg  #(32'h2012_2021) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 2.1 = 0002200
+// Software Reg-3: Poject Revison 2.1 = 0002300
 // ----------------------------------------
-gen_32b_reg  #(32'h0002_2000) u_reg_24	(
+gen_32b_reg  #(32'h0002_3000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -770,8 +770,7 @@ assign bist_load           = cfg_bist_ctrl_1[2];
 //-----------------------------------------------------------------
 logic [31:0] cfg_bist_status_1;
 
-assign cfg_bist_status_1 = {  16'h0,
-	                      bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done,
+assign cfg_bist_status_1 = {  bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done,
 	                      bist_error_cnt2, 1'b0, bist_correct[2], bist_error[2], bist_done,
 	                      bist_error_cnt1, 1'b0, bist_correct[1], bist_error[1], bist_done,
 	                      bist_error_cnt0, 1'b0, bist_correct[0], bist_error[0], bist_done
