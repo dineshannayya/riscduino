@@ -63,13 +63,13 @@ end
 always @(posedge mclk)
 begin
    if (clk_count == 'h0) begin
-      uart_clk = ~uart_clk;
-      clk_count = control_setup.divisor;	
+      uart_clk <= ~uart_clk;
+      clk_count <= control_setup.divisor;	
    end else begin
-      clk_count = clk_count - 1;	
+      clk_count <= clk_count - 1;	
    end
 end
-assign uart_rx_clk = ~uart_clk;
+assign uart_rx_clk = uart_clk;
 
 always @(posedge mclk)
 begin

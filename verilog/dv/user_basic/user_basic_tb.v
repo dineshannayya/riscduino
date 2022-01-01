@@ -242,8 +242,8 @@ begin
          wb_user_core_write('h3080_0000,'h1);
 
 	 wb_user_core_read_check(32'h30020058,read_data,32'h8273_8343);
-	 wb_user_core_read_check(32'h3002005C,read_data,32'h2012_2021);
-	 wb_user_core_read_check(32'h30020060,read_data,32'h0002_2000);
+	 wb_user_core_read_check(32'h3002005C,read_data,32'h0101_2022);
+	 wb_user_core_read_check(32'h30020060,read_data,32'h0002_3000);
 
       end
    
@@ -301,7 +301,7 @@ user_project_wrapper u_top(
 
  
     // Logic Analyzer Signals
-    .la_data_in      ('0) ,
+    .la_data_in      ('1) ,
     .la_data_out     (),
     .la_oenb         ('0),
  

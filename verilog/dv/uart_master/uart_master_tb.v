@@ -78,6 +78,8 @@ reg            test_fail     ;
 		$dumpvars(1, uart_master_tb.uut);
 		$dumpvars(1, uart_master_tb.uut.mprj);
 		$dumpvars(1, uart_master_tb.uut.mprj.u_wb_host);
+		$dumpvars(1, uart_master_tb.uut.mprj.u_wb_host.u_uart2wb);
+		$dumpvars(1, uart_master_tb.tb_master_uart);
 		//$dumpvars(2, uart_master_tb.uut.mprj.u_pinmux);
 	end
        `endif
@@ -85,7 +87,7 @@ reg            test_fail     ;
 	initial begin
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (30) begin
+		repeat (400) begin
 			repeat (1000) @(posedge clock);
 			// $display("+1000 cycles");
 		end
@@ -117,7 +119,7 @@ reg            test_fail     ;
 	   wait(checkbits == 16'h AB60);
 		$display("Monitor: UART Master Test Started");
 
-           repeat (1000) @(posedge clock);
+           repeat (4000) @(posedge clock);
            //$write ("\n(%t)Response:\n",$time);
            flag = 0;
            while(flag == 0)
