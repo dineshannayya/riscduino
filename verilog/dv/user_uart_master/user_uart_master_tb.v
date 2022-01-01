@@ -133,7 +133,7 @@ integer i,j;
 
 	initial begin
 		clock = 0;
-		la_data_in = 0;
+		la_data_in = 1;
 	end
 
 	`ifdef WFDUMP
@@ -165,9 +165,9 @@ begin
    uart_fifo_enable        = 0;	// fifo mode disable
 
    // UPDATE the RTL UART MASTER
-   la_data_in[0] = 1; //  Enable Transmit Path
-   la_data_in[1] = 1; //  Enable Received Path
+   la_data_in[1] = 1; //  Enable Transmit Path
    la_data_in[2] = 1; //  Enable Received Path
+   la_data_in[3] = 1; //  Enable Received Path
    la_data_in[15:4] = ((uart_divisor+1)/16)-1; //  Divisor value
    la_data_in[17:16] = 2'b00; //  priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 

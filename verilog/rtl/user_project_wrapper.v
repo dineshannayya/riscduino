@@ -141,6 +141,8 @@
 ////      2. Full chip Timing and Transition clean-up             ////                   
 ////    2.3  Dec 24, 2021, Dinesh A                               ////
 ////      UART Master added with message handler at wb_host       ////
+////    2.4  Jan 01, 2022, Dinesh A                               ////
+////       LA[0] is added as soft reset option at wb_port         ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

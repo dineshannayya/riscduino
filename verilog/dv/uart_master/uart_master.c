@@ -92,7 +92,6 @@ void main()
     reg_mprj_datal = 0xAB600000;
 
     reg_la0_oenb = reg_la0_iena =  0x0000000;
-    reg_la0_data = 0x000;
 
     //-----------------------------------------------------
     // Start of User Functionality and take over the GPIO Pins
@@ -141,14 +140,16 @@ void main()
     reg_mprj_xfer = 1;
     while (reg_mprj_xfer == 1);
 
-    //uart_cfg = 0x000;
-    //uart_cfg |= 0x1; // bit[0] - Enable Transmit Path
-    //uart_cfg |= 0x2; // bit[1] - Enable Receive Path
-    //uart_cfg |= 0x4; // bit[2] - Set 2 Stop Bit
-    //uart_cfg |= 0x0; // bit[15:4] - 16x Baud Clock
-    //uart_cfg |= 0x0; // bit[17:16] - Priority mode = 0
-    uart_cfg = 0x007;
-    reg_la0_data = uart_cfg;
+    reg_la0_data = 0x000;
+    //reg_la0_data = 0x000;
+    //reg_la0_data |= 0x1; // bit[0] - Remove Software Reset
+    //reg_la0_data |= 0x1; // bit[1] - Enable Transmit Path
+    //reg_la0_data |= 0x2; // bit[2] - Enable Receive Path
+    //reg_la0_data |= 0x4; // bit[3] - Set 2 Stop Bit
+    //reg_la0_data |= 0x0; // bit[15:4] - 16x Baud Clock
+    //reg_la0_data |= 0x0; // bit[17:16] - Priority mode = 0
+    reg_la0_data = 0x001;
+    reg_la0_data = 0x00F;
 
 
 

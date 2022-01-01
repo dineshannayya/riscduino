@@ -169,6 +169,10 @@ void main()
     reg_mprj_xfer = 1;
     while (reg_mprj_xfer == 1);
 
+    reg_la0_data = 0x000;
+    reg_la0_data = 0x001; // Remove Soft Reset
+
+
     // Remove Wishbone Reset
     reg_mprj_wbhost_reg0 = 0x1;
 

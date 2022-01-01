@@ -189,8 +189,6 @@ logic [31:0]        wb_dat_int            ; // data input
 logic               wb_ack_int            ; // acknowlegement
 logic               wb_err_int            ; // error
 
-assign wbm_rst_n = !wbm_rst_i;
-assign wbs_rst_n = !wbm_rst_i;
 
 ctech_buf u_buf_wb_rst        (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
 ctech_buf u_buf_cpu_rst       (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
@@ -201,17 +199,35 @@ ctech_buf u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
 ctech_buf u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
 ctech_buf u_buf_bist_rst      (.A(cfg_glb_ctrl[7]),.X(bist_rst_n));
 
+//--------------------------------------------------------------------------------
+// Look like wishbone reset removed early than user Power up sequence
+// To control the reset phase, we have added additional control through la[0]
+// ------------------------------------------------------------------------------
+wire    arst_n = !wbm_rst_i & la_data_in[0];
+reset_sync  u_wbm_rst (
+	      .scan_mode  (1'b0           ),
+              .dclk       (wbm_clk_i      ), // Destination clock domain
+	      .arst_n     (arst_n         ), // active low async reset
+              .srst_n     (wbm_rst_n      )
+          );
+
+reset_sync  u_wbs_rst (
+	      .scan_mode  (1'b0           ),
+              .dclk       (wbs_clk_i      ), // Destination clock domain
+	      .arst_n     (arst_n         ), // active low async reset
+              .srst_n     (wbs_rst_n      )
+          );
 
 // UART Master
 uart2wb u_uart2wb (  
-        .arst_n          (wbm_rst_n          ), //  sync reset
-        .app_clk         (wbm_clk_i          ), //  sys clock    
+        .arst_n          (wbm_rst_n         ), //  sync reset
+        .app_clk         (wbm_clk_i         ), //  sys clock    
 
 	// configuration control
-       .cfg_tx_enable    (la_data_in[0]      ), // Enable Transmit Path
-       .cfg_rx_enable    (la_data_in[1]      ), // Enable Received Path
-       .cfg_stop_bit     (la_data_in[2]    ), // 0 -> 1 Start , 1 -> 2 Stop Bits
-       .cfg_baud_16x     (la_data_in[15:4]   ), // 16x Baud clock generation
+       .cfg_tx_enable    (la_data_in[1]     ), // Enable Transmit Path
+       .cfg_rx_enable    (la_data_in[2]     ), // Enable Received Path
+       .cfg_stop_bit     (la_data_in[3]     ), // 0 -> 1 Start , 1 -> 2 Stop Bits
+       .cfg_baud_16x     (la_data_in[15:4]  ), // 16x Baud clock generation
        .cfg_pri_mod      (la_data_in[17:16] ), // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 
     // Master Port
