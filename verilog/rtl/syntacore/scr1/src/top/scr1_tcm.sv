@@ -138,7 +138,7 @@ assign imem_rdata  = (imem_addr[11] == 1'b0) ?  sram0_dout1: sram1_dout1;
 
 // SRAM-0 Port 0 Control Generation
 assign sram0_clk0 = clk;
-assign sram0_csb0   = !(dmem_req & (imem_addr[11] == 1'b0) & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
+assign sram0_csb0   = !(dmem_req & (dmem_addr[11] == 1'b0) & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
 assign sram0_web0   = !(dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR));
 assign sram0_addr0  = dmem_addr[10:2];
 assign sram0_wmask0 =  dmem_byteen;
@@ -146,7 +146,7 @@ assign sram0_din0   =  dmem_writedata;
 
 // SRAM-1 Port 0 Control Generation
 assign sram1_clk0 = clk;
-assign sram1_csb0   = !(dmem_req & (imem_addr[11] == 1'b1) & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
+assign sram1_csb0   = !(dmem_req & (dmem_addr[11] == 1'b1) & ((dmem_cmd == SCR1_MEM_CMD_RD) | (dmem_cmd == SCR1_MEM_CMD_WR)));
 assign sram1_web0   = !(dmem_req & (dmem_cmd == SCR1_MEM_CMD_WR));
 assign sram1_addr0  = dmem_addr[10:2];
 assign sram1_wmask0 =  dmem_byteen;
@@ -203,12 +203,8 @@ scr1_dp_memory #(
 //-------------------------------------------------------------------------------
 // Data memory output generation
 //-------------------------------------------------------------------------------
-always_ff @(posedge clk) begin
-    if (dmem_rd) begin
-        dmem_rdata_shift_reg <= dmem_addr[1:0];
-    end
-end
 
+assign dmem_rdata_shift_reg = dmem_addr[1:0];
 assign dmem_rdata = dmem_rdata_local >> ( 8 * dmem_rdata_shift_reg );
 
 endmodule : scr1_tcm

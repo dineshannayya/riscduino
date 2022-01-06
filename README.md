@@ -533,6 +533,7 @@ Examples:
     make verify-user_risc_boot
     make verify-wb_port SIM=RTL DUMP=OFF
     make verify-wb_port SIM=RTL DUMP=ON
+    make verify-riscv_regress
 ```
 
 # Tool Sets

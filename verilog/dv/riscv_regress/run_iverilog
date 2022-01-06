@@ -1,0 +1,26 @@
+cd /home/dinesha/workarea/opencore/git/riscduino/verilog/rtl/syntacore/scr1/sim/tests/hello
+
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I/home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/sim/tests/common  /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/sim/tests/common/sc_print.c -o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/sc_print.o
+
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I/home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/sim/tests/common  hello.c -o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/hello.o
+
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I/home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/sim/tests/common  /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/sim/tests/common/crt_tcm.S -o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/crt_tcm.o
+
+riscv64-unknown-elf-gcc -o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/hello.elf -T /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/sim/tests/common/link_tcm.ld /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/sc_print.o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/hello.o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32
+rm /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/sc_print.o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/crt_tcm.o /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/hello.o
+
+cd /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0
+iverilog -g2005-sv -DFUNCTIONAL -DWFDUMP -DSIM -I /opt/pdk/sky130A \
+-I /home/dinesha/workarea/efabless/MPW-4/caravel/verilog/dv/caravel -I /home/dinesha/workarea/efabless/MPW-4/caravel/verilog/rtl \
+-I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../model    -I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl -I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog \
+-I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../agents    \
+-I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/syntacore/scr1/src/includes    -I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/sdram_ctrl/src/defs -I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/i2cm/src/includes \
+-I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/usb1_host/src/includes -I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/../../../verilog/rtl/mbist/include -I /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress \
+../../user_risc_regress_tb.v \
+-o user_risc_regress_tb.vvp
+
+iverilog-vpi ../../../vpi/system/system.c
+vvp  -M. -msystem  user_risc_regress_tb.vvp \
++test_info=/home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/test_info \
++test_results=/home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/test_results.txt \
+| tee /home/dinesha/workarea/opencore/git/riscduino/verilog/dv/riscv_regress/build/iverilog_WB_MAX_imc_IPIC_1_TCM_1_VIRQ_1_TRACE_0/sim_results.txt
