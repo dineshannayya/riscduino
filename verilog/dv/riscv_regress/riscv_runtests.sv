@@ -53,7 +53,7 @@ end
            $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", core2dmem_addr_o_r,`RISC_CORE.dmem2core_rdata_i,`RISC_CORE.dmem2core_resp_i);
  end
 **/
-/**
+/***
   logic [31:0] test_count;
  `define RISC_CORE  u_top.u_riscv_top.i_core_top
  `define RISC_EXU  u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_exu
@@ -162,18 +162,15 @@ always_ff @(posedge clk) begin
                     while (!$feof(fd) && (start != stop)) begin
                         $fscanf(fd, "0x%h,\n", ref_data);
 			//----------------------------------------------------
-			// Note: 32'h2xxx_xxxx address  mapped to SDRAM
 			// Assumed all signaure are with-in first 512 location of memory, 
 			// other-wise need to switch bank
 			// --------------------------------------------------
-                        test_data[31:24] = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+3];
-                        test_data[23:16] = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+2];
-                        test_data[15:8]  = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+1];
-                        test_data[7:0]   = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+0];
+		        //$writememh("sram0_out.hex",u_top.u_tsram0_2kb.mem,0,511);
+                        test_data = u_top.u_tsram0_2kb.mem[((start >> 2) & 32'h1FFF)];
 			//$display("Compare Addr: %x ref_data : %x, test_data: %x",start,ref_data,test_data);
                         test_pass &= (ref_data == test_data);
 			if(ref_data != test_data)
-			   $display("ERROR: Compare Addr: %x ref_data : %x, test_data: %x",start,ref_data,test_data);
+			   $display("ERROR: Compare Addr: %x Mem Addr: %x ref_data : %x, test_data: %x",start,start & 32'h1FFF,ref_data,test_data);
                         start += 4;
                     end
                     $fclose(fd);

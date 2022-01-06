@@ -133,7 +133,7 @@ module user_risc_regress_tb;
         int unsigned           tests_passed;
         int unsigned           tests_total;
 
-	logic  [7:0]           tem_mem[0:2047];
+	logic  [31:0]           tem_mem[0:1047];
 
 
 	//-----------------------------------------------------------------
@@ -199,8 +199,18 @@ module user_risc_regress_tb;
 		// some of the RISCV test need SRAM area for specific
 		// instruction execution like fence
 		$sformat(test_ram_file, "%s.ram",test_file);
-                $write("\033[0;34m---Initializing the u_tsram0_2kb Memory with Hexfile: %s\033[0m\n", test_ram_file);
-                $readmemh(test_ram_file,u_top.u_tsram0_2kb.mem);
+		// Load the RAM content to local temp memory
+                $readmemh(test_ram_file,tem_mem);
+		// Split the Temp memory content to two sram file
+                $readmemh(test_ram_file,tem_mem);
+		$writememh("sram0.hex",tem_mem,0,511);
+                $writememh("sram1.hex",tem_mem,512,1023);
+		// Load the SRAM0/SRAM1 with 2KB data
+                $write("\033[0;34m---Initializing the u_tsram0_2kb Memory with Hexfile: sram0.hex\033[0m\n");
+                $readmemh("sram0.hex",u_top.u_tsram0_2kb.mem);
+                $write("\033[0;34m---Initializing the u_tsram1_2kb Memory with Hexfile: sram1.hex\033[0m\n");
+                $readmemh("sram1.hex",u_top.u_tsram1_2kb.mem);
+
 		//for(i =32'h00; i < 32'h100; i = i+1)
                 //    $display("Location: %x, Data: %x", i, u_top.u_tsram0_2kb.mem[i]);
 
