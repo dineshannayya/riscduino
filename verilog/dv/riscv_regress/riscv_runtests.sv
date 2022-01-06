@@ -55,8 +55,8 @@ end
 **/
 /**
   logic [31:0] test_count;
- `define RISC_CORE  i_top.i_core_top
- `define RISC_EXU  i_top.i_core_top.i_pipe_top.i_pipe_exu
+ `define RISC_CORE  u_top.u_riscv_top.i_core_top
+ `define RISC_EXU  u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_exu
 
  initial begin
 	 test_count = 0;
@@ -70,7 +70,6 @@ end
 	  end
  end
 **/
-
 always_ff @(posedge clk) begin
     bit test_pass;
     int unsigned                            f_test;
@@ -140,10 +139,10 @@ always_ff @(posedge clk) begin
 `endif
                     fd = $fopen(tmpstr, "w");
                     while ((start != stop)) begin
-                        test_data[31:24] = u_sdram8.Bank0[(start & 32'h1FFF)+3];
-                        test_data[23:16] = u_sdram8.Bank0[(start & 32'h1FFF)+2];
-                        test_data[15:8]  = u_sdram8.Bank0[(start & 32'h1FFF)+1];
-                        test_data[7:0]   = u_sdram8.Bank0[(start & 32'h1FFF)+0];
+                        test_data[31:24] = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+3];
+                        test_data[23:16] = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+2];
+                        test_data[15:8]  = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+1];
+                        test_data[7:0]   = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+0];
                         $fwrite(fd, "%x", test_data);
                         $fwrite(fd, "%s", "\n");
                         start += 4;
@@ -167,10 +166,10 @@ always_ff @(posedge clk) begin
 			// Assumed all signaure are with-in first 512 location of memory, 
 			// other-wise need to switch bank
 			// --------------------------------------------------
-                        test_data[31:24] = u_sdram8.Bank0[(start & 32'h1FFF)+3];
-                        test_data[23:16] = u_sdram8.Bank0[(start & 32'h1FFF)+2];
-                        test_data[15:8]  = u_sdram8.Bank0[(start & 32'h1FFF)+1];
-                        test_data[7:0]   = u_sdram8.Bank0[(start & 32'h1FFF)+0];
+                        test_data[31:24] = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+3];
+                        test_data[23:16] = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+2];
+                        test_data[15:8]  = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+1];
+                        test_data[7:0]   = u_top.u_tsram0_2kb.mem[(start & 32'h1FFF)+0];
 			//$display("Compare Addr: %x ref_data : %x, test_data: %x",start,ref_data,test_data);
                         test_pass &= (ref_data == test_data);
 			if(ref_data != test_data)
@@ -186,8 +185,11 @@ always_ff @(posedge clk) begin
                         $write("\033[0;31mTest failed-2\033[0m\n");
                     end
                 `endif  // SIGNATURE_OUT
-            end else begin
+            end else begin // Non compliance mode
                 test_running <= 1'b0;
+		if(u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_mprf.mprf_int[10] != 0)
+		   $display("ERROR: mprf_int[10]: %x not zero",u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_mprf.mprf_int[10]);
+
                 test_pass = (u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_mprf.mprf_int[10] == 0);
                 tests_total     += 1;
                 tests_passed    += test_pass;

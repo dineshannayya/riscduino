@@ -137,6 +137,7 @@ UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/syntacore/scr1/src/includes
 UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
 UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
+UPRJ_INCLUDE_PATH5 = $(UPRJ_RTL_PATH)/mbist/include
 
 sv_list            = ../../user_risc_regress_tb.v
 top_module         = user_risc_regress_tb
@@ -157,7 +158,8 @@ export CROSS_PREFIX  ?= riscv64-unknown-elf-
 export RISCV_GCC     ?= $(CROSS_PREFIX)gcc
 export RISCV_OBJDUMP ?= $(CROSS_PREFIX)objdump -D
 export RISCV_ROM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -j .text.init -j .text -j .rodata -j .rodata.str1.4 -O verilog
-export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -O verilog
+#Seperate the RAM content and write out in 32bit Little endian format to load it to TCM Memory
+export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -R .riscv.attributes -O verilog --verilog-data-width=4 --reverse-bytes=4
 export RISCV_READELF ?= $(CROSS_PREFIX)readelf -s
 
 ifneq (,$(findstring e,$(ARCH_lowercase)))
@@ -172,27 +174,27 @@ endif
 ifeq (,$(findstring e,$(ARCH_lowercase)))
 	# These tests cannot be compiled for RVE
 	# Comment this target if you don't want to run the riscv_isa
-	#TARGETS += riscv_isa
+	TARGETS += riscv_isa
 
 	# Comment this target if you don't want to run the riscv_compliance
-	#TARGETS += riscv_compliance
+	TARGETS += riscv_compliance
 endif
 
 # Comment this target if you don't want to run the isr_sample
 #TARGETS += isr_sample
 
 # Comment this target if you don't want to run the coremark
-TARGETS += coremark
+#TARGETS += coremark
 
 # Comment this target if you don't want to run the dhrystone
 #TARGETS += dhrystone21
 
 # Comment this target if you don't want to run the hello test
-#TARGETS += hello
+TARGETS += hello
 
 
 # Targets
-.PHONY: tests run_iverilog run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf
+.PHONY: tests run_iverilog run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf run_iverilog_wf
 
 default: clean_test_list run_iverilog
 
@@ -270,7 +272,7 @@ run_iverilog: $(test_info)
 	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
 	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
 	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_TESTS_PATH) \
+	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) -I $(UPRJ_TESTS_PATH) \
 	$(sv_list) \
 	-o $(top_module).vvp; \
 	printf "" > $(test_results); \
@@ -290,7 +292,7 @@ run_iverilog_wf: $(test_info)
 	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
 	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
 	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_TESTS_PATH) \
+	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) -I $(UPRJ_TESTS_PATH) \
 	$(sv_list) \
 	-o $(top_module).vvp; \
 	printf "" > $(test_results); \

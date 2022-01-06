@@ -63,10 +63,10 @@ end
 always @(posedge mclk)
 begin
    if (clk_count == 'h0) begin
-      uart_clk <= ~uart_clk;
-      clk_count <= control_setup.divisor;	
+      uart_clk  = ~uart_clk;
+      clk_count = control_setup.divisor;	
    end else begin
-      clk_count <= clk_count - 1;	
+      clk_count = clk_count - 1;	
    end
 end
 assign uart_rx_clk = uart_clk;
@@ -124,6 +124,7 @@ begin
   stop_err2_cnt = 0;
   timeout_err_cnt = 0;
   err_cnt = 0;
+  clk_count = 0;
 
 end 
 endtask 
@@ -202,9 +203,6 @@ fork
 		  end
 	end
 
-
-// wait another half cycle for tx_done signal
-		@(negedge uart_rx_clk);
 	read <= 0;
 	-> uart_read_done;
 
@@ -299,8 +297,6 @@ begin
 		  end
 	end
 
-// wait another half cycle for tx_done signal
-		@(negedge uart_rx_clk);
 	read <= 0;
 	-> uart_read_done;
 
@@ -397,9 +393,6 @@ fork
 		  end
 	end
 
-
-// wait another half cycle for tx_done signal
-		@(negedge uart_rx_clk);
 	read <= 0;
 	-> uart_read_done;
 

@@ -61,7 +61,7 @@ vvp:  ${PATTERN:=.vvp}
 %.vvp: %_tb.v
 	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common  user_risc_boot.c -o user_risc_boot.o
 	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common/  ../../rtl/syntacore/scr1/sim/tests/common/crt_tcm.S -o crt_tcm.o
-	${GCC64_PREFIX}-gcc -o user_risc_boot.elf -T ../../rtl/syntacore/scr1/sim/tests/common/link_tcm.ld user_risc_boot.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
+	${GCC64_PREFIX}-gcc -o user_risc_boot.elf -T $(SYNTACORE_FIRMWARE_PATH)/link_tcm.ld user_risc_boot.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
 	${GCC64_PREFIX}-objcopy -O verilog user_risc_boot.elf user_risc_boot.hex
 	${GCC64_PREFIX}-objdump -D user_risc_boot.elf > user_risc_boot.dump
 	rm crt_tcm.o user_risc_boot.o

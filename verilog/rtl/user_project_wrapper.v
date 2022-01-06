@@ -143,6 +143,8 @@
 ////      UART Master added with message handler at wb_host       ////
 ////    2.4  Jan 01, 2022, Dinesh A                               ////
 ////       LA[0] is added as soft reset option at wb_port         ////
+////    2.5  Jan 06, 2022, Dinesh A                               ////
+////       TCM RAM Bug fix inside syntacore                       ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

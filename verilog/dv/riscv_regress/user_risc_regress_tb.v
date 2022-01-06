@@ -178,9 +178,8 @@ module user_risc_regress_tb;
 	   initial begin
 	   	$dumpfile("simx.vcd");
 	   	$dumpvars(1, user_risc_regress_tb);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_sdram_ctrl);
-	   	$dumpvars(0, user_risc_regress_tb.u_sdram8);
-	   	//$dumpvars(1, user_risc_regress_tb.u_top.u_riscv_top);
+	   	$dumpvars(1, user_risc_regress_tb.u_top);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
 	   end
        `endif
 
@@ -192,10 +191,18 @@ module user_risc_regress_tb;
 		// Wait for reset removal
 		wait (rst_n == 1);
 
+
 		// Initialize the SPI memory with hex content
                 $write("\033[0;34m---Initializing the SPI Memory with Hexfile: %s\033[0m\n", test_file);
                 $readmemh(test_file,u_spi_flash_256mb.Mem);
 
+		// some of the RISCV test need SRAM area for specific
+		// instruction execution like fence
+		$sformat(test_ram_file, "%s.ram",test_file);
+                $write("\033[0;34m---Initializing the u_tsram0_2kb Memory with Hexfile: %s\033[0m\n", test_ram_file);
+                $readmemh(test_ram_file,u_top.u_tsram0_2kb.mem);
+		//for(i =32'h00; i < 32'h100; i = i+1)
+                //    $display("Location: %x, Data: %x", i, u_top.u_tsram0_2kb.mem[i]);
 
 
 		#200; 
@@ -207,7 +214,7 @@ module user_risc_regress_tb;
 	        repeat (2) @(posedge clock);
 		#1;
 		//------------ fuse_mhartid= 0x00
-                wb_user_core_write('h3000_0004,'h0);
+                wb_user_core_write('h3002_0004,'h0);
 
 
 	        repeat (2) @(posedge clock);
@@ -252,7 +259,7 @@ user_project_wrapper u_top(
 
  
     // Logic Analyzer Signals
-    .la_data_in      ('0) ,
+    .la_data_in      ('1) ,
     .la_data_out     (),
     .la_oenb         ('0),
  
@@ -284,149 +291,6 @@ end
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
-	force u_top.u_qspi_master.u_delay1_sdio0.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio0.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio0.VGND =VSS;
-	force u_top.u_qspi_master.u_delay1_sdio0.VNB = VSS;
-	force u_top.u_qspi_master.u_delay2_sdio0.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio0.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio0.VGND =VSS;
-	force u_top.u_qspi_master.u_delay2_sdio0.VNB = VSS;
-	force u_top.u_qspi_master.u_buf_sdio0.VPWR   =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio0.VPB    =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio0.VGND   =VSS;
-	force u_top.u_qspi_master.u_buf_sdio0.VNB    =VSS;
-
-	force u_top.u_qspi_master.u_delay1_sdio1.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio1.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio1.VGND =VSS;
-	force u_top.u_qspi_master.u_delay1_sdio1.VNB = VSS;
-	force u_top.u_qspi_master.u_delay2_sdio1.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio1.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio1.VGND =VSS;
-	force u_top.u_qspi_master.u_delay2_sdio1.VNB = VSS;
-	force u_top.u_qspi_master.u_buf_sdio1.VPWR   =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio1.VPB    =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio1.VGND   =VSS;
-	force u_top.u_qspi_master.u_buf_sdio1.VNB    =VSS;
-
-	force u_top.u_qspi_master.u_delay1_sdio2.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio2.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio2.VGND =VSS;
-	force u_top.u_qspi_master.u_delay1_sdio2.VNB = VSS;
-	force u_top.u_qspi_master.u_delay2_sdio2.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio2.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio2.VGND =VSS;
-	force u_top.u_qspi_master.u_delay2_sdio2.VNB = VSS;
-	force u_top.u_qspi_master.u_buf_sdio2.VPWR   =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio2.VPB    =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio2.VGND   =VSS;
-	force u_top.u_qspi_master.u_buf_sdio2.VNB    =VSS;
-
-	force u_top.u_qspi_master.u_delay1_sdio3.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio3.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay1_sdio3.VGND =VSS;
-	force u_top.u_qspi_master.u_delay1_sdio3.VNB = VSS;
-	force u_top.u_qspi_master.u_delay2_sdio3.VPWR =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio3.VPB  =USER_VDD1V8;
-	force u_top.u_qspi_master.u_delay2_sdio3.VGND =VSS;
-	force u_top.u_qspi_master.u_delay2_sdio3.VNB = VSS;
-	force u_top.u_qspi_master.u_buf_sdio3.VPWR   =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio3.VPB    =USER_VDD1V8;
-	force u_top.u_qspi_master.u_buf_sdio3.VGND   =VSS;
-	force u_top.u_qspi_master.u_buf_sdio3.VNB    =VSS;
-          
-	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VPWR =USER_VDD1V8;
-	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VPB  =USER_VDD1V8;
-	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VGND =VSS;
-	force u_top.u_uart_i2c_usb_spi.u_uart_core.u_lineclk_buf.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_wb_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_wb_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_wb_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_wb_rst.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_cpu_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_cpu_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_cpu_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_cpu_rst.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_qspim_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_qspim_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_qspim_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_qspim_rst.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_sspim_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_sspim_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_sspim_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_sspim_rst.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_uart_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_uart_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_uart_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_uart_rst.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_i2cm_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_i2cm_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_i2cm_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_i2cm_rst.VNB = VSS;
-
-	force u_top.u_wb_host.u_buf_usb_rst.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_usb_rst.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_buf_usb_rst.VGND =VSS;
-	force u_top.u_wb_host.u_buf_usb_rst.VNB = VSS;
-
-
-
-	force u_top.u_wb_host.u_clkbuf_cpu.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_cpu.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_cpu.VGND =VSS;
-	force u_top.u_wb_host.u_clkbuf_cpu.VNB = VSS;
-
-	force u_top.u_wb_host.u_clkbuf_rtc.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_rtc.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_rtc.VGND =VSS;
-	force u_top.u_wb_host.u_clkbuf_rtc.VNB = VSS;
-
-	force u_top.u_wb_host.u_clkbuf_usb.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_usb.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_clkbuf_usb.VGND =VSS;
-	force u_top.u_wb_host.u_clkbuf_usb.VNB = VSS;
-
-	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VGND =VSS;
-	force u_top.u_wb_host.u_cpu_ref_sel.u_mux.VNB = VSS;
-
-	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VGND =VSS;
-	force u_top.u_wb_host.u_cpu_clk_sel.u_mux.VNB = VSS;
-
-	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VGND =VSS;
-	force u_top.u_wb_host.u_wbs_clk_sel.u_mux.VNB = VSS;
-
-	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VGND =VSS;
-	force u_top.u_wb_host.u_usb_clk_sel.u_mux.VNB = VSS;
-
-	force u_top.u_wb_host.u_delay1_stb0.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_delay1_stb0.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_delay1_stb0.VGND =VSS;
-	force u_top.u_wb_host.u_delay1_stb0.VNB = VSS;
-	
-	force u_top.u_wb_host.u_delay2_stb1.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_delay2_stb1.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_delay2_stb1.VGND =VSS;
-	force u_top.u_wb_host.u_delay2_stb1.VNB = VSS;
-
-	force u_top.u_wb_host.u_delay2_stb2.VPWR =USER_VDD1V8;
-	force u_top.u_wb_host.u_delay2_stb2.VPB  =USER_VDD1V8;
-	force u_top.u_wb_host.u_delay2_stb2.VGND =VSS;
-	force u_top.u_wb_host.u_delay2_stb2.VNB = VSS;
     end
 `endif    
 

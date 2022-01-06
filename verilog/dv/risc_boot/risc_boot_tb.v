@@ -134,6 +134,7 @@ module risc_boot_tb;
            $dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
            //$dumpvars(2,risc_boot_tb.uut);
            $dumpvars(4,risc_boot_tb.uut.mprj);
+           $dumpvars(0,risc_boot_tb.tb_uart);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");
         end
@@ -152,52 +153,65 @@ module risc_boot_tb;
            uart_fifo_enable        = 0;	// fifo mode disable
         
            #200; // Wait for reset removal
-          
-	   // Wait for Managment core to boot up 
-	   wait(checkbits == 16'h AB60);
-	   $display("Monitor: Test User Risc Boot Started");
-       
-	   // Wait for user risc core to boot up 
-           repeat (25000) @(posedge clock);  
-           tb_uart.uart_init;
-           tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
-        	                          uart_stick_parity, uart_timeout, uart_divisor);
-           
-           for (i=0; i<40; i=i+1)
-           	uart_write_data[i] = $random;
-           
-           
-           
+
            fork
-              begin
-                 for (i=0; i<40; i=i+1)
+	   begin
+          
+	      // Wait for Managment core to boot up 
+	      wait(checkbits == 16'h AB60);
+	      $display("Monitor: Test User Risc Boot Started");
+       
+	      // Wait for user risc core to boot up 
+              repeat (25000) @(posedge clock);  
+              tb_uart.uart_init;
+              tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+                                             uart_stick_parity, uart_timeout, uart_divisor);
+              
+              for (i=0; i<40; i=i+1)
+              	uart_write_data[i] = $random;
+              
+              
+              
+              fork
                  begin
-                   $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
-                    tb_uart.write_char (uart_write_data[i]);
+                    for (i=0; i<40; i=i+1)
+                    begin
+                      $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
+                       tb_uart.write_char (uart_write_data[i]);
+                    end
                  end
-              end
-           
-              begin
-                 for (j=0; j<40; j=j+1)
+              
                  begin
-                   tb_uart.read_char_chk(uart_write_data[j]);
+                    for (j=0; j<40; j=j+1)
+                    begin
+                      tb_uart.read_char_chk(uart_write_data[j]);
+                    end
                  end
+                 join
+              
+                 #100
+                 tb_uart.report_status(uart_rx_nu, uart_tx_nu);
+              
+                 test_fail = 0;
+        
+                 // Check 
+                 // if all the 40 byte transmitted
+                 // if all the 40 byte received
+                 // if no error 
+                 if(uart_tx_nu != 40) test_fail = 1;
+                 if(uart_rx_nu != 40) test_fail = 1;
+                 if(tb_uart.err_cnt != 0) test_fail = 1;
+        
+	      end
+	      begin
+                   // Loop for TimeOut
+                   repeat (60000) @(posedge clock);
+                		// $display("+1000 cycles");
+                   test_fail = 1;
               end
-              join
-           
-              #100
-              tb_uart.report_status(uart_rx_nu, uart_tx_nu);
-           
-              test_fail = 0;
-        
-              // Check 
-              // if all the 40 byte transmitted
-              // if all the 40 byte received
-              // if no error 
-              if(uart_tx_nu != 40) test_fail = 1;
-              if(uart_rx_nu != 40) test_fail = 1;
-              if(tb_uart.err_cnt != 0) test_fail = 1;
-        
+              join_any
+              disable fork; //disable pending fork activity
+
               $display("###################################################");
               if(test_fail == 0) begin
                  `ifdef GL
