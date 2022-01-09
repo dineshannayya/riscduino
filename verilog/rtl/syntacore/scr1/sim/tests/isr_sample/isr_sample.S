@@ -11,9 +11,9 @@
 #define MCAUSE_TMR_IRQ              (1 << 31 | IRQ_M_TIMER)
 
 // IPIC
-#define IRQ_LINES_ADDR              0x3000000C      // simulation
-#define TRIG_EXT_IRQ_ADDR           0x3000000C      // external irq is triggered when tb memory is set to non-zero // Bit [15:0]
-#define TRIG_SW_IRQ_ADDR            0x3000000C      // software irq is triggered when tb memory is set to non-zero // Bit [16]
+#define IRQ_LINES_ADDR              0x10020018      // simulation
+#define TRIG_EXT_IRQ_ADDR           0x10020018      // external irq is triggered when tb memory is set to non-zero // Bit [15:0]
+#define TRIG_SW_IRQ_ADDR            0x10020018      // software irq is triggered when tb memory is set to non-zero // Bit [16]
 
 #define IPIC_EOI                    0xBF4           // end of interrupt
 #define IPIC_SOI                    0xBF5           // start of interrupt
@@ -178,7 +178,7 @@ test_start:
     /// configuring software interrupt /// 
     csrw                mie, zero                      // disable all interrupts
     li                  t0, TRIG_SW_IRQ_ADDR
-    li                  t1, 0x00010000
+    li                  t1, 0x00010000                 // Soft ireq bit [16] 
     sw                  t1, (t0)                       //send command to generate software interrupt 
     li                  t0, MSIE
     csrs                mie, t0                        // enable software interrupt 

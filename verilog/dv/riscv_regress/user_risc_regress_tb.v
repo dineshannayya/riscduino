@@ -180,6 +180,7 @@ module user_risc_regress_tb;
 	   	$dumpvars(1, user_risc_regress_tb);
 	   	$dumpvars(1, user_risc_regress_tb.u_top);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_pinmux);
 	   end
        `endif
 

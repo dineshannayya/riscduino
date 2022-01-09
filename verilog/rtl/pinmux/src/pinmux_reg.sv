@@ -334,33 +334,49 @@ gen_32b_reg  #(32'h0) u_reg_5	(
 //-----------------------------------------------------------------------
 //   reg-6
 //-----------------------------------------------------------------
-assign  irq_lines     = {gpio_intr,ext_intr_in[1:0],usb_intr,i2cm_intr,reg_6[10:0]}; 
-assign  soft_irq      = reg_6[11]; 
-assign  user_irq      = reg_6[14:12]; 
+assign  irq_lines     = reg_6[15:0]; 
+assign  soft_irq      = reg_6[16]; 
+assign  user_irq      = reg_6[19:17]; 
+
 
 generic_register #(8,0  ) u_reg6_be0 (
 	      .we            ({8{sw_wr_en_6 & 
-                                 wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
+                                 wr_be[0]   }}   ),		 
+	      .data_in       (sw_reg_wdata[7:0]  ),
+	      .reset_n       (h_reset_n          ),
+	      .clk           (mclk               ),
+	      
+	      //List of Outs
+	      .data_out      (reg_6[7:0]         )
+          );
+
+generic_register #(3,0  ) u_reg6_be1_1 (
+	      .we            ({3{sw_wr_en_6 & 
+                                 wr_be[1]   }}   ),		 
+	      .data_in       (sw_reg_wdata[10:8] ),
+	      .reset_n       (h_reset_n          ),
+	      .clk           (mclk               ),
+	      
+	      //List of Outs
+	      .data_out      (reg_6[10:8]        )
+          );
+
+
+assign reg_6[15:11] = {gpio_intr, ext_intr_in[1:0], usb_intr, i2cm_intr};
+
+
+generic_register #(4,0  ) u_reg6_be2 (
+	      .we            ({4{sw_wr_en_6 & 
+                                 wr_be[2]   }}  ),		 
+	      .data_in       (sw_reg_wdata[19:16]),
 	      .reset_n       (h_reset_n           ),
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_6[7:0]        )
+	      .data_out      (reg_6[19:16]        )
           );
 
-generic_register #(7,0  ) u_reg6_be1 (
-	      .we            ({7{sw_wr_en_6 & 
-                                 wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[14:8]),
-	      .reset_n       (h_reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_6[14:8]        )
-          );
-
-assign reg_6[31:15] = '0;
+assign reg_6[31:20] = '0;
 
 //  Register-7
 gen_32b_reg  #(32'h0) u_reg_7	(
@@ -668,7 +684,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h0601_2022) u_reg_23	(
+gen_32b_reg  #(32'h0801_2022) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -681,9 +697,9 @@ gen_32b_reg  #(32'h0601_2022) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 2.5 = 0002500
+// Software Reg-3: Poject Revison 2.6 = 0002600
 // ----------------------------------------
-gen_32b_reg  #(32'h0002_5000) u_reg_24	(
+gen_32b_reg  #(32'h0002_6000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
