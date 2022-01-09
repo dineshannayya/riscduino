@@ -35,6 +35,19 @@ endif
 # Install caravel as submodule, (1): submodule, (0): clone
 SUBMODULE?=1
 
+#RISCV COMPLIANCE test Environment
+COREMARK_DIR   = verilog/rtl/syntacore/scr1/dependencies/coremark
+RISCV_COMP_DIR = verilog/rtl/syntacore/scr1/dependencies/riscv-compliance
+RISCV_TEST_DIR = verilog/rtl/syntacore/scr1/dependencies/riscv-tests
+
+COREMARK_REPO   =  https://github.com/eembc/coremark
+RISCV_COMP_REPO =  https://github.com/riscv/riscv-compliance
+RISCV_TEST_REPO =  https://github.com/riscv/riscv-tests
+
+COREMARK_BRANCH   =  7f420b6bdbff436810ef75381059944e2b0d79e8
+RISCV_COMP_BRANCH =  d51259b2a949be3af02e776c39e135402675ac9b
+RISCV_TEST_BRANCH =  e30978a71921159aec38eeefd848fca4ed39a826
+
 # Include Caravel Makefile Targets
 .PHONY: % : check-caravel
 %: 
@@ -56,7 +69,7 @@ PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
 TARGET_PATH=$(shell pwd)
 VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} && make"
-$(DV_PATTERNS): verify-% : ./verilog/dv/% 
+$(DV_PATTERNS): verify-% : ./verilog/dv/% check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_ROOT}:${PDK_ROOT} \
                 -v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
                 -e TARGET_PATH=${TARGET_PATH} -e PDK_ROOT=${PDK_ROOT} \
@@ -174,6 +187,27 @@ check-pdk:
 	@if [ ! -d "$(PDK_ROOT)" ]; then \
 		echo "PDK Root: "$(PDK_ROOT)" doesn't exists, please export the correct path before running make. "; \
 		exit 1; \
+	fi
+
+check-coremark_repo:
+	@if [ ! -d "$(COREMARK_DIR)" ]; then \
+		echo "Installing Core Mark Repo.."; \
+		git clone $(COREMARK_REPO) $(COREMARK_DIR); \
+		cd $(COREMARK_DIR); git checkout $(COREMARK_BRANCH); \
+	fi
+
+check-riscv_comp_repo:
+	@if [ ! -d "$(RISCV_COMP_DIR)" ]; then \
+		echo "Installing Risc V Complance Repo.."; \
+		git clone $(RISCV_COMP_REPO) $(RISCV_COMP_DIR); \
+		cd $(RISCV_COMP_DIR); git checkout $(RISCV_COMP_BRANCH); \
+	fi
+
+check-riscv_test_repo:
+	@if [ ! -d "$(RISCV_TEST_DIR)" ]; then \
+		echo "Installing RiscV Test Repo.."; \
+		git clone $(RISCV_TEST_REPO) $(RISCV_TEST_DIR); \
+		cd $(RISCV_TEST_DIR); git checkout $(RISCV_TEST_BRANCH); \
 	fi
 
 .PHONY: help

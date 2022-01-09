@@ -44,10 +44,10 @@ set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[1]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[2]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[3]}]
 
-set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
-set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
-set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
-set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
+set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
+set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
+set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
+set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
 
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[0]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[1]}]
@@ -59,10 +59,10 @@ set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[1]}]
 set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[2]}]
 set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[3]}]
 
-set_case_analysis 0 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[0]}]
-set_case_analysis 0 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[1]}]
-set_case_analysis 0 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[2]}]
-set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[3]}]
+set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[0]}]
+set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[1]}]
+set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[2]}]
+set_case_analysis 0 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[3]}]
 
 set_case_analysis 0 [get_pins {mprj/u_mbist/cfg_cska_mbist[0]}]
 set_case_analysis 0 [get_pins {mprj/u_mbist/cfg_cska_mbist[1]}]
@@ -164,7 +164,7 @@ set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 puts "\[INFO\]: Setting clock setup uncertainity to: $::env(SYNTH_CLOCK_SETUP_UNCERTAINITY)"
 puts "\[INFO\]: Setting clock hold uncertainity to: $::env(SYNTH_CLOCK_HOLD_UNCERTAINITY)"
 set_clock_uncertainty -setup $::env(SYNTH_CLOCK_SETUP_UNCERTAINITY) [all_clocks]
-set_clock_uncertainty -setup $::env(SYNTH_CLOCK_HOLD_UNCERTAINITY) [all_clocks]
+set_clock_uncertainty -hold $::env(SYNTH_CLOCK_HOLD_UNCERTAINITY) [all_clocks]
 
 
 #set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_adr_i[*]}]

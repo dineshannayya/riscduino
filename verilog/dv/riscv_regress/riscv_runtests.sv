@@ -53,7 +53,7 @@ end
            $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", core2dmem_addr_o_r,`RISC_CORE.dmem2core_rdata_i,`RISC_CORE.dmem2core_resp_i);
  end
 **/
-/***
+/**
   logic [31:0] test_count;
  `define RISC_CORE  u_top.u_riscv_top.i_core_top
  `define RISC_EXU  u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_exu
@@ -70,6 +70,7 @@ end
 	  end
  end
 **/
+
 always_ff @(posedge clk) begin
     bit test_pass;
     int unsigned                            f_test;

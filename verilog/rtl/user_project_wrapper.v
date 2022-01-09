@@ -145,6 +145,8 @@
 ////       LA[0] is added as soft reset option at wb_port         ////
 ////    2.5  Jan 06, 2022, Dinesh A                               ////
 ////       TCM RAM Bug fix inside syntacore                       ////
+////    2.6  Jan 08, 2022, Dinesh A                               ////
+////        Pinmux Interrupt Logic change                         ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
