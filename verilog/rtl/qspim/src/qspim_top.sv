@@ -236,18 +236,22 @@ logic                          rst_ss_n;
 
 
 // ADDing Delay cells for Interface hold fix
+wire spi_sdo0_d1,spi_sdo0_d2;
 ctech_delay_buf u_delay1_sdio0 (.X(spi_sdo0_d1),.A(spi_sdo_int[0]));
 ctech_delay_buf u_delay2_sdio0 (.X(spi_sdo0_d2),.A(spi_sdo0_d1));
 ctech_buf u_buf_sdio0    (.X(spi_sdo[0]),.A(spi_sdo0_d2));
 
+wire spi_sdo1_d1,spi_sdo1_d2;
 ctech_delay_buf u_delay1_sdio1 (.X(spi_sdo1_d1),.A(spi_sdo_int[1]));
 ctech_delay_buf u_delay2_sdio1 (.X(spi_sdo1_d2),.A(spi_sdo1_d1));
 ctech_buf u_buf_sdio1    (.X(spi_sdo[1]),.A(spi_sdo1_d2));
 
+wire spi_sdo2_d1,spi_sdo2_d2;
 ctech_delay_buf u_delay1_sdio2 (.X(spi_sdo2_d1),.A(spi_sdo_int[2]));
 ctech_delay_buf u_delay2_sdio2 (.X(spi_sdo2_d2),.A(spi_sdo2_d1));
 ctech_buf u_buf_sdio2    (.X(spi_sdo[2]),.A(spi_sdo2_d2));
 
+wire spi_sdo3_d1,spi_sdo3_d2;
 ctech_delay_buf u_delay1_sdio3 (.X(spi_sdo3_d1),.A(spi_sdo_int[3]));
 ctech_delay_buf u_delay2_sdio3 (.X(spi_sdo3_d2),.A(spi_sdo3_d1));
 ctech_buf u_buf_sdio3    (.X(spi_sdo[3]),.A(spi_sdo3_d2));
