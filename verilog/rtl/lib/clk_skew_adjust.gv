@@ -1,0 +1,205 @@
+//////////////////////////////////////////////////////////////////////////////
+// SPDX-FileCopyrightText: 2021 , Dinesh Annayya                          
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
+//
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+////  clock skew adjust                                          ////
+////                                                              ////
+////  This file is part of the YIFive cores project               ////
+////  https://github.com/dineshannayya/yifive_r0.git              ////
+////  http://www.opencores.org/cores/yifive/                      ////
+////                                                              ////
+////  Description                                                 ////
+////      This block is useful for global clock skew adjustment   ////
+////      logic implementation:                                   ////
+////        clk_out = (sel=0) ? clk_in :                          ////
+////                  (sel=1) ? clk_d1 :                          ////
+////                  (sel=1) ? clk_d2 :                          ////
+////                  .....                                       ////
+////                  (sel=15)? clk_d15 :clk_in                   ////
+////                                                              ////
+////     Note: each d* indicate clk buf delay                     ////
+////                                                              ////
+////                                                              ////
+////  To Do:                                                      ////
+////    nothing                                                   ////
+////                                                              ////
+////  Author(s):                                                  ////
+////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////                                                              ////
+////  Revision :                                                  ////
+////    0.0 - 29th Feb 2021, Dinesh A                             ////
+////          Initial version                                     ////
+///
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+//// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
+////                                                              ////
+//// This source file may be used and distributed without         ////
+//// restriction provided that this copyright statement is not    ////
+//// removed from the file and that any derivative work contains  ////
+//// the original copyright notice and the associated disclaimer. ////
+////                                                              ////
+//// This source file is free software; you can redistribute it   ////
+//// and/or modify it under the terms of the GNU Lesser General   ////
+//// Public License as published by the Free Software Foundation; ////
+//// either version 2.1 of the License, or (at your option) any   ////
+//// later version.                                               ////
+////                                                              ////
+//// This source is distributed in the hope that it will be       ////
+//// useful, but WITHOUT ANY WARRANTY; without even the implied   ////
+//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR      ////
+//// PURPOSE.  See the GNU Lesser General Public License for more ////
+//// details.                                                     ////
+////                                                              ////
+//// You should have received a copy of the GNU Lesser General    ////
+//// Public License along with this source; if not, download it   ////
+//// from http://www.opencores.org/lgpl.shtml                     ////
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
+// Clock-in is east pad direction
+// clock out give in other three direction for better placement
+/////////////////////////////////////////////////////////////////////
+module clk_skew_adjust(
+`ifdef USE_POWER_PINS
+     vccd1,// User area 1 1.8V supply
+     vssd1,// User area 1 digital ground
+`endif
+clk_in, sel, clk_out);
+
+
+`ifdef USE_POWER_PINS
+     input vccd1;// User area 1 1.8V supply
+     input vssd1;// User area 1 digital ground
+`endif
+  input  clk_in;
+  output clk_out;
+  input [3:0] sel;
+  wire in0;
+  wire in1;
+  wire in2;
+  wire in3;
+  wire in4;
+  wire in5;
+  wire in6;
+  wire in7;
+  wire in8;
+  wire in9;
+  wire in10;
+  wire in11;
+  wire in12;
+  wire in13;
+  wire in14;
+  wire in15;
+
+  wire clk_d1;
+  wire clk_d2;
+  wire clk_d3;
+  wire clk_d4;
+  wire clk_d5;
+  wire clk_d6;
+  wire clk_d7;
+  wire clk_d8;
+  wire clk_d9;
+  wire clk_d10;
+  wire clk_d11;
+  wire clk_d12;
+  wire clk_d13;
+  wire clk_d14;
+  wire clk_d15;
+
+  wire d00;
+  wire d01;
+  wire d02;
+  wire d03;
+  wire d04;
+  wire d05;
+  wire d06;
+  wire d07;
+  wire d10;
+  wire d11;
+  wire d12;
+  wire d13;
+  wire d20;
+  wire d21;
+  wire d30;
+
+
+  ctech_delay_clkbuf clkbuf_1  (.A(clk_in),    .X(clk_d1));
+  ctech_delay_clkbuf clkbuf_2  (.A(clk_d1),    .X(clk_d2));
+  ctech_delay_clkbuf clkbuf_3  (.A(clk_d2),    .X(clk_d3));
+  ctech_delay_clkbuf clkbuf_4  (.A(clk_d3),    .X(clk_d4));
+  ctech_delay_clkbuf clkbuf_5  (.A(clk_d4),    .X(clk_d5));
+  ctech_delay_clkbuf clkbuf_6  (.A(clk_d5),    .X(clk_d6));
+  ctech_delay_clkbuf clkbuf_7  (.A(clk_d6),    .X(clk_d7));
+  ctech_delay_clkbuf clkbuf_8  (.A(clk_d7),    .X(clk_d8));
+  ctech_delay_clkbuf clkbuf_9  (.A(clk_d8),    .X(clk_d9));
+  ctech_delay_clkbuf clkbuf_10 (.A(clk_d9),    .X(clk_d10));
+  ctech_delay_clkbuf clkbuf_11 (.A(clk_d10),   .X(clk_d11));
+  ctech_delay_clkbuf clkbuf_12 (.A(clk_d11),   .X(clk_d12));
+  ctech_delay_clkbuf clkbuf_13 (.A(clk_d12),   .X(clk_d13));
+  ctech_delay_clkbuf clkbuf_14 (.A(clk_d13),   .X(clk_d14));
+  ctech_delay_clkbuf clkbuf_15 (.A(clk_d14),   .X(clk_d15));
+
+
+  // Tap point selection
+  assign in0  = clk_in;
+  assign in1  = clk_d1;
+  assign in2  = clk_d2;
+  assign in3  = clk_d3;
+  assign in4  = clk_d4;
+  assign in5  = clk_d5;
+  assign in6  = clk_d6;
+  assign in7  = clk_d7;
+  assign in8  = clk_d8;
+  assign in9  = clk_d9;
+  assign in10 = clk_d10;
+  assign in11 = clk_d11;
+  assign in12 = clk_d12;
+  assign in13 = clk_d13;
+  assign in14 = clk_d14;
+  assign in15 = clk_d15;
+
+
+  // first level mux - 8
+  ctech_mux2x1_2 u_mux_level_00 ( .X (d00) , .A0 (in0),  .A1(in1),  .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_01 ( .X (d01) , .A0 (in2),  .A1(in3),  .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_02 ( .X (d02) , .A0 (in4),  .A1(in5),  .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_03 ( .X (d03) , .A0 (in6),  .A1(in7),  .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_04 ( .X (d04) , .A0 (in8),  .A1(in9),  .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_05 ( .X (d05) , .A0 (in10), .A1(in11), .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_06 ( .X (d06) , .A0 (in12), .A1(in13), .S(sel[0]));
+  ctech_mux2x1_2 u_mux_level_07 ( .X (d07) , .A0 (in14), .A1(in15), .S(sel[0]));
+
+  // second level mux - 4
+  ctech_mux2x1_2 u_mux_level_10 ( .X (d10) , .A0 (d00), .A1(d01), .S(sel[1]));
+  ctech_mux2x1_2 u_mux_level_11 ( .X (d11) , .A0 (d02), .A1(d03), .S(sel[1]));
+  ctech_mux2x1_2 u_mux_level_12 ( .X (d12) , .A0 (d04), .A1(d05), .S(sel[1]));
+  ctech_mux2x1_2 u_mux_level_13 ( .X (d13) , .A0 (d06), .A1(d07), .S(sel[1]));
+
+  // third level mux - 2
+  ctech_mux2x1_2 u_mux_level_20 ( .X (d20) , .A0 (d10), .A1(d11), .S(sel[2]));
+  ctech_mux2x1_2 u_mux_level_21 ( .X (d21) , .A0 (d12), .A1(d13), .S(sel[2]));
+
+  // fourth level mux - 1
+  ctech_mux2x1_4 u_mux_level_30 ( .X (d30) , .A0 (d20), .A1(d21), .S(sel[3]));
+
+
+  assign clk_out = d30;
+
+endmodule
