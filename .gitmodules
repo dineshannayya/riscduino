@@ -1,3 +1,6 @@
 [submodule "caravel"]
 	path = caravel
 	url = https://github.com/efabless/caravel-lite.git
+[submodule "verilog/rtl/qspim"]
+	path = verilog/rtl/qspim
+	url = https://github.com/dineshannayya/qspim.git
