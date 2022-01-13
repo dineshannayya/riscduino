@@ -41,6 +41,9 @@ create:
 	mkdir -p ./reports; 
 	mkdir -p ./netlist;
 	$(OPENLANE_ROOT)/scripts/libtrim.pl $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib $(PDK_ROOT)/sky130A/libs.tech/openlane/sky130_fd_sc_hd/no_synth.cells > ./tmp/trimmed.lib
+	#create No PG Pin library for hand instantiated cells
+	sed '/pg_pin.*/a \         direction : "inout";'  $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib  > ./tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib
+	sed -i 's/pg_pin/pin/' ./tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib
 
 merge: 
 	################################################ 
