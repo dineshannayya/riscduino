@@ -58,6 +58,8 @@ set ::env(VERILOG_FILES) [glob  \
 	../src/top/scr1_top_wb.sv   \
 	../src/top/scr1_dmem_wb.sv   \
 	../src/top/scr1_imem_wb.sv   \
+	../../../lib/clk_skew_adjust.gv \
+	../../../lib/ctech_cells.sv     \
 	../../../lib/async_fifo.sv  ]
 
 #set ::env(VERILOG_FILES_BLACKBOX) [glob  \
@@ -65,11 +67,13 @@ set ::env(VERILOG_FILES) [glob  \
 
 set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/src/includes]
 
-set ::env(SYNTH_DEFINES) [list YOSYS ]
+set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 #set ::env(SYNTH_DEFINES) [list SCR1_DBG_EN SCR1_MPRF_RAM ]
 
+set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 set ::env(LIB_SYNTH)  ./tmp/trimmed.lib
+set ::env(LIB_SYNTH_COMPLETE_NO_PG) ./tmp/sky130_fd_sc_hd__tt_025C_1v80.no_pg.lib
 
 
 set ::env(SDC_FILE) "base.sdc"
@@ -137,6 +141,10 @@ if {[info exist ::env(VERILOG_INCLUDE_DIRS)]} {
 	set vIdirsArgs [join $vIdirsArgs]
 }
 
+if { $::env(SYNTH_READ_BLACKBOX_LIB) } {
+	log "Reading $::env(LIB_SYNTH_COMPLETE_NO_PG) as a blackbox"
+	read_liberty -lib -ignore_miss_dir -setattr blackbox $::env(LIB_SYNTH_COMPLETE_NO_PG)
+}
 
 
 if { [info exists ::env(EXTRA_LIBS) ] } {
