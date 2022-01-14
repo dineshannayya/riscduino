@@ -133,7 +133,7 @@ UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
 UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
 UPRJ_BEHAVIOURAL_MODELS = $(root_dir)/../model
 UPRJ_BEHAVIOURAL_AGENTS = $(root_dir)/../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/syntacore/scr1/src/includes
+UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1/src/includes
 UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
 UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
@@ -143,9 +143,9 @@ sv_list            = ../../user_risc_regress_tb.v
 top_module         = user_risc_regress_tb
 
 # TB Paths
-export sim_dir  := $(UPRJ_RTL_PATH)/syntacore/scr1/sim
+export sim_dir  := $(UPRJ_TESTS_PATH)
 export tst_dir  := $(sim_dir)/tests
-export inc_dir  := $(tst_dir)/common
+export inc_dir  := $(UPRJ_VERILOG_PATH)/dv/firmware
 
 test_results := $(bld_dir)/test_results.txt
 test_info    := $(bld_dir)/test_info
@@ -174,14 +174,14 @@ endif
 ifeq (,$(findstring e,$(ARCH_lowercase)))
 	# These tests cannot be compiled for RVE
 	# Comment this target if you don't want to run the riscv_isa
-	#TARGETS += riscv_isa
+	TARGETS += riscv_isa
 
 	# Comment this target if you don't want to run the riscv_compliance
 	#TARGETS += riscv_compliance
 endif
 
 # Comment this target if you don't want to run the isr_sample
-TARGETS += isr_sample
+#TARGETS += isr_sample
 
 # Comment this target if you don't want to run the coremark
 #TARGETS += coremark
@@ -190,7 +190,7 @@ TARGETS += isr_sample
 #TARGETS += dhrystone21
 
 # Comment this target if you don't want to run the hello test
-TARGETS += hello
+#TARGETS += hello
 
 
 # Targets

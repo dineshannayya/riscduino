@@ -1,4 +1,41 @@
-
+//////////////////////////////////////////////////////////////////////////////
+// SPDX-FileCopyrightText: 2021 , Dinesh Annayya                          
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
+//
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+////  Pinmux Register                                             ////
+////                                                              ////
+////  This file is part of the riscduino cores project            ////
+////  https://github.com/dineshannayya/riscduino.git              ////
+////                                                              ////
+////  Description                                                 ////
+////      Hold all the Global and PinMux Register                 ////
+////                                                              ////
+////  To Do:                                                      ////
+////    nothing                                                   ////
+////                                                              ////
+////  Author(s):                                                  ////
+////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////                                                              ////
+////  Revision :                                                  ////
+////    0.1 - 16th Feb 2021, Dinesh A                             ////
+////          initial version                                     ////
+//////////////////////////////////////////////////////////////////////
+//
 module pinmux_reg (
                        // System Signals
                        // Inputs
@@ -684,7 +721,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h0801_2022) u_reg_23	(
+gen_32b_reg  #(32'h1401_2022) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -697,9 +734,9 @@ gen_32b_reg  #(32'h0801_2022) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 2.6 = 0002600
+// Software Reg-3: Poject Revison 3.0 = 0003000
 // ----------------------------------------
-gen_32b_reg  #(32'h0002_6000) u_reg_24	(
+gen_32b_reg  #(32'h0003_0000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),

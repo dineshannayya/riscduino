@@ -41,7 +41,7 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-        $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+        $script_dir/../../verilog/rtl/lib/clk_skew_adjust.gv \
         $script_dir/../../verilog/rtl/lib/reset_sync.sv      \
         $script_dir/../../verilog/rtl/qspim/src/qspim_top.sv \
         $script_dir/../../verilog/rtl/qspim/src/qspim_if.sv \

@@ -36,9 +36,9 @@ endif
 SUBMODULE?=1
 
 #RISCV COMPLIANCE test Environment
-COREMARK_DIR   = verilog/rtl/syntacore/scr1/dependencies/coremark
-RISCV_COMP_DIR = verilog/rtl/syntacore/scr1/dependencies/riscv-compliance
-RISCV_TEST_DIR = verilog/rtl/syntacore/scr1/dependencies/riscv-tests
+COREMARK_DIR   = verilog/dv/riscv_regress/dependencies/coremark
+RISCV_COMP_DIR = verilog/dv/riscv_regress/dependencies/riscv-compliance
+RISCV_TEST_DIR = verilog/dv/riscv_regress/dependencies/riscv-tests
 
 COREMARK_REPO   =  https://github.com/eembc/coremark
 RISCV_COMP_REPO =  https://github.com/riscv/riscv-compliance

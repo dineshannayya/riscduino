@@ -44,7 +44,7 @@
 
 	# User project netlist
         read_verilog $::env(USER_ROOT)/verilog/gl/qspim.v
-        read_verilog $::env(USER_ROOT)/verilog/gl/syntacore.v  
+        read_verilog $::env(USER_ROOT)/verilog/gl/yifive.v  
         read_verilog $::env(USER_ROOT)/verilog/gl/uart_i2cm_usb_spi.v
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_host.v  
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_interconnect.v
@@ -146,7 +146,7 @@
 	## User Project Spef
         read_spef -path mprj/u_mbist                       $::env(USER_ROOT)/spef/mbist_top.spef  
 
-        read_spef -path mprj/u_riscv_top         $::env(USER_ROOT)/spef/scr1_top_wb.spef
+        read_spef -path mprj/u_riscv_top         $::env(USER_ROOT)/spef/ycr1_top_wb.spef
         read_spef -path mprj/u_pinmux            $::env(USER_ROOT)/spef/pinmux.spef
         read_spef -path mprj/u_qspi_master       $::env(USER_ROOT)/spef/qspim_top.spef
         read_spef -path mprj/u_uart_i2c_usb_spi  $::env(USER_ROOT)/spef/uart_i2c_usb_spi_top.spef

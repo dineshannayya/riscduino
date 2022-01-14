@@ -8,15 +8,10 @@ current_design pinmux
 ###############################################################################
 create_clock -name mclk -period 10.0000 [get_ports {mclk}]
 set_propagated_clock [get_clocks {mclk}]
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -setup 0.2500
 
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]  -hold  0.2500
+set_clock_transition 0.1500 [all_clocks]
+set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05
 puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
