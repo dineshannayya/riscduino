@@ -15,7 +15,6 @@ set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -g
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.2500 [all_clocks]
-
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05

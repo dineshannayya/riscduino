@@ -29,19 +29,19 @@ UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
 UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
 UPRJ_BEHAVIOURAL_MODELS = ../model
 UPRJ_BEHAVIOURAL_AGENTS = ../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/syntacore/scr1/src/includes
+UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1/src/includes
 UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
 UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
 UPRJ_INCLUDE_PATH5 = $(UPRJ_RTL_PATH)/mbist/include
 
-## SYNTACORE FIRMWARE
-SYNTACORE_FIRMWARE_PATH = $(UPRJ_VERILOG_PATH)/rtl/syntacore/scr1/sim/tests/common
+## YIFIVE FIRMWARE
+YIFIVE_FIRMWARE_PATH = $(UPRJ_VERILOG_PATH)/dv/firmware
 GCC64_PREFIX?=riscv64-unknown-elf
 
 ## RISCV GCC 
 GCC_PATH?=/ef/apps/bin
-GCC32_PREFIX?=riscv32-unknown-elf
+GCC_PREFIX?=riscv32-unknown-elf
 PDK_PATH?=/ef/tech/SW/sky130A
 
 ## Simulation mode: RTL/GL
@@ -59,9 +59,9 @@ hex:  ${PATTERN:=.hex}
 vvp:  ${PATTERN:=.vvp}
 
 %.vvp: %_tb.v
-	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common  user_risc_boot.c -o user_risc_boot.o
-	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common/  ../../rtl/syntacore/scr1/sim/tests/common/crt_tcm.S -o crt_tcm.o
-	${GCC64_PREFIX}-gcc -o user_risc_boot.elf -T $(SYNTACORE_FIRMWARE_PATH)/link_tcm.ld user_risc_boot.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
+	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  user_risc_boot.c -o user_risc_boot.o
+	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  $(YIFIVE_FIRMWARE_PATH)/crt_tcm.S -o crt_tcm.o
+	${GCC64_PREFIX}-gcc -o user_risc_boot.elf -T $(YIFIVE_FIRMWARE_PATH)/link_tcm.ld user_risc_boot.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
 	${GCC64_PREFIX}-objcopy -O verilog user_risc_boot.elf user_risc_boot.hex
 	${GCC64_PREFIX}-objdump -D user_risc_boot.elf > user_risc_boot.dump
 	rm crt_tcm.o user_risc_boot.o

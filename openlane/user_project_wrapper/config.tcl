@@ -68,7 +68,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $proj_dir/../../verilog/gl/mbist.v     \
         $proj_dir/../../verilog/gl/uart_i2cm_usb_spi.v     \
 	$proj_dir/../../verilog/gl/wb_host.v \
-	$proj_dir/../../verilog/gl/syntacore.v \
+	$proj_dir/../../verilog/gl/yifive.v \
 	$proj_dir/../../verilog/rtl/sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	"
 
@@ -79,7 +79,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/uart_i2cm_usb_spi.lef \
 	$lef_root/wb_host.lef \
 	$lef_root/mbist.lef \
-	$lef_root/syntacore.lef \
+	$lef_root/yifive.lef \
 	$lef_root/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
 	"
 
@@ -90,13 +90,13 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/uart_i2cm_usb_spi.gds \
 	$gds_root/wb_host.gds \
 	$gds_root/mbist.gds \
-	$gds_root/syntacore.gds \
+	$gds_root/yifive.gds \
 	$gds_root/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/syntacore/scr1/src/includes ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/yifive/ycr1/src/includes ]
 
 set ::env(GLB_RT_MAXLAYER) 5
 

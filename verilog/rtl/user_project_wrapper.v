@@ -147,6 +147,9 @@
 ////       TCM RAM Bug fix inside syntacore                       ////
 ////    2.6  Jan 08, 2022, Dinesh A                               ////
 ////        Pinmux Interrupt Logic change                         ////
+////    3.0  Jan 14, 2022, Dinesh A                               ////
+////        Moving from riscv core from syntacore/scr1 to         ////
+////        yfive/ycr1 on sankranti 2022 (A Hindu New Year)       ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -673,7 +676,7 @@ wb_host u_wb_host(
 //------------------------------------------------------------------------------
 // RISC V Core instance
 //------------------------------------------------------------------------------
-scr1_top_wb u_riscv_top (
+ycr1_top_wb u_riscv_top (
 `ifdef USE_POWER_PINS
     .vccd1                 (vccd1                    ),// User area 1 1.8V supply
     .vssd1                 (vssd1                    ),// User area 1 digital ground

@@ -4,3 +4,6 @@
 [submodule "verilog/rtl/qspim"]
 	path = verilog/rtl/qspim
 	url = https://github.com/dineshannayya/qspim.git
+[submodule "verilog/rtl/yifive/ycr1"]
+	path = verilog/rtl/yifive/ycr1
+	url = https://github.com/dineshannayya/ycr1.git

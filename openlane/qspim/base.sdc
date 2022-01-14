@@ -22,22 +22,10 @@ set_case_analysis 0 [get_ports {cfg_cska_sp_co[1]}]
 set_case_analysis 0 [get_ports {cfg_cska_sp_co[0]}]
 
 set_propagated_clock [get_clocks {spiclk}]
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -rise_to [get_clocks {mclk}]      -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {mclk}] -fall_to [get_clocks {mclk}]      -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -setup 0.2500
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -hold  0.2500
-set_clock_uncertainty -rise_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -rise_to [get_clocks {spiclk}]  -setup 0.2500
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -hold  0.2500
-set_clock_uncertainty -fall_from [get_clocks {spiclk}] -fall_to [get_clocks {spiclk}]  -setup 0.2500
+
+set_clock_transition 0.1500 [all_clocks]
+set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05
 puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"
