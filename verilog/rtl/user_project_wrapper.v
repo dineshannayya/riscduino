@@ -150,6 +150,8 @@
 ////    3.0  Jan 14, 2022, Dinesh A                               ////
 ////        Moving from riscv core from syntacore/scr1 to         ////
 ////        yfive/ycr1 on sankranti 2022 (A Hindu New Year)       ////
+////    3.1  Jan 15, 2022, Dinesh A                               ////
+////         Major changes in qspim logic to handle special mode  ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -579,6 +581,7 @@ wire [BIST1_ADDR_WD-1:2]       mem1_addr_b;
 wire [BIST1_ADDR_WD-1:2]       mem2_addr_b;
 wire [BIST1_ADDR_WD-1:2]       mem3_addr_b;
 
+wire [3:0]                     spi_csn;
 
 /////////////////////////////////////////////////////////
 // Clock Skew Ctrl
@@ -846,7 +849,7 @@ qspim_top
     // Pad Interface
     .spi_sdi                (sflash_di                 ),
     .spi_clk                (sflash_sck                ),
-    .spi_csn0               (sflash_ss                 ),
+    .spi_csn                (spi_csn                   ),
     .spi_sdo                (sflash_do                 ),
     .spi_oen                (sflash_oen                )
 
@@ -1150,7 +1153,7 @@ pinmux u_pinmux(
 
        // SFLASH I/F
         .sflash_sck             (sflash_sck                ),
-        .sflash_ss              (sflash_ss                 ),
+        .sflash_ss              (spi_csn                   ),
         .sflash_oen             (sflash_oen                ),
         .sflash_do              (sflash_do                 ),
         .sflash_di              (sflash_di                 ),
