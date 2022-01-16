@@ -83,6 +83,21 @@
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 
+ // REGISTER MAP
+ `define QSPIM_GLBL_CTRL     32'h10000000
+ `define QSPIM_DMEM_CTRL1    32'h10000004
+ `define QSPIM_DMEM_CTRL2    32'h10000008
+
+ `define QSPIM_DMEM_CS_AMAP  32'h1000000C
+ `define QSPIM_DMEM_CA_AMASK 32'h10000010
+
+ `define QSPIM_IMEM_CTRL1    32'h10000014
+ `define QSPIM_IMEM_CTRL2    32'h10000018
+ `define QSPIM_IMEM_ADDR     32'h1000001C
+ `define QSPIM_IMEM_WDATA    32'h10000020
+ `define QSPIM_IMEM_RDATA    32'h10000024
+ `define QSPIM_SPI_STATUS    32'h10000028
+
 module user_spi_tb;
 	reg clock;
 	reg wb_rst_i;
@@ -153,10 +168,20 @@ parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read
 
 parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
 parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
+parameter P_FSM_CAMW   = 4'b1001; // Command -> Address -> MODE + Write Data
 
-parameter P_FSM_CDR    = 4'b1001; // COMMAND -> DUMMY -> READ
-parameter P_FSM_CDW    = 4'b1010; // COMMAND -> DUMMY -> WRITE
-parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
+parameter P_FSM_CDR    = 4'b1010; // COMMAND -> DUMMY -> READ
+parameter P_FSM_CDW    = 4'b1011; // COMMAND -> DUMMY -> WRITE
+parameter P_FSM_CR     = 4'b1100;  // COMMAND -> READ
+
+parameter P_MODE_SWITCH_IDLE     = 2'b00;
+parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
+parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
+
+parameter P_SINGLE = 2'b00;
+parameter P_DOUBLE = 2'b01;
+parameter P_QUAD   = 2'b10;
+parameter P_QDDR   = 2'b11;
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
@@ -203,10 +228,10 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("#############################################");
 		$display("  Read Identification (RDID:0x9F)            ");
 		$display("#############################################");
-                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h9F});
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00190201);
+               wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,2'b00,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b00,P_FSM_CR,8'h00,8'h9F});
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00190201);
 		$display("#############################################");
 		$display("Testing Direct SPI Memory Read              ");
 		$display(" SPI Mode: QDDR (Dual 4 bit)                ");
@@ -215,8 +240,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("#############################################");
 		// QDDR Config
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b11,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h04,2'b01,2'b10,4'h6,8'h00,8'hED});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0100,P_MODE_SWITCH_AT_ADDR,P_QDDR,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h04,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hED});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -241,8 +266,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("SEQ: Command -> Address -> Read Data        ");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h04,2'b00,2'b10,4'h3,8'h00,8'h03});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h04,2'b00,2'b10,P_FSM_CAR,8'h00,8'h03});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -267,8 +292,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("SEQ: Command -> Address -> Dummy -> Read Data");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h04,2'b00,2'b10,4'h4,8'h00,8'h0B});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h04,2'b00,2'b10,P_FSM_CADR,8'h00,8'h0B});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -294,8 +319,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("SEQ: Command -> Address -> Dummy -> Read Data");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b10,2'b01,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h04,2'b00,2'b10,4'h4,8'h00,8'h3B});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_AT_DATA,P_DOUBLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h04,2'b00,2'b10,P_FSM_CADR,8'h00,8'h3B});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -321,8 +346,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("SEQ: Command -> Address -> Dummy -> Read Data");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h20,2'b01,2'b10,4'h6,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h20,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -345,8 +370,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("Testing Direct SPI Memory Read with Prefetch:3DW");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000008,{8'hC,2'b01,2'b10,4'h6,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'hC,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -369,8 +394,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("Testing Direct SPI Memory Read with Prefetch:2DW");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h8,2'b01,2'b10,4'h6,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h8,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -394,8 +419,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("Testing Direct SPI Memory Read with Prefetch:1DW");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h4,2'b01,2'b10,4'h6,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h4,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -418,8 +443,8 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("Testing Direct SPI Memory Read with Prefetch:7DW");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h10000004,{24'h0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000008,{8'h1C,2'b01,2'b10,4'h6,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_DMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_DMEM_CTRL2,{8'h1C,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
                 wb_user_core_write('h3080_0004,'h00); // Change the Bank Sel 00
 		wb_user_core_read_check(32'h00000200,read_data,32'h00000093);
 		wb_user_core_read_check(32'h00000204,read_data,32'h00000113);
@@ -442,185 +467,185 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("  Testing Single Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h4,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
-		wb_user_core_write(32'h10000014,32'h00000204);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
-		wb_user_core_write(32'h10000014,32'h00000208);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
-		wb_user_core_write(32'h10000014,32'h0000020C);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
-		wb_user_core_write(32'h10000014,32'h00000210);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
-		wb_user_core_write(32'h10000014,32'h00000214);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
-		wb_user_core_write(32'h10000014,32'h00000218);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
-		wb_user_core_write(32'h10000014,32'h0000021C);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
-		wb_user_core_write(32'h10000014,32'h00000300);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0005A023);
-		wb_user_core_write(32'h10000014,32'h00000304);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h9DE30591);
-		wb_user_core_write(32'h10000014,32'h00000308);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h02B7FEE5);
-		wb_user_core_write(32'h10000014,32'h0000030C);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h43050049);
-		wb_user_core_write(32'h10000014,32'h00000310);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0062A023);
-		wb_user_core_write(32'h10000014,32'h00000314);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h004902B7);
-		wb_user_core_write(32'h10000014,32'h00000318);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h03130291);
-		wb_user_core_write(32'h10000014,32'h0000031C);
-		wb_user_core_read_check(32'h1000001C,read_data,32'ha0230630);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000093);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000204);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000113);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000208);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000193);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h0000020C);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000213);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000210);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000293);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000214);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000313);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000218);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000393);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h0000021C);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000413);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000300);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0005A023);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000304);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h9DE30591);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000308);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h02B7FEE5);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h0000030C);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h43050049);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000310);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0062A023);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000314);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h004902B7);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000318);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h03130291);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h0000031C);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'ha0230630);
 		repeat (100) @(posedge clock);
 		$display("#############################################");
 		$display("  Testing Two Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h8,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
-		wb_user_core_write(32'h10000014,32'h00000208);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
-		wb_user_core_write(32'h10000014,32'h00000210);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
-		wb_user_core_write(32'h10000014,32'h00000218);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
-		wb_user_core_write(32'h10000014,32'h00000300);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0005A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h9DE30591);
-		wb_user_core_write(32'h10000014,32'h00000308);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h02B7FEE5);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h43050049);
-		wb_user_core_write(32'h10000014,32'h00000310);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0062A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h004902B7);
-		wb_user_core_write(32'h10000014,32'h00000318);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h03130291);
-		wb_user_core_read_check(32'h1000001C,read_data,32'ha0230630);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h8,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000093);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000113);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000208);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000193);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000213);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000210);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000293);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000313);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000218);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000393);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000413);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000300);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0005A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h9DE30591);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000308);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h02B7FEE5);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h43050049);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000310);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0062A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h004902B7);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000318);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h03130291);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'ha0230630);
 		repeat (100) @(posedge clock);
 		$display("#############################################");
 		$display("  Testing Three Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'hC,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
-		wb_user_core_write(32'h10000014,32'h0000020C);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
-		wb_user_core_write(32'h10000014,32'h00000300);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0005A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h9DE30591);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h02B7FEE5);
-		wb_user_core_write(32'h10000014,32'h0000030C);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h43050049);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0062A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h004902B7);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'hC,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000093);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000113);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000193);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h0000020C);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000213);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000293);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000313);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000300);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0005A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h9DE30591);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h02B7FEE5);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h0000030C);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h43050049);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0062A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h004902B7);
 		repeat (100) @(posedge clock);
 		$display("#############################################");
 		$display("  Testing Four Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h10,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
-		wb_user_core_write(32'h10000014,32'h00000210);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
-		wb_user_core_write(32'h10000014,32'h00000300);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0005A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h9DE30591);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h02B7FEE5);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h43050049);
-		wb_user_core_write(32'h10000014,32'h00000310);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0062A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h004902B7);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h03130291);
-		wb_user_core_read_check(32'h1000001C,read_data,32'ha0230630);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h10,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000093);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000113);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000193);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000213);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000210);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000293);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000313);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000393);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000413);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000300);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0005A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h9DE30591);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h02B7FEE5);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h43050049);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000310);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0062A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h004902B7);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h03130291);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'ha0230630);
 		repeat (100) @(posedge clock);
 		$display("#############################################");
 		$display("  Testing Five Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h14,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
-		wb_user_core_write(32'h10000014,32'h00000300);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0005A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h9DE30591);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h02B7FEE5);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h43050049);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0062A023);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h14,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000093);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000113);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000193);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000213);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000293);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000300);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0005A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h9DE30591);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h02B7FEE5);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h43050049);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0062A023);
 		$display("#############################################");
 		$display("  Testing Eight Word Indirect SPI Memory Read");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h20,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000093);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000113);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000193);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000213);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000293);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000313);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000393);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00000413);
-		wb_user_core_write(32'h10000014,32'h00000300);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0005A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h9DE30591);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h02B7FEE5);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h43050049);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h0062A023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h004902B7);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h03130291);
-		wb_user_core_read_check(32'h1000001C,read_data,32'ha0230630);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h20,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000093);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000113);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000193);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000213);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000293);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000313);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000393);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00000413);
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000300);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0005A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h9DE30591);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h02B7FEE5);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h43050049);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h0062A023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h004902B7);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h03130291);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'ha0230630);
 
 		$display("#############################################");
 		$display("  Sector Erase Command            ");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
 		// WEN COMMAND
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b00,4'b0000,8'h00,8'h06});
-		wb_user_core_write(32'h10000018,32'h0);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h06});
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
                 // Sector Erase
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b10,4'b0010,8'h00,8'hD8});
-		wb_user_core_write(32'h10000014,32'h00000000);
-		wb_user_core_write(32'h10000018,32'h0);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b10,P_FSM_CA,8'h00,8'hD8});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000000);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
 
 		// RDSR
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h05});
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b00,P_FSM_CR,8'h00,8'h05});
 		read_data = 32'hFFFF_FFFF;
 		while (read_data[1:0] == 2'b11) begin
-		    wb_user_core_read(32'h1000001C,read_data);
+		    wb_user_core_read(`QSPIM_IMEM_RDATA,read_data);
 		    repeat (10) @(posedge clock);
 		end
 
@@ -628,80 +653,80 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("  Page Write Command Address: 0x00          ");
 		$display("#############################################");
 		// WEN COMMAND
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b00,4'b0000,8'h00,8'h06});
-		wb_user_core_write(32'h10000018,32'h0);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h06});
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
 		 // Page Programing
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'hF0,2'b00,2'b10,P_FSM_CAW,8'h00,8'h02});
-		wb_user_core_write(32'h10000014,32'h00000000);
-		wb_user_core_write(32'h10000018,32'h00010000);
-		wb_user_core_write(32'h10000018,32'h00010001);
-		wb_user_core_write(32'h10000018,32'h00010002);
-		wb_user_core_write(32'h10000018,32'h00010003);
-		wb_user_core_write(32'h10000018,32'h00010004);
-		wb_user_core_write(32'h10000018,32'h00010005);
-		wb_user_core_write(32'h10000018,32'h00010006);
-		wb_user_core_write(32'h10000018,32'h00010007);
-		wb_user_core_write(32'h10000018,32'h00010008);
-		wb_user_core_write(32'h10000018,32'h00010009);
-		wb_user_core_write(32'h10000018,32'h00010010);
-		wb_user_core_write(32'h10000018,32'h00010011);
-		wb_user_core_write(32'h10000018,32'h00010012);
-		wb_user_core_write(32'h10000018,32'h00010013);
-		wb_user_core_write(32'h10000018,32'h00010014);
-		wb_user_core_write(32'h10000018,32'h00010015);
-		wb_user_core_write(32'h10000018,32'h00010016);
-		wb_user_core_write(32'h10000018,32'h00010017);
-		wb_user_core_write(32'h10000018,32'h00010018);
-		wb_user_core_write(32'h10000018,32'h00010019);
-		wb_user_core_write(32'h10000018,32'h00010020);
-		wb_user_core_write(32'h10000018,32'h00010021);
-		wb_user_core_write(32'h10000018,32'h00010022);
-		wb_user_core_write(32'h10000018,32'h00010023);
-		wb_user_core_write(32'h10000018,32'h00010024);
-		wb_user_core_write(32'h10000018,32'h00010025);
-		wb_user_core_write(32'h10000018,32'h00010026);
-		wb_user_core_write(32'h10000018,32'h00010027);
-		wb_user_core_write(32'h10000018,32'h00010028);
-		wb_user_core_write(32'h10000018,32'h00010029);
-		wb_user_core_write(32'h10000018,32'h00010030);
-		wb_user_core_write(32'h10000018,32'h00010031);
-		wb_user_core_write(32'h10000018,32'h00010032);
-		wb_user_core_write(32'h10000018,32'h00010033);
-		wb_user_core_write(32'h10000018,32'h00010034);
-		wb_user_core_write(32'h10000018,32'h00010035);
-		wb_user_core_write(32'h10000018,32'h00010036);
-		wb_user_core_write(32'h10000018,32'h00010037);
-		wb_user_core_write(32'h10000018,32'h00010038);
-		wb_user_core_write(32'h10000018,32'h00010039);
-		wb_user_core_write(32'h10000018,32'h00010040);
-		wb_user_core_write(32'h10000018,32'h00010041);
-		wb_user_core_write(32'h10000018,32'h00010042);
-		wb_user_core_write(32'h10000018,32'h00010043);
-		wb_user_core_write(32'h10000018,32'h00010044);
-		wb_user_core_write(32'h10000018,32'h00010045);
-		wb_user_core_write(32'h10000018,32'h00010046);
-		wb_user_core_write(32'h10000018,32'h00010047);
-		wb_user_core_write(32'h10000018,32'h00010048);
-		wb_user_core_write(32'h10000018,32'h00010049);
-		wb_user_core_write(32'h10000018,32'h00010050);
-		wb_user_core_write(32'h10000018,32'h00010051);
-		wb_user_core_write(32'h10000018,32'h00010052);
-		wb_user_core_write(32'h10000018,32'h00010053);
-		wb_user_core_write(32'h10000018,32'h00010054);
-		wb_user_core_write(32'h10000018,32'h00010055);
-		wb_user_core_write(32'h10000018,32'h00010056);
-		wb_user_core_write(32'h10000018,32'h00010057);
-		wb_user_core_write(32'h10000018,32'h00010058);
-		wb_user_core_write(32'h10000018,32'h00010059);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'hF0,2'b00,2'b10,P_FSM_CAW,8'h00,8'h02});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000000);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010000);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010001);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010002);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010003);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010004);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010005);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010006);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010007);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010008);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010009);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010010);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010011);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010012);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010013);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010014);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010015);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010016);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010017);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010018);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010019);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010020);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010021);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010022);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010023);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010024);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010025);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010026);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010027);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010028);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010029);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010030);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010031);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010032);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010033);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010034);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010035);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010036);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010037);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010038);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010039);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010040);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010041);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010042);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010043);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010044);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010045);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010046);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010047);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010048);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010049);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010050);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010051);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010052);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010053);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010054);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010055);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010056);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010057);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010058);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00010059);
 
 		// RDSR
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h05});
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b00,P_FSM_CR,8'h00,8'h05});
 		read_data = 32'hFFFF_FFFF;
 		while (read_data[1:0] == 2'b11) begin
-		    wb_user_core_read(32'h1000001C,read_data);
+		    wb_user_core_read(`QSPIM_IMEM_RDATA,read_data);
 		    repeat (10) @(posedge clock);
 		 end
 
@@ -775,70 +800,70 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("  Page Read through Indirect Access           ");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'hF0,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000000);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'hF0,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000000);
 
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010000);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010001);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010002);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010003);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010004);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010005);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010006);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010007);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010008);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010009);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010010);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010011);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010012);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010013);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010014);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010015);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010016);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010017);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010018);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010019);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010020);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010021);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010022);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010024);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010025);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010026);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010027);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010028);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010029);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010030);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010031);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010032);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010033);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010034);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010035);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010036);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010037);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010038);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010039);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010040);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010041);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010042);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010043);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010044);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010045);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010046);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010047);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010048);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010049);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010050);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010051);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010052);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010053);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010054);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010055);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010056);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010057);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010058);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00010059);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010000);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010001);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010002);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010003);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010004);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010005);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010006);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010007);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010008);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010009);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010010);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010011);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010012);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010013);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010014);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010015);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010016);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010017);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010018);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010019);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010020);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010021);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010022);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010024);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010025);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010026);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010027);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010028);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010029);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010030);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010031);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010032);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010033);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010034);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010035);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010036);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010037);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010038);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010039);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010040);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010041);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010042);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010043);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010044);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010045);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010046);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010047);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010048);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010049);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010050);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010051);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010052);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010053);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010054);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010055);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010056);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010057);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010058);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00010059);
 
 		repeat (100) @(posedge clock);
 		$display("#############################################");
@@ -846,80 +871,80 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
 		// WEN COMMAND
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h0,2'b00,2'b00,4'b0000,8'h00,8'h06});
-		wb_user_core_write(32'h10000018,32'h0);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h06});
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
 		 // Page Programing
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'hF0,2'b00,2'b10,P_FSM_CAW,8'h00,8'h02});
-		wb_user_core_write(32'h10000014,32'h00000200);
-		wb_user_core_write(32'h10000018,32'h00020000);
-		wb_user_core_write(32'h10000018,32'h00020001);
-		wb_user_core_write(32'h10000018,32'h00020002);
-		wb_user_core_write(32'h10000018,32'h00020003);
-		wb_user_core_write(32'h10000018,32'h00020004);
-		wb_user_core_write(32'h10000018,32'h00020005);
-		wb_user_core_write(32'h10000018,32'h00020006);
-		wb_user_core_write(32'h10000018,32'h00020007);
-		wb_user_core_write(32'h10000018,32'h00020008);
-		wb_user_core_write(32'h10000018,32'h00020009);
-		wb_user_core_write(32'h10000018,32'h00020010);
-		wb_user_core_write(32'h10000018,32'h00020011);
-		wb_user_core_write(32'h10000018,32'h00020012);
-		wb_user_core_write(32'h10000018,32'h00020013);
-		wb_user_core_write(32'h10000018,32'h00020014);
-		wb_user_core_write(32'h10000018,32'h00020015);
-		wb_user_core_write(32'h10000018,32'h00020016);
-		wb_user_core_write(32'h10000018,32'h00020017);
-		wb_user_core_write(32'h10000018,32'h00020018);
-		wb_user_core_write(32'h10000018,32'h00020019);
-		wb_user_core_write(32'h10000018,32'h00020020);
-		wb_user_core_write(32'h10000018,32'h00020021);
-		wb_user_core_write(32'h10000018,32'h00020022);
-		wb_user_core_write(32'h10000018,32'h00020023);
-		wb_user_core_write(32'h10000018,32'h00020024);
-		wb_user_core_write(32'h10000018,32'h00020025);
-		wb_user_core_write(32'h10000018,32'h00020026);
-		wb_user_core_write(32'h10000018,32'h00020027);
-		wb_user_core_write(32'h10000018,32'h00020028);
-		wb_user_core_write(32'h10000018,32'h00020029);
-		wb_user_core_write(32'h10000018,32'h00020030);
-		wb_user_core_write(32'h10000018,32'h00020031);
-		wb_user_core_write(32'h10000018,32'h00020032);
-		wb_user_core_write(32'h10000018,32'h00020033);
-		wb_user_core_write(32'h10000018,32'h00020034);
-		wb_user_core_write(32'h10000018,32'h00020035);
-		wb_user_core_write(32'h10000018,32'h00020036);
-		wb_user_core_write(32'h10000018,32'h00020037);
-		wb_user_core_write(32'h10000018,32'h00020038);
-		wb_user_core_write(32'h10000018,32'h00020039);
-		wb_user_core_write(32'h10000018,32'h00020040);
-		wb_user_core_write(32'h10000018,32'h00020041);
-		wb_user_core_write(32'h10000018,32'h00020042);
-		wb_user_core_write(32'h10000018,32'h00020043);
-		wb_user_core_write(32'h10000018,32'h00020044);
-		wb_user_core_write(32'h10000018,32'h00020045);
-		wb_user_core_write(32'h10000018,32'h00020046);
-		wb_user_core_write(32'h10000018,32'h00020047);
-		wb_user_core_write(32'h10000018,32'h00020048);
-		wb_user_core_write(32'h10000018,32'h00020049);
-		wb_user_core_write(32'h10000018,32'h00020050);
-		wb_user_core_write(32'h10000018,32'h00020051);
-		wb_user_core_write(32'h10000018,32'h00020052);
-		wb_user_core_write(32'h10000018,32'h00020053);
-		wb_user_core_write(32'h10000018,32'h00020054);
-		wb_user_core_write(32'h10000018,32'h00020055);
-		wb_user_core_write(32'h10000018,32'h00020056);
-		wb_user_core_write(32'h10000018,32'h00020057);
-		wb_user_core_write(32'h10000018,32'h00020058);
-		wb_user_core_write(32'h10000018,32'h00020059);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'hF0,2'b00,2'b10,P_FSM_CAW,8'h00,8'h02});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020000);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020001);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020002);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020003);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020004);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020005);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020006);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020007);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020008);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020009);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020010);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020011);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020012);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020013);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020014);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020015);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020016);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020017);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020018);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020019);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020020);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020021);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020022);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020023);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020024);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020025);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020026);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020027);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020028);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020029);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020030);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020031);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020032);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020033);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020034);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020035);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020036);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020037);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020038);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020039);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020040);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020041);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020042);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020043);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020044);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020045);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020046);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020047);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020048);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020049);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020050);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020051);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020052);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020053);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020054);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020055);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020056);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020057);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020058);
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h00020059);
 
 		// RDSR
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b00,2'b00,4'b0001});
-		wb_user_core_write(32'h10000010,{8'h4,2'b00,2'b00,4'b1011,8'h00,8'h05});
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b00,P_FSM_CR,8'h00,8'h05});
 		read_data = 32'hFFFF_FFFF;
 		while (read_data[1:0] == 2'b11) begin
-		    wb_user_core_read(32'h1000001C,read_data);
+		    wb_user_core_read(`QSPIM_IMEM_RDATA,read_data);
 		    repeat (10) @(posedge clock);
 		 end
 
@@ -993,70 +1018,70 @@ parameter P_FSM_CR     = 4'b1011;  // COMMAND -> READ
 		$display("  Page Read through Indirect Access           ");
 		$display("#############################################");
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(32'h1000000C,{15'h0,1'b0,2'b01,2'b10,4'b0001});
-		wb_user_core_write(32'h10000010,{8'hF0,2'b01,2'b10,4'b0110,8'h00,8'hEB});
-		wb_user_core_write(32'h10000014,32'h00000200);
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0001,P_MODE_SWITCH_AT_ADDR,P_QUAD,P_SINGLE,4'b0001});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'hF0,2'b00,2'b10,P_FSM_CAMDR,8'h00,8'hEB});
+		wb_user_core_write(`QSPIM_IMEM_ADDR,32'h00000200);
 
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020000);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020001);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020002);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020003);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020004);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020005);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020006);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020007);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020008);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020009);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020010);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020011);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020012);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020013);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020014);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020015);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020016);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020017);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020018);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020019);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020020);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020021);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020022);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020023);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020024);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020025);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020026);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020027);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020028);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020029);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020030);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020031);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020032);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020033);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020034);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020035);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020036);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020037);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020038);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020039);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020040);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020041);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020042);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020043);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020044);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020045);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020046);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020047);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020048);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020049);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020050);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020051);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020052);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020053);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020054);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020055);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020056);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020057);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020058);
-		wb_user_core_read_check(32'h1000001C,read_data,32'h00020059);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020000);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020001);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020002);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020003);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020004);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020005);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020006);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020007);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020008);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020009);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020010);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020011);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020012);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020013);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020014);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020015);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020016);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020017);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020018);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020019);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020020);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020021);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020022);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020023);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020024);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020025);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020026);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020027);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020028);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020029);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020030);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020031);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020032);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020033);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020034);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020035);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020036);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020037);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020038);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020039);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020040);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020041);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020042);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020043);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020044);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020045);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020046);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020047);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020048);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020049);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020050);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020051);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020052);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020053);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020054);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020055);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020056);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020057);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020058);
+		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00020059);
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
