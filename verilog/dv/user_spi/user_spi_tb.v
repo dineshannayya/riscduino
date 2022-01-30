@@ -201,12 +201,13 @@ parameter P_QDDR   = 2'b11;
 
 	`ifdef WFDUMP
 	   initial begin
-	   	$dumpfile("user_spi.vcd");
+	   	$dumpfile("simx.vcd");
 	   	$dumpvars(5, user_spi_tb);
 	   end
        `endif
 
 	initial begin
+		$dumpon;
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
@@ -259,6 +260,7 @@ parameter P_QDDR   = 2'b11;
 		wb_user_core_read_check(32'h00000314,read_data,32'h004902B7);
 		wb_user_core_read_check(32'h00000318,read_data,32'h03130291);
 		wb_user_core_read_check(32'h0000031C,read_data,32'ha0230630);
+		$dumpoff;
 		$display("#############################################");
 		$display("Testing Direct SPI Memory Read              ");
 		$display(" SPI Mode: Normal/Single Bit                ");
@@ -1165,10 +1167,10 @@ user_project_wrapper u_top(
    wire #1 io_oeb_27 = io_oeb[27];
    wire #1 io_oeb_28 = io_oeb[28];
    wire #1 io_oeb_29 = io_oeb[29];
-   tri  flash_io0 = (io_oeb_26== 1'b0) ? io_out[26] : 1'bz;
-   tri  flash_io1 = (io_oeb_27== 1'b0) ? io_out[27] : 1'bz;
-   tri  flash_io2 = (io_oeb_28== 1'b0) ? io_out[28] : 1'bz;
-   tri  flash_io3 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
+   tri  #1 flash_io0 = (io_oeb_26== 1'b0) ? io_out[26] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_27== 1'b0) ? io_out[27] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_28== 1'b0) ? io_out[28] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
 
    assign io_in[26] = flash_io0;
    assign io_in[27] = flash_io1;

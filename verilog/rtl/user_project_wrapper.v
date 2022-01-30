@@ -280,9 +280,12 @@ wire   [WB_WIDTH-1:0]          wbd_spim_adr_o; // address
 wire                           wbd_spim_we_o;  // write
 wire   [WB_WIDTH-1:0]          wbd_spim_dat_o; // data output
 wire   [3:0]                   wbd_spim_sel_o; // byte enable
+wire   [9:0]                   wbd_spim_bl_o;  // Burst count
+wire                           wbd_spim_bry_o; // Busrt Ready
 wire                           wbd_spim_cyc_o ;
 wire   [WB_WIDTH-1:0]          wbd_spim_dat_i; // data input
 wire                           wbd_spim_ack_i; // acknowlegement
+wire                           wbd_spim_lack_i;// Last acknowlegement
 wire                           wbd_spim_err_i;  // error
 
 //---------------------------------------------------------------------
@@ -347,6 +350,7 @@ wire                              uart_rst_n    ;// uart reset
 wire                              i2c_rst_n     ;// i2c reset
 wire                              usb_rst_n     ;// i2c reset
 wire   [3:0]                      boot_remap    ;// Boot Remap
+wire   [3:0]                      dcache_remap  ;// Remap the dcache address
 wire                              cpu_clk       ;
 wire                              rtc_clk       ;
 wire                              usb_clk       ;
@@ -599,6 +603,7 @@ assign  cfg_cska_mbist1   = cfg_clk_ctrl2[3:0];
 assign  cfg_cska_mbist2   = cfg_clk_ctrl2[7:4];
 assign  cfg_cska_mbist3   = cfg_clk_ctrl2[11:8];
 assign  cfg_cska_mbist4   = cfg_clk_ctrl2[15:12];
+assign  dcache_remap      = cfg_clk_ctrl2[27:24];
 assign  boot_remap        = cfg_clk_ctrl2[31:28];
 
 //assign la_data_out    = {riscv_debug,spi_debug,sdram_debug};
@@ -840,8 +845,11 @@ qspim_top
     .wbd_we_i               (wbd_spim_we_o             ), 
     .wbd_dat_i              (wbd_spim_dat_o            ),
     .wbd_sel_i              (wbd_spim_sel_o            ),
+    .wbd_bl_i               (wbd_spim_bl_o             ),
+    .wbd_bry_i              (wbd_spim_bry_o            ),
     .wbd_dat_o              (wbd_spim_dat_i            ),
     .wbd_ack_o              (wbd_spim_ack_i            ),
+    .wbd_lack_o             (wbd_spim_lack_i           ),
     .wbd_err_o              (wbd_spim_err_i            ),
 
     .spi_debug              (spi_debug                 ),
@@ -969,6 +977,7 @@ wb_interconnect  #(
 
          .clk_i         (wbd_clk_wi_skew       ), 
          .rst_n         (wbd_int_rst_n         ),
+	 .dcache_remap  (dcache_remap          ),
 	 .boot_remap    (boot_remap            ),
 
          // Master 0 Interface
@@ -1009,8 +1018,11 @@ wb_interconnect  #(
          // .s0_wbd_err_i  (1'b0           ), - Moved inside IP
          .s0_wbd_dat_i  (wbd_spim_dat_i ),
          .s0_wbd_ack_i  (wbd_spim_ack_i ),
+         .s0_wbd_lack_i (wbd_spim_lack_i ),
          .s0_wbd_dat_o  (wbd_spim_dat_o ),
          .s0_wbd_adr_o  (wbd_spim_adr_o ),
+         .s0_wbd_bry_o  (wbd_spim_bry_o ),
+         .s0_wbd_bl_o   (wbd_spim_bl_o ),
          .s0_wbd_sel_o  (wbd_spim_sel_o ),
          .s0_wbd_we_o   (wbd_spim_we_o  ),  
          .s0_wbd_cyc_o  (wbd_spim_cyc_o ),

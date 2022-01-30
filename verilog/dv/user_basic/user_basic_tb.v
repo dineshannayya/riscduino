@@ -151,8 +151,8 @@ integer i,j;
 
 	`ifdef WFDUMP
 	   initial begin
-	   	$dumpfile("risc_boot.vcd");
-	   	$dumpvars(3, user_basic_tb);
+	   	$dumpfile("simx.vcd");
+	   	$dumpvars(4, user_basic_tb);
 	   end
        `endif
 
