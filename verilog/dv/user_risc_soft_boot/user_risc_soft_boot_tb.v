@@ -136,7 +136,8 @@ module user_risc_soft_boot_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(4, user_risc_soft_boot_tb);
+	   	$dumpvars(4, user_risc_soft_boot_tb.u_top);
+	   	//$dumpvars(3, user_risc_soft_boot_tb.u_top.u_riscv_top);
 	   end
        `endif
 
@@ -155,26 +156,26 @@ module user_risc_soft_boot_tb;
 		   tem_mem_32b[i] = {tem_mem[(i*4)+3],tem_mem[(i*4)+2],tem_mem[(i*4)+1],tem_mem[(i*4)]};
 
 	        $writememh("sram_bank0.hex",tem_mem_32b,0,511);
-	        $readmemh("sram_bank0.hex",u_top.u_sram0_2kb.mem,0,511);
+	        $readmemh("sram_bank0.hex",u_top.u_mbist.u_sram0_2kb.mem,0,511);
 
 		for(i =512; i < 1023; i = i+1)
 		   tem_mem_32b[i-512] = {tem_mem[(i*4)+3],tem_mem[(i*4)+2],tem_mem[(i*4)+1],tem_mem[(i*4)]};
 
 	        $writememh("sram_bank1.hex",tem_mem_32b,0,511);
-	        $readmemh("sram_bank1.hex",u_top.u_sram1_2kb.mem,0,511);
+	        $readmemh("sram_bank1.hex",u_top.u_mbist.u_sram1_2kb.mem,0,511);
 
 		// Enable the SRAM Remap to boot region
 		wb_user_core_write('h3080_000C,{4'b1111,28'h0});
 	        repeat (2) @(posedge clock);
 		#1;
 		// Remove the reset, mbist, wishbone, riscv
-                wb_user_core_write('h3080_0000,'h83);
+                wb_user_core_write('h3080_0000,'h8F);
 
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (10) begin
-			repeat (400) @(posedge clock);
-			// $display("+1000 cycles");
+		repeat (24) begin
+			repeat (500) @(posedge clock);
+			//$display("+500 cycles");
 		end
 
 

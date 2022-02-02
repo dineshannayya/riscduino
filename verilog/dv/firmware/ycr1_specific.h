@@ -22,12 +22,12 @@
 #define mcounten        0x7E0
 
 // Memory-mapped registers
-#define mtime_ctrl      0x00490000
-#define mtime_div       0x00490004
-#define mtime           0x00490008
-#define mtimeh          0x0049000C
-#define mtimecmp        0x00490010
-#define mtimecmph       0x00490014
+#define mtime_ctrl      0x0C490000
+#define mtime_div       0x0C490004
+#define mtime           0x0C490008
+#define mtimeh          0x0C49000C
+#define mtimecmp        0x0C490010
+#define mtimecmph       0x0C490014
 
 #define YCR1_MTIME_CTRL_EN          0
 #define YCR1_MTIME_CTRL_CLKSRC      1

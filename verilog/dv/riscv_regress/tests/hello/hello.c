@@ -2,6 +2,6 @@
 
 int main()
 {
-    sc_printf("Hello from SCR1!\n");
+    sc_printf("Hello from YCR1!\n");
     return 0;
 }

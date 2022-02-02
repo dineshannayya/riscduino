@@ -152,6 +152,9 @@
 ////        yfive/ycr1 on sankranti 2022 (A Hindu New Year)       ////
 ////    3.1  Jan 15, 2022, Dinesh A                               ////
 ////         Major changes in qspim logic to handle special mode  ////
+////    3.2  Feb 02, 2022, Dinesh A                               ////
+////         Bug fix around icache/dcache and wishbone burst      ////
+////         access clean-up                                      ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -237,16 +240,34 @@ parameter     BIST1_ADDR_WD = 11; // 512x32 SRAM
 parameter     BIST_DATA_WD = 32;
 
 //---------------------------------------------------------------------
-// Wishbone Risc V Instruction Memory Interface
+// Wishbone Risc V Dcache Memory Interface
 //---------------------------------------------------------------------
-wire                           wbd_riscv_imem_stb_i; // strobe/request
-wire   [WB_WIDTH-1:0]          wbd_riscv_imem_adr_i; // address
-wire                           wbd_riscv_imem_we_i;  // write
-wire   [WB_WIDTH-1:0]          wbd_riscv_imem_dat_i; // data output
-wire   [3:0]                   wbd_riscv_imem_sel_i; // byte enable
-wire   [WB_WIDTH-1:0]          wbd_riscv_imem_dat_o; // data input
-wire                           wbd_riscv_imem_ack_o; // acknowlegement
-wire                           wbd_riscv_imem_err_o;  // error
+wire                           wbd_riscv_dcache_stb_i; // strobe/request
+wire   [WB_WIDTH-1:0]          wbd_riscv_dcache_adr_i; // address
+wire                           wbd_riscv_dcache_we_i;  // write
+wire   [WB_WIDTH-1:0]          wbd_riscv_dcache_dat_i; // data output
+wire   [3:0]                   wbd_riscv_dcache_sel_i; // byte enable
+wire   [9:0]                   wbd_riscv_dcache_bl_i;  // burst length
+wire                           wbd_riscv_dcache_bry_i; // burst ready
+wire   [WB_WIDTH-1:0]          wbd_riscv_dcache_dat_o; // data input
+wire                           wbd_riscv_dcache_ack_o; // acknowlegement
+wire                           wbd_riscv_dcache_lack_o;// last burst acknowlegement
+wire                           wbd_riscv_dcache_err_o;  // error
+
+//---------------------------------------------------------------------
+// Wishbone Risc V Icache Memory Interface
+//---------------------------------------------------------------------
+wire                           wbd_riscv_icache_stb_i; // strobe/request
+wire   [WB_WIDTH-1:0]          wbd_riscv_icache_adr_i; // address
+wire                           wbd_riscv_icache_we_i;  // write
+wire   [WB_WIDTH-1:0]          wbd_riscv_icache_dat_i; // data output
+wire   [3:0]                   wbd_riscv_icache_sel_i; // byte enable
+wire   [9:0]                   wbd_riscv_icache_bl_i;  // burst length
+wire                           wbd_riscv_icache_bry_i; // burst ready
+wire   [WB_WIDTH-1:0]          wbd_riscv_icache_dat_o; // data input
+wire                           wbd_riscv_icache_ack_o; // acknowlegement
+wire                           wbd_riscv_icache_lack_o;// last burst acknowlegement
+wire                           wbd_riscv_icache_err_o;  // error
 
 //---------------------------------------------------------------------
 // RISC V Wishbone Data Memory Interface
@@ -335,9 +356,12 @@ wire   [12:0]                  wbd_mbist_adr_o; // address
 wire                           wbd_mbist_we_o;  // write
 wire   [WB_WIDTH-1:0]          wbd_mbist_dat_o; // data output
 wire   [3:0]                   wbd_mbist_sel_o; // byte enable
+wire   [9:0]                   wbd_mbist_bl_o; // byte enable
+wire                           wbd_mbist_bry_o; // byte enable
 wire                           wbd_mbist_cyc_o ;
 wire   [WB_WIDTH-1:0]          wbd_mbist_dat_i; // data input
 wire                           wbd_mbist_ack_i; // acknowlegement
+wire                           wbd_mbist_lack_i; // acknowlegement
 wire                           wbd_mbist_err_i;  // error
 
 //----------------------------------------------------
@@ -557,33 +581,33 @@ wire [3:0]                       bist_error_cnt3_rp  ;
 
 // towards memory MBIST1
 // PORT-A
-wire   [BIST_NO_SRAM-1:0]      mem_clk_a;
-wire   [BIST1_ADDR_WD-1:2]     mem0_addr_a;
-wire   [BIST1_ADDR_WD-1:2]     mem1_addr_a;
-wire   [BIST1_ADDR_WD-1:2]     mem2_addr_a;
-wire   [BIST1_ADDR_WD-1:2]     mem3_addr_a;
-wire   [BIST_NO_SRAM-1:0]      mem_cen_a;
-wire   [BIST_NO_SRAM-1:0]      mem_web_a;
-wire [BIST_DATA_WD/8-1:0]      mem0_mask_a;
-wire [BIST_DATA_WD/8-1:0]      mem1_mask_a;
-wire [BIST_DATA_WD/8-1:0]      mem2_mask_a;
-wire [BIST_DATA_WD/8-1:0]      mem3_mask_a;
-wire   [BIST_DATA_WD-1:0]      mem0_din_a;
-wire   [BIST_DATA_WD-1:0]      mem1_din_a;
-wire   [BIST_DATA_WD-1:0]      mem2_din_a;
-wire   [BIST_DATA_WD-1:0]      mem3_din_a;
-wire   [BIST_DATA_WD-1:0]      mem0_dout_a;
-wire   [BIST_DATA_WD-1:0]      mem1_dout_a;
-wire   [BIST_DATA_WD-1:0]      mem2_dout_a;
-wire   [BIST_DATA_WD-1:0]      mem3_dout_a;
+//wire   [BIST_NO_SRAM-1:0]      mem_clk_a;
+//wire   [BIST1_ADDR_WD-1:2]     mem0_addr_a;
+//wire   [BIST1_ADDR_WD-1:2]     mem1_addr_a;
+//wire   [BIST1_ADDR_WD-1:2]     mem2_addr_a;
+//wire   [BIST1_ADDR_WD-1:2]     mem3_addr_a;
+//wire   [BIST_NO_SRAM-1:0]      mem_cen_a;
+//wire   [BIST_NO_SRAM-1:0]      mem_web_a;
+//wire [BIST_DATA_WD/8-1:0]      mem0_mask_a;
+//wire [BIST_DATA_WD/8-1:0]      mem1_mask_a;
+//wire [BIST_DATA_WD/8-1:0]      mem2_mask_a;
+//wire [BIST_DATA_WD/8-1:0]      mem3_mask_a;
+//wire   [BIST_DATA_WD-1:0]      mem0_din_a;
+//wire   [BIST_DATA_WD-1:0]      mem1_din_a;
+//wire   [BIST_DATA_WD-1:0]      mem2_din_a;
+//wire   [BIST_DATA_WD-1:0]      mem3_din_a;
+//wire   [BIST_DATA_WD-1:0]      mem0_dout_a;
+//wire   [BIST_DATA_WD-1:0]      mem1_dout_a;
+//wire   [BIST_DATA_WD-1:0]      mem2_dout_a;
+//wire   [BIST_DATA_WD-1:0]      mem3_dout_a;
 
 // PORT-B
-wire [BIST_NO_SRAM-1:0]        mem_clk_b;
-wire [BIST_NO_SRAM-1:0]        mem_cen_b;
-wire [BIST1_ADDR_WD-1:2]       mem0_addr_b;
-wire [BIST1_ADDR_WD-1:2]       mem1_addr_b;
-wire [BIST1_ADDR_WD-1:2]       mem2_addr_b;
-wire [BIST1_ADDR_WD-1:2]       mem3_addr_b;
+//wire [BIST_NO_SRAM-1:0]        mem_clk_b;
+//wire [BIST_NO_SRAM-1:0]        mem_cen_b;
+//wire [BIST1_ADDR_WD-1:2]       mem0_addr_b;
+//wire [BIST1_ADDR_WD-1:2]       mem1_addr_b;
+//wire [BIST1_ADDR_WD-1:2]       mem2_addr_b;
+//wire [BIST1_ADDR_WD-1:2]       mem3_addr_b;
 
 wire [3:0]                     spi_csn;
 
@@ -730,33 +754,50 @@ ycr1_top_wb u_riscv_top (
     .sram0_addr1            (sram0_addr1               ),
     .sram0_dout1            (sram0_dout1               ),
 
-    // SRAM-1 PORT-0
-    .sram1_clk0             (sram1_clk0                ),
-    .sram1_csb0             (sram1_csb0                ),
-    .sram1_web0             (sram1_web0                ),
-    .sram1_addr0            (sram1_addr0               ),
-    .sram1_wmask0           (sram1_wmask0              ),
-    .sram1_din0             (sram1_din0                ),
-    .sram1_dout0            (sram1_dout0               ),
-    
-    // SRAM PORT-0
-    .sram1_clk1             (sram1_clk1                ),
-    .sram1_csb1             (sram1_csb1                ),
-    .sram1_addr1            (sram1_addr1               ),
-    .sram1_dout1            (sram1_dout1               ),
+  //  // SRAM-1 PORT-0
+  //  .sram1_clk0             (sram1_clk0                ),
+  //  .sram1_csb0             (sram1_csb0                ),
+  //  .sram1_web0             (sram1_web0                ),
+  //  .sram1_addr0            (sram1_addr0               ),
+  //  .sram1_wmask0           (sram1_wmask0              ),
+  //  .sram1_din0             (sram1_din0                ),
+  //  .sram1_dout0            (sram1_dout0               ),
+  //  
+  //  // SRAM PORT-0
+  //  .sram1_clk1             (sram1_clk1                ),
+  //  .sram1_csb1             (sram1_csb1                ),
+  //  .sram1_addr1            (sram1_addr1               ),
+  //  .sram1_dout1            (sram1_dout1               ),
 `endif
     
-    .wb_rst_n               (wbd_int_rst_n             ),
-    .wb_clk                 (wbd_clk_riscv_skew        ),
-    // Instruction memory interface
-    .wbd_imem_stb_o         (wbd_riscv_imem_stb_i      ),
-    .wbd_imem_adr_o         (wbd_riscv_imem_adr_i      ),
-    .wbd_imem_we_o          (wbd_riscv_imem_we_i       ), 
-    .wbd_imem_dat_o         (wbd_riscv_imem_dat_i      ),
-    .wbd_imem_sel_o         (wbd_riscv_imem_sel_i      ),
-    .wbd_imem_dat_i         (wbd_riscv_imem_dat_o      ),
-    .wbd_imem_ack_i         (wbd_riscv_imem_ack_o      ),
-    .wbd_imem_err_i         (wbd_riscv_imem_err_o      ),
+    .wb_rst_n               (wbd_int_rst_n               ),
+    .wb_clk                 (wbd_clk_riscv_skew          ),
+
+    // Instruction cache memory interface
+    .wb_icache_stb_o       (wbd_riscv_icache_stb_i      ),
+    .wb_icache_adr_o       (wbd_riscv_icache_adr_i      ),
+    .wb_icache_we_o        (wbd_riscv_icache_we_i       ), 
+    .wb_icache_dat_o       (wbd_riscv_icache_dat_i      ),
+    .wb_icache_sel_o       (wbd_riscv_icache_sel_i      ),
+    .wb_icache_bl_o        (wbd_riscv_icache_bl_i       ),
+    .wb_icache_bry_o       (wbd_riscv_icache_bry_i      ),
+    .wb_icache_dat_i       (wbd_riscv_icache_dat_o      ),
+    .wb_icache_ack_i       (wbd_riscv_icache_ack_o      ),
+    .wb_icache_lack_i      (wbd_riscv_icache_lack_o     ),
+    .wb_icache_err_i       (wbd_riscv_icache_err_o      ),
+
+    // Data cache memory interface
+    .wb_dcache_stb_o       (wbd_riscv_dcache_stb_i     ),
+    .wb_dcache_adr_o       (wbd_riscv_dcache_adr_i     ),
+    .wb_dcache_we_o        (wbd_riscv_dcache_we_i      ), 
+    .wb_dcache_dat_o       (wbd_riscv_dcache_dat_i     ),
+    .wb_dcache_sel_o       (wbd_riscv_dcache_sel_i     ),
+    .wb_dcache_bl_o        (wbd_riscv_dcache_bl_i      ),
+    .wb_dcache_bry_o       (wbd_riscv_dcache_bry_i     ),
+    .wb_dcache_dat_i       (wbd_riscv_dcache_dat_o     ),
+    .wb_dcache_ack_i       (wbd_riscv_dcache_ack_o     ),
+    .wb_dcache_lack_i      (wbd_riscv_dcache_lack_o    ),
+    .wb_dcache_err_i       (wbd_riscv_dcache_err_o     ),
 
     // Data memory interface
     .wbd_dmem_stb_o         (wbd_riscv_dmem_stb_i      ),
@@ -790,6 +831,7 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram0_2kb(
     .dout1    (sram0_dout1)
   );
 
+/***
 sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram1_2kb(
 `ifdef USE_POWER_PINS
     .vccd1 (vccd1),// User area 1 1.8V supply
@@ -809,7 +851,7 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram1_2kb(
     .addr1    (sram1_addr1),
     .dout1    (sram1_dout1)
   );
-
+***/
 `endif
 
 
@@ -991,27 +1033,44 @@ wb_interconnect  #(
          .m0_wbd_ack_o  (wbd_int_ack_o         ),
          .m0_wbd_err_o  (wbd_int_err_o         ),
          
-         // Master 0 Interface
-         .m1_wbd_dat_i  (wbd_riscv_imem_dat_i  ),
-         .m1_wbd_adr_i  (wbd_riscv_imem_adr_i  ),
-         .m1_wbd_sel_i  (wbd_riscv_imem_sel_i  ),
-         .m1_wbd_we_i   (wbd_riscv_imem_we_i   ),
-         .m1_wbd_cyc_i  (wbd_riscv_imem_stb_i  ),
-         .m1_wbd_stb_i  (wbd_riscv_imem_stb_i  ),
-         .m1_wbd_dat_o  (wbd_riscv_imem_dat_o  ),
-         .m1_wbd_ack_o  (wbd_riscv_imem_ack_o  ),
-         .m1_wbd_err_o  (wbd_riscv_imem_err_o  ),
-         
          // Master 1 Interface
-         .m2_wbd_dat_i  (wbd_riscv_dmem_dat_i  ),
-         .m2_wbd_adr_i  (wbd_riscv_dmem_adr_i  ),
-         .m2_wbd_sel_i  (wbd_riscv_dmem_sel_i  ),
-         .m2_wbd_we_i   (wbd_riscv_dmem_we_i   ),
-         .m2_wbd_cyc_i  (wbd_riscv_dmem_stb_i  ),
-         .m2_wbd_stb_i  (wbd_riscv_dmem_stb_i  ),
-         .m2_wbd_dat_o  (wbd_riscv_dmem_dat_o  ),
-         .m2_wbd_ack_o  (wbd_riscv_dmem_ack_o  ),
-         .m2_wbd_err_o  (wbd_riscv_dmem_err_o  ),
+         .m1_wbd_dat_i  (wbd_riscv_dmem_dat_i  ),
+         .m1_wbd_adr_i  (wbd_riscv_dmem_adr_i  ),
+         .m1_wbd_sel_i  (wbd_riscv_dmem_sel_i  ),
+         .m1_wbd_we_i   (wbd_riscv_dmem_we_i   ),
+         .m1_wbd_cyc_i  (wbd_riscv_dmem_stb_i  ),
+         .m1_wbd_stb_i  (wbd_riscv_dmem_stb_i  ),
+         .m1_wbd_dat_o  (wbd_riscv_dmem_dat_o  ),
+         .m1_wbd_ack_o  (wbd_riscv_dmem_ack_o  ),
+         .m1_wbd_err_o  (wbd_riscv_dmem_err_o  ),
+         
+         // Master 2 Interface
+         .m2_wbd_dat_i  (wbd_riscv_dcache_dat_i  ),
+         .m2_wbd_adr_i  (wbd_riscv_dcache_adr_i  ),
+         .m2_wbd_sel_i  (wbd_riscv_dcache_sel_i  ),
+         .m2_wbd_bl_i   (wbd_riscv_dcache_bl_i   ),
+         .m2_wbd_bry_i  (wbd_riscv_dcache_bry_i  ),
+         .m2_wbd_we_i   (wbd_riscv_dcache_we_i   ),
+         .m2_wbd_cyc_i  (wbd_riscv_dcache_stb_i  ),
+         .m2_wbd_stb_i  (wbd_riscv_dcache_stb_i  ),
+         .m2_wbd_dat_o  (wbd_riscv_dcache_dat_o  ),
+         .m2_wbd_ack_o  (wbd_riscv_dcache_ack_o  ),
+         .m2_wbd_lack_o (wbd_riscv_dcache_lack_o ),
+         .m2_wbd_err_o  (wbd_riscv_dcache_err_o  ),
+
+         // Master 3 Interface
+         .m3_wbd_dat_i  (wbd_riscv_icache_dat_i  ),
+         .m3_wbd_adr_i  (wbd_riscv_icache_adr_i  ),
+         .m3_wbd_sel_i  (wbd_riscv_icache_sel_i  ),
+         .m3_wbd_bl_i   (wbd_riscv_icache_bl_i   ),
+         .m3_wbd_bry_i  (wbd_riscv_icache_bry_i  ),
+         .m3_wbd_we_i   (wbd_riscv_icache_we_i   ),
+         .m3_wbd_cyc_i  (wbd_riscv_icache_stb_i  ),
+         .m3_wbd_stb_i  (wbd_riscv_icache_stb_i  ),
+         .m3_wbd_dat_o  (wbd_riscv_icache_dat_o  ),
+         .m3_wbd_ack_o  (wbd_riscv_icache_ack_o  ),
+         .m3_wbd_lack_o (wbd_riscv_icache_lack_o ),
+         .m3_wbd_err_o  (wbd_riscv_icache_err_o  ),
          
          
          // Slave 0 Interface
@@ -1054,9 +1113,12 @@ wb_interconnect  #(
          // .s3_wbd_err_i  (1'b0          ), - Moved inside IP
          .s3_wbd_dat_i  (wbd_mbist_dat_i ),
          .s3_wbd_ack_i  (wbd_mbist_ack_i ),
+         .s3_wbd_lack_i (wbd_mbist_lack_i ),
          .s3_wbd_dat_o  (wbd_mbist_dat_o ),
          .s3_wbd_adr_o  (wbd_mbist_adr_o ),
          .s3_wbd_sel_o  (wbd_mbist_sel_o ),
+         .s3_wbd_bry_o  (wbd_mbist_bry_o ),
+         .s3_wbd_bl_o   (wbd_mbist_bl_o ),
          .s3_wbd_we_o   (wbd_mbist_we_o  ),  
          .s3_wbd_cyc_o  (wbd_mbist_cyc_o ),
          .s3_wbd_stb_o  (wbd_mbist_stb_o )
@@ -1224,9 +1286,9 @@ pinmux u_pinmux(
 
 
    ); 
-//------------- MBIST1 - 512x32             ----
+//------------- MBIST - 512x32             ----
 
-mbist_top  #(
+mbist_wrapper  #(
 	`ifndef SYNTHESIS
 	.BIST_NO_SRAM           (4                      ),
 	.BIST_ADDR_WD           (BIST1_ADDR_WD-2        ),
@@ -1260,8 +1322,11 @@ mbist_top  #(
         .wb_we_i              (wbd_mbist_we_o ),  
         .wb_dat_i             (wbd_mbist_dat_o),  
         .wb_sel_i             (wbd_mbist_sel_o),  
+        .wb_bl_i              (wbd_mbist_bl_o),  
+        .wb_bry_i             (wbd_mbist_bry_o),  
         .wb_dat_o             (wbd_mbist_dat_i),  
         .wb_ack_o             (wbd_mbist_ack_i),  
+        .wb_lack_o            (wbd_mbist_lack_i),  
         .wb_err_o             (                 ), 
 
 	.rst_n                (bist_rst_n       ),
@@ -1280,40 +1345,41 @@ mbist_top  #(
 	.bist_correct         (bist_correct     ),
 	.bist_error           (bist_error       ),
 	.bist_done            (bist_done        ),
-	.bist_sdo             (bist_sdo         ),
+	.bist_sdo             (bist_sdo         )
 
-     // towards memory
-     // PORT-A
-        .mem_clk_a            (mem_clk_a         ),
-        .mem_addr_a0          (mem0_addr_a       ),
-        .mem_addr_a1          (mem1_addr_a       ),
-        .mem_addr_a2          (mem2_addr_a       ),
-        .mem_addr_a3          (mem3_addr_a       ),
-        .mem_cen_a            (mem_cen_a         ),
-        .mem_web_a            (mem_web_a         ),
-        .mem_mask_a0          (mem0_mask_a       ),
-        .mem_mask_a1          (mem1_mask_a       ),
-        .mem_mask_a2          (mem2_mask_a       ),
-        .mem_mask_a3          (mem3_mask_a       ),
-        .mem_din_a0           (mem0_din_a        ),
-        .mem_din_a1           (mem1_din_a        ),
-        .mem_din_a2           (mem2_din_a        ),
-        .mem_din_a3           (mem3_din_a        ),
-        .mem_dout_a0          (mem0_dout_a       ),
-        .mem_dout_a1          (mem1_dout_a       ),
-        .mem_dout_a2          (mem2_dout_a       ),
-        .mem_dout_a3          (mem3_dout_a       ),
-     // PORT-B
-        .mem_clk_b            (mem_clk_b         ),
-        .mem_cen_b            (mem_cen_b         ),
-        .mem_addr_b0          (mem0_addr_b       ),
-        .mem_addr_b1          (mem1_addr_b       ),
-        .mem_addr_b2          (mem2_addr_b       ),
-        .mem_addr_b3          (mem3_addr_b       )
+    // // towards memory
+    // // PORT-A
+    //    .mem_clk_a            (mem_clk_a         ),
+    //    .mem_addr_a0          (mem0_addr_a       ),
+    //    .mem_addr_a1          (mem1_addr_a       ),
+    //    .mem_addr_a2          (mem2_addr_a       ),
+    //    .mem_addr_a3          (mem3_addr_a       ),
+    //    .mem_cen_a            (mem_cen_a         ),
+    //    .mem_web_a            (mem_web_a         ),
+    //    .mem_mask_a0          (mem0_mask_a       ),
+    //    .mem_mask_a1          (mem1_mask_a       ),
+    //    .mem_mask_a2          (mem2_mask_a       ),
+    //    .mem_mask_a3          (mem3_mask_a       ),
+    //    .mem_din_a0           (mem0_din_a        ),
+    //    .mem_din_a1           (mem1_din_a        ),
+    //    .mem_din_a2           (mem2_din_a        ),
+    //    .mem_din_a3           (mem3_din_a        ),
+    //    .mem_dout_a0          (mem0_dout_a       ),
+    //    .mem_dout_a1          (mem1_dout_a       ),
+    //    .mem_dout_a2          (mem2_dout_a       ),
+    //    .mem_dout_a3          (mem3_dout_a       ),
+    // // PORT-B
+    //    .mem_clk_b            (mem_clk_b         ),
+    //    .mem_cen_b            (mem_cen_b         ),
+    //    .mem_addr_b0          (mem0_addr_b       ),
+    //    .mem_addr_b1          (mem1_addr_b       ),
+    //    .mem_addr_b2          (mem2_addr_b       ),
+    //    .mem_addr_b3          (mem3_addr_b       )
 
 
 );
 
+/***
 sky130_sram_2kbyte_1rw1r_32x512_8 u_sram0_2kb(
 `ifdef USE_POWER_PINS
     .vccd1 (vccd1),// User area 1 1.8V supply
@@ -1394,6 +1460,8 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_sram3_2kb(
     .addr1    (mem3_addr_b),
     .dout1    ()
   );
+
+**/
 
 /***
 sar_adc  u_adc (

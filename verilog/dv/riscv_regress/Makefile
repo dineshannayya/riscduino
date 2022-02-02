@@ -2,6 +2,9 @@
 # Makefile for SCR1
 #------------------------------------------------------------------------------
 
+SIM ?= RTL
+DUMP ?= OFF
+
 # PARAMETERS
 
 # CFG = <MAX, BASE, MIN, CUSTOM>
@@ -11,20 +14,20 @@ export CFG      ?= MAX
 export BUS      ?= WB
 
 ifeq ($(CFG), MAX)
-# Predefined configuration SCR1_CFG_RV32IMC_MAX
+# Predefined configuration YCR1_CFG_RV32IMC_MAX
     override ARCH         := IMC
     override VECT_IRQ     := 1
     override IPIC         := 1
     override TCM          := 0
-    override SIM_CFG_DEF  := SCR1_CFG_RV32IMC_MAX
+    override SIM_CFG_DEF  := YCR1_CFG_RV32IMC_MAX
 else
     ifeq ($(CFG), BASE)
-    # Predefined configuration SCR1_CFG_RV32IC_BASE
+    # Predefined configuration YCR1_CFG_RV32IC_BASE
         override ARCH         := IC
         override VECT_IRQ     := 1
         override IPIC         := 1
         override TCM          := 0
-        override SIM_CFG_DEF  := SCR1_CFG_RV32IC_BASE
+        override SIM_CFG_DEF  := YCR1_CFG_RV32IC_BASE
     else
         ifeq ($(CFG), MIN)
         # Predefined configuration SCR1_CFG_RV32EC_MIN
@@ -32,10 +35,10 @@ else
             override VECT_IRQ     := 0
             override IPIC         := 0
             override TCM          := 0
-            override SIM_CFG_DEF  := SCR1_CFG_RV32EC_MIN
+            override SIM_CFG_DEF  := YCR1_CFG_RV32EC_MIN
         else
         # CUSTOM configuration. Parameters can be overwritten
-            # These options are for compiling tests only. Set the corresponding RTL parameters manually in the file scr1_arch_description.svh.
+            # These options are for compiling tests only. Set the corresponding RTL parameters manually in the file ycr1_arch_description.svh.
             # ARCH = <IMC, IC, IM, I, EMC, EM, EC, E>
             # VECT_IRQ = <0, 1>
             # IPIC = <0, 1>
@@ -44,7 +47,7 @@ else
             VECT_IRQ  ?= 0
             IPIC      ?= 0
             TCM       ?= 0
-            SIM_CFG_DEF  = SCR1_CFG_$(CFG)
+            SIM_CFG_DEF  = YCR1_CFG_$(CFG)
         endif
     endif
 endif
@@ -83,9 +86,9 @@ override ARCH=$(ARCH_tmp)
 TRACE ?= 0
 
 ifeq ($(TRACE), 1)
-    export SIM_TRACE_DEF = SCR1_TRACE_LOG_EN
+    export SIM_TRACE_DEF = YCR1_TRACE_LOG_EN
 else
-    export SIM_TRACE_DEF = SCR1_TRACE_LOG_DIS
+    export SIM_TRACE_DEF = YCR1_TRACE_LOG_DIS
 endif
 
 
@@ -133,7 +136,7 @@ UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
 UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
 UPRJ_BEHAVIOURAL_MODELS = $(root_dir)/../model
 UPRJ_BEHAVIOURAL_AGENTS = $(root_dir)/../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1/src/includes
+UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1c/src/includes
 UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
 UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
 UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
@@ -157,9 +160,11 @@ todo_list    := $(bld_dir)/todo.txt
 export CROSS_PREFIX  ?= riscv64-unknown-elf-
 export RISCV_GCC     ?= $(CROSS_PREFIX)gcc
 export RISCV_OBJDUMP ?= $(CROSS_PREFIX)objdump -D
+export RISCV_OBJCOPY ?= $(CROSS_PREFIX)objcopy -O verilog
 export RISCV_ROM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -j .text.init -j .text -j .rodata -j .rodata.str1.4 -O verilog
 #Seperate the RAM content and write out in 32bit Little endian format to load it to TCM Memory
-export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -R .riscv.attributes -R .comment -R .debug_abbrev -R .debug_loc -R .debug_str -O verilog --verilog-data-width=4 --reverse-bytes=4
+#export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -R .riscv.attributes -R .comment -R .debug_abbrev -R .debug_loc -R .debug_str -O verilog --verilog-data-width=4 --reverse-bytes=4
+export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -O verilog
 export RISCV_READELF ?= $(CROSS_PREFIX)readelf -s
 
 ifneq (,$(findstring e,$(ARCH_lowercase)))
@@ -177,11 +182,11 @@ ifeq (,$(findstring e,$(ARCH_lowercase)))
 	TARGETS += riscv_isa
 
 	# Comment this target if you don't want to run the riscv_compliance
-	#TARGETS += riscv_compliance
+	TARGETS += riscv_compliance
 endif
 
 # Comment this target if you don't want to run the isr_sample
-#TARGETS += isr_sample
+TARGETS += isr_sample
 
 # Comment this target if you don't want to run the coremark
 #TARGETS += coremark
@@ -194,7 +199,7 @@ endif
 
 
 # Targets
-.PHONY: tests run_iverilog run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf run_iverilog_wf
+.PHONY: tests run_iverilog run_iverilog_wf run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf
 
 default: clean_test_list run_iverilog
 

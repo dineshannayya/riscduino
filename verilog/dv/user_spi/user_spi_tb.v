@@ -229,7 +229,7 @@ parameter P_QDDR   = 2'b11;
 		$display("#############################################");
 		$display("  Read Identification (RDID:0x9F)            ");
 		$display("#############################################");
-               wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
 		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,2'b00,P_SINGLE,P_SINGLE,4'b0001});
 		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b00,P_FSM_CR,8'h00,8'h9F});
 		wb_user_core_read_check(`QSPIM_IMEM_RDATA,read_data,32'h00190201);
@@ -1179,7 +1179,7 @@ user_project_wrapper u_top(
 
 
    // Quad flash
-     s25fl256s #(.mem_file_name("user_risc_boot.hex"),
+     s25fl256s #(.mem_file_name("flash0.hex"),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (

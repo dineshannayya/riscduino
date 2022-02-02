@@ -4,12 +4,12 @@
 
 
 #define MEM_MTIME_MASK  0xF0000000
-#define MEM_MTIME_CTRL  0x00490000
-#define MEM_MTIME_DIV   0x00490004
-#define MEM_MTIME       0x00490008
-#define MEM_MTIMEH      0x0049000C
-#define MEM_MTIMECMP    0x00490010
-#define MEM_MTIMECMPH   0x00490014
+#define MEM_MTIME_CTRL  0x0C490000
+#define MEM_MTIME_DIV   0x0C490004
+#define MEM_MTIME       0x0C490008
+#define MEM_MTIMEH      0x0C49000C
+#define MEM_MTIMECMP    0x0C490010
+#define MEM_MTIMECMPH   0x0C490014
 
 #define TMP   t0
 #define TMP2  t1
@@ -78,7 +78,7 @@
 .macro _run_timer
     li          TMP, MEM_MTIME_CTRL
     lw          TMP2, 0(TMP)
-    li          TMP3, (1 << SCR1_MTIME_CTRL_EN)
+    li          TMP3, (1 << YCR1_MTIME_CTRL_EN)
     or          TMP2, TMP2, TMP3
     sw          TMP2, 0(TMP)
 .endm
@@ -86,7 +86,7 @@
 .macro _stop_timer
     li          TMP, MEM_MTIME_CTRL
     lw          TMP2, 0(TMP)
-    li          TMP3, (1 << SCR1_MTIME_CTRL_EN)
+    li          TMP3, (1 << YCR1_MTIME_CTRL_EN)
     not         TMP3, TMP3
     and         TMP2, TMP2, TMP3
     sw          TMP2, 0(TMP)

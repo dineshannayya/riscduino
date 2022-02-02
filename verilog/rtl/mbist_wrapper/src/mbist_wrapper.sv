@@ -97,8 +97,11 @@ module mbist_wrapper
         input   wire                          wb_we_i ,  // write
         input   wire [BIST_DATA_WD-1:0]       wb_dat_i,  // data output
         input   wire [BIST_DATA_WD/8-1:0]     wb_sel_i,  // byte enable
+        input   wire [9:0]                    wb_bl_i,   // burst 
+        input   wire                          wb_bry_i,  // burst ready
         output  wire [BIST_DATA_WD-1:0]       wb_dat_o,  // data input
         output  wire                          wb_ack_o,  // acknowlegement
+        output  wire                          wb_lack_o, // acknowlegement
         output  wire                          wb_err_o  // error
 
 
@@ -107,10 +110,8 @@ module mbist_wrapper
 
 );
 
-parameter     BIST_NO_SRAM= 4; // NO of MBIST MEMORY
 parameter  NO_SRAM_WD = (BIST_NO_SRAM+1)/2;
 parameter     BIST1_ADDR_WD = 11; // 512x32 SRAM
-parameter     BIST_DATA_WD = 32;
 
 // FUNCTIONAL PORT 
 // towards memory MBIST1
@@ -143,6 +144,55 @@ wire [BIST1_ADDR_WD-1:2]       mem1_addr_b;
 wire [BIST1_ADDR_WD-1:2]       mem2_addr_b;
 wire [BIST1_ADDR_WD-1:2]       mem3_addr_b;
 
+logic                          mem_req;
+logic [(BIST_NO_SRAM+1)/2-1:0] mem_cs;
+logic [BIST_ADDR_WD-1:0]       mem_addr;
+logic [31:0]                   mem_wdata;
+logic                          mem_we;
+logic [3:0]                    mem_wmask;
+logic [31:0]                   mem_rdata;
+
+mbist_wb  #(
+	.BIST_NO_SRAM           (4                      ),
+	.BIST_ADDR_WD           (BIST1_ADDR_WD-2        ),
+	.BIST_DATA_WD           (BIST_DATA_WD           )
+     ) 
+	     u_wb (
+
+`ifdef USE_POWER_PINS
+       .vccd1                  (vccd1                     ),// User area 1 1.8V supply
+       .vssd1                  (vssd1                     ),// User area 1 digital ground
+`endif
+
+	.rst_n                (rst_n                ),
+	// WB I/F
+        .wb_clk_i             (wb_clk_i             ),  
+        .wb_stb_i             (wb_stb_i             ),  
+        .wb_cs_i              (wb_cs_i              ),
+        .wb_adr_i             (wb_adr_i             ),
+        .wb_we_i              (wb_we_i              ),  
+        .wb_dat_i             (wb_dat_i             ),  
+        .wb_sel_i             (wb_sel_i             ),  
+        .wb_bl_i              (wb_bl_i              ),  
+        .wb_bry_i             (wb_bry_i             ),  
+        .wb_dat_o             (wb_dat_o             ),  
+        .wb_ack_o             (wb_ack_o             ),  
+        .wb_lack_o            (wb_lack_o            ),  
+        .wb_err_o             (                     ), 
+
+	.mem_req              (mem_req              ),
+	.mem_cs               (mem_cs               ),
+	.mem_addr             (mem_addr             ),
+	.mem_we               (mem_we               ),
+	.mem_wdata            (mem_wdata            ),
+	.mem_wmask            (mem_wmask            ),
+	.mem_rdata            (mem_rdata            )
+
+	
+
+
+);
+
 
 mbist_top  #(
 	`ifndef SYNTHESIS
@@ -171,16 +221,13 @@ mbist_top  #(
 	// WB I/F
         .wb_clk2_i            (wb_clk2_i            ),  
         .wb_clk_i             (wb_clk_i             ),  
-        .wb_cyc_i             (wb_cyc_i             ),  
-        .wb_stb_i             (wb_stb_i             ),  
-	.wb_cs_i              (wb_cs_i              ),
-        .wb_adr_i             (wb_adr_i             ),  
-        .wb_we_i              (wb_we_i              ),  
-        .wb_dat_i             (wb_dat_i             ),  
-        .wb_sel_i             (wb_sel_i             ),  
-        .wb_dat_o             (wb_dat_o             ),  
-        .wb_ack_o             (wb_ack_o             ),  
-        .wb_err_o             (                     ), 
+        .mem_req              (mem_req              ),  
+	.mem_cs               (mem_cs               ),
+        .mem_addr             (mem_addr             ),  
+        .mem_we               (mem_we               ),  
+        .mem_wdata            (mem_wdata            ),  
+        .mem_wmask            (mem_wmask            ),  
+        .mem_rdata            (mem_rdata            ),  
 
 	.rst_n                (rst_n                ),
 

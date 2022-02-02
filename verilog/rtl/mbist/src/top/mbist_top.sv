@@ -90,16 +90,13 @@ module mbist_top
         // WB I/F
         input   wire                          wb_clk_i,  // System clock
         input   wire                          wb_clk2_i, // System clock2 is no cts
-        input   wire                          wb_cyc_i,  // strobe/request
-        input   wire                          wb_stb_i,  // strobe/request
-	input   wire [(BIST_NO_SRAM+1)/2-1:0] wb_cs_i,
-        input   wire [BIST_ADDR_WD-1:0]       wb_adr_i,  // address
-        input   wire                          wb_we_i ,  // write
-        input   wire [BIST_DATA_WD-1:0]       wb_dat_i,  // data output
-        input   wire [BIST_DATA_WD/8-1:0]     wb_sel_i,  // byte enable
-        output  wire [BIST_DATA_WD-1:0]       wb_dat_o,  // data input
-        output  wire                          wb_ack_o,  // acknowlegement
-        output  wire                          wb_err_o,  // error
+        input   wire                          mem_req,  // strobe/request
+	input   wire [(BIST_NO_SRAM+1)/2-1:0] mem_cs,
+        input   wire [BIST_ADDR_WD-1:0]       mem_addr,  // address
+        input   wire                          mem_we ,  // write
+        input   wire [BIST_DATA_WD-1:0]       mem_wdata,  // data output
+        input   wire [BIST_DATA_WD/8-1:0]     mem_wmask,  // byte enable
+        output  wire [BIST_DATA_WD-1:0]       mem_rdata,  // data input
 
      // towards memory
      // PORT-A
@@ -183,8 +180,6 @@ wire [BIST_DATA_WD-1:0] bist_wdata      ; // bist write data
 wire                    bist_wr         ;
 wire                    bist_rd         ;
 wire [BIST_DATA_WD-1:0] wb_dat[0:BIST_NO_SRAM-1];  // data input
-wire                    wb_ack[0:BIST_NO_SRAM-1];  // acknowlegement
-wire                    wb_err[0:BIST_NO_SRAM-1];  // error
 
 //--------------------------------------------------------
 // As yosys does not support two dimensional var, 
@@ -256,9 +251,7 @@ assign bist_ms_sdi[3] = bist_ms_sdo[2];
 assign bist_sdo = bist_ms_sdo[3];
 
 // Pick the correct read path
-assign wb_dat_o = wb_dat[wb_cs_i];
-assign wb_ack_o = wb_ack[wb_cs_i];
-assign wb_err_o = wb_err[wb_cs_i];
+assign mem_rdata = wb_dat[mem_cs];
 
 assign bist_wr = (cmd_phase && op_write);
 assign bist_rd = (cmd_phase && op_read);
@@ -497,16 +490,13 @@ mbist_data_cmp
                    // WB I/F
 		        .sram_id         (NO_SRAM_WD'(sram_no)      ),
                         .wb_clk_i        (wb_clk2_i                 ),  // System clock
-                        .wb_cyc_i        (wb_cyc_i                  ),  // strobe/request
-			.wb_cs_i         (wb_cs_i                   ),  // Chip Select
-                        .wb_stb_i        (wb_stb_i                  ),  // strobe/request
-                        .wb_adr_i        (wb_adr_i                  ),  // address
-                        .wb_we_i         (wb_we_i                   ),  // write
-                        .wb_dat_i        (wb_dat_i                  ),  // data output
-                        .wb_sel_i        (wb_sel_i                  ),  // byte enable
-                        .wb_dat_o        (wb_dat[sram_no]           ),  // data input
-                        .wb_ack_o        (wb_ack[sram_no]           ),  // acknowlegement
-                        .wb_err_o        (wb_err[sram_no]           ),  // error
+			.mem_cs          (mem_cs                    ),  // Chip Select
+                        .mem_req         (mem_req                   ),  // strobe/request
+                        .mem_addr        (mem_addr                  ),  // address
+                        .mem_we          (mem_we                    ),  // write
+                        .mem_wdata       (mem_wdata                 ),  // data output
+                        .mem_wmask       (mem_wmask                 ),  // byte enable
+                        .mem_rdata       (wb_dat[sram_no]           ),  // data input
                     // MEM A PORT 
                         .func_clk        (func_clk[sram_no]         ),
                         .func_cen        (func_cen[sram_no]         ),

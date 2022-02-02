@@ -68,16 +68,13 @@ module mbist_mem_wrapper #(
           // WB I/F
 	input   logic [(BIST_NO_SRAM+1)/2-1:0] sram_id         ,
         input   logic                          wb_clk_i        ,  // System clock
-        input   logic                          wb_cyc_i        ,  // strobe/request
-        input   logic [(BIST_NO_SRAM+1)/2-1:0] wb_cs_i         ,  // Chip Select
-        input   logic                          wb_stb_i        ,  // strobe/request
-        input   logic [BIST_ADDR_WD-1:0]       wb_adr_i        ,  // address
-        input   logic                          wb_we_i         ,  // write
-        input   logic [BIST_DATA_WD-1:0]       wb_dat_i        ,  // data output
-        input   logic [BIST_DATA_WD/8-1:0]     wb_sel_i        ,  // byte enable
-        output  logic [BIST_DATA_WD-1:0]       wb_dat_o        ,  // data input
-        output  logic                          wb_ack_o        ,  // acknowlegement
-        output  logic                          wb_err_o        ,  // error
+        input   logic [(BIST_NO_SRAM+1)/2-1:0] mem_cs          ,  // Chip Select
+        input   logic                          mem_req         ,  // strobe/request
+        input   logic [BIST_ADDR_WD-1:0]       mem_addr        ,  // address
+        input   logic                          mem_we          ,  // write
+        input   logic [BIST_DATA_WD-1:0]       mem_wdata       ,  // data output
+        input   logic [BIST_DATA_WD/8-1:0]     mem_wmask       ,  // byte enable
+        output  logic [BIST_DATA_WD-1:0]       mem_rdata       ,  // data input
       // MEM PORT 
         output   logic                         func_clk        ,
         output   logic                         func_cen        ,
@@ -92,23 +89,14 @@ module mbist_mem_wrapper #(
 
 // Memory Write PORT
 assign func_clk    = wb_clk_i;
-assign func_cen    = (wb_cs_i == sram_id) ? !wb_stb_i : 1'b1;
-assign func_web    = (wb_cs_i == sram_id) ? !wb_we_i  : 1'b1;
-assign func_mask   = wb_sel_i;
-assign func_addr   = wb_adr_i;
-assign func_din    = wb_dat_i;
-assign wb_dat_o      = func_dout;
+assign func_cen    = (mem_cs  == sram_id) ? !mem_req : 1'b1;
+assign func_web    = (mem_cs  == sram_id) ? !mem_we   : 1'b1;
+assign func_mask   = mem_wmask;
+assign func_addr   = mem_addr;
+assign func_din    = mem_wdata;
+assign mem_rdata   = func_dout;
 
-assign wb_err_o      = 1'b0;
 
-// Generate Once cycle delayed ACK to get the data from SRAM
-always_ff @(negedge rst_n or posedge wb_clk_i) begin
-    if ( rst_n == 1'b0 ) begin
-      wb_ack_o<= 'h0;
-   end else begin
-      wb_ack_o <= (wb_cs_i == sram_id) & (wb_stb_i == 1'b1) & (wb_ack_o == 0);
-   end
-end
 
 
 endmodule
