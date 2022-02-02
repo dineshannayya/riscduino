@@ -26,8 +26,8 @@ ENTRY(_start)
 
 MEMORY {
   ROM (rxx) : ORIGIN = 0x0, LENGTH = 64K
-  TCM (rwx) : ORIGIN = 0x00480000, LENGTH = 4K
-  RAM (rwx) : ORIGIN = 0x10030000, LENGTH = 8K
+  RAM (rwx) : ORIGIN = 0x08000000, LENGTH = 8K
+  TCM (rwx) : ORIGIN = 0x0C480000, LENGTH = 2K
 }
 
 STACK_SIZE = 1024;
@@ -56,20 +56,20 @@ SECTIONS {
     *(sc_test_section)
     . = ALIGN(CL_SIZE);
      PROVIDE(__TEXT_END__ = .);
-  } >ROM 
+  } >ROM
 
   /* data segment */
   .data : {
     *(.data .data.*)
     . = ALIGN(CL_SIZE);
-  } >TCM
+  } >RAM
 
   .sdata : {
     __global_pointer$ = . + 0x800;
     *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata*)
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     . = ALIGN(CL_SIZE);
-  } >TCM
+  } >RAM
 
   /* thread-local data segment */
   .tdata : {
@@ -78,14 +78,14 @@ SECTIONS {
     *(.tdata .tdata.*)
     PROVIDE(_tdata_end = .);
     . = ALIGN(CL_SIZE);
-  } >TCM
+  } >RAM
 
   .tbss : {
     PROVIDE(__BSS_START__ = .);
     *(.tbss .tbss.*)
     . = ALIGN(CL_SIZE);
     PROVIDE(_tbss_end = .);
-  } >TCM
+  } >RAM
 
   /* bss segment */
   .sbss : {

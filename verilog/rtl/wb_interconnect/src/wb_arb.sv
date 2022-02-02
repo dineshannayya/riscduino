@@ -68,7 +68,7 @@ module wb_arb(clk, rstn, req, gnt);
 
 input		clk;
 input		rstn;
-input	[2:0]	req;	// Req input
+input	[3:0]	req;	// Req input
 output	[1:0]	gnt; 	// Grant output
 
 ///////////////////////////////////////////////////////////////////////
@@ -80,7 +80,8 @@ output	[1:0]	gnt; 	// Grant output
 parameter	[1:0]
                 grant0 = 3'h0,
                 grant1 = 3'h1,
-                grant2 = 3'h2;
+                grant2 = 3'h2,
+                grant3 = 3'h3;
 
 ///////////////////////////////////////////////////////////////////////
 // Local Registers and Wires
@@ -115,11 +116,13 @@ always@(state or req )
       	if(!req[0] ) begin
       		if(req[1])	next_state = grant1;
       		else if(req[2])	next_state = grant2;
+      		else if(req[3])	next_state = grant3;
       	end
          grant1:
       	// if this req is dropped or next is asserted, check for other req's
       	if(!req[1] ) begin
       		if(req[2])	next_state = grant2;
+      		if(req[3])	next_state = grant3;
       		else if(req[0])	next_state = grant0;
       	end
          grant2:
@@ -127,6 +130,14 @@ always@(state or req )
       	if(!req[2] ) begin
       	   if(req[0])	        next_state = grant0;
       	   else if(req[1])	next_state = grant1;
+      	   else if(req[3])	next_state = grant3;
+      	end
+         grant3:
+      	// if this req is dropped or next is asserted, check for other req's
+      	if(!req[3] ) begin
+      	   if(req[0])	        next_state = grant0;
+      	   else if(req[1])	next_state = grant1;
+      	   else if(req[2])	next_state = grant2;
       	end
       endcase
    end

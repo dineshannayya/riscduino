@@ -1,8 +1,6 @@
 ## @file
-## Syntacore SCR* tests
+##  YCR* tests
 ##
-## @copyright 2015-2018 Syntacore. All rights reserved.
-## RISCV-Compliance
 ##
 
 ARCH ?=im
@@ -16,7 +14,7 @@ RISCV_COMPLIANCE_TESTS := $(src_dir)/../../dependencies/riscv-compliance/
 
 ifeq (rv32e,$(findstring rv32e,$(ARCH)))
     $(info >>> RV32E - no compliance tests)
-else ## ifdef SCR_BASE_RVE_EXT
+else ## ifdef YCR_BASE_RVE_EXT
   #ifeq (rv32i,$(findstring rv32i,$(ARCH)))
   ifeq ($(ARCH),$(filter $(ARCH),rv32i rv32im rv32imc rv32ic))
     $(info >>> I32 TESTS)
@@ -134,8 +132,8 @@ $(dst_dir)/compliance_%.elf: $(obj_dir)/%.o | $(dep_files)
 $(dst_dir)/compliance_%.hex: $(dst_dir)/compliance_%.elf
 	$(RISCV_ROM_OBJCOPY) $^ $@
 	$(RISCV_RAM_OBJCOPY) $^ $@.ram
-	#assign 0x0048_0xxx  to 0x0000_0xxx to map to TCM Memory
-	sed -i 's/@00480/@00000/g' $@.ram
+	#assign 0x0800_0xxx  to 0x0000_0xxx to map to TCM Memory
+	sed -i 's/@08000/@00000/g' $@.ram
 
 $(bld_dir)/compliance_%.dump: $(dst_dir)/compliance_%.elf
 	$(RISCV_OBJDUMP) -D -w -x -S $^ > $@

@@ -149,7 +149,7 @@ integer i,j;
 
 	`ifdef WFDUMP
 	   initial begin
-	   	$dumpfile("risc_boot.vcd");
+	   	$dumpfile("simx.vcd");
 	   	$dumpvars(1, user_uart_tb);
 	   	$dumpvars(0, user_uart_tb.u_top);
 	   end
@@ -186,7 +186,7 @@ begin
    // Remove all the reset
    wb_user_core_write('h3080_0000,'h1F);
 
-   repeat (16000) @(posedge clock);  // wait for Processor Get Ready
+   repeat (20000) @(posedge clock);  // wait for Processor Get Ready
    tb_uart.uart_init;
    wb_user_core_write(`ADDR_SPACE_UART+8'h0,{3'h0,2'b00,1'b1,1'b1,1'b1});  
    

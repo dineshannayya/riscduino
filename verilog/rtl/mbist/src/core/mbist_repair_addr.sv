@@ -99,7 +99,10 @@ always_comb
 begin
    AddressOut = AddressIn;
    for(index=0; index < BIST_ERR_LIMIT; index=index+1) begin
-      if(ErrorCnt > index && AddressIn == RepairMem[index]) AddressOut = BIST_REPAIR_ADDR_START+index;
+      if(ErrorCnt > index && AddressIn == RepairMem[index]) begin
+	  AddressOut = BIST_REPAIR_ADDR_START+index;
+	  $display("STATUS: MBIST ADDRESS REPAIR: %m => Old Addr: %x Nex Addr: %x",AddressIn,AddressOut);
+      end
    end
 end
 

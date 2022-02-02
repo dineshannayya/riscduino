@@ -77,6 +77,12 @@
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 
+localparam [31:0]      YCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
+localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
+localparam [31:0]      YCR1_SIM_EXT_IRQ_ADDR   = 32'hF000_0100;
+localparam [31:0]      YCR1_SIM_SOFT_IRQ_ADDR  = 32'hF000_0200;
+
+
 module user_risc_regress_tb;
 	reg clock;
 	reg wb_rst_i;
@@ -133,7 +139,8 @@ module user_risc_regress_tb;
         int unsigned           tests_passed;
         int unsigned           tests_total;
 
-	logic  [31:0]           tem_mem[0:1047];
+	logic  [7:0]           tem_mem[0:4095];
+	logic  [31:0]          mem_data;
 
 
 	//-----------------------------------------------------------------
@@ -180,7 +187,9 @@ module user_risc_regress_tb;
 	   	$dumpvars(1, user_risc_regress_tb);
 	   	$dumpvars(1, user_risc_regress_tb.u_top);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_pinmux);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_qspi_master);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_intercon);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_mbist);
 	   end
        `endif
 
@@ -200,17 +209,21 @@ module user_risc_regress_tb;
 		// some of the RISCV test need SRAM area for specific
 		// instruction execution like fence
 		$sformat(test_ram_file, "%s.ram",test_file);
-		// Load the RAM content to local temp memory
-                $readmemh(test_ram_file,tem_mem);
 		// Split the Temp memory content to two sram file
                 $readmemh(test_ram_file,tem_mem);
-		$writememh("sram0.hex",tem_mem,0,511);
-                $writememh("sram1.hex",tem_mem,512,1023);
 		// Load the SRAM0/SRAM1 with 2KB data
-                $write("\033[0;34m---Initializing the u_tsram0_2kb Memory with Hexfile: sram0.hex\033[0m\n");
-                $readmemh("sram0.hex",u_top.u_tsram0_2kb.mem);
-                $write("\033[0;34m---Initializing the u_tsram1_2kb Memory with Hexfile: sram1.hex\033[0m\n");
-                $readmemh("sram1.hex",u_top.u_tsram1_2kb.mem);
+                $write("\033[0;34m---Initializing the u_sram0_2kb Memory with Hexfile: %s\033[0m\n",test_ram_file);
+		// Initializing the SRAM
+		for(i = 0 ; i < 2048; i = i +4) begin
+		    mem_data = {tem_mem[i+3],tem_mem[i+2],tem_mem[i+1],tem_mem[i+0]};
+		    //$display("Filling Mem Location : %x with data : %x",i, mem_data);
+		    u_top.u_mbist.u_sram0_2kb.mem[i/4] = mem_data;
+		end
+		for(i = 2048 ; i < 4096; i = i +4) begin
+		  mem_data = {tem_mem[i+3],tem_mem[i+2],tem_mem[i+1],tem_mem[i+0]};
+		  //$display("Filling Mem Location : %x with data : %x",i, mem_data);
+		  u_top.u_mbist.u_sram1_2kb.mem[(2048-i)/4] = mem_data;
+		end
 
 		//for(i =32'h00; i < 32'h100; i = i+1)
                 //    $display("Location: %x, Data: %x", i, u_top.u_tsram0_2kb.mem[i]);
@@ -230,8 +243,10 @@ module user_risc_regress_tb;
 
 	        repeat (2) @(posedge clock);
 		#1;
+		// Enable the DCACHE Remap to SRAM region
+		wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
 		// Remove all the reset
-                wb_user_core_write('h3080_0000,'hF);
+                wb_user_core_write('h3080_0000,'h8F);
 
 	end
 
