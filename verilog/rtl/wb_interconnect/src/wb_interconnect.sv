@@ -169,7 +169,6 @@ module wb_interconnect #(
          output	logic 	        m2_wbd_err_o,
          
          // Master 3 Interface
-         input	logic [31:0]	m3_wbd_dat_i,
          input	logic [31:0]	m3_wbd_adr_i,
          input	logic [3:0]	m3_wbd_sel_i,
          input	logic [9:0]	m3_wbd_bl_i,
@@ -428,7 +427,7 @@ assign m2_wb_wr.wbd_cyc = m2_wbd_cyc_i;
 assign m2_wb_wr.wbd_stb = m2_wbd_stb_i;
 assign m2_wb_wr.wbd_tid = m2_wbd_tid_i;
 
-assign m3_wb_wr.wbd_dat = m3_wbd_dat_i;
+assign m3_wb_wr.wbd_dat = 'h0;
 assign m3_wb_wr.wbd_adr = {m3_wbd_adr_i[31:2],2'b00};
 assign m3_wb_wr.wbd_sel = m3_wbd_sel_i;
 assign m3_wb_wr.wbd_bl  = m3_wbd_bl_i;

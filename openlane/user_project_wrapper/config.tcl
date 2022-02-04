@@ -16,11 +16,16 @@
 # Base Configurations. Don't Touch
 # section begin
 
+set ::env(PDK) "sky130A"
+set ::env(STD_CELL_LIBRARY) "sky130_fd_sc_hd"
+
 # YOU ARE NOT ALLOWED TO CHANGE ANY VARIABLES DEFINED IN THE FIXED WRAPPER CFGS 
 source $::env(CARAVEL_ROOT)/openlane/user_project_wrapper_empty/fixed_wrapper_cfgs.tcl
 
+
 # YOU CAN CHANGE ANY VARIABLES DEFINED IN THE DEFAULT WRAPPER CFGS BY OVERRIDING THEM IN THIS CONFIG.TCL
 source $::env(CARAVEL_ROOT)/openlane/user_project_wrapper_empty/default_wrapper_cfgs.tcl
+
 
 set script_dir [file dirname [file normalize [info script]]]
 set proj_dir [file dirname [file normalize [info script]]]
@@ -53,7 +58,7 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(FP_SIZING) "absolute"
 set ::env(MACRO_PLACEMENT_CFG) $proj_dir/macro.cfg
 
-set ::env(PDN_CFG) $proj_dir/pdn.tcl
+#set ::env(PDN_CFG) $proj_dir/pdn.tcl
 
 set ::env(SDC_FILE) "$proj_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$proj_dir/base.sdc"
@@ -65,7 +70,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $proj_dir/../../verilog/gl/qspim.v \
         $proj_dir/../../verilog/gl/wb_interconnect.v \
         $proj_dir/../../verilog/gl/pinmux.v     \
-        $proj_dir/../../verilog/gl/mbist.v     \
+        $proj_dir/../../verilog/gl/mbist_wrapper.v     \
         $proj_dir/../../verilog/gl/uart_i2cm_usb_spi.v     \
 	$proj_dir/../../verilog/gl/wb_host.v \
 	$proj_dir/../../verilog/gl/yifive.v \
@@ -78,7 +83,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/wb_interconnect.lef \
 	$lef_root/uart_i2cm_usb_spi.lef \
 	$lef_root/wb_host.lef \
-	$lef_root/mbist.lef \
+	$lef_root/mbist_wrapper.lef \
 	$lef_root/yifive.lef \
 	$lef_root/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
 	"
@@ -89,14 +94,14 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/wb_interconnect.gds \
 	$gds_root/uart_i2cm_usb_spi.gds \
 	$gds_root/wb_host.gds \
-	$gds_root/mbist.gds \
+	$gds_root/mbist_wrapper.gds \
 	$gds_root/yifive.gds \
 	$gds_root/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/yifive/ycr1/src/includes ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
 
 set ::env(GLB_RT_MAXLAYER) 5
 
@@ -114,25 +119,34 @@ set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 set ::env(VDD_PIN) "vccd1 vccd2 vdda1 vdda2"
 set ::env(GND_PIN) "vssd1 vssd2 vssa1 vssa2"
 
-set ::env(GLB_RT_OBS) " li1   150 1300  833.1  1716.54,\
-	                met1  150 1300  833.1  1716.54,\
-	                met3  150 1300  833.1  1716.54,\
-                        li1   950 1300 1633.1  1716.54,\
-                        met1  950 1300 1633.1  1716.54,\
-                        met2  950 1300 1633.1  1716.54,\
-                        met3  950 1300 1633.1  1716.54,\
-                        li1   150 1900  833.1  2316.54,\
-                        met1  150 1900  833.1  2316.54,\
-                        met3  150 1900  833.1  2316.54,\
-                        li1  950  1900 1633.1  2316.54,\
-                        met1 950  1900 1633.1  2316.54,\
-                        met3 950  1900 1633.1  2316.54,\
-                        li1  150  2900  833.1  3316.54,\
-                        met1 150  2900  833.1  3316.54,\
-                        met3 150  2900  833.1  3316.54,\
-                        li1  950  2900 1633.1  3316.54,\
-                        met1 950  2900 1633.1  3316.54,\
-                        met3 950  2900 1633.1  3316.54,\
+set ::env(GLB_RT_OBS) " li1   150 2100  833.1  2516.54,\
+	                met1  150 2100  833.1  2516.54,\
+	                met2  150 2100  833.1  2516.54,\
+                        met3  150 2100  833.1  2516.54,\
+                        li1   950 2100 1633.1  2516.54,\
+                        met1  950 2100 1633.1  2516.54,\
+                        met2  950 2100 1633.1  2516.54,\
+                        met3  950 2100 1633.1  2516.54,\
+                        li1   150 3000  833.1 3416.54,\
+                        met1  150 3000  833.1 3416.54,\
+                        met2  150 3000  833.1 3416.54,\
+                        met3  150 3000  833.1 3416.54,\
+                        li1   950 3000 1633.1 3416.54,\
+                        met1  950 3000 1633.1 3416.54,\
+                        met2  950 3000 1633.1 3416.54,\
+                        met3  950 3000 1633.1 3416.54,\
+                        li1  150  1400  833.1  1816.54,\
+                        met1 150  1400  833.1  1816.54,\
+                        met2 150  1400  833.1  1816.54,\
+                        met3 150  1400  833.1  1816.54,\
+                        li1  150  800  833.1   1216.54,\
+                        met1 150  800  833.1   1216.54,\
+                        met2 150  800  833.1   1216.54,\
+                        met3 150  800  833.1   1216.54,\
+                        li1  150  200  833.1   616.54,\
+                        met1 150  200  833.1   616.54,\
+                        met2 150  200  833.1   616.54,\
+                        met3 150  200  833.1   616.54,\
 	                met5  0 0 2920 3520"
 
 set ::env(FP_PDN_MACRO_HOOKS) "\
@@ -141,7 +155,8 @@ set ::env(FP_PDN_MACRO_HOOKS) "\
 	u_qspi_master vccd1 vssd1 \
 	u_riscv_top vccd1 vssd1 \
 	u_tsram0_2kb vccd1 vssd1 \
-	u_tsram1_2kb vccd1 vssd1 \
+	u_icache_2kb vccd1 vssd1 \
+	u_dcache_2kb vccd1 vssd1 \
 	u_mbist vccd1 vssd1 \
 	u_sram0_2kb vccd1 vssd1 \
 	u_sram1_2kb vccd1 vssd1 \
@@ -177,7 +192,7 @@ set ::env(QUIT_ON_TR_DRC) "0"
 
 
 set ::env(FP_PDN_HPITCH) "90"
-set ::env(FP_PDN_VPITCH) "180"
+set ::env(FP_PDN_VPITCH) "100"
 set ::env(FP_PDN_HSPACING) "6"
 
 

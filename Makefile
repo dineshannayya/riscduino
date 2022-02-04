@@ -25,11 +25,11 @@ CARAVEL_LITE?=1
 ifeq ($(CARAVEL_LITE),1) 
 	CARAVEL_NAME := caravel-lite
 	CARAVEL_REPO := https://github.com/efabless/caravel-lite 
-	CARAVEL_BRANCH := main
+	CARAVEL_TAG := 'mpw-5a'
 else
 	CARAVEL_NAME := caravel
 	CARAVEL_REPO := https://github.com/efabless/caravel 
-	CARAVEL_BRANCH := master
+	CARAVEL_TAG := 'mpw-5a'
 endif
 
 # Install caravel as submodule, (1): submodule, (0): clone
@@ -96,8 +96,7 @@ ifeq ($(SUBMODULE),1)
 	$(MAKE) simlink
 else
 	@echo "Installing $(CARAVEL_NAME).."
-	@git clone $(CARAVEL_REPO) $(CARAVEL_ROOT)
-	@cd $(CARAVEL_ROOT); git checkout $(CARAVEL_BRANCH)
+	@git clone -b $(CARAVEL_TAG) $(CARAVEL_REPO) $(CARAVEL_ROOT)
 endif
 
 # Create symbolic links to caravel's main files
@@ -116,30 +115,12 @@ simlink: check-caravel
 # Update Caravel
 .PHONY: update_caravel
 update_caravel: check-caravel
-ifeq ($(SUBMODULE),1)
-	@git submodule update --init --recursive
-	cd $(CARAVEL_ROOT) && \
-	git checkout $(CARAVEL_BRANCH) && \
-	git pull
-else
-	cd $(CARAVEL_ROOT)/ && \
-		git checkout $(CARAVEL_BRANCH) && \
-		git pull
-endif
+	cd $(CARAVEL_ROOT)/ && git checkout $(CARAVEL_TAG) && git pull
 
 # Uninstall Caravel
 .PHONY: uninstall
 uninstall: 
-ifeq ($(SUBMODULE),1)
-	git config -f .gitmodules --remove-section "submodule.$(CARAVEL_NAME)"
-	git add .gitmodules
-	git submodule deinit -f $(CARAVEL_ROOT)
-	git rm --cached $(CARAVEL_ROOT)
-	rm -rf .git/modules/$(CARAVEL_NAME)
 	rm -rf $(CARAVEL_ROOT)
-else
-	rm -rf $(CARAVEL_ROOT)
-endif
 
 # Install Openlane
 .PHONY: openlane
@@ -150,20 +131,15 @@ openlane:
 # Default installs to the user home directory, override by "export PRECHECK_ROOT=<precheck-installation-path>"
 .PHONY: precheck
 precheck:
-	@git clone https://github.com/efabless/mpw_precheck.git --depth=1 $(PRECHECK_ROOT)
+	@git clone --depth=1 --branch mpw-5 https://github.com/efabless/mpw_precheck.git $(PRECHECK_ROOT)
 	@docker pull efabless/mpw_precheck:latest
 
 .PHONY: run-precheck
 run-precheck: check-precheck check-pdk check-caravel
 	$(eval INPUT_DIRECTORY := $(shell pwd))
 	cd $(PRECHECK_ROOT) && \
-	docker run -e INPUT_DIRECTORY=$(INPUT_DIRECTORY) -e PDK_ROOT=$(PDK_ROOT) -e CARAVEL_ROOT=$(CARAVEL_ROOT) -v $(PRECHECK_ROOT):$(PRECHECK_ROOT) -v $(INPUT_DIRECTORY):$(INPUT_DIRECTORY) -v $(PDK_ROOT):$(PDK_ROOT) -v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
-	-u $(shell id -u $(USER)):$(shell id -g $(USER)) efabless/mpw_precheck:latest bash -c "cd $(PRECHECK_ROOT) ; python3 mpw_precheck.py --pdk_root $(PDK_ROOT) --input_directory $(INPUT_DIRECTORY) --caravel_root $(CARAVEL_ROOT)"
-
-# Install PDK using OL's Docker Image
-.PHONY: pdk-nonnative
-pdk-nonnative: skywater-pdk skywater-library skywater-timing open_pdks
-	docker run --rm -v $(PDK_ROOT):$(PDK_ROOT) -v $(CARAVEL_ROOT):$(CARAVEL_ROOT) -e CARAVEL_ROOT=$(CARAVEL_ROOT) -e PDK_ROOT=$(PDK_ROOT) -u $(shell id -u $(USER)):$(shell id -g $(USER)) efabless/openlane:current sh -c "cd $(CARAVEL_ROOT); make build-pdk; make gen-sources"
+	docker run -e INPUT_DIRECTORY=$(INPUT_DIRECTORY) -e PDK_ROOT=$(PDK_ROOT) -v $(PRECHECK_ROOT):$(PRECHECK_ROOT) -v $(INPUT_DIRECTORY):$(INPUT_DIRECTORY) -v $(PDK_ROOT):$(PDK_ROOT) \
+	-u $(shell id -u $(USER)):$(shell id -g $(USER)) efabless/mpw_precheck:latest bash -c "cd $(PRECHECK_ROOT) ; python3 mpw_precheck.py --pdk_root $(PDK_ROOT) --input_directory $(INPUT_DIRECTORY)"
 
 # Clean 
 .PHONY: clean
