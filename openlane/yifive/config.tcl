@@ -41,39 +41,51 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_top.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_core_top.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_dm.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_tapc_synchronizer.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_clk_ctrl.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_scu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_tapc.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_tapc_shift_reg.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/ycr1_dmi.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/primitives/ycr1_reset_cells.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_ifu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_idu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_exu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_mprf.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_csr.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_ialu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_mul.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_div.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_lsu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_hdu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_pipe_tdu.sv  \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/core/pipeline/ycr1_ipic.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_dmem_router.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_imem_router.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_tcm.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_timer.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_top_wb.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_dmem_wb.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_imem_wb.sv   \
-	$script_dir/../../verilog/rtl/yifive/ycr1/src/top/ycr1_intf.sv   \
-	$script_dir/../../verilog/rtl/lib/async_fifo.sv "
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_top.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_core_top.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_dm.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_tapc_synchronizer.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_clk_ctrl.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_scu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_tapc.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_tapc_shift_reg.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr1_dmi.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/primitives/ycr1_reset_cells.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_ifu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_idu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_exu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_mprf.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_csr.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_ialu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_mul.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_div.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_lsu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_hdu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_pipe_tdu.sv  \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr1_ipic.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_dmem_router.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_imem_router.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_icache_router.sv \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_dcache_router.sv \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_tcm.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_timer.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_top_wb.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_dmem_wb.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_imem_wb.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_intf.sv   \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/icache_top.sv             \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/icache_app_fsm.sv         \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/icache_tag_fifo.sv        \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/dcache_tag_fifo.sv        \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/dcache_top.sv             \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/ycr1_async_wbb.sv                    \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/ycr1_arb.sv                          \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/sync_fifo.sv                         \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/async_fifo.sv                        \
+        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/ctech_cells.sv                       \
+	"
 
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/yifive/ycr1/src/includes ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
@@ -94,7 +106,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) [list 0.0 0.0 1520.0 520.0]
+set ::env(DIE_AREA) [list 0.0 0.0 750.0 1450.0]
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -104,7 +116,8 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.32"
+set ::env(PL_TARGET_DENSITY) "0.40"
+set ::env(FP_CORE_UTIL) "50"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
@@ -117,7 +130,7 @@ set ::env(FP_PDN_HPITCH) 100
 set ::env(FP_PDN_VWIDTH) 3
 set ::env(FP_PDN_HWIDTH) 3
 
-set ::env(GLB_RT_MAXLAYER) 5
+set ::env(GLB_RT_MAXLAYER) 6
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 

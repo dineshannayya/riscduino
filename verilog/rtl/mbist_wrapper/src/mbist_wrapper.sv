@@ -90,7 +90,6 @@ module mbist_wrapper
         // WB I/F
         input   wire                          wb_clk_i,  // System clock
         input   wire                          wb_clk2_i, // System clock2 is no cts
-        input   wire                          wb_cyc_i,  // strobe/request
         input   wire                          wb_stb_i,  // strobe/request
 	input   wire [(BIST_NO_SRAM+1)/2-1:0] wb_cs_i,
         input   wire [BIST_ADDR_WD-1:0]       wb_adr_i,  // address
@@ -102,9 +101,40 @@ module mbist_wrapper
         output  wire [BIST_DATA_WD-1:0]       wb_dat_o,  // data input
         output  wire                          wb_ack_o,  // acknowlegement
         output  wire                          wb_lack_o, // acknowlegement
-        output  wire                          wb_err_o  // error
+        output  wire                          wb_err_o,  // error
 
 
+     // towards memory
+     // PORT-A
+        output wire   [BIST_NO_SRAM-1:0]      mem_clk_a,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_a0,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_a1,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_a2,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_a3,
+        output wire   [BIST_NO_SRAM-1:0]      mem_cen_a,
+        output wire   [BIST_NO_SRAM-1:0]      mem_web_a,
+        output wire   [BIST_DATA_WD/8-1:0]    mem_mask_a0,
+        output wire   [BIST_DATA_WD/8-1:0]    mem_mask_a1,
+        output wire   [BIST_DATA_WD/8-1:0]    mem_mask_a2,
+        output wire   [BIST_DATA_WD/8-1:0]    mem_mask_a3,
+        output wire   [BIST_DATA_WD-1:0]      mem_din_a0,
+        output wire   [BIST_DATA_WD-1:0]      mem_din_a1,
+        output wire   [BIST_DATA_WD-1:0]      mem_din_a2,
+        output wire   [BIST_DATA_WD-1:0]      mem_din_a3,
+
+        input  wire   [BIST_DATA_WD-1:0]      mem_dout_a0,
+        input  wire   [BIST_DATA_WD-1:0]      mem_dout_a1,
+        input  wire   [BIST_DATA_WD-1:0]      mem_dout_a2,
+        input  wire   [BIST_DATA_WD-1:0]      mem_dout_a3,
+
+
+     // PORT-B
+        output wire [BIST_NO_SRAM-1:0]        mem_clk_b,
+        output wire [BIST_NO_SRAM-1:0]        mem_cen_b,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_b0,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_b1,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_b2,
+        output wire   [BIST_ADDR_WD-1:0]      mem_addr_b3
 
 
 
@@ -113,44 +143,6 @@ module mbist_wrapper
 parameter  NO_SRAM_WD = (BIST_NO_SRAM+1)/2;
 parameter     BIST1_ADDR_WD = 11; // 512x32 SRAM
 
-// FUNCTIONAL PORT 
-// towards memory MBIST1
-// PORT-A
-wire   [BIST_NO_SRAM-1:0]      mem_clk_a;
-wire   [BIST1_ADDR_WD-1:2]     mem0_addr_a;
-wire   [BIST1_ADDR_WD-1:2]     mem1_addr_a;
-wire   [BIST1_ADDR_WD-1:2]     mem2_addr_a;
-wire   [BIST1_ADDR_WD-1:2]     mem3_addr_a;
-wire   [BIST_NO_SRAM-1:0]      mem_cen_a;
-wire   [BIST_NO_SRAM-1:0]      mem_web_a;
-wire [BIST_DATA_WD/8-1:0]      mem0_mask_a;
-wire [BIST_DATA_WD/8-1:0]      mem1_mask_a;
-wire [BIST_DATA_WD/8-1:0]      mem2_mask_a;
-wire [BIST_DATA_WD/8-1:0]      mem3_mask_a;
-wire   [BIST_DATA_WD-1:0]      mem0_din_a;
-wire   [BIST_DATA_WD-1:0]      mem1_din_a;
-wire   [BIST_DATA_WD-1:0]      mem2_din_a;
-wire   [BIST_DATA_WD-1:0]      mem3_din_a;
-wire   [BIST_DATA_WD-1:0]      mem0_dout_a;
-wire   [BIST_DATA_WD-1:0]      mem1_dout_a;
-wire   [BIST_DATA_WD-1:0]      mem2_dout_a;
-wire   [BIST_DATA_WD-1:0]      mem3_dout_a;
-
-// PORT-B
-wire [BIST_NO_SRAM-1:0]        mem_clk_b;
-wire [BIST_NO_SRAM-1:0]        mem_cen_b;
-wire [BIST1_ADDR_WD-1:2]       mem0_addr_b;
-wire [BIST1_ADDR_WD-1:2]       mem1_addr_b;
-wire [BIST1_ADDR_WD-1:2]       mem2_addr_b;
-wire [BIST1_ADDR_WD-1:2]       mem3_addr_b;
-
-logic                          mem_req;
-logic [(BIST_NO_SRAM+1)/2-1:0] mem_cs;
-logic [BIST_ADDR_WD-1:0]       mem_addr;
-logic [31:0]                   mem_wdata;
-logic                          mem_we;
-logic [3:0]                    mem_wmask;
-logic [31:0]                   mem_rdata;
 
 mbist_wb  #(
 	.BIST_NO_SRAM           (4                      ),
@@ -280,7 +272,7 @@ mbist_top  #(
 );
 
 
-
+/**
 sky130_sram_2kbyte_1rw1r_32x512_8 u_sram0_2kb(
 `ifdef USE_POWER_PINS
     .vccd1 (vccd1),// User area 1 1.8V supply
@@ -361,6 +353,9 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_sram3_2kb(
     .addr1    (mem3_addr_b),
     .dout1    ()
   );
+
+
+***/
 
 endmodule
 

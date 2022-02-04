@@ -42,12 +42,12 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-        $script_dir/../../verilog/rtl/lib/wb_stagging.sv                \
+        $script_dir/../../verilog/rtl/lib/sync_wbb.sv                \
+        $script_dir/../../verilog/rtl/lib/sync_fifo2.sv                \
         $script_dir/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
         $script_dir/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
 	"
 
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/syntacore/scr1/src/includes $script_dir/../../verilog/rtl/sdram_ctrl/src/defs ]
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 set ::env(SYNTH_PARAMS) "CH_CLK_WD 8,\
@@ -70,7 +70,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 160 2200"
+set ::env(DIE_AREA) "0 0 200 2300"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -80,23 +80,39 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(FP_CORE_UTIL) "50"
-set ::env(PL_TARGET_DENSITY) "0.50"
+set ::env(PL_TARGET_DENSITY) "0.30"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
-set ::env(FP_IO_VEXTEND) 4
-set ::env(FP_IO_HEXTEND) 4
 
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 5
-set ::env(FP_PDN_HWIDTH) 5
-
-set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
+
+## CTS
+set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8 sky130_fd_sc_hd__clkbuf_16"
+set ::env(CTS_SINK_CLUSTERING_MAX_DIAMETER) 50
+set ::env(CTS_SINK_CLUSTERING_SIZE) 20
+
+## Placement
+set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 1
+set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 1
+
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) 2
+set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
+
+## Routing
+set ::env(GLB_RT_ADJUSTMENT) 0
+set ::env(GLB_RT_L2_ADJUSTMENT) 0.21
+set ::env(GLB_RT_L3_ADJUSTMENT) 0.21
+set ::env(GLB_RT_L4_ADJUSTMENT) 0.1
+set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
+set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
+set ::env(GLB_RT_ALLOW_CONGESTION) 0
+set ::env(GLB_RT_OVERFLOW_ITERS) 200
+
+set ::env(GLB_RT_MINLAYER) 2
+set ::env(GLB_RT_MAXLAYER) 6
 
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
@@ -105,10 +121,10 @@ set ::env(QUIT_ON_LVS_ERROR) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
-set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "1"
+set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
-set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "1000"
-set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "1.5"
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "2000"
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "2.0"
 set ::env(PL_RESIZER_MAX_CAP_MARGIN) "5"
 
 ## FANOUT Reduced to take care of long routes
