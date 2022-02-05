@@ -62,6 +62,21 @@ proc run_diode_insertion_2_5_step {args} {
 
 }
 
+proc run_power_pins_insertion_step {args} {
+    # set_def $::env(tritonRoute_result_file_tag).def
+    if { ! [ info exists ::env(POWER_PINS_INSERTION_CURRENT_DEF) ] } {
+        set ::env(POWER_PINS_INSERTION_CURRENT_DEF) $::env(CURRENT_DEF)
+    } else {
+        set ::env(CURRENT_DEF) $::env(POWER_PINS_INSERTION_CURRENT_DEF)
+    }
+    if { $::env(LVS_INSERT_POWER_PINS) } {
+		write_powered_verilog
+		set_netlist $::env(lvs_result_file_tag).powered.v
+    }
+
+}
+
+
 proc run_lvs_step {{ lvs_enabled 1 }} {
     if { ! [ info exists ::env(LVS_CURRENT_DEF) ] } {
         set ::env(LVS_CURRENT_DEF) $::env(CURRENT_DEF)
@@ -123,8 +138,9 @@ proc run_flow {args} {
                 "floorplan" {run_floorplan ""} \
                 "placement" {run_placement_step ""} \
                 "cts" {run_cts_step ""} \
-                "routing" {run_routing_step ""}\
+                "routing" {run_routing_step ""} \
                 "diode_insertion" {run_diode_insertion_2_5_step ""} \
+                "power_pins_insertion" {run_power_pins_insertion_step ""} \
                 "gds_magic" {run_magic ""} \
                 "gds_drc_klayout" {run_klayout ""} \
                 "gds_xor_klayout" {run_klayout_gds_xor ""} \
