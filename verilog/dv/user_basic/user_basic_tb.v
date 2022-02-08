@@ -242,8 +242,8 @@ begin
          wb_user_core_write('h3080_0000,'h1);
 
 	 wb_user_core_read_check(32'h30020058,read_data,32'h8273_8343);
-	 wb_user_core_read_check(32'h3002005C,read_data,32'h0202_2022);
-	 wb_user_core_read_check(32'h30020060,read_data,32'h0003_2000);
+	 wb_user_core_read_check(32'h3002005C,read_data,32'h0802_2022);
+	 wb_user_core_read_check(32'h30020060,read_data,32'h0003_3000);
 
       end
    

@@ -76,7 +76,7 @@ module pinmux (
 
 		       // SFLASH I/F
 		       input  logic            sflash_sck,
-		       input  logic            sflash_ss,
+		       input  logic [3:0]      sflash_ss,
 		       input  logic [3:0]      sflash_oen,
 		       input  logic [3:0]      sflash_do,
 		       output logic [3:0]      sflash_di,
@@ -446,14 +446,14 @@ pwm  u_pwm_5 (
 *
 *  Additional Pad used for Externam ROM/RAM
 *                sflash_sck          digital_io[24]
-*                sflash_ss           digital_io[25]
-*                sflash_io0          digital_io[26]
-*                sflash_io1          digital_io[27]
-*                sflash_io2          digital_io[28]
-*                sflash_io3          digital_io[29]
-*                reserved            digital_io[30]
-*                reserved            digital_io[31]
-*                reserved            digital_io[32]
+*                sflash_ss[3]        digital_io[25]
+*                sflash_ss[2]        digital_io[26]
+*                sflash_ss[1]        digital_io[27]
+*                sflash_ss[0]        digital_io[28]
+*                sflash_io0          digital_io[29]
+*                sflash_io1          digital_io[30]
+*                sflash_io2          digital_io[31]
+*                sflash_io3          digital_io[32]
 *                reserved            digital_io[33]
 *                uartm_rxd           digital_io[34]
 *                uartm_txd           digital_io[35]
@@ -563,10 +563,10 @@ always_comb begin
      port_c_in[5] = digital_io_in[23];
      if(cfg_i2cm_enb)  i2cm_clk_i = digital_io_in[23];
 
-     sflash_di[0] = digital_io_in[26];
-     sflash_di[1] = digital_io_in[27];
-     sflash_di[2] = digital_io_in[28];
-     sflash_di[3] = digital_io_in[29];
+     sflash_di[0] = digital_io_in[29];
+     sflash_di[1] = digital_io_in[30];
+     sflash_di[2] = digital_io_in[31];
+     sflash_di[3] = digital_io_in[32];
 
      // UAR MASTER I/F
      uartm_rxd    = digital_io_in[34];
@@ -664,16 +664,16 @@ always_comb begin
 
      // Serial Flash
      digital_io_out[24] = sflash_sck   ;
-     digital_io_out[25] = sflash_ss    ;
-     digital_io_out[26] = sflash_do[0] ;
-     digital_io_out[27] = sflash_do[1] ;
-     digital_io_out[28] = sflash_do[2] ;
-     digital_io_out[29] = sflash_do[3] ;
+     digital_io_out[25] = sflash_ss[3] ;
+     digital_io_out[26] = sflash_ss[2] ;
+     digital_io_out[27] = sflash_ss[1] ;
+     digital_io_out[28] = sflash_ss[0] ;
+     digital_io_out[29] = sflash_do[0] ;
+     digital_io_out[30] = sflash_do[1] ;
+     digital_io_out[31] = sflash_do[2] ;
+     digital_io_out[32] = sflash_do[3] ;
                        
      // Reserved
-     digital_io_out[30] = 1'b0;
-     digital_io_out[31] = 1'b0;
-     digital_io_out[32] = 1'b0;
      digital_io_out[33] = 1'b0;
 
      // UART MASTER I/f
@@ -776,15 +776,15 @@ always_comb begin
      // Serial Flash
      digital_io_oen[24] = 1'b0   ;
      digital_io_oen[25] = 1'b0   ;
-     digital_io_oen[26] = sflash_oen[0];
-     digital_io_oen[27] = sflash_oen[1];
-     digital_io_oen[28] = sflash_oen[2];
-     digital_io_oen[29] = sflash_oen[3];
+     digital_io_oen[26] = 1'b0   ;
+     digital_io_oen[27] = 1'b0   ;
+     digital_io_oen[28] = 1'b0   ;
+     digital_io_oen[29] = sflash_oen[0];
+     digital_io_oen[30] = sflash_oen[1];
+     digital_io_oen[31] = sflash_oen[2];
+     digital_io_oen[32] = sflash_oen[3];
                        
      // Reserved
-     digital_io_oen[30] = 1'b0  ;
-     digital_io_oen[31] = 1'b0  ;
-     digital_io_oen[32] = 1'b0  ;
      digital_io_oen[33] = 1'b0  ;
      // UART MASTER
      digital_io_oen[34] = 1'b1; // RXD
