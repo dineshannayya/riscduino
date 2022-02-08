@@ -156,6 +156,11 @@
 ////    3.2  Feb 02, 2022, Dinesh A                               ////
 ////         Bug fix around icache/dcache and wishbone burst      ////
 ////         access clean-up                                      ////
+////    3.3  Feb 08, 2022, Dinesh A                               ////
+////         support added spisram support in qspim ip            ////
+////         There are 4 chip select available in qspim           ////
+////         CS#0/CS#1 targeted for SPI FLASH                     ////
+////         CS#2/CS#3 targeted for SPI SRAM                      ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -481,7 +486,7 @@ wire [63:0]                    riscv_debug                            ;
 
 // SFLASH I/F
 wire                           sflash_sck                             ;
-wire                           sflash_ss                              ;
+wire [3:0]                     sflash_ss                              ;
 wire [3:0]                     sflash_oen                             ;
 wire [3:0]                     sflash_do                              ;
 wire [3:0]                     sflash_di                              ;

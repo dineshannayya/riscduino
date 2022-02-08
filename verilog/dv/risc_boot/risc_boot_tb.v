@@ -312,7 +312,7 @@ module risc_boot_tb;
 //-----------------------------------------
 
    wire user_flash_clk = mprj_io[24];
-   wire user_flash_csb = mprj_io[25];
+   wire user_flash_csb = mprj_io[28];
    //tri  user_flash_io0 = mprj_io[26];
    //tri  user_flash_io1 = mprj_io[27];
    //tri  user_flash_io2 = mprj_io[28];
@@ -325,13 +325,13 @@ module risc_boot_tb;
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
-       .SI      (mprj_io[26]),
-       .SO      (mprj_io[27]),
+       .SI      (mprj_io[29]),
+       .SO      (mprj_io[30]),
        // Controls
        .SCK     (user_flash_clk),
        .CSNeg   (user_flash_csb),
-       .WPNeg   (mprj_io[28]),
-       .HOLDNeg (mprj_io[29]),
+       .WPNeg   (mprj_io[31]),
+       .HOLDNeg (mprj_io[32]),
        .RSTNeg  (RSTB)
 
        );

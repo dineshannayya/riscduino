@@ -851,80 +851,80 @@ begin
          repeat (1) @(posedge clock);
          #1;
 
-         if(u_top.u_mbist.u_sram0_2kb.web0 == 1'b0 && 
-	   ((num_fault[0] > 0 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[0]) ||
-	    (num_fault[0] > 1 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[1]) ||
-	    (num_fault[0] > 2 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[2]) ||
-	    (num_fault[0] > 3 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[3]) ||
-	    (num_fault[0] > 4 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[4]) ||
-	    (num_fault[0] > 5 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[5]) ||
-	    (num_fault[0] > 6 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[6]) ||
-	    (num_fault[0] > 7 && u_top.u_mbist.u_sram0_2kb.addr0 == faultaddr[7])))
+         if(u_top.u_sram0_2kb.web0 == 1'b0 && 
+	   ((num_fault[0] > 0 && u_top.u_sram0_2kb.addr0 == faultaddr[0]) ||
+	    (num_fault[0] > 1 && u_top.u_sram0_2kb.addr0 == faultaddr[1]) ||
+	    (num_fault[0] > 2 && u_top.u_sram0_2kb.addr0 == faultaddr[2]) ||
+	    (num_fault[0] > 3 && u_top.u_sram0_2kb.addr0 == faultaddr[3]) ||
+	    (num_fault[0] > 4 && u_top.u_sram0_2kb.addr0 == faultaddr[4]) ||
+	    (num_fault[0] > 5 && u_top.u_sram0_2kb.addr0 == faultaddr[5]) ||
+	    (num_fault[0] > 6 && u_top.u_sram0_2kb.addr0 == faultaddr[6]) ||
+	    (num_fault[0] > 7 && u_top.u_sram0_2kb.addr0 == faultaddr[7])))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_mbist.u_sram0_2kb.din0 = u_top.u_mbist.mem0_din_a  & 32'hFFFF_FFFE;
+	      force u_top.u_sram0_2kb.din0 = u_top.mem0_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_mbist.u_sram0_2kb.din0 = u_top.u_mbist.mem0_din_a | 32'h1;
+	      force u_top.u_sram0_2kb.din0 = u_top.mem0_din_a | 32'h1;
    	   -> error_insert;
          end else begin
-            release u_top.u_mbist.u_sram0_2kb.din0;
+            release u_top.u_sram0_2kb.din0;
          end
 
-         if(u_top.u_mbist.u_sram1_2kb.web0 == 1'b0 && 
-	   ((num_fault[1] > 0 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[0]+1) ||
-	    (num_fault[1] > 1 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[1]+1) ||
-	    (num_fault[1] > 2 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[2]+1) ||
-	    (num_fault[1] > 3 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[3]+1) ||
-	    (num_fault[1] > 4 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[4]+1) ||
-	    (num_fault[1] > 5 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[5]+1) ||
-	    (num_fault[1] > 6 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[6]+1) ||
-	    (num_fault[1] > 7 && u_top.u_mbist.u_sram1_2kb.addr0 == faultaddr[7]+1)))
+         if(u_top.u_sram1_2kb.web0 == 1'b0 && 
+	   ((num_fault[1] > 0 && u_top.u_sram1_2kb.addr0 == faultaddr[0]+1) ||
+	    (num_fault[1] > 1 && u_top.u_sram1_2kb.addr0 == faultaddr[1]+1) ||
+	    (num_fault[1] > 2 && u_top.u_sram1_2kb.addr0 == faultaddr[2]+1) ||
+	    (num_fault[1] > 3 && u_top.u_sram1_2kb.addr0 == faultaddr[3]+1) ||
+	    (num_fault[1] > 4 && u_top.u_sram1_2kb.addr0 == faultaddr[4]+1) ||
+	    (num_fault[1] > 5 && u_top.u_sram1_2kb.addr0 == faultaddr[5]+1) ||
+	    (num_fault[1] > 6 && u_top.u_sram1_2kb.addr0 == faultaddr[6]+1) ||
+	    (num_fault[1] > 7 && u_top.u_sram1_2kb.addr0 == faultaddr[7]+1)))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_mbist.u_sram1_2kb.din0 = u_top.u_mbist.mem1_din_a  & 32'hFFFF_FFFE;
+	      force u_top.u_sram1_2kb.din0 = u_top.mem1_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_mbist.u_sram1_2kb.din0 = u_top.u_mbist.mem1_din_a | 32'h1;
+	      force u_top.u_sram1_2kb.din0 = u_top.mem1_din_a | 32'h1;
    	   -> error_insert;
          end else begin
-            release u_top.u_mbist.u_sram1_2kb.din0;
+            release u_top.u_sram1_2kb.din0;
          end
 
-         if(u_top.u_mbist.u_sram2_2kb.web0 == 1'b0 && 
-	   ((num_fault[2] > 0 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[0]+2) ||
-	    (num_fault[2] > 1 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[1]+2) ||
-	    (num_fault[2] > 2 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[2]+2) ||
-	    (num_fault[2] > 3 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[3]+2) ||
-	    (num_fault[2] > 4 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[4]+2) ||
-	    (num_fault[2] > 5 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[5]+2) ||
-	    (num_fault[2] > 6 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[6]+2) ||
-	    (num_fault[2] > 7 && u_top.u_mbist.u_sram2_2kb.addr0 == faultaddr[7]+2)))
+         if(u_top.u_sram2_2kb.web0 == 1'b0 && 
+	   ((num_fault[2] > 0 && u_top.u_sram2_2kb.addr0 == faultaddr[0]+2) ||
+	    (num_fault[2] > 1 && u_top.u_sram2_2kb.addr0 == faultaddr[1]+2) ||
+	    (num_fault[2] > 2 && u_top.u_sram2_2kb.addr0 == faultaddr[2]+2) ||
+	    (num_fault[2] > 3 && u_top.u_sram2_2kb.addr0 == faultaddr[3]+2) ||
+	    (num_fault[2] > 4 && u_top.u_sram2_2kb.addr0 == faultaddr[4]+2) ||
+	    (num_fault[2] > 5 && u_top.u_sram2_2kb.addr0 == faultaddr[5]+2) ||
+	    (num_fault[2] > 6 && u_top.u_sram2_2kb.addr0 == faultaddr[6]+2) ||
+	    (num_fault[2] > 7 && u_top.u_sram2_2kb.addr0 == faultaddr[7]+2)))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_mbist.u_sram2_2kb.din0 = u_top.u_mbist.mem2_din_a  & 32'hFFFF_FFFE;
+	      force u_top.u_sram2_2kb.din0 = u_top.mem2_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_mbist.u_sram2_2kb.din0 = u_top.u_mbist.mem2_din_a | 32'h1;
+	      force u_top.u_sram2_2kb.din0 = u_top.mem2_din_a | 32'h1;
    	   -> error_insert;
          end else begin
-            release u_top.u_mbist.u_sram2_2kb.din0;
+            release u_top.u_sram2_2kb.din0;
          end
 
-         if(u_top.u_mbist.u_sram3_2kb.web0 == 1'b0 && 
-	   ((num_fault[3] > 0 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[0]+3) ||
-	    (num_fault[3] > 1 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[1]+3) ||
-	    (num_fault[3] > 2 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[2]+3) ||
-	    (num_fault[3] > 3 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[3]+3) ||
-	    (num_fault[3] > 4 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[4]+3) ||
-	    (num_fault[3] > 5 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[5]+3) ||
-	    (num_fault[3] > 6 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[6]+3) ||
-	    (num_fault[3] > 7 && u_top.u_mbist.u_sram3_2kb.addr0 == faultaddr[7]+3)))
+         if(u_top.u_sram3_2kb.web0 == 1'b0 && 
+	   ((num_fault[3] > 0 && u_top.u_sram3_2kb.addr0 == faultaddr[0]+3) ||
+	    (num_fault[3] > 1 && u_top.u_sram3_2kb.addr0 == faultaddr[1]+3) ||
+	    (num_fault[3] > 2 && u_top.u_sram3_2kb.addr0 == faultaddr[2]+3) ||
+	    (num_fault[3] > 3 && u_top.u_sram3_2kb.addr0 == faultaddr[3]+3) ||
+	    (num_fault[3] > 4 && u_top.u_sram3_2kb.addr0 == faultaddr[4]+3) ||
+	    (num_fault[3] > 5 && u_top.u_sram3_2kb.addr0 == faultaddr[5]+3) ||
+	    (num_fault[3] > 6 && u_top.u_sram3_2kb.addr0 == faultaddr[6]+3) ||
+	    (num_fault[3] > 7 && u_top.u_sram3_2kb.addr0 == faultaddr[7]+3)))
              begin
 	   if(fault_type == 0) // Struck at 0
-	      force u_top.u_mbist.u_sram3_2kb.din0 = u_top.u_mbist.mem3_din_a  & 32'hFFFF_FFFE;
+	      force u_top.u_sram3_2kb.din0 = u_top.mem3_din_a  & 32'hFFFF_FFFE;
 	   else
-	      force u_top.u_mbist.u_sram3_2kb.din0 = u_top.u_mbist.mem3_din_a | 32'h1;
+	      force u_top.u_sram3_2kb.din0 = u_top.mem3_din_a | 32'h1;
    	   -> error_insert;
          end else begin
-            release u_top.u_mbist.u_sram3_2kb.din0;
+            release u_top.u_sram3_2kb.din0;
          end
 
          //if(u_top.u_sram5_1kb.web0 == 1'b0 && 

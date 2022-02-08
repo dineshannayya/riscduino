@@ -156,13 +156,13 @@ module user_risc_soft_boot_tb;
 		   tem_mem_32b[i] = {tem_mem[(i*4)+3],tem_mem[(i*4)+2],tem_mem[(i*4)+1],tem_mem[(i*4)]};
 
 	        $writememh("sram_bank0.hex",tem_mem_32b,0,511);
-	        $readmemh("sram_bank0.hex",u_top.u_mbist.u_sram0_2kb.mem,0,511);
+	        $readmemh("sram_bank0.hex",u_top.u_sram0_2kb.mem,0,511);
 
 		for(i =512; i < 1023; i = i+1)
 		   tem_mem_32b[i-512] = {tem_mem[(i*4)+3],tem_mem[(i*4)+2],tem_mem[(i*4)+1],tem_mem[(i*4)]};
 
 	        $writememh("sram_bank1.hex",tem_mem_32b,0,511);
-	        $readmemh("sram_bank1.hex",u_top.u_mbist.u_sram1_2kb.mem,0,511);
+	        $readmemh("sram_bank1.hex",u_top.u_sram1_2kb.mem,0,511);
 
 		// Enable the SRAM Remap to boot region
 		wb_user_core_write('h3080_000C,{4'b1111,28'h0});

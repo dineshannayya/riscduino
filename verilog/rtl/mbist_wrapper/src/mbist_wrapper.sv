@@ -143,6 +143,14 @@ module mbist_wrapper
 parameter  NO_SRAM_WD = (BIST_NO_SRAM+1)/2;
 parameter     BIST1_ADDR_WD = 11; // 512x32 SRAM
 
+logic                          mem_req;  // strobe/request
+logic [(BIST_NO_SRAM+1)/2-1:0] mem_cs;
+logic [BIST_ADDR_WD-1:0]       mem_addr;  // address
+logic                          mem_we ;  // write
+logic [BIST_DATA_WD-1:0]       mem_wdata;  // data output
+logic [BIST_DATA_WD/8-1:0]     mem_wmask;  // byte enable
+logic [BIST_DATA_WD-1:0]       mem_rdata;  // data input
+
 
 mbist_wb  #(
 	.BIST_NO_SRAM           (4                      ),
@@ -241,32 +249,32 @@ mbist_top  #(
 
      // towards memory
      // PORT-A
-        .mem_clk_a            (mem_clk_a         ),
-        .mem_addr_a0          (mem0_addr_a       ),
-        .mem_addr_a1          (mem1_addr_a       ),
-        .mem_addr_a2          (mem2_addr_a       ),
-        .mem_addr_a3          (mem3_addr_a       ),
-        .mem_cen_a            (mem_cen_a         ),
-        .mem_web_a            (mem_web_a         ),
-        .mem_mask_a0          (mem0_mask_a       ),
-        .mem_mask_a1          (mem1_mask_a       ),
-        .mem_mask_a2          (mem2_mask_a       ),
-        .mem_mask_a3          (mem3_mask_a       ),
-        .mem_din_a0           (mem0_din_a        ),
-        .mem_din_a1           (mem1_din_a        ),
-        .mem_din_a2           (mem2_din_a        ),
-        .mem_din_a3           (mem3_din_a        ),
-        .mem_dout_a0          (mem0_dout_a       ),
-        .mem_dout_a1          (mem1_dout_a       ),
-        .mem_dout_a2          (mem2_dout_a       ),
-        .mem_dout_a3          (mem3_dout_a       ),
+        .mem_clk_a            (mem_clk_a        ),
+        .mem_addr_a0          (mem_addr_a0      ),
+        .mem_addr_a1          (mem_addr_a1      ),
+        .mem_addr_a2          (mem_addr_a2      ),
+        .mem_addr_a3          (mem_addr_a3      ),
+        .mem_cen_a            (mem_cen_a        ),
+        .mem_web_a            (mem_web_a        ),
+        .mem_mask_a0          (mem_mask_a0      ),
+        .mem_mask_a1          (mem_mask_a1      ),
+        .mem_mask_a2          (mem_mask_a2      ),
+        .mem_mask_a3          (mem_mask_a3      ),
+        .mem_din_a0           (mem_din_a0       ),
+        .mem_din_a1           (mem_din_a1       ),
+        .mem_din_a2           (mem_din_a2       ),
+        .mem_din_a3           (mem_din_a3       ),
+        .mem_dout_a0          (mem_dout_a0      ),
+        .mem_dout_a1          (mem_dout_a1      ),
+        .mem_dout_a2          (mem_dout_a2      ),
+        .mem_dout_a3          (mem_dout_a3      ),
      // PORT-B
-        .mem_clk_b            (mem_clk_b         ),
-        .mem_cen_b            (mem_cen_b         ),
-        .mem_addr_b0          (mem0_addr_b       ),
-        .mem_addr_b1          (mem1_addr_b       ),
-        .mem_addr_b2          (mem2_addr_b       ),
-        .mem_addr_b3          (mem3_addr_b       )
+        .mem_clk_b            (mem_clk_b        ),
+        .mem_cen_b            (mem_cen_b        ),
+        .mem_addr_b0          (mem_addr_b0      ),
+        .mem_addr_b1          (mem_addr_b1      ),
+        .mem_addr_b2          (mem_addr_b2      ),
+        .mem_addr_b3          (mem_addr_b3      )
 
 
 );

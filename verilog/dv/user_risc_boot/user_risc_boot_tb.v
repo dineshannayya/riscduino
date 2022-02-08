@@ -257,22 +257,21 @@ user_project_wrapper u_top(
 //  ----------------------------------------------------
 
    wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_csb = io_out[28];
    // Creating Pad Delay
-   wire #1 io_oeb_26 = io_oeb[26];
-   wire #1 io_oeb_27 = io_oeb[27];
-   wire #1 io_oeb_28 = io_oeb[28];
    wire #1 io_oeb_29 = io_oeb[29];
-   tri  flash_io0 = (io_oeb_26== 1'b0) ? io_out[26] : 1'bz;
-   tri  flash_io1 = (io_oeb_27== 1'b0) ? io_out[27] : 1'bz;
-   tri  flash_io2 = (io_oeb_28== 1'b0) ? io_out[28] : 1'bz;
-   tri  flash_io3 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
+   wire #1 io_oeb_30 = io_oeb[30];
+   wire #1 io_oeb_31 = io_oeb[31];
+   wire #1 io_oeb_32 = io_oeb[32];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
 
-   assign io_in[26] = flash_io0;
-   assign io_in[27] = flash_io1;
-   assign io_in[28] = flash_io2;
-   assign io_in[29] = flash_io3;
-
+   assign io_in[29] = flash_io0;
+   assign io_in[30] = flash_io1;
+   assign io_in[31] = flash_io2;
+   assign io_in[32] = flash_io3;
 
    // Quard flash
      s25fl256s #(.mem_file_name("user_risc_boot.hex"),

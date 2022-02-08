@@ -156,7 +156,7 @@ always @(posedge clk) begin
 `endif
                     fd = $fopen(tmpstr, "w");
                     while ((start != stop)) begin
-                        test_data = u_top.u_mbist.u_sram0_2kb.mem[(start & 32'h1FFF)];
+                        test_data = u_top.u_sram0_2kb.mem[(start & 32'h1FFF)];
                         $fwrite(fd, "%x", test_data);
                         $fwrite(fd, "%s", "\n");
                         start += 4;
@@ -180,7 +180,7 @@ always @(posedge clk) begin
 			// other-wise need to switch bank
 			// --------------------------------------------------
 		        //$writememh("sram0_out.hex",u_top.u_tsram0_2kb.mem,0,511);
-                        test_data = u_top.u_mbist.u_sram0_2kb.mem[((start >> 2) & 32'h1FFF)];
+                        test_data = u_top.u_sram0_2kb.mem[((start >> 2) & 32'h1FFF)];
 			//$display("Compare Addr: %x ref_data : %x, test_data: %x",start,ref_data,test_data);
                         test_pass &= (ref_data == test_data);
 			if(ref_data != test_data)
