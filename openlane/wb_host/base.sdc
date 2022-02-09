@@ -78,12 +78,12 @@ set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_por
 set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
 set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
 
-set_output_delay -min 1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_adr_o[*]}]
-set_output_delay -min 1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_cyc_o}]
-set_output_delay -min 1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_o[*]}]
-set_output_delay -min 1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_sel_o[*]}]
-set_output_delay -min 1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
-set_output_delay -min 1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
+set_output_delay -min -1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_adr_o[*]}]
+set_output_delay -min -1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_cyc_o}]
+set_output_delay -min -1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_o[*]}]
+set_output_delay -min -1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_sel_o[*]}]
+set_output_delay -min -1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
+set_output_delay -min -1.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
 
 ###############################################################################
 # Environment

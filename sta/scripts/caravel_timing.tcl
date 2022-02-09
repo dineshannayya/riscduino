@@ -49,7 +49,7 @@
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_host.v  
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_interconnect.v
         read_verilog $::env(USER_ROOT)/verilog/gl/pinmux.v
-        read_verilog $::env(USER_ROOT)/verilog/gl/mbist.v
+        read_verilog $::env(USER_ROOT)/verilog/gl/mbist_wrapper.v
         read_verilog $::env(USER_ROOT)/verilog/gl/user_project_wrapper.v  
 
 
@@ -144,7 +144,7 @@
 	read_spef -path gpio_defaults_block_37              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
 
 	## User Project Spef
-        read_spef -path mprj/u_mbist                       $::env(USER_ROOT)/spef/mbist_top.spef  
+        read_spef -path mprj/u_mbist                       $::env(USER_ROOT)/spef/mbist_wrapper.spef
 
         read_spef -path mprj/u_riscv_top         $::env(USER_ROOT)/spef/ycr1_top_wb.spef
         read_spef -path mprj/u_pinmux            $::env(USER_ROOT)/spef/pinmux.spef
