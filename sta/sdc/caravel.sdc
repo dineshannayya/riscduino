@@ -22,15 +22,15 @@ create_clock -name usb_clk     -period 20.0000  [get_pins {mprj/u_wb_host/usb_cl
 create_clock -name uarts_clk   -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart_core.u_lineclk_buf.u_mux/X}]
 create_clock -name uartm_clk   -period 100.0000 [get_pins {mprj/u_wb_host/u_uart2wb.u_core.u_uart_clk.u_mux/X}]
 
-create_generated_clock -name mem_clk0 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/mem_no[0].u_mem_sel.u_mem_clk_sel.u_mux/X]
-create_generated_clock -name mem_clk1 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/mem_no[1].u_mem_sel.u_mem_clk_sel.u_mux/X]
-create_generated_clock -name mem_clk2 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/mem_no[2].u_mem_sel.u_mem_clk_sel.u_mux/X]
-create_generated_clock -name mem_clk3 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/mem_no[3].u_mem_sel.u_mem_clk_sel.u_mux/X]
+create_generated_clock -name mem_clk0 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[0].u_mem_sel.u_mem_clk_sel.u_mux/X]
+create_generated_clock -name mem_clk1 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[1].u_mem_sel.u_mem_clk_sel.u_mux/X]
+create_generated_clock -name mem_clk2 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[2].u_mem_sel.u_mem_clk_sel.u_mux/X]
+create_generated_clock -name mem_clk3 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[3].u_mem_sel.u_mem_clk_sel.u_mux/X]
 
 ## Case analysis
 
 set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[0]}]
-set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[1]}]
+set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[1]}]
 set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[2]}]
 set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[3]}]
 
@@ -44,17 +44,17 @@ set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[1]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[2]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[3]}]
 
-set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
-set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
-set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
-set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
+set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
+set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
+set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
+set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
 
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[0]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[1]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[2]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[3]}]
 
-set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[0]}]
+set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[0]}]
 set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[1]}]
 set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[2]}]
 set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[3]}]

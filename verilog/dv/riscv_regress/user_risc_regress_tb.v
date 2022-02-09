@@ -76,12 +76,28 @@
 `include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
+`include "spiram.v"
 
 localparam [31:0]      YCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
 localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
 localparam [31:0]      YCR1_SIM_EXT_IRQ_ADDR   = 32'hF000_0100;
 localparam [31:0]      YCR1_SIM_SOFT_IRQ_ADDR  = 32'hF000_0200;
 
+ `define QSPIM_GLBL_CTRL          32'h10000000
+ `define QSPIM_DMEM_G0_RD_CTRL    32'h10000004
+ `define QSPIM_DMEM_G0_WR_CTRL    32'h10000008
+ `define QSPIM_DMEM_G1_RD_CTRL    32'h1000000C
+ `define QSPIM_DMEM_G1_WR_CTRL    32'h10000010
+
+ `define QSPIM_DMEM_CS_AMAP        32'h10000014
+ `define QSPIM_DMEM_CA_AMASK       32'h10000018
+
+ `define QSPIM_IMEM_CTRL1          32'h1000001C
+ `define QSPIM_IMEM_CTRL2          32'h10000020
+ `define QSPIM_IMEM_ADDR           32'h10000024
+ `define QSPIM_IMEM_WDATA          32'h10000028
+ `define QSPIM_IMEM_RDATA          32'h1000002C
+ `define QSPIM_SPI_STATUS          32'h10000030
 
 module user_risc_regress_tb;
 	reg clock;
@@ -143,6 +159,31 @@ module user_risc_regress_tb;
 	logic  [31:0]          mem_data;
 
 
+parameter P_FSM_C      = 4'b0000; // Command Phase Only
+parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
+parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
+
+parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
+parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
+parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
+parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
+
+parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
+parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
+parameter P_FSM_CAMW   = 4'b1001; // Command -> Address -> MODE + Write Data
+
+parameter P_FSM_CDR    = 4'b1010; // COMMAND -> DUMMY -> READ
+parameter P_FSM_CDW    = 4'b1011; // COMMAND -> DUMMY -> WRITE
+parameter P_FSM_CR     = 4'b1100;  // COMMAND -> READ
+
+parameter P_MODE_SWITCH_IDLE     = 2'b00;
+parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
+parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
+
+parameter P_SINGLE = 2'b00;
+parameter P_DOUBLE = 2'b01;
+parameter P_QUAD   = 2'b10;
+parameter P_QDDR   = 2'b11;
 	//-----------------------------------------------------------------
 	// Since this is regression, reset will be applied multiple time
 	// Reset logic
@@ -209,6 +250,9 @@ module user_risc_regress_tb;
 		// some of the RISCV test need SRAM area for specific
 		// instruction execution like fence
 		$sformat(test_ram_file, "%s.ram",test_file);
+                $readmemh(test_ram_file,u_sram.memory);
+
+		/***
 		// Split the Temp memory content to two sram file
                 $readmemh(test_ram_file,tem_mem);
 		// Load the SRAM0/SRAM1 with 2KB data
@@ -224,6 +268,7 @@ module user_risc_regress_tb;
 		  //$display("Filling Mem Location : %x with data : %x",i, mem_data);
 		  u_top.u_sram1_2kb.mem[(2048-i)/4] = mem_data;
 		end
+		***/
 
 		//for(i =32'h00; i < 32'h100; i = i+1)
                 //    $display("Location: %x, Data: %x", i, u_top.u_tsram0_2kb.mem[i]);
@@ -243,8 +288,18 @@ module user_risc_regress_tb;
 
 	        repeat (2) @(posedge clock);
 		#1;
+		// Remove WB and SPI Reset, Keep SDARM and CORE under Reset
+                wb_user_core_write('h3080_0000,'h5);
+
+		// CS#2 Switch to QSPI Mode
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
+		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
+		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
+
 		// Enable the DCACHE Remap to SRAM region
-		wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
+		//wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
+		//
 		// Remove all the reset
                 wb_user_core_write('h3080_0000,'h8F);
 
@@ -361,6 +416,19 @@ end
        );
 
 
+   wire spiram_csb = io_out[26];
+
+   spiram #(.mem_file_name("none"))
+	u_sram (
+         // Data Inputs/Outputs
+           .io0     (flash_io0),
+           .io1     (flash_io1),
+           // Controls
+           .clk    (flash_clk),
+           .csb    (spiram_csb),
+           .io2    (flash_io2),
+           .io3    (flash_io3)
+    );
 
 
 

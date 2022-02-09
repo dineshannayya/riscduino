@@ -106,6 +106,7 @@ always @(posedge clk) begin
 	        force u_top.u_riscv_top.u_intf.u_dcache.cfg_force_flush = 1'b1;
 	        wait(u_top.u_riscv_top.u_intf.u_dcache.force_flush_done == 1'b1);
 	        release u_top.u_riscv_top.u_intf.u_dcache.cfg_force_flush;
+	        repeat (2000) @(posedge clock); // wait data to flush in pipe
 		$display("STATUS: Checking Complaince Test Status .... ");
                 test_running <= 1'b0;
                 test_pass = 1;
@@ -156,7 +157,8 @@ always @(posedge clk) begin
 `endif
                     fd = $fopen(tmpstr, "w");
                     while ((start != stop)) begin
-                        test_data = u_top.u_sram0_2kb.mem[(start & 32'h1FFF)];
+                        //test_data = u_top.u_sram0_2kb.mem[(start & 32'h1FFF)];
+                        test_data = {u_sram.memory[start+3], u_sram.memory[start+2], u_sram.memory[start+1], u_sram.memory[start]};
                         $fwrite(fd, "%x", test_data);
                         $fwrite(fd, "%s", "\n");
                         start += 4;
@@ -180,7 +182,8 @@ always @(posedge clk) begin
 			// other-wise need to switch bank
 			// --------------------------------------------------
 		        //$writememh("sram0_out.hex",u_top.u_tsram0_2kb.mem,0,511);
-                        test_data = u_top.u_sram0_2kb.mem[((start >> 2) & 32'h1FFF)];
+                        //test_data = u_top.u_sram0_2kb.mem[((start >> 2) & 32'h1FFF)];
+                        test_data = {u_sram.memory[start+3], u_sram.memory[start+2], u_sram.memory[start+1], u_sram.memory[start]};
 			//$display("Compare Addr: %x ref_data : %x, test_data: %x",start,ref_data,test_data);
                         test_pass &= (ref_data == test_data);
 			if(ref_data != test_data)

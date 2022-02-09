@@ -26,7 +26,7 @@ ENTRY(_start)
 
 MEMORY {
   ROM (rxx) : ORIGIN = 0x0, LENGTH = 64K
-  RAM (rwx) : ORIGIN = 0x08000000, LENGTH = 8K
+  RAM (rwx) : ORIGIN = 0x08000000, LENGTH = 64K
   TCM (rwx) : ORIGIN = 0x0C480000, LENGTH = 2K
 }
 

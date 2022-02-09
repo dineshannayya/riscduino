@@ -11,7 +11,7 @@ create_clock -name wb_clk2_i -period 10.0000 [get_ports {wb_clk2_i}]
 create_generated_clock -name bist_mem_clk_a -add -source [get_ports {wb_clk2_i}] -master_clock [get_clocks wb_clk2_i] -divide_by 1 -comment {Mem Clock A} [get_ports mem_clk_a]
 create_generated_clock -name bist_mem_clk_b -add -source [get_ports {wb_clk2_i}] -master_clock [get_clocks wb_clk2_i] -divide_by 1 -comment {Mem Clock B} [get_ports mem_clk_b]
 
-set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks {wb_clk_i wb_clk2_i bist_mem_clk_a bist_mem_clk_b}]  
+set_clock_groups -name async_clock -asynchronous -comment "Async Clock group" -group [get_clocks {bist_mem_clk_a bist_mem_clk_b}]  -group [get_clocks {wb_clk_i }] -group [get_clocks {wb_clk2_i}]
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.2500 [all_clocks]

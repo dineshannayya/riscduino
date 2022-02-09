@@ -159,11 +159,13 @@ begin
       case(m_state)
       IDLE:  begin
 	 // Read DATA
-         if(wbm_stb_i && !wbm_we_i && wbm_bry_i && !m_cmd_wr_full && !wbm_lack_o) begin
+	 // Make sure that FIFO is not overflow and there is no previous
+	 // pending write + fifo is about to full
+         if(wbm_stb_i && !wbm_we_i && wbm_bry_i && !m_cmd_wr_full && !(m_cmd_wr_afull && m_cmd_wr_en)  && !wbm_lack_o) begin
            m_bl_cnt         <= wbm_bl_i;
            m_cmd_wr_en      <= 'b1;
            m_state          <= READ_DATA;
-         end else if(wbm_stb_i && wbm_we_i && wbm_bry_i && !m_cmd_wr_full && !wbm_lack_o) begin
+         end else if(wbm_stb_i && wbm_we_i && wbm_bry_i && !m_cmd_wr_full && !(m_cmd_wr_afull && m_cmd_wr_en) && !wbm_lack_o) begin
             wbm_ack_o       <= 'b1;
             m_cmd_wr_en     <= 'b1;
             m_bl_cnt        <= wbm_bl_i-1;
@@ -184,7 +186,7 @@ begin
 
       // Write next Transaction
       WRITE_DATA: begin
-         if(m_cmd_wr_full != 1 && wbm_bry_i) begin
+         if(m_cmd_wr_full != 1 && !(m_cmd_wr_afull && m_cmd_wr_en) && wbm_bry_i) begin
             wbm_ack_o       <= 'b1;
             m_cmd_wr_en     <= 'b1;
             if(m_bl_cnt == 1) begin
