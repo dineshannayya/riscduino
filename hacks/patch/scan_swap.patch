@@ -1,0 +1,60 @@
+diff --git a/src/sta/network/ConcreteNetwork.cc b/src/sta/network/ConcreteNetwork.cc
+index 6f8b842..8096f2e 100644
+--- a/src/sta/network/ConcreteNetwork.cc
++++ b/src/sta/network/ConcreteNetwork.cc
+@@ -1180,11 +1180,14 @@ ConcreteNetwork::replaceCell(Instance *inst,
+   ConcreteCell *ccell = reinterpret_cast<ConcreteCell*>(cell);
+   int port_count = ccell->portBitCount();
+   ConcreteInstance *cinst = reinterpret_cast<ConcreteInstance*>(inst);
++  // Port count picked from Instance instead of Target cells-Dinesh A
++  ConcreteCell *instcell = reinterpret_cast<ConcreteCell*>(cinst->cell());
++  int inst_port_count = instcell->portBitCount();
+   ConcretePin **pins = cinst->pins_;
+   ConcretePin **rpins = new ConcretePin*[port_count];
+-  for (int i = 0; i < port_count; i++)
+-    rpins[i] = nullptr;
+-  for (int i = 0; i < port_count; i++) {
++  for (int i = 0; i < port_count; i++) 
++    rpins[i] = pins[inst_port_count-1];
++  for (int i = 0; i < inst_port_count; i++) {
+     ConcretePin *cpin = pins[i];
+     if (cpin) {
+       ConcretePort *pin_cport = reinterpret_cast<ConcretePort*>(cpin->port());
+diff --git a/src/sta/tcl/NetworkEdit.tcl b/src/sta/tcl/NetworkEdit.tcl
+index 5ce616b..bdd4057 100644
+--- a/src/sta/tcl/NetworkEdit.tcl
++++ b/src/sta/tcl/NetworkEdit.tcl
+@@ -236,6 +236,21 @@ proc replace_cell { instance lib_cell } {
+   }
+ }
+ 
++proc replace_to_scan_cell { instance } {
++  set inst [get_instance_error "instance" $instance]
++  set inst_cell [get_full_name [$inst liberty_cell]]
++  #Target scan cell __d to __sd
++  #example sky130_fd_sc_hd__dfrtp_2 to sky130_fd_sc_hd__sdfrtp_2
++  set inst_scell [regsub -all "__d" $inst_cell "__sd"]
++  puts "Info: Scan Swapping => Instance:$instance From:$inst_cell to:$inst_scell";
++  if { $inst_cell == "NULL"} {
++    return 0
++  }
++  set scell [get_lib_cell_warn "lib_cell" $inst_scell]
++  replace_cell_cmd $inst $scell
++  return 1
++}
++
+ proc path_regexp {} {
+   global hierarchy_separator
+   set id_regexp "\[^${hierarchy_separator}\]+"
+diff --git a/src/sta/tcl/Sta.tcl b/src/sta/tcl/Sta.tcl
+index f3de994..a6e8e34 100644
+--- a/src/sta/tcl/Sta.tcl
++++ b/src/sta/tcl/Sta.tcl
+@@ -623,6 +623,7 @@ define_cmd_args "make_instance" {inst_path lib_cell}
+ define_cmd_args "make_net" {}
+ 
+ define_cmd_args "replace_cell" {instance lib_cell}
++define_cmd_args "replace_to_scan_cell" {instance}
+ 
+ define_cmd_args "insert_buffer" {buffer_name buffer_cell net load_pins\
+ 				       buffer_out_net_name}
