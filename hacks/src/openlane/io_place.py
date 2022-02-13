@@ -452,7 +452,7 @@ else:
                 pin_bpin = odb.dbBPin_create(bterm)
 
             if(slot < slot_pre):
-                print("ERROR:", "Current Pad:", pin_name, " Slot:" , slot, " is less than Previous One:",slot_pre)
+                print("ERROR:", "Current Pad:", pin_name, " Slot:" , slot, " is less than Previous Slot:",slot_pre)
                 sys.exit(1)
 
             slot_pre = slot

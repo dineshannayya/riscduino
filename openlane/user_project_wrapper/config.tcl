@@ -44,7 +44,6 @@ set ::env(FP_PDN_CORE_RING) 1
 
 ## Source Verilog Files
 set ::env(VERILOG_FILES) "\
-	$proj_dir/../../caravel/verilog/rtl/defines.v \
 	$proj_dir/../../verilog/rtl/user_project_wrapper.v"
 
 ## Clock configurations
@@ -58,7 +57,7 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(FP_SIZING) "absolute"
 set ::env(MACRO_PLACEMENT_CFG) $proj_dir/macro.cfg
 
-#set ::env(PDN_CFG) $proj_dir/pdn.tcl
+set ::env(PDN_CFG) $proj_dir/pdn_cfg.tcl
 
 set ::env(SDC_FILE) "$proj_dir/base.sdc"
 set ::env(BASE_SDC_FILE) "$proj_dir/base.sdc"
@@ -101,7 +100,7 @@ set ::env(EXTRA_GDS_FILES) "\
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
+#set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
 
 set ::env(GLB_RT_MAXLAYER) 5
 
@@ -116,8 +115,8 @@ set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 set ::env(VDD_NETS) "vccd1 vccd2 vdda1 vdda2"
 set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 #
-set ::env(VDD_PIN) "vccd1 vccd2 vdda1 vdda2"
-set ::env(GND_PIN) "vssd1 vssd2 vssa1 vssa2"
+set ::env(VDD_PIN) "vccd1"
+set ::env(GND_PIN) "vssd1"
 
 set ::env(GLB_RT_OBS) " li1   150 2100  833.1  2516.54,\
 	                met1  150 2100  833.1  2516.54,\
@@ -149,7 +148,9 @@ set ::env(GLB_RT_OBS) " li1   150 2100  833.1  2516.54,\
                         met3 150  200  833.1   616.54,\
 	                met5  0 0 2920 3520"
 
-set ::env(FP_PDN_MACRO_HOOKS) "\
+set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 0, vdda2 vssa2 0"
+
+set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_intercon vccd1 vssd1 \
 	u_pinmux vccd1 vssd1 \
 	u_qspi_master vccd1 vssd1 \
@@ -163,8 +164,7 @@ set ::env(FP_PDN_MACRO_HOOKS) "\
 	u_sram2_2kb vccd1 vssd1 \
 	u_sram3_2kb vccd1 vssd1 \
 	u_uart_i2c_usb_spi vccd1 vssd1 \
-	u_wb_host vccd1 vssd1 \
-	"
+	u_wb_host vccd1 vssd1 "
 
 
 # The following is because there are no std cells in the example wrapper project.
@@ -190,9 +190,19 @@ set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_TR_DRC) "0"
 
+set ::env(FP_PDN_IRDROP) "1"
+set ::env(FP_PDN_HORIZONTAL_HALO) "10"
+set ::env(FP_PDN_VERTICAL_HALO) "10"
 
-set ::env(FP_PDN_HPITCH) "90"
-set ::env(FP_PDN_VPITCH) "100"
-set ::env(FP_PDN_HSPACING) "6"
+set ::env(FP_PDN_VOFFSET) "5"
+set ::env(FP_PDN_VPITCH) "80"
+set ::env(FP_PDN_VSPACING) "15.5"
+set ::env(FP_PDN_VWIDTH) "3.1"
+
+set ::env(FP_PDN_HOFFSET) "10"
+set ::env(FP_PDN_HPITCH) "120"
+set ::env(FP_PDN_HSPACING) "10"
+set ::env(FP_PDN_HWIDTH) "3.1"
+
 
 

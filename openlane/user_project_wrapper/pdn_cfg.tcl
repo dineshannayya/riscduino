@@ -13,10 +13,12 @@ set ::ground_nets $::env(GND_NET)
 
 if { [info exists ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS)] } {
     if { $::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) == 1 } {
-        add_global_connection -net $::env(VDD_NET) -inst_pattern .* -pin_pattern {VPWR} -power
-        add_global_connection -net $::env(VDD_NET) -inst_pattern .* -pin_pattern {VPB} -power
-        add_global_connection -net $::env(GND_NET) -inst_pattern .* -pin_pattern {VGND} -ground
-        add_global_connection -net $::env(GND_NET) -inst_pattern .* -pin_pattern {VNB} -ground
+        foreach power_pin $::env(STD_CELL_POWER_PINS) {
+            add_global_connection -net $::env(VDD_NET) -inst_pattern .* -pin_pattern $power_pin -power
+        }
+        foreach ground_pin $::env(STD_CELL_GROUND_PINS) {
+            add_global_connection -net $::env(GND_NET) -inst_pattern .* -pin_pattern $ground_pin -ground
+        }
     }
 }
 
@@ -27,8 +29,10 @@ set_voltage_domain -name CORE -power $::env(VDD_NET) -ground $::env(GND_NET)
 if { $::env(DESIGN_IS_CORE) == 1 } {
     # Used if the design is the core of the chip
     define_pdn_grid -name stdcell_grid -starts_with POWER -voltage_domain CORE -pins [subst {$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)}]
-    add_pdn_stripe -grid stdcell_grid -layer $::env(FP_PDN_LOWER_LAYER) -width $::env(FP_PDN_VWIDTH) -pitch $::env(FP_PDN_VPITCH) -offset $::env(FP_PDN_VOFFSET) -starts_with POWER
-    add_pdn_stripe -grid stdcell_grid -layer $::env(FP_PDN_UPPER_LAYER) -width $::env(FP_PDN_HWIDTH) -pitch $::env(FP_PDN_HPITCH) -offset $::env(FP_PDN_HOFFSET) -starts_with POWER
+    if { $::env(_WITH_STRAPS) } {
+        add_pdn_stripe -grid stdcell_grid -layer $::env(FP_PDN_LOWER_LAYER) -width $::env(FP_PDN_VWIDTH) -pitch $::env(FP_PDN_VPITCH) -offset $::env(FP_PDN_VOFFSET) -starts_with POWER
+        add_pdn_stripe -grid stdcell_grid -layer $::env(FP_PDN_UPPER_LAYER) -width $::env(FP_PDN_HWIDTH) -pitch $::env(FP_PDN_HPITCH) -offset $::env(FP_PDN_HOFFSET) -starts_with POWER
+    } 
     add_pdn_connect -grid stdcell_grid -layers [subst {$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)}]
 } else {
     # Used if the design is a macro in the core
@@ -45,10 +49,10 @@ if { $::env(FP_PDN_ENABLE_RAILS) == 1 } {
 
 # Adds the core ring if enabled.
 if { $::env(FP_PDN_CORE_RING) == 1 } {
-    add_pdn_ring -grid stdcell_grid -layer [subst {$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)}] \
-                 -widths [subst {$::env(FP_PDN_CORE_RING_VWIDTH) $::env(FP_PDN_CORE_RING_HWIDTH)}] \
-                 -spacings [subst {$::env(FP_PDN_CORE_RING_VSPACING) $::env(FP_PDN_CORE_RING_HSPACING)}] \
-                 -core_offset [subst {$::env(FP_PDN_CORE_RING_VOFFSET) $::env(FP_PDN_CORE_RING_HOFFSET)}]
+    add_pdn_ring -grid stdcell_grid -layer [subst {$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)}]  \
+                     -widths [subst {$::env(FP_PDN_CORE_RING_VWIDTH) $::env(FP_PDN_CORE_RING_HWIDTH)}] \
+                     -spacings [subst {$::env(FP_PDN_CORE_RING_VSPACING) $::env(FP_PDN_CORE_RING_HSPACING)}] \
+                     -core_offset [subst {$::env(FP_PDN_CORE_RING_VOFFSET) $::env(FP_PDN_CORE_RING_HOFFSET)}]
 }
 
 # A general macro that follows the premise of the set heirarchy. You may want to modify this or add other macro configs
@@ -58,7 +62,7 @@ set macro {
     orient {R0 R180 MX MY R90 R270 MXR90 MYR90}
     power_pins $::env(VDD_NET)
     ground_pins $::env(GND_NET)
-    blockages "li1 met1 met2 met3 met4"
+    blockages $::env(MACRO_BLOCKAGES_LAYER)
     straps {
     }
     connect {{$::env(FP_PDN_LOWER_LAYER)_PIN_ver $::env(FP_PDN_UPPER_LAYER)}}
@@ -70,18 +74,18 @@ if { $::env(FP_PDN_ENABLE_MACROS_GRID) == 1} {
         foreach macro_instance $::env(FP_PDN_MACROS) {
             set macro_instance_grid [subst $macro] 
             dict append $macro_instance_grid instance $macro_instance
-            set ::halo [list $::env(FP_HORIZONTAL_HALO) $::env(FP_VERTICAL_HALO)]
+            set ::halo [list $::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)]
             pdngen::specify_grid macro [subst $macro_instance_grid]
         }
     } else {
-        set ::halo [list $::env(FP_HORIZONTAL_HALO) $::env(FP_VERTICAL_HALO)]
+        set ::halo [list $::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)]
         pdngen::specify_grid macro [subst $macro]
     }
     # CAN NOT ENABLE THE TCL COMMAND BECAUSE THERE IS NO ARGUMENT FOR SPECIFYING THE POWER AND GROUND PIN NAMES ON THE MACRO
-    # define_pdn_grid -macro -orient {R0 R180 MX MY R90 R270 MXR90 MYR90} -grid_over_pg_pins -starts_with POWER -pin_direction vertical -halo [subst {$::env(FP_HORIZONTAL_HALO) $::env(FP_VERTICAL_HALO)}]
+    # define_pdn_grid -macro -orient {R0 R180 MX MY R90 R270 MXR90 MYR90} -grid_over_pg_pins -starts_with POWER -pin_direction vertical -halo [subst {$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)}]
     # add_pdn_connect -layers [subst {$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)}]
 } else {
-    define_pdn_grid -macro -orient {R0 R180 MX MY R90 R270 MXR90 MYR90} -grid_over_pg_pins -starts_with POWER -halo [subst {$::env(FP_HORIZONTAL_HALO) $::env(FP_VERTICAL_HALO)}]
+    define_pdn_grid -macro -orient {R0 R180 MX MY R90 R270 MXR90 MYR90} -grid_over_pg_pins -starts_with POWER -halo [subst {$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)}]
 }
 
 # POWER or GROUND #Std. cell rails starting with power or ground rails at the bottom of the core area
