@@ -1,0 +1,27 @@
+diff --git a/src/pdn/src/PdnGen.tcl b/src/pdn/src/PdnGen.tcl
+index 7322d54ad..7f178167f 100644
+--- a/src/pdn/src/PdnGen.tcl
++++ b/src/pdn/src/PdnGen.tcl
+@@ -966,8 +966,9 @@ proc add_pdn_ring {args} {
+ 
+   if {[dict exists $args -grid]} {
+     set current_grid [check_grid [get_grid [dict get $args -grid]]]
++    #Dinesh-A: Core Ring without Strap
++    set grid $current_grid
+   }
+-  set grid $current_grid
+   set layers [check_layer_names [dict get $args -layers]]
+ 
+   set process_args $args
+@@ -6686,7 +6687,10 @@ proc plan_grid {} {
+   }
+ 
+   add_grid
+-  process_channels
++  #Dinesh-A: Core Ring without Strap
++  if {[info exists $grid_data]} {
++  	process_channels
++  }
+ 
+   foreach pwr_net [dict get $design_data power_nets] {
+     generate_grid_vias "POWER" $pwr_net

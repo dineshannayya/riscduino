@@ -1,5 +1,5 @@
 // OpenSTA, Static Timing Analyzer
-// Copyright (c) 2021, Parallax Software, Inc.
+// Copyright (c) 2022, Parallax Software, Inc.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -8,11 +8,11 @@
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include "ConcreteNetwork.hh"
 
@@ -1192,8 +1192,10 @@ ConcreteNetwork::replaceCell(Instance *inst,
     if (cpin) {
       ConcretePort *pin_cport = reinterpret_cast<ConcretePort*>(cpin->port());
       ConcretePort *cport = ccell->findPort(pin_cport->name());
-      rpins[cport->pinIndex()] = cpin;
-      cpin->port_ = cport;
+      if (cport) {
+        rpins[cport->pinIndex()] = cpin;
+        cpin->port_ = cport;
+      }
     }
   }
   delete [] pins;
@@ -1441,7 +1443,9 @@ void
 ConcreteNetwork::addConstantNet(Net *net,
 				LogicValue value)
 {
-  constant_nets_[int(value)].insert(net);
+  if (value == LogicValue::zero
+      || value == LogicValue::one)
+    constant_nets_[int(value)].insert(net);
 }
 
 ConstantPinIterator *

@@ -217,7 +217,7 @@ module user_project_wrapper (
     // Note that analog I/O is not available on the 7 lowest-numbered
     // GPIO pads, and so the analog_io indexing is offset from the
     // GPIO indexing by 7 (also upper 2 GPIOs do not have analog_io).
-    inout [`MPRJ_IO_PADS-10:0] analog_io,
+    inout [28:0] analog_io,
  
     // Logic Analyzer Signals
     input  wire [127:0]                la_data_in      ,
