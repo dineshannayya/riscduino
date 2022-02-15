@@ -164,6 +164,11 @@
 ////    3.4  Feb 14, 2022, Dinesh A                               ////
 ////         burst mode supported added in imem buffer inside     ////
 ////         riscv core                                           ////
+////    We have created seperate repo from this onwards           ////
+////      SRAM based SOC is spin-out to                           ////
+////      dineshannayya/riscduino_sram.git                        ////
+////    This repo will remove mbist + SRAM and RISC SRAM will be  ////
+////    replaced with DFRAM                                       ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
