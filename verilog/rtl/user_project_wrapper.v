@@ -161,6 +161,9 @@
 ////         There are 4 chip select available in qspim           ////
 ////         CS#0/CS#1 targeted for SPI FLASH                     ////
 ////         CS#2/CS#3 targeted for SPI SRAM                      ////
+////    3.4  Feb 14, 2022, Dinesh A                               ////
+////         burst mode supported added in imem buffer inside     ////
+////         riscv core                                           ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
