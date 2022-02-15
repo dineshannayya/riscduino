@@ -68,13 +68,14 @@ simenv:
 PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
 TARGET_PATH=$(shell pwd)
+PDK_PATH=${PDK_ROOT}/sky130A
 VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} && make"
 $(DV_PATTERNS): verify-% : ./verilog/dv/% check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
-	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_ROOT}:${PDK_ROOT} \
+	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_PATH}:${PDK_PATH} \
                 -v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
-                -e TARGET_PATH=${TARGET_PATH} -e PDK_ROOT=${PDK_ROOT} \
+                -e TARGET_PATH=${TARGET_PATH} -e PDK_PATH=${PDK_PATH} \
                 -e CARAVEL_ROOT=${CARAVEL_ROOT} \
-                -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:latest \
+                -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:mpw5 \
                 sh -c $(VERIFY_COMMAND)
 				
 # Openlane Makefile Targets
@@ -132,7 +133,7 @@ openlane:
 .PHONY: precheck
 precheck:
 	@git clone --depth=1 --branch mpw-5 https://github.com/efabless/mpw_precheck.git $(PRECHECK_ROOT)
-	@docker pull efabless/mpw_precheck:latest
+	@docker pull efabless/mpw_precheck:mpw5
 
 .PHONY: run-precheck
 run-precheck: check-precheck check-pdk check-caravel
