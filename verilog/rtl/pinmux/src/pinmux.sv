@@ -118,24 +118,8 @@ module pinmux (
                        input logic              uartm_txd  ,       
 
 		       output  logic           pulse1m_mclk,
-	               output  logic [31:0]    pinmux_debug,	       
+	               output  logic [31:0]    pinmux_debug
 
-		// BIST I/F
-	               output logic            bist_en,
-	               output logic            bist_run,
-	               output logic            bist_load,
-
-	               output logic            bist_sdi,
-	               output logic            bist_shift,
-	               input  logic            bist_sdo,
-
-	               input logic             bist_done,
-	               input logic [3:0]       bist_error,
-	               input logic [3:0]       bist_correct,
-	               input logic [3:0]       bist_error_cnt0,
-	               input logic [3:0]       bist_error_cnt1,
-	               input logic [3:0]       bist_error_cnt2,
-	               input logic [3:0]       bist_error_cnt3
    ); 
 
 
@@ -334,21 +318,21 @@ pinmux_reg u_pinmux_reg(
           .gpio_prev_indata             (gpio_prev_indata        ) ,
 
        // BIST I/F
-          .bist_en                      (bist_en                 ),
-          .bist_run                     (bist_run                ),
-          .bist_load                    (bist_load               ),
+          .bist_en                      (                        ),
+          .bist_run                     (                        ),
+          .bist_load                    (                        ),
           
-          .bist_sdi                     (bist_sdi                ),
-          .bist_shift                   (bist_shift              ),
-          .bist_sdo                     (bist_sdo                ),
+          .bist_sdi                     (                        ),
+          .bist_shift                   (                        ),
+          .bist_sdo                     ('b0                     ),
           
-          .bist_done                    (bist_done               ),
-          .bist_error                   (bist_error              ),
-          .bist_correct                 (bist_correct            ),
-          .bist_error_cnt0              (bist_error_cnt0         ),
-          .bist_error_cnt1              (bist_error_cnt1         ),
-          .bist_error_cnt2              (bist_error_cnt2         ),
-          .bist_error_cnt3              (bist_error_cnt3         )
+          .bist_done                    ('b0                     ),
+          .bist_error                   ('h0                     ),
+          .bist_correct                 ('h0                     ),
+          .bist_error_cnt0              ('h0                     ),
+          .bist_error_cnt1              ('h0                     ),
+          .bist_error_cnt2              ('h0                     ),
+          .bist_error_cnt3              ('h0                     )
 
    ); 
 

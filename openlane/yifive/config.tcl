@@ -67,7 +67,7 @@ set ::env(VERILOG_FILES) "\
 	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_imem_router.sv   \
 	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_icache_router.sv \
 	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_dcache_router.sv \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_tcm.sv   \
+	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_tcm_router.sv   \
 	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_timer.sv   \
 	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_top_wb.sv   \
 	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr1_dmem_wb.sv   \
@@ -106,7 +106,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) [list 0.0 0.0 725.0 1550.0]
+set ::env(DIE_AREA) [list 0.0 0.0 825.0 1550.0]
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -116,21 +116,15 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.35"
+set ::env(PL_TARGET_DENSITY) "0.34"
 set ::env(FP_CORE_UTIL) "50"
 
-# helps in anteena fix
-set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
-set ::env(FP_IO_VEXTEND) 4
-set ::env(FP_IO_HEXTEND) 4
 
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 3
-set ::env(FP_PDN_HWIDTH) 3
+## Routing
 
-set ::env(GLB_RT_MAXLAYER) 6
+
+set ::env(GLB_RT_MAXLAYER) 5
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 

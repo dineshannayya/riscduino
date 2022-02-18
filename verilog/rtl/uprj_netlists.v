@@ -41,14 +41,7 @@
      `include "libs.ref/sky130_fd_sc_hvl/verilog/primitives.v"
      `include "libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v"
 
-     `include"sar_adc/SAR.sv"
-     `include"sar_adc/ACMP.sv"
-     `include"sar_adc/sar_adc.sv"
-     `include"sar_adc/adc_reg.sv"
-     `include"sar_adc/DAC_8BIT.v"
 
-
-     `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
      `include "pinmux/src/pinmux.sv"
      `include "pinmux/src/pinmux_reg.sv"
      `include "pinmux/src/gpio_intr.sv"
@@ -137,7 +130,7 @@
      `include "yifive/ycr1c/src/top/ycr1_imem_router.sv"
      `include "yifive/ycr1c/src/top/ycr1_dmem_router.sv"
      `include "yifive/ycr1c/src/top/ycr1_dp_memory.sv"
-     `include "yifive/ycr1c/src/top/ycr1_tcm.sv"
+     `include "yifive/ycr1c/src/top/ycr1_tcm_router.sv"
      `include "yifive/ycr1c/src/top/ycr1_timer.sv"
      `include "yifive/ycr1c/src/top/ycr1_dmem_wb.sv"
      `include "yifive/ycr1c/src/top/ycr1_imem_wb.sv"
@@ -155,20 +148,7 @@
 
      `include "lib/sync_fifo.sv"
 
-     `include "mbist/src/core/mbist_addr_gen.sv"
-     `include "mbist/src/core/mbist_fsm.sv" 
-     `include "mbist/src/core/mbist_op_sel.sv" 
-     `include "mbist/src/core/mbist_repair_addr.sv" 
-     `include "mbist/src/core/mbist_sti_sel.sv" 
-     `include "mbist/src/core/mbist_pat_sel.sv"
-     `include "mbist/src/core/mbist_mux.sv"
-     `include "mbist/src/core/mbist_data_cmp.sv"
-     `include "mbist/src/core/mbist_mem_wrapper.sv"
-
-    `include "mbist/src/top/mbist_top.sv" 
-    `include "mbist_wrapper/src/mbist_wb.sv" 
-    `include "mbist_wrapper/src/mbist_wrapper.sv" 
-
+     `include "DFFRAM/DFFRAM.v"
 
     `include "uart2wb/src/uart2wb.sv" 
     `include "uart2wb/src/uart2_core.sv" 
@@ -178,6 +158,6 @@
      `include "user_project_wrapper.v"
      // we are using netlist file for clk_skew_adjust as it has 
      // standard cell + power pin
-     `include "clk_skew_adjust/src/clk_skew_adjust.v"
+     `include "lib/clk_skew_adjust.gv"
      `include "lib/ctech_cells.sv"
 `endif

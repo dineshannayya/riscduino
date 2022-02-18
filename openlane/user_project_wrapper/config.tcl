@@ -69,11 +69,10 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
         $proj_dir/../../verilog/gl/qspim.v \
         $proj_dir/../../verilog/gl/wb_interconnect.v \
         $proj_dir/../../verilog/gl/pinmux.v     \
-        $proj_dir/../../verilog/gl/mbist_wrapper.v     \
         $proj_dir/../../verilog/gl/uart_i2cm_usb_spi.v     \
 	$proj_dir/../../verilog/gl/wb_host.v \
 	$proj_dir/../../verilog/gl/yifive.v \
-	$proj_dir/../../verilog/rtl/sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v \
+	$proj_dir/../../verilog/gl/DFFRAM.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
@@ -82,9 +81,8 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/wb_interconnect.lef \
 	$lef_root/uart_i2cm_usb_spi.lef \
 	$lef_root/wb_host.lef \
-	$lef_root/mbist_wrapper.lef \
 	$lef_root/yifive.lef \
-	$lef_root/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
+	$lef_root/DFFRAM.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
@@ -93,9 +91,8 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/wb_interconnect.gds \
 	$gds_root/uart_i2cm_usb_spi.gds \
 	$gds_root/wb_host.gds \
-	$gds_root/mbist_wrapper.gds \
 	$gds_root/yifive.gds \
-	$gds_root/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
+	$gds_root/DFFRAM.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -118,53 +115,32 @@ set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 set ::env(VDD_PIN) "vccd1"
 set ::env(GND_PIN) "vssd1"
 
-set ::env(GLB_RT_OBS) " li1   150 2100  833.1  2516.54,\
-	                met1  150 2100  833.1  2516.54,\
-	                met2  150 2100  833.1  2516.54,\
-                        met3  150 2100  833.1  2516.54,\
-                        li1   950 2100 1633.1  2516.54,\
-                        met1  950 2100 1633.1  2516.54,\
-                        met2  950 2100 1633.1  2516.54,\
-                        met3  950 2100 1633.1  2516.54,\
-                        li1   150 3000  833.1 3416.54,\
-                        met1  150 3000  833.1 3416.54,\
-                        met2  150 3000  833.1 3416.54,\
-                        met3  150 3000  833.1 3416.54,\
-                        li1   950 3000 1633.1 3416.54,\
-                        met1  950 3000 1633.1 3416.54,\
-                        met2  950 3000 1633.1 3416.54,\
-                        met3  950 3000 1633.1 3416.54,\
-                        li1  150  1400  833.1  1816.54,\
-                        met1 150  1400  833.1  1816.54,\
-                        met2 150  1400  833.1  1816.54,\
-                        met3 150  1400  833.1  1816.54,\
-                        li1  150  800  833.1   1216.54,\
-                        met1 150  800  833.1   1216.54,\
-                        met2 150  800  833.1   1216.54,\
-                        met3 150  800  833.1   1216.54,\
-                        li1  150  200  833.1   616.54,\
-                        met1 150  200  833.1   616.54,\
-                        met2 150  200  833.1   616.54,\
-                        met3 150  200  833.1   616.54,\
-	                met5  0 0 2920 3520"
-
+set ::env(GLB_RT_OBS) " met5  0    0    2920   3520, \
+	                met4  125  950   675   1640, \
+	                met4  125  1800  675   2540, \
+	                met4  125  100   675    840, \
+	                met4  850  100  1400    840, \
+	                met4  325  2650  875  3400, \
+	                met4  1050 2650 1600  3400 \
+	              "
+                      
 set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 0, vdda2 vssa2 0"
 
-set ::env(FP_PDN_MACRO_HOOKS) " \
-	u_intercon vccd1 vssd1 \
-	u_pinmux vccd1 vssd1 \
-	u_qspi_master vccd1 vssd1 \
-	u_riscv_top vccd1 vssd1 \
-	u_tsram0_2kb vccd1 vssd1 \
-	u_icache_2kb vccd1 vssd1 \
-	u_dcache_2kb vccd1 vssd1 \
-	u_mbist vccd1 vssd1 \
-	u_sram0_2kb vccd1 vssd1 \
-	u_sram1_2kb vccd1 vssd1 \
-	u_sram2_2kb vccd1 vssd1 \
-	u_sram3_2kb vccd1 vssd1 \
-	u_uart_i2c_usb_spi vccd1 vssd1 \
-	u_wb_host vccd1 vssd1 "
+#set ::env(FP_PDN_MACRO_HOOKS) " \
+#	u_intercon vccd1 vssd1 \
+#	u_pinmux vccd1 vssd1 \
+#	u_qspi_master vccd1 vssd1 \
+#	u_riscv_top vccd1 vssd1 \
+#	u_tsram0_2kb vccd1 vssd1 \
+#	u_icache_2kb vccd1 vssd1 \
+#	u_dcache_2kb vccd1 vssd1 \
+#	u_mbist vccd1 vssd1 \
+#	u_sram0_2kb vccd1 vssd1 \
+#	u_sram1_2kb vccd1 vssd1 \
+#	u_sram2_2kb vccd1 vssd1 \
+#	u_sram3_2kb vccd1 vssd1 \
+#	u_uart_i2c_usb_spi vccd1 vssd1 \
+#	u_wb_host vccd1 vssd1 "
 
 
 # The following is because there are no std cells in the example wrapper project.
@@ -184,13 +160,13 @@ set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
 
 set ::env(QUIT_ON_LVS_ERROR) "0"
-set ::env(QUIT_ON_MAGIC_DRC) "0"
+set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_TR_DRC) "0"
 
-set ::env(FP_PDN_IRDROP) "1"
+set ::env(FP_PDN_IRDROP) "0"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
 set ::env(FP_PDN_VERTICAL_HALO) "10"
 
@@ -199,10 +175,8 @@ set ::env(FP_PDN_VPITCH) "80"
 set ::env(FP_PDN_VSPACING) "15.5"
 set ::env(FP_PDN_VWIDTH) "3.1"
 
-set ::env(FP_PDN_HOFFSET) "10"
-set ::env(FP_PDN_HPITCH) "120"
-set ::env(FP_PDN_HSPACING) "10"
-set ::env(FP_PDN_HWIDTH) "3.1"
+set ::env(FP_PDN_HOFFSET) "16.65"
+set ::env(FP_PDN_HPITCH) "130"
 
 
 

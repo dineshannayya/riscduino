@@ -1,7 +1,9 @@
 
         set ::env(USER_ROOT)    "/home/dinesha/workarea/opencore/git/riscduino"
-        set ::env(CARAVEL_ROOT) "/home/dinesha/workarea/efabless/MPW-4/caravel_openframe"
-        set ::env(CARAVEL_PDK_ROOT)     "/opt/pdk_mpw4"
+        #set ::env(CARAVEL_ROOT) "/home/dinesha/workarea/efabless/MPW-4/caravel_openframe"
+        #set ::env(CARAVEL_PDK_ROOT)  "/opt/pdk_mpw4"
+        set ::env(CARAVEL_ROOT) "/home/dinesha/workarea/efabless/MPW-5/caravel"
+        set ::env(CARAVEL_PDK_ROOT)  "/opt/pdk_mpw4"
 
         read_liberty $::env(CARAVEL_PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib	
 	read_liberty $::env(CARAVEL_PDK_ROOT)/sky130A/libs.ref/sky130_sram_macros/lib/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib	
@@ -49,7 +51,6 @@
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_host.v  
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_interconnect.v
         read_verilog $::env(USER_ROOT)/verilog/gl/pinmux.v
-        read_verilog $::env(USER_ROOT)/verilog/gl/mbist_wrapper.v
         read_verilog $::env(USER_ROOT)/verilog/gl/user_project_wrapper.v  
 
 
@@ -144,14 +145,18 @@
 	read_spef -path gpio_defaults_block_37              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
 
 	## User Project Spef
-        read_spef -path mprj/u_mbist                       $::env(USER_ROOT)/spef/mbist_wrapper.spef
-
         read_spef -path mprj/u_riscv_top         $::env(USER_ROOT)/spef/ycr1_top_wb.spef
         read_spef -path mprj/u_pinmux            $::env(USER_ROOT)/spef/pinmux.spef
         read_spef -path mprj/u_qspi_master       $::env(USER_ROOT)/spef/qspim_top.spef
         read_spef -path mprj/u_uart_i2c_usb_spi  $::env(USER_ROOT)/spef/uart_i2c_usb_spi_top.spef
         read_spef -path mprj/u_wb_host           $::env(USER_ROOT)/spef/wb_host.spef
         read_spef -path mprj/u_intercon          $::env(USER_ROOT)/spef/wb_interconnect.spef
+        read_spef -path mprj/u_tcm_1KB_mem0      $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/DFFRAM.spef
+        read_spef -path mprj/u_tcm_1KB_mem1      $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/DFFRAM.spef
+        read_spef -path mprj/u_icache_1KB_mem0   $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/DFFRAM.spef
+        read_spef -path mprj/u_icache_1KB_mem1   $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/DFFRAM.spef
+        read_spef -path mprj/u_dcache_1KB_mem0   $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/DFFRAM.spef
+        read_spef -path mprj/u_dcache_1KB_mem1   $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/DFFRAM.spef
         read_spef -path mprj                     $::env(USER_ROOT)/spef/user_project_wrapper.spef  
 
 
@@ -182,4 +187,80 @@
 	   echo "Wishbone Interface Timing for [get_full_name $pin]" >> wb.min.rpt
            report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> wb.min.rpt
         }
+
+	#Min Delay check around DFFRAM
+	echo "DFFRAM Interface Min Timing.................." > mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/WE[*]     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/EN        >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/Di[*]     >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/A[*]      >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/Do[*]     >> mprj.dffram.min.rpt 
+
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/WE[*]     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/EN        >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/Di[*]     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/A[*]      >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/Do[*]     >> mprj.dffram.min.rpt
+
+	report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/WE[*]  >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/EN     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/Di[*]  >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/A[*]   >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/Do[*]  >> mprj.dffram.min.rpt 
+
+	report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/WE[*]  >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/EN     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/Di[*]  >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/A[*]   >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/Do[*]  >> mprj.dffram.min.rpt
+
+	report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/WE[*]  >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/EN     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/Di[*]  >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/A[*]   >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/A[*]   >> mprj.dffram.min.rpt
+
+	report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/WE[*]  >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/EN     >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/Di[*]  >> mprj.dffram.min.rpt 
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/A[*]   >> mprj.dffram.min.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/Do[*]  >> mprj.dffram.min.rpt 
+
+	#Max Delay check around DFFRAM
+	echo "DFFRAM Interface Max Timing.................." > mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/WE[*]     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/EN        >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/Di[*]     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/A[*]      >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem0/Do[*]     >> mprj.dffram.max.rpt
+
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/WE[*]     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/EN        >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/Di[*]     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/A[*]      >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_tcm_1KB_mem1/Do[*]     >> mprj.dffram.max.rpt
+
+	report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/WE[*]  >> mprj.dffram.max.rpt 
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/EN     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/Di[*]  >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/A[*]   >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem0/Do[*]  >> mprj.dffram.max.rpt
+
+	report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/WE[*]  >> mprj.dffram.max.rpt 
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/EN     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/Di[*]  >> mprj.dffram.max.rpt 
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/A[*]   >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_icache_1KB_mem1/Do[*]  >> mprj.dffram.max.rpt
+
+	report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/WE[*]  >> mprj.dffram.max.rpt 
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/EN     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/Di[*]  >> mprj.dffram.max.rpt 
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/A[*]   >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem0/A[*]   >> mprj.dffram.max.rpt
+
+	report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/WE[*]  >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/EN     >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/Di[*]  >> mprj.dffram.max.rpt 
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/A[*]   >> mprj.dffram.max.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/Do[*]  >> mprj.dffram.max.rpt 
         

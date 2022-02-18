@@ -23,7 +23,6 @@ set ::env(DESIGN_NAME) wb_interconnect
 
 
 set ::env(DESIGN_IS_CORE) "0"
-set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
@@ -50,8 +49,8 @@ set ::env(VERILOG_FILES) "\
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(SYNTH_PARAMS) "CH_CLK_WD 8,\
-	                 CH_DATA_WD 116 \
+set ::env(SYNTH_PARAMS) "CH_CLK_WD 4,\
+	                 CH_DATA_WD 69 \
 			 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
@@ -77,6 +76,14 @@ set ::env(DIE_AREA) "0 0 200 2300"
 set ::env(RUN_CVC) 0
 
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
+
+## PDN
+set ::env(FP_PDN_CORE_RING) 0
+set ::env(FP_PDN_VPITCH) 120
+set ::env(FP_PDN_HPITCH) 120
+
+set ::env(FP_PDN_VWIDTH) 1.6
+set ::env(FP_PDN_CORE_RING_VWIDTH) 1.6
 
 
 set ::env(PL_TIME_DRIVEN) 1

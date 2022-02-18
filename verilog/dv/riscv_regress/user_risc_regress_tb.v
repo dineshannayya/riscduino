@@ -76,7 +76,7 @@
 `include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
-`include "spiram.v"
+`include "is62wvs1288.v"
 
 localparam [31:0]      YCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
 localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
@@ -418,7 +418,7 @@ end
 
    wire spiram_csb = io_out[26];
 
-   spiram #(.mem_file_name("none"))
+   is62wvs1288 #(.mem_file_name("none"))
 	u_sram (
          // Data Inputs/Outputs
            .io0     (flash_io0),
