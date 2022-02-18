@@ -119,16 +119,6 @@ module wb_interconnect #(
          input logic		clk_i, 
          input logic            rst_n,
 
-	 input logic  [3:0]     boot_remap, // When remap is enabled
-	                                     // [0] - 0x0000_0000 - 0x0000_07FF Map to MBIST1
-					     // [1] - 0x0000_0800 - 0x0000_0FFF Map to MBIST2
-					     // [2] - 0x0000_1000 - 0x0000_17FF Map to MBIST3
-					     // [3] - 0x0000_1800 - 0x0000_1FFF Map to MBIST4
-	 input logic  [3:0]     dcache_remap, // When dcache remap is enabled, 
-	                                     // [0] - 0x0800_0000 - 0x0800_07FF Map to MBIST1
-					     // [1] - 0x0800_0800 - 0x0800_0FFF Map to MBIST2
-					     // [2] - 0x0800_1000 - 0x0800_17FF Map to MBIST3
-					     // [3] - 0x0800_1800 - 0x0800_1FFF Map to MBIST4
          
          // Master 0 Interface
          input   logic	[31:0]	m0_wbd_dat_i,
@@ -215,22 +205,8 @@ module wb_interconnect #(
          output	logic [3:0]	s2_wbd_sel_o,
          output	logic 	        s2_wbd_we_o,
          output	logic 	        s2_wbd_cyc_o,
-         output	logic 	        s2_wbd_stb_o,
+         output	logic 	        s2_wbd_stb_o
 
-         // Slave 3 Interface
-	 // MBIST
-         input	logic [31:0]	s3_wbd_dat_i,
-         input	logic 	        s3_wbd_ack_i,
-         input	logic 	        s3_wbd_lack_i,
-         // input	logic 	s3_wbd_err_i,
-         output	logic [31:0]	s3_wbd_dat_o,
-         output	logic [12:0]	s3_wbd_adr_o, 
-         output	logic [3:0]   	s3_wbd_sel_o,
-         output	logic [9:0]   	s3_wbd_bl_o,
-         output	logic    	s3_wbd_bry_o,
-         output	logic 	        s3_wbd_we_o,
-         output	logic 	        s3_wbd_cyc_o,
-         output	logic 	        s3_wbd_stb_o
 	);
 
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +218,6 @@ parameter TARGET_SPI_MEM  = 4'b0000;
 parameter TARGET_SPI_REG  = 4'b0000;
 parameter TARGET_UART     = 4'b0001;
 parameter TARGET_PINMUX   = 4'b0010;
-parameter TARGET_MBIST    = 4'b0011;
 
 // WishBone Wr Interface
 typedef struct packed { 
@@ -282,13 +257,11 @@ type_wb_rd_intf  m3_wb_rd;
 type_wb_wr_intf  s0_wb_wr;
 type_wb_wr_intf  s1_wb_wr;
 type_wb_wr_intf  s2_wb_wr;
-type_wb_wr_intf  s3_wb_wr;
 
 // Slave Read Interface
 type_wb_rd_intf  s0_wb_rd;
 type_wb_rd_intf  s1_wb_rd;
 type_wb_rd_intf  s2_wb_rd;
-type_wb_rd_intf  s3_wb_rd;
 
 
 type_wb_wr_intf  m_bus_wr;  // Multiplexed Master I/F
@@ -322,10 +295,6 @@ clk_skew_adjust u_skew_wi
 // 0x1001_0080 to 0x1001_00BF  - USB
 // 0x1001_00C0 to 0x1001_00FF  - SSPIM
 // 0x1002_0000 to 0x1002_00FF  - PINMUX
-// 0x1003_0000 to 0x1003_07FF  - SRAM-0 (2KB)
-// 0x1003_0800 to 0x1003_0FFF  - SRAM-1 (2KB)
-// 0x1003_1000 to 0x1003_17FF  - SRAM-2 (2KB)
-// 0x1003_1800 to 0x1003_1FFF  - SRAM-3 (2KB)
 // 0x3080_0000 to 0x3080_00FF  - WB HOST (This decoding happens at wb_host block)
 // ---------------------------------------------------------------------------
 //
@@ -333,7 +302,6 @@ wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[31:28] == 4'b0000   ) ? TARGET_SPI
                                 (m0_wbd_adr_i[31:16] == 16'h1000  ) ? TARGET_SPI_REG :   // SPI REG
                                 (m0_wbd_adr_i[31:16] == 16'h1001  ) ? TARGET_UART    :   // UART/I2C/USB/SPI
                                 (m0_wbd_adr_i[31:16] == 16'h1002  ) ? TARGET_PINMUX  :   // PINMUX
-                                (m0_wbd_adr_i[31:16] == 16'h1003  ) ? TARGET_MBIST   :   // MBIST
 				4'b0000; 
 
 //------------------------------
@@ -345,54 +313,23 @@ wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[31:28] == 4'b0000   ) ? TARGET_SPI
 // 0x1001_0080 to 0x1001_00BF  - USB
 // 0x1001_00C0 to 0x1001_00FF  - SSPIM
 // 0x1002_0000 to 0x1002_00FF  - PINMUX
-// 0x1003_0000 to 0x1003_07FF  - SRAM-0 (2KB)
-// 0x1003_0800 to 0x1003_0FFF  - SRAM-1 (2KB)
-// 0x1003_1000 to 0x1003_17FF  - SRAM-2 (2KB)
-// 0x1003_1800 to 0x1003_1FFF  - SRAM-3 (2KB)
 //-----------------------------
 // 
-wire [3:0] m1_wbd_tid_i     = (boot_remap[0] && m1_wbd_adr_i[31:11] == 21'h0) ? TARGET_MBIST:
-	                      (boot_remap[1] && m1_wbd_adr_i[31:11] == 21'h1) ? TARGET_MBIST:
-	                      (boot_remap[2] && m1_wbd_adr_i[31:11] == 21'h2) ? TARGET_MBIST:
-	                      (boot_remap[3] && m1_wbd_adr_i[31:11] == 21'h3) ? TARGET_MBIST:
-			      (dcache_remap[0] && m1_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0000_0) ? TARGET_MBIST:
-	                      (dcache_remap[1] && m1_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0000_1) ? TARGET_MBIST:
-	                      (dcache_remap[2] && m1_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0001_0) ? TARGET_MBIST:
-	                      (dcache_remap[3] && m1_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0001_1) ? TARGET_MBIST:
-	                      (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
+wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
                               (m1_wbd_adr_i[31:16] == 16'h1000 ) ? TARGET_SPI_REG :
                               (m1_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART :
                               (m1_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
-                              (m1_wbd_adr_i[31:16] == 16'h1003 ) ? TARGET_MBIST : 
 			      4'b0000; 
 
-wire [3:0] m2_wbd_tid_i     = (boot_remap[0] && m2_wbd_adr_i[31:11] == 21'h0) ? TARGET_MBIST:
-	                      (boot_remap[1] && m2_wbd_adr_i[31:11] == 21'h1) ? TARGET_MBIST:
-	                      (boot_remap[2] && m2_wbd_adr_i[31:11] == 21'h2) ? TARGET_MBIST:
-	                      (boot_remap[3] && m2_wbd_adr_i[31:11] == 21'h3) ? TARGET_MBIST:
-			      (dcache_remap[0] && m2_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0000_0) ? TARGET_MBIST:
-	                      (dcache_remap[1] && m2_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0000_1) ? TARGET_MBIST:
-	                      (dcache_remap[2] && m2_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0001_0) ? TARGET_MBIST:
-	                      (dcache_remap[3] && m2_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0001_1) ? TARGET_MBIST:
-	                      (m2_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
+wire [3:0] m2_wbd_tid_i     = (m2_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
                               (m2_wbd_adr_i[31:16] == 16'h1000 ) ? TARGET_SPI_REG :
                               (m2_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART : 
                               (m2_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
-                              (m2_wbd_adr_i[31:16] == 16'h1003 ) ? TARGET_MBIST : 
 			      4'b0000; 
-wire [3:0] m3_wbd_tid_i     = (boot_remap[0] && m3_wbd_adr_i[31:11] == 21'h0) ? TARGET_MBIST:
-	                      (boot_remap[1] && m3_wbd_adr_i[31:11] == 21'h1) ? TARGET_MBIST:
-	                      (boot_remap[2] && m3_wbd_adr_i[31:11] == 21'h2) ? TARGET_MBIST:
-	                      (boot_remap[3] && m3_wbd_adr_i[31:11] == 21'h3) ? TARGET_MBIST:
-			      (dcache_remap[0] && m3_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0000_0) ? TARGET_MBIST:
-	                      (dcache_remap[1] && m3_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0000_1) ? TARGET_MBIST:
-	                      (dcache_remap[2] && m3_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0001_0) ? TARGET_MBIST:
-	                      (dcache_remap[3] && m3_wbd_adr_i[31:11] == 21'b0000_1000_0000_0000_0001_1) ? TARGET_MBIST:
-	                      (m3_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
+wire [3:0] m3_wbd_tid_i     = (m3_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
                               (m3_wbd_adr_i[31:16] == 16'h1000 ) ? TARGET_SPI_REG :
                               (m3_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART : 
                               (m3_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
-                              (m3_wbd_adr_i[31:16] == 16'h1003 ) ? TARGET_MBIST : 
 			      4'b0000; 
 //----------------------------------------
 // Master Mapping
@@ -484,14 +421,6 @@ assign m3_wbd_err_o  =  m3_wb_rd.wbd_err;
  assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;
  assign  s2_wbd_stb_o =  s2_wb_wr.wbd_stb ;
 
- assign  s3_wbd_dat_o =  s3_wb_wr.wbd_dat[31:0] ;
- assign  s3_wbd_adr_o =  s3_wb_wr.wbd_adr[12:0] ; // MBIST Need 13 bit
- assign  s3_wbd_sel_o =  s3_wb_wr.wbd_sel[3:0] ;
- assign  s3_wbd_bl_o  =  s3_wb_wr.wbd_bl ;
- assign  s3_wbd_bry_o =  s3_wb_wr.wbd_bry ;
- assign  s3_wbd_we_o  =  s3_wb_wr.wbd_we  ;
- assign  s3_wbd_cyc_o =  s3_wb_wr.wbd_cyc ;
- assign  s3_wbd_stb_o =  s3_wb_wr.wbd_stb ;
  
  
  assign s0_wb_rd.wbd_dat   = s0_wbd_dat_i ;
@@ -509,10 +438,6 @@ assign m3_wbd_err_o  =  m3_wb_rd.wbd_err;
  assign s2_wb_rd.wbd_lack = s2_wbd_ack_i ;
  assign s2_wb_rd.wbd_err  = 1'b0; // s2_wbd_err_i ; - unused
 
- assign s3_wb_rd.wbd_dat  = s3_wbd_dat_i ;
- assign s3_wb_rd.wbd_ack  = s3_wbd_ack_i ;
- assign s3_wb_rd.wbd_lack = s3_wbd_lack_i ;
- assign s3_wb_rd.wbd_err  = 1'b0; // s3_wbd_err_i ; - unused
 
 //
 // arbitor 
@@ -549,7 +474,6 @@ always_comb begin
         4'h0:	   s_bus_rd = s0_wb_rd;
         4'h1:	   s_bus_rd = s1_wb_rd;
         4'h2:	   s_bus_rd = s2_wb_rd;
-        4'h3:	   s_bus_rd = s3_wb_rd;
         default:   s_bus_rd = s0_wb_rd;
      endcase			
 end
@@ -559,7 +483,6 @@ end
 assign  s0_wb_wr = (s_wbd_tid == 3'b000) ? s_bus_wr : 'h0;
 assign  s1_wb_wr = (s_wbd_tid == 3'b001) ? s_bus_wr : 'h0;
 assign  s2_wb_wr = (s_wbd_tid == 3'b010) ? s_bus_wr : 'h0;
-assign  s3_wb_wr = (s_wbd_tid == 3'b011) ? s_bus_wr : 'h0;
 
 // Connect Slave to Master
 assign  m0_wb_rd = (gnt == 2'b00) ? m_bus_rd : 'h0;

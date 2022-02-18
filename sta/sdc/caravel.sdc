@@ -22,10 +22,6 @@ create_clock -name usb_clk     -period 20.0000  [get_pins {mprj/u_wb_host/usb_cl
 create_clock -name uarts_clk   -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart_core.u_lineclk_buf.u_mux/X}]
 create_clock -name uartm_clk   -period 100.0000 [get_pins {mprj/u_wb_host/u_uart2wb.u_core.u_uart_clk.u_mux/X}]
 
-create_generated_clock -name mem_clk0 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[0].u_mem_sel.u_mem_clk_sel.u_mux/X]
-create_generated_clock -name mem_clk1 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[1].u_mem_sel.u_mem_clk_sel.u_mux/X]
-create_generated_clock -name mem_clk2 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[2].u_mem_sel.u_mem_clk_sel.u_mux/X]
-create_generated_clock -name mem_clk3 -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 1 -comment {memory Clock} [get_pins mprj/u_mbist/u_mbist.mem_no[3].u_mem_sel.u_mem_clk_sel.u_mux/X]
 
 ## Case analysis
 
@@ -64,10 +60,6 @@ set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[1]}]
 set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[2]}]
 set_case_analysis 0 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[3]}]
 
-set_case_analysis 0 [get_pins {mprj/u_mbist/cfg_cska_mbist[0]}]
-set_case_analysis 0 [get_pins {mprj/u_mbist/cfg_cska_mbist[1]}]
-set_case_analysis 0 [get_pins {mprj/u_mbist/cfg_cska_mbist[2]}]
-set_case_analysis 1 [get_pins {mprj/u_mbist/cfg_cska_mbist[3]}]
 
 
 #disable clock gating check at static clock select pins

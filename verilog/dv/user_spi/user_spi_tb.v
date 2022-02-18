@@ -82,7 +82,7 @@
 `include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
-`include "spiram.v"
+`include "is62wvs1288.v"
 
  // REGISTER MAP
  `define QSPIM_GLBL_CTRL           32'h10000000
@@ -1263,7 +1263,7 @@ user_project_wrapper u_top(
 
    wire spiram_csb = io_out[26];
 
-   spiram #(.mem_file_name("flash1.hex"))
+   is62wvs1288 #(.mem_file_name("flash1.hex"))
 	u_sfram (
          // Data Inputs/Outputs
            .io0     (flash_io0),
