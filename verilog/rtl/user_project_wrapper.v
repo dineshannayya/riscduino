@@ -177,6 +177,16 @@
 ////       C. mbist controller slave port in wb_intern removed    ////
 ////       D. Pinmux mbist port are removed                       ////
 ////       E. mbist related buffering are removed at wb_inter     ////
+////    3.6  Feb 19, Dinesh A                                     ////
+////       A.  Changed Module: wb_host                            ////
+////       wishbone slave clock generation config increase from   ////
+////       3 to 4 bit support clock source selection              ////
+////       B.  Changed Module: qspim                              ////
+//////      1. Bug fix in spi rise and fall pulse relation w.r.t  ////
+////           spi_clk. Note: Previous version work only with     ////
+////           spi clock config = 0x2                             ////
+////        2. spi_oen generation fix for different spi mode      ////
+////        3. spi_csn de-assertion fix for different spi clk div ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

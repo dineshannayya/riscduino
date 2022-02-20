@@ -22,6 +22,7 @@ create_clock -name usb_clk     -period 20.0000  [get_pins {mprj/u_wb_host/usb_cl
 create_clock -name uarts_clk   -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart_core.u_lineclk_buf.u_mux/X}]
 create_clock -name uartm_clk   -period 100.0000 [get_pins {mprj/u_wb_host/u_uart2wb.u_core.u_uart_clk.u_mux/X}]
 
+create_generated_clock -name spi_clk -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 2 -comment {Spi Clock} [get_ports mprj_io[24]]
 
 ## Case analysis
 
@@ -68,9 +69,9 @@ set_false_path -through [get_pins mprj/u_wb_host/u_wbs_clk_sel.u_mux/S]
 set_propagated_clock [all_clocks]
 
 set_clock_groups -name async_clock -asynchronous \
- -group [get_clocks {clock wb_clk mem_clk0 mem_clk1 mem_clk2 mem_clk3}]\
+ -group [get_clocks {clock wb_clk}]\
  -group [get_clocks {user_clk2}]\
- -group [get_clocks {wbs_clk_i}]\
+ -group [get_clocks {wbs_clk_i spi_clk}]\
  -group [get_clocks {cpu_clk}]\
  -group [get_clocks {cpu_ref_clk}]\
  -group [get_clocks {rtc_clk}]\
@@ -110,15 +111,15 @@ set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[21]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[22]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[23]}]
-set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[24]}]
+#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[24]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[25]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[26]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[27]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[28]}]
-set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[29]}]
-set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[30]}]
-set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[31]}]
-set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[32]}]
+#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[29]}]
+#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[30]}]
+#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[31]}]
+#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[32]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[33]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[34]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[35]}]
@@ -129,6 +130,24 @@ set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [ge
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_clk}]
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_io0}]
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_io1}]
+
+###############################################################################
+# User SPI constraints
+# Reducing the Tight SPI spec
+# As spi cs# asserted atleast 2 cycle before transaction, we are not constrainting it
+# In Spi Interace Data lanuch by negedge and capture at Posedge, So effective Interface hold and setup should not be
+# any issue. Any timing issue, we need to reduce the SPI interface clock
+#################################################################################
+
+set user_spi_out [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
+set user_spi_in  [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
+
+set_input_delay -clock spi_clk -clock_fall -min 0    -add_delay $user_spi_in
+set_input_delay -clock spi_clk -clock_fall -max 10   -add_delay $user_spi_in
+
+set_output_delay -clock spi_clk -clock_fall -min -0  -add_delay $user_spi_out
+set_output_delay -clock spi_clk -clock_fall -max  10 -add_delay $user_spi_out
+
 
 set_max_fanout $::env(SYNTH_MAX_FANOUT) [current_design]
 
@@ -144,7 +163,6 @@ set_false_path -from [get_ports gpio]
 ## User Project static signals
 set_false_path -through [get_pins mprj/u_pinmux/bist_en]
 
-# TODO set this as parameter
 set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
@@ -157,89 +175,6 @@ puts "\[INFO\]: Setting clock setup uncertainity to: $::env(SYNTH_CLOCK_SETUP_UN
 puts "\[INFO\]: Setting clock hold uncertainity to: $::env(SYNTH_CLOCK_HOLD_UNCERTAINITY)"
 set_clock_uncertainty -setup $::env(SYNTH_CLOCK_SETUP_UNCERTAINITY) [all_clocks]
 set_clock_uncertainty -hold $::env(SYNTH_CLOCK_HOLD_UNCERTAINITY) [all_clocks]
-
-
-#set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_adr_i[*]}]
-#set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_cyc_i}]
-#set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_i[*]}]
-#set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_sel_i[*]}]
-#set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_stb_i}]
-#set_output_delay -max 5.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_we_i}]
-#
-#set_output_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_adr_i[*]}]
-#set_output_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_cyc_i}]
-#set_output_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_i[*]}]
-#set_output_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_sel_i[*]}]
-#set_output_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_stb_i}]
-#set_output_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_we_i}]
-#
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_ack_o}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[0]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[10]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[11]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[12]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[13]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[14]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[15]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[16]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[17]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[18]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[19]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[1]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[20]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[21]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[22]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[23]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[24]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[25]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[26]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[27]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[28]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[29]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[2]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[30]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[31]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[3]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[4]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[5]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[6]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[7]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[8]}]
-#set_input_delay -max 4.5000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[9]}]
-#
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_ack_o}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[0]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[10]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[11]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[12]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[13]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[14]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[15]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[16]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[17]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[18]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[19]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[1]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[20]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[21]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[22]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[23]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[24]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[25]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[26]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[27]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[28]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[29]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[2]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[30]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[31]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[3]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[4]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[5]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[6]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[7]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[8]}]
-#set_input_delay -min 1.0000 -clock [get_clocks {wb_clk}] -add_delay [get_pins {mprj/wbs_dat_o[9]}]
 
 
 

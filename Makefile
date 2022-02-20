@@ -187,6 +187,24 @@ check-riscv_test_repo:
 		cd $(RISCV_TEST_DIR); git checkout $(RISCV_TEST_BRANCH); \
 	fi
 
+zip:
+	gzip -f def/*
+	gzip -f lef/*
+	gzip -f gds/*
+	gzip -f mag/*
+	gzip -f maglef/*
+	gzip -f spef/*
+	gzip -f spi/lvs/*
+
+unzip:
+	gzip -d def/*
+	gzip -d lef/*
+	gzip -d gds/*
+	gzip -d mag/*
+	gzip -d maglef/*
+	gzip -d spef/*
+	gzip -d spi/lvs/*
+
 .PHONY: help
 help:
 	cd $(CARAVEL_ROOT) && $(MAKE) help 

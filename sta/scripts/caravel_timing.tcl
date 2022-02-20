@@ -263,4 +263,41 @@
         report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/Di[*]  >> mprj.dffram.max.rpt 
         report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/A[*]   >> mprj.dffram.max.rpt
         report_checks -path_delay max -fields {slew cap input nets fanout} -through mprj/u_dcache_1KB_mem1/Do[*]  >> mprj.dffram.max.rpt 
-        
+
+
+	#Set False path from managment gpio enable towards SPI
+	set_false_path -through gpio_control_in_2[10]/mgmt_ena
+	set_false_path -through gpio_control_in_2[10]/gpio_outenb
+
+	echo " #####       SPI Timing" > spi.rpt
+	# SPI Inputs
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/u_qspi_master/spi_sdi[0] -from  mprj_io[29] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/u_qspi_master/spi_sdi[1] -from  mprj_io[30] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/u_qspi_master/spi_sdi[2] -from  mprj_io[31] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/u_qspi_master/spi_sdi[3] -from  mprj_io[32] >> spi.rpt
+
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/io_in[29] -from  mprj_io[29] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/io_in[30] -from  mprj_io[30] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/io_in[31] -from  mprj_io[31] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through mprj/io_in[32] -from  mprj_io[32] >> spi.rpt
+       
+        #SPI output	
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[29] -to  mprj_io[29] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[30] -to  mprj_io[30] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[31] -to  mprj_io[31] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[32] -to  mprj_io[32] >> spi.rpt
+
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_oeb[29] -to  mprj_io[29] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_oeb[30] -to  mprj_io[30] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_oeb[31] -to  mprj_io[31] >> spi.rpt
+        report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_oeb[32] -to  mprj_io[32] >> spi.rpt
+
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[29] -to  mprj_io[29] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[30] -to  mprj_io[30] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[31] -to  mprj_io[31] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[32] -to  mprj_io[32] >> spi.rpt
+
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[29] -to  mprj_io[29] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[30] -to  mprj_io[30] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[31] -to  mprj_io[31] >> spi.rpt
+        report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -through  mprj/io_out[32] -to  mprj_io[32] >> spi.rpt

@@ -64,13 +64,19 @@ set_input_delay -min 0.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {
 set_input_delay -min 0.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdi[3]}]
 
 
-set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn0}]
+set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[0]}]
+set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[1]}]
+set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[2]}]
+set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[3]}]
 set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[0]}]
 set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[1]}]
 set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[2]}]
 set_output_delay -max 4.0000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[3]}]
 
-set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn0}]
+set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[0]}]
+set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[1]}]
+set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[2]}]
+set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_csn[3]}]
 set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[0]}]
 set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[1]}]
 set_output_delay -min -0.5000 -clock [get_clocks {spiclk}] -add_delay [get_ports {spi_sdo[2]}]

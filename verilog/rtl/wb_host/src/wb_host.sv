@@ -156,11 +156,11 @@ logic               sw_wr_en_3;
 logic [7:0]         cfg_bank_sel;
 logic [31:0]        reg_0;  // Software_Reg_0
 
-logic  [2:0]        cfg_wb_clk_ctrl;
+logic  [3:0]        cfg_wb_clk_ctrl;
 logic  [3:0]        cfg_cpu_clk_ctrl;
 logic  [7:0]        cfg_rtc_clk_ctrl;
 logic  [3:0]        cfg_usb_clk_ctrl;
-logic  [8:0]        cfg_glb_ctrl;
+logic  [7:0]        cfg_glb_ctrl;
 
 // uart Master Port
 logic               wbm_uart_cyc_i        ;  // strobe/request
@@ -373,8 +373,8 @@ end
 //-------------------------------------
 // Global + Clock Control
 // -------------------------------------
-assign cfg_glb_ctrl         = reg_0[8:0];
-assign cfg_wb_clk_ctrl      = reg_0[11:9];
+assign cfg_glb_ctrl         = reg_0[7:0];
+assign cfg_wb_clk_ctrl      = reg_0[11:8];
 assign cfg_rtc_clk_ctrl     = reg_0[19:12];
 assign cfg_cpu_clk_ctrl     = reg_0[23:20];
 assign cfg_usb_clk_ctrl     = reg_0[31:28];
@@ -477,22 +477,28 @@ async_wb u_async_wb(
 // Generate Internal WishBone Clock
 //----------------------------------
 logic       wb_clk_div;
+logic       wbs_ref_clk;
+logic       cfg_wb_clk_src_sel;
 logic       cfg_wb_clk_div;
 logic [1:0] cfg_wb_clk_ratio;
 
-assign    cfg_wb_clk_ratio =  cfg_wb_clk_ctrl[1:0];
-assign    cfg_wb_clk_div   =  cfg_wb_clk_ctrl[2];
+assign    cfg_wb_clk_src_sel   =  cfg_wb_clk_ctrl[3];
+assign    cfg_wb_clk_div       =  cfg_wb_clk_ctrl[2];
+assign    cfg_wb_clk_ratio     =  cfg_wb_clk_ctrl[1:0];
 
+
+//assign wbs_ref_clk = (cfg_wb_clk_src_sel) ? user_clock2 : user_clock1;
+ctech_mux2x1 u_wbs_ref_sel (.A0 (user_clock1), .A1 (user_clock2), .S  (cfg_wb_clk_src_sel), .X  (wbs_ref_clk));
 
 //assign wbs_clk_out  = (cfg_wb_clk_div)  ? wb_clk_div : wbm_clk_i;
-ctech_mux2x1 u_wbs_clk_sel (.A0 (wbm_clk_i), .A1 (wb_clk_div), .S  (cfg_wb_clk_div), .X  (wbs_clk_out));
+ctech_mux2x1 u_wbs_clk_sel (.A0 (wbs_ref_clk), .A1 (wb_clk_div), .S  (cfg_wb_clk_div), .X  (wbs_clk_out));
 
 
 clk_ctl #(1) u_wbclk (
    // Outputs
        .clk_o         (wb_clk_div      ),
    // Inputs
-       .mclk          (wbm_clk_i       ),
+       .mclk          (wbs_ref_clk       ),
        .reset_n       (wbm_rst_n        ), 
        .clk_div_ratio (cfg_wb_clk_ratio )
    );
