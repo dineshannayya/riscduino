@@ -48,12 +48,14 @@ Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform
 ```
     * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed.
     * industry-grade and silicon-proven Open-Source RISC-V core from syntacore 
-    * 4KB SRAM for data memory
-    * 8KB SRAM for program memory
+    * 2KB SRAM for TCM Memory
+    * 2KB SRAM for Instruction cache
+    * 2KB SRAM for Data cache
     * Quad SPI Master
     * UART with 16Byte FIFO
     * USB 1.1 Host
     * I2C Master
+    * UART Master
     * Simple SPI Master
     * MBIST controller for 8KB Program memory
     * 6 Channel ADC (in Progress)
@@ -144,7 +146,9 @@ It is industry-grade and silicon-proven IP. Git link: https://github.com/syntaco
    * 2 to 4 stage pipeline
    * Optional Integrated Programmable Interrupt Controller with 16 IRQ lines
    * Optional RISC-V Debug subsystem with JTAG interface
-   * Optional on-chip Tightly-Coupled Memory
+   * 2KB on-chip Tightly-Coupled Memory (TCM Memory)
+   * 2KB on-chip instruction cache
+   * 2KB on-chip data cache
 ```
 
 ### RISC V core customization Riscduino SOC
