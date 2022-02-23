@@ -17,6 +17,8 @@
 
 `timescale 1 ns / 1 ps
 
+`define FULL_CHIP_SIM
+
 `include "uprj_netlists.v"
 `include "caravel_netlists.v"
 `include "spiflash.v"

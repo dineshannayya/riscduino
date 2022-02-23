@@ -148,7 +148,11 @@
 
      `include "lib/sync_fifo.sv"
 
-     `include "DFFRAM/DFFRAM.v"
+     // During Full Chip Sim, DFFRAM file already available in caravel file
+     // list
+     `ifndef FULL_CHIP_SIM 
+        `include "DFFRAM/DFFRAM.v"
+     `endif
 
     `include "uart2wb/src/uart2wb.sv" 
     `include "uart2wb/src/uart2_core.sv" 
