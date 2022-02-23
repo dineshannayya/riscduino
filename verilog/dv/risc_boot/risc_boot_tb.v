@@ -71,6 +71,8 @@
 
 `timescale 1 ns / 1 ps
 
+`define FULL_CHIP_SIM
+
 `include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "caravel_netlists.v"

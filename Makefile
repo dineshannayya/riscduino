@@ -71,10 +71,8 @@ TARGET_PATH=$(shell pwd)
 PDK_PATH=${PDK_ROOT}/sky130A
 VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} && make"
 $(DV_PATTERNS): verify-% : ./verilog/dv/% check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
-	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_PATH}:${PDK_PATH} \
-                -v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
-                -e TARGET_PATH=${TARGET_PATH} -e PDK_PATH=${PDK_PATH} \
-                -e CARAVEL_ROOT=${CARAVEL_ROOT} \
+	docker run -v ${TARGET_PATH}:${TARGET_PATH} \
+                -e TARGET_PATH=${TARGET_PATH}  \
                 -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:mpw5 \
                 sh -c $(VERIFY_COMMAND)
 				
