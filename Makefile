@@ -63,7 +63,7 @@ verify:
 # Install DV setup
 .PHONY: simenv
 simenv:
-	docker pull dineshannayya/dv_setup:latest
+	docker pull riscduino/dv_setup:latest
 
 PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
@@ -73,7 +73,7 @@ VERIFY_COMMAND="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP
 $(DV_PATTERNS): verify-% : ./verilog/dv/% check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} \
                 -e TARGET_PATH=${TARGET_PATH}  \
-                -u $(id -u $$USER):$(id -g $$USER) dineshannayya/dv_setup:mpw5 \
+                -u $(id -u $$USER):$(id -g $$USER) riscduino/dv_setup:mpw5 \
                 sh -c $(VERIFY_COMMAND)
 				
 # Openlane Makefile Targets
