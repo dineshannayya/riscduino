@@ -146,7 +146,7 @@ Following Design changes are done on the basic version of syntacore RISC core
 ### Block Diagram
 <table>
   <tr>
-    <td  align="center"><img src="./docs/source/_static/syntacore_blockdiagram.svg" ></td>
+    <td  align="center"><img src="./docs/source/_static/riscvcore_blockdiagram.png" ></td>
   </tr>
 </table>
 
