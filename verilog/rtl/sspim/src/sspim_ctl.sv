@@ -53,6 +53,7 @@ module sspim_ctl
   input  logic          clk,
   input  logic          reset_n,
   input  logic          cfg_op_req,
+  input  logic          cfg_endian,
   input  logic [1:0]    cfg_op_type,
   input  logic [1:0]    cfg_transfer_size,
     
@@ -77,6 +78,8 @@ module sspim_ctl
 
  //*************************************************************************
 
+ parameter LITTLE_ENDIAN  = 1'b0;
+ parameter BIG_ENDIAN     = 1'b1;
 
   logic [5:0]       clk_cnt;
   logic [5:0]       sck_cnt;
@@ -150,9 +153,14 @@ wire [1:0] cs_data =  (byte_cnt == 2'b00) ? cfg_cs_byte[7:6]  :
                       (byte_cnt == 2'b01) ? cfg_cs_byte[5:4]  :
                       (byte_cnt == 2'b10) ? cfg_cs_byte[3:2]  : cfg_cs_byte[1:0] ;
 
-assign byte_out = (byte_cnt == 2'b00) ? cfg_datain[31:24] :
-                      (byte_cnt == 2'b01) ? cfg_datain[23:16] :
-                      (byte_cnt == 2'b10) ? cfg_datain[15:8]  : cfg_datain[7:0] ;
+assign byte_out =     (cfg_endian == LITTLE_ENDIAN) ? 
+	                   ((byte_cnt == 2'b00) ? cfg_datain[7:0] :
+                            (byte_cnt == 2'b01) ? cfg_datain[15:8] :
+                            (byte_cnt == 2'b10) ? cfg_datain[23:16]  : cfg_datain[31:24]) :
+	                   ((byte_cnt == 2'b00) ? cfg_datain[31:24] :
+                            (byte_cnt == 2'b01) ? cfg_datain[23:16] :
+                            (byte_cnt == 2'b10) ? cfg_datain[15:8]  : cfg_datain[7:0]) ;
+         
          
 assign shift_out =  shift_enb && sck_ne;
 
@@ -252,13 +260,15 @@ always @(posedge clk or negedge reset_n) begin
              cs_int_n <= cs_data[0];
             if(sck_cnt == cfg_sck_cs_period) begin
                if(cfg_op_type == 1) begin // Read Mode
-                  cfg_dataout <= (byte_cnt[1:0] == 2'b00) ? { byte_in, cfg_dataout[23:0] } :
-                                 (byte_cnt[1:0] == 2'b01) ? { cfg_dataout[31:24] ,
-                                                              byte_in, cfg_dataout[15:0] } :
-                                 (byte_cnt[1:0] == 2'b10) ? { cfg_dataout[31:16] ,
-                                                              byte_in, cfg_dataout[7:0]  } :
-                                                            { cfg_dataout[31:8]  ,
-                                                              byte_in  } ;
+                  cfg_dataout <= (cfg_endian == LITTLE_ENDIAN) ?
+			         ((byte_cnt[1:0] == 2'b00) ? { cfg_dataout[31:8],byte_in } :
+                                  (byte_cnt[1:0] == 2'b01) ? { cfg_dataout[31:16], byte_in, cfg_dataout[7:0] } :
+                                  (byte_cnt[1:0] == 2'b10) ? { cfg_dataout[31:24], byte_in, cfg_dataout[15:0]  } :
+                                                             { byte_in,cfg_dataout[23:0]}) :
+			         ((byte_cnt[1:0] == 2'b00) ? { byte_in,cfg_dataout[23:0] } :
+                                  (byte_cnt[1:0] == 2'b01) ? { cfg_dataout[31:24], byte_in, cfg_dataout[15:0] } :
+                                  (byte_cnt[1:0] == 2'b10) ? { cfg_dataout[31:16], byte_in, cfg_dataout[7:0]  } :
+                                                             { cfg_dataout[31:8],byte_in}) ;
                end
                clr_sck_cnt <= 1'b1;
                if(byte_cnt == cfg_transfer_size) begin

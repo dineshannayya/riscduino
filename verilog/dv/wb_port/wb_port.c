@@ -120,7 +120,10 @@ void main()
     // Remove Wishbone Reset
     reg_mprj_wbhost_reg0 = 0x1;
 
-    if (reg_mprj_globl_reg0 != 0x89490201) bFail = 1;
+    // Remove Reset
+    reg_mprj_globl_reg2 = 0x01F;
+
+    if (reg_mprj_globl_reg0 != 0x82681301) bFail = 1;
     if (reg_mprj_globl_reg1 != 0xA55AA55A) bFail = 1;
 
     // Write software Write & Read Register

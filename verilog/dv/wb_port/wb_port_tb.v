@@ -51,9 +51,9 @@ module wb_port_tb;
 
 	`ifdef WFDUMP
 	initial begin
-		$dumpfile("wb_port.vcd");
+		$dumpfile("simx.vcd");
 		$dumpvars(1, wb_port_tb);
-		$dumpvars(2, wb_port_tb.uut);
+		$dumpvars(0, wb_port_tb.uut.soc);
 		//$dumpvars(1, wb_port_tb.uut.mprj);
 		$dumpvars(1, wb_port_tb.uut.mprj.u_wb_host);
 		$dumpvars(2, wb_port_tb.uut.mprj.u_pinmux);

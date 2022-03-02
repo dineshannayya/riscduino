@@ -78,6 +78,7 @@
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 
+`define ADDR_SPACE_PINMUX  32'h3002_0000
 module user_risc_boot_tb;
 	reg clock;
 	reg wb_rst_i;
@@ -143,7 +144,7 @@ module user_risc_boot_tb;
 	        repeat (2) @(posedge clock);
 		#1;
 		// Remove all the reset
-                wb_user_core_write('h3080_0000,'hF);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h11F);
 
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
@@ -257,7 +258,7 @@ user_project_wrapper u_top(
 //  ----------------------------------------------------
 
    wire flash_clk = io_out[24];
-   wire flash_csb = io_out[28];
+   wire flash_csb = io_out[25];
    // Creating Pad Delay
    wire #1 io_oeb_29 = io_oeb[29];
    wire #1 io_oeb_30 = io_oeb[30];

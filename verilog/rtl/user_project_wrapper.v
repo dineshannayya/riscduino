@@ -187,6 +187,9 @@
 ////           spi clock config = 0x2                             ////
 ////        2. spi_oen generation fix for different spi mode      ////
 ////        3. spi_csn de-assertion fix for different spi clk div ////
+////    3.7  Mar 2, Dinesh A                                      ////
+////       1. qspi cs# port mapping changed from io 28:25 to 25:28////
+////       2. sspi, bug fix in reg access and endian support added////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -415,7 +418,8 @@ wire                           wbd_uart_err_i                         ;  // erro
 //----------------------------------------------------
 //  CPU Configuration
 //----------------------------------------------------
-wire                           cpu_rst_n                              ;
+wire                           cpu_intf_rst_n                         ;
+wire  [1:0]                    cpu_core_rst_n                         ;
 wire                           qspim_rst_n                            ;
 wire                           sspim_rst_n                            ;
 wire                           uart_rst_n                             ; // uart reset
@@ -592,13 +596,6 @@ wb_host u_wb_host(
           .usb_clk                 (usb_clk                 ),
 
           .wbd_int_rst_n           (wbd_int_rst_n           ),
-          .cpu_rst_n               (cpu_rst_n               ),
-          .qspim_rst_n             (qspim_rst_n             ),
-          .sspim_rst_n             (sspim_rst_n             ), // spi reset
-          .uart_rst_n              (uart_rst_n              ), // uart reset
-          .i2cm_rst_n              (i2c_rst_n               ), // i2c reset
-          .usb_rst_n               (usb_rst_n               ), // usb reset
-          .bist_rst_n              (bist_rst_n              ), // BIST Reset  
 
     // Master Port
           .wbm_rst_i               (wb_rst_i                ),  
@@ -660,7 +657,7 @@ ycr1_top_wb u_riscv_top (
     // Reset
           .pwrup_rst_n             (wbd_int_rst_n           ),
           .rst_n                   (wbd_int_rst_n           ),
-          .cpu_rst_n               (cpu_rst_n               ),
+          .cpu_rst_n               (cpu_core_rst_n[0]       ),
           .riscv_debug             (riscv_debug             ),
 
     // Clock
@@ -854,13 +851,13 @@ DFFRAM u_dcache_1KB_mem1 (
 
 /*********************************************************
 * SPI Master
-* This is of an SPI master that is controlled via an AXI bus                                                                                                . 
+* This is implementation of an SPI master that is controlled via an AXI bus                                                  . 
 * It has FIFOs for transmitting and receiving data. 
 * It supports both the normal SPI mode and QPI mode with 4 data lines.
 * *******************************************************/
 
 qspim_top
-#                                  (
+#(
 `ifndef SYNTHESIS
     .WB_WIDTH  (WB_WIDTH                                    )
 `endif
@@ -1118,6 +1115,17 @@ pinmux u_pinmux(
         // Inputs
           .mclk                    (wbd_clk_pinmux_skew     ),
           .h_reset_n               (wbd_int_rst_n           ),
+
+	// Reset Control
+          .cpu_core_rst_n          (cpu_core_rst_n          ),
+          .cpu_intf_rst_n          (cpu_intf_rst_n          ),
+          .qspim_rst_n             (qspim_rst_n             ),
+          .sspim_rst_n             (sspim_rst_n             ),
+          .uart_rst_n              (uart_rst_n              ),
+          .i2cm_rst_n              (i2c_rst_n               ),
+          .usb_rst_n               (usb_rst_n               ),
+
+	  .cfg_riscv_debug_sel     (                        ),
 
         // Reg Bus Interface Signal
           .reg_cs                  (wbd_glbl_stb_o          ),

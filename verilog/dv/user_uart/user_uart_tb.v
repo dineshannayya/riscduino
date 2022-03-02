@@ -80,6 +80,8 @@
 `include "uart_agent.v"
 
 
+// Note in caravel, 0x30XX_XXXX only come to user interface
+// So, using wb_host bank select we have changing MSB address [31:24] = 0x10
 `define ADDR_SPACE_UART    32'h3001_0000
 `define ADDR_SPACE_PINMUX  32'h3002_0000
 
@@ -184,7 +186,7 @@ begin
    repeat (2) @(posedge clock);
    #1;
    // Remove all the reset
-   wb_user_core_write('h3080_0000,'h1F);
+   wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h11F);
 
    repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
@@ -303,7 +305,7 @@ user_project_wrapper u_top(
 //  ----------------------------------------------------
 
    wire flash_clk = io_out[24];
-   wire flash_csb = io_out[28];
+   wire flash_csb = io_out[25];
    // Creating Pad Delay
    wire #1 io_oeb_29 = io_oeb[29];
    wire #1 io_oeb_30 = io_oeb[30];

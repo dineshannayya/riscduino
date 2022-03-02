@@ -50,6 +50,17 @@ module pinmux (
 		       input logic             mclk,
                        input logic             h_reset_n,
 
+                       // Global Reset control
+                       output logic  [1:0]     cpu_core_rst_n   ,
+                       output logic            cpu_intf_rst_n   ,
+                       output logic            qspim_rst_n      ,
+                       output logic            sspim_rst_n      ,
+                       output logic            uart_rst_n       ,
+                       output logic            i2cm_rst_n       ,
+                       output logic            usb_rst_n        ,
+
+		       output logic [1:0]      cfg_riscv_debug_sel,
+
 		       // Reg Bus Interface Signal
                        input logic             reg_cs,
                        input logic             reg_wr,
@@ -264,6 +275,16 @@ pinmux_reg u_pinmux_reg(
           .mclk                         (mclk                    ),
           .h_reset_n                    (h_reset_n               ),
 
+          .cpu_core_rst_n               (cpu_core_rst_n          ),
+          .cpu_intf_rst_n               (cpu_intf_rst_n          ),
+          .qspim_rst_n                  (qspim_rst_n             ),
+          .sspim_rst_n                  (sspim_rst_n             ),
+          .uart_rst_n                   (uart_rst_n              ),
+          .i2cm_rst_n                   (i2cm_rst_n              ),
+          .usb_rst_n                    (usb_rst_n               ),
+
+	  .cfg_riscv_debug_sel          (cfg_riscv_debug_sel     ),
+
 
       // Reg read/write Interface Inputs
           .reg_cs                       (reg_cs                  ),
@@ -430,10 +451,10 @@ pwm  u_pwm_5 (
 *
 *  Additional Pad used for Externam ROM/RAM
 *                sflash_sck          digital_io[24]
-*                sflash_ss[3]        digital_io[25]
-*                sflash_ss[2]        digital_io[26]
-*                sflash_ss[1]        digital_io[27]
-*                sflash_ss[0]        digital_io[28]
+*                sflash_ss[0]        digital_io[25]
+*                sflash_ss[1]        digital_io[26]
+*                sflash_ss[2]        digital_io[27]
+*                sflash_ss[3]        digital_io[28]
 *                sflash_io0          digital_io[29]
 *                sflash_io1          digital_io[30]
 *                sflash_io2          digital_io[31]
@@ -648,10 +669,10 @@ always_comb begin
 
      // Serial Flash
      digital_io_out[24] = sflash_sck   ;
-     digital_io_out[25] = sflash_ss[3] ;
-     digital_io_out[26] = sflash_ss[2] ;
-     digital_io_out[27] = sflash_ss[1] ;
-     digital_io_out[28] = sflash_ss[0] ;
+     digital_io_out[25] = sflash_ss[0] ;
+     digital_io_out[26] = sflash_ss[1] ;
+     digital_io_out[27] = sflash_ss[2] ;
+     digital_io_out[28] = sflash_ss[3] ;
      digital_io_out[29] = sflash_do[0] ;
      digital_io_out[30] = sflash_do[1] ;
      digital_io_out[31] = sflash_do[2] ;

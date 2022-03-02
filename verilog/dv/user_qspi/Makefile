@@ -50,7 +50,7 @@ DUMP?=OFF
 
 .SUFFIXES:
 
-PATTERN = user_spi
+PATTERN = user_qspi
 
 all:  ${PATTERN:=.vcd}
 

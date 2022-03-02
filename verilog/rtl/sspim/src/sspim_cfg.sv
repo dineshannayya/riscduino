@@ -56,6 +56,7 @@ module sspim_cfg (
               output logic [1:0]    cfg_tgt_sel        ,
               
               output logic          cfg_op_req         , // SPI operation request
+	      output logic          cfg_endian         , // Endian selection
               output logic [1:0]    cfg_op_type        , // SPI operation type
               output logic [1:0]    cfg_transfer_size  , // SPI transfer size
               output logic [5:0]    cfg_sck_period     , // sck clock period
@@ -89,7 +90,6 @@ module sspim_cfg (
 logic           sw_rd_en               ;
 logic           sw_wr_en;
 logic   [1:0]   sw_addr; // addressing 16 registers
-logic   [31:0]  sw_reg_wdata;
 logic   [3:0]   wr_be  ;
 logic           reg_cs_l;
 logic           reg_cs_2l;
@@ -104,29 +104,12 @@ logic  [31:0]    reg_out;
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
-// To avoid interface timing, all the content are registered
+// Internal Logic Starts here
 //-----------------------------------------------------------------------
-always @ (posedge mclk or negedge reset_n)
-begin 
-   if (reset_n == 1'b0)
-   begin
-    sw_addr       <= '0;
-    sw_rd_en      <= '0;
-    sw_wr_en      <= '0;
-    sw_reg_wdata  <= '0;
-    wr_be         <= '0;
-    reg_cs_l      <= '0;
-    reg_cs_2l     <= '0;
-  end else begin
-    sw_addr       <= reg_addr [3:2];
-    sw_rd_en      <= reg_cs & !reg_wr;
-    sw_wr_en      <= reg_cs & reg_wr;
-    sw_reg_wdata  <= reg_wdata;
-    wr_be         <= reg_be;
-    reg_cs_l      <= reg_cs;
-    reg_cs_2l     <= reg_cs_l;
-  end
-end
+    assign sw_addr       = reg_addr [3:2];
+    assign sw_rd_en      = reg_cs & !reg_wr;
+    assign sw_wr_en      = reg_cs & reg_wr;
+    assign wr_be         = reg_be;
 
 //-----------------------------------------------------------------------
 // Read path mux
@@ -134,18 +117,24 @@ end
 
 always @ (posedge mclk or negedge reset_n)
 begin : preg_out_Seq
-   if (reset_n == 1'b0) begin
-      reg_rdata [31:0]  <= 32'h0000_0000;
-      reg_ack           <= 1'b0;
-   end else if (sw_rd_en && !reg_ack && !reg_cs_2l) begin
-      reg_rdata [31:0]  <= reg_out [31:0];
-      reg_ack           <= 1'b1;
-   end else if (sw_wr_en && !reg_ack && !reg_cs_2l) begin 
-      reg_ack           <= 1'b1;
-   end else begin
-      reg_ack        <= 1'b0;
+   if (reset_n == 1'b0)
+   begin
+      reg_rdata  <= 'h0;
+      reg_ack    <= 1'b0;
+   end
+   else if (sw_rd_en && !reg_ack) 
+   begin
+      reg_rdata  <= reg_out;
+      reg_ack    <= 1'b1;
+   end
+   else if (sw_wr_en && !reg_ack) 
+      reg_ack    <= 1'b1;
+   else
+   begin
+      reg_ack    <= 1'b0;
    end
 end
+
 //-----------------------------------------------------------------------
 // register read enable and write enable decoding logic
 //-----------------------------------------------------------------------
@@ -164,10 +153,10 @@ begin : preg_sel_Com
 
   reg_out [31:0] = 32'd0;
 
-  case (sw_addr [3:0])
-    4'b0000 : reg_out [31:0] = reg_0 [31:0];     
-    4'b0001 : reg_out [31:0] = reg_1 [31:0];    
-    4'b0010 : reg_out [31:0] = reg_2 [31:0];     
+  case (sw_addr [1:0])
+    2'b00 : reg_out [31:0] = reg_0 [31:0];     
+    2'b01 : reg_out [31:0] = reg_1 [31:0];    
+    2'b10 : reg_out [31:0] = reg_2 [31:0];     
     default : reg_out [31:0] = 32'h0;
   endcase
 end
@@ -180,6 +169,7 @@ end
 // Logic for Register 0 : SPI Control Register
 //-----------------------------------------------------------------------
 assign    cfg_op_req         = reg_0[31];    // cpu request
+assign    cfg_endian         = reg_0[25];    // Endian, 0 - little, 1 - Big
 assign    cfg_tgt_sel        = reg_0[24:23]; // target chip select
 assign    cfg_op_type        = reg_0[22:21]; // SPI operation type
 assign    cfg_transfer_size  = reg_0[20:19]; // SPI transfer size
@@ -190,7 +180,7 @@ assign    cfg_cs_byte        = reg_0[7:0];   // cs bit information
 generic_register #(8,0  ) u_spi_ctrl_be0 (
 	      .we            ({8{sw_wr_en_0 & 
                                  wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
+	      .data_in       (reg_wdata[7:0]    ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
@@ -201,7 +191,7 @@ generic_register #(8,0  ) u_spi_ctrl_be0 (
 generic_register #(8,0  ) u_spi_ctrl_be1 (
 	      .we            ({8{sw_wr_en_0 & 
                                 wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[15:8]  ),
+	      .data_in       (reg_wdata[15:8]  ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
@@ -212,7 +202,7 @@ generic_register #(8,0  ) u_spi_ctrl_be1 (
 generic_register #(8,0  ) u_spi_ctrl_be2 (
 	      .we            ({8{sw_wr_en_0 & 
                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[23:16] ),
+	      .data_in       (reg_wdata[23:16] ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
@@ -220,12 +210,23 @@ generic_register #(8,0  ) u_spi_ctrl_be2 (
 	      .data_out      (reg_0[23:16]       )
           );
 
-assign reg_0[30:24] = 7'h0;
+generic_register #(2,0  ) u_spi_ctrl_be3 (
+	      .we            ({2{sw_wr_en_0 & 
+                                wr_be[3]   }}  ),		 
+	      .data_in       (reg_wdata[25:24] ),
+	      .reset_n       (reset_n           ),
+	      .clk           (mclk              ),
+	      
+	      //List of Outs
+	      .data_out      (reg_0[25:24]       )
+          );
+
+assign reg_0[30:26] = 5'h0;
 
 req_register #(0  ) u_spi_ctrl_req (
 	      .cpu_we       ({sw_wr_en_0 & 
                              wr_be[3]   }       ),		 
-	      .cpu_req      (sw_reg_wdata[31]      ),
+	      .cpu_req      (reg_wdata[31]      ),
 	      .hware_ack    (hware_op_done      ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
@@ -245,7 +246,7 @@ assign   cfg_datain        = reg_1[31:0];
 generic_register #(8,0  ) u_spi_din_be0 (
 	      .we            ({8{sw_wr_en_1 & 
                                 wr_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[7:0]    ),
+	      .data_in       (reg_wdata[7:0]    ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
@@ -256,7 +257,7 @@ generic_register #(8,0  ) u_spi_din_be0 (
 generic_register #(8,0  ) u_spi_din_be1 (
 	      .we            ({8{sw_wr_en_1 & 
                                 wr_be[1]   }}  ),		 
-	      .data_in       (sw_reg_wdata[15:8]   ),
+	      .data_in       (reg_wdata[15:8]   ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
@@ -267,7 +268,7 @@ generic_register #(8,0  ) u_spi_din_be1 (
 generic_register #(8,0  ) u_spi_din_be2 (
 	      .we            ({8{sw_wr_en_1 & 
                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[23:16]  ),
+	      .data_in       (reg_wdata[23:16]  ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
@@ -279,7 +280,7 @@ generic_register #(8,0  ) u_spi_din_be2 (
 generic_register #(8,0  ) u_spi_din_be3 (
 	      .we            ({8{sw_wr_en_1 & 
                                 wr_be[3]   }}  ),		 
-	      .data_in       (sw_reg_wdata[31:24]  ),
+	      .data_in       (reg_wdata[31:24]  ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
