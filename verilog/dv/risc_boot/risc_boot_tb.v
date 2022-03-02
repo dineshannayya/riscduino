@@ -314,7 +314,7 @@ module risc_boot_tb;
 //-----------------------------------------
 
    wire user_flash_clk = mprj_io[24];
-   wire user_flash_csb = mprj_io[28];
+   wire user_flash_csb = mprj_io[25];
    //tri  user_flash_io0 = mprj_io[26];
    //tri  user_flash_io1 = mprj_io[27];
    //tri  user_flash_io2 = mprj_io[28];

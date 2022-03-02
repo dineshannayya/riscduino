@@ -178,7 +178,7 @@ void main()
 
 
     // Remove All Reset
-    reg_mprj_wbhost_reg0 = 0x1F;
+    reg_mprj_globl_reg2 = 0x11F;
 
     // Enable UART Multi Functional Ports
 

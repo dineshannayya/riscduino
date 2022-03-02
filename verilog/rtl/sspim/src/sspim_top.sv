@@ -38,6 +38,12 @@
 ////    0.1 - 03 Oct 2021, Dinesh A                               ////
 ////          Initial SpI Module picked from                      ////
 ////           http://www.opencores.org/cores/turbo8051/          ////
+////    0.2 - Mar 2, 2022, Dinesh A                               ////
+////         1. Reg Bus changes to match with wishbone format     ////
+////         2. SPI tx and rx change to little endian format      ////
+////            i.e byte transfer [7:0],[15:8] ...[31:24]         ////
+////            Note: As per SPI transfer still first bit sent    ////
+////            out is big endian, i.e bit[7],[6] ..[0]           ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -108,6 +114,7 @@ logic [7:0]          byte_out                      ;
 logic  [1:0]         cfg_tgt_sel                   ;
 
 logic                cfg_op_req                    ; // SPI operation request
+logic                cfg_endian                    ; // Endian selection
 logic  [1:0]         cfg_op_type                   ; // SPI operation type
 logic  [1:0]         cfg_transfer_size             ; // SPI transfer size
 logic  [5:0]         cfg_sck_period                ; // sck clock period
@@ -150,6 +157,7 @@ sspim_ctl  u_spi_ctrl
           . reset_n                     (reset_n                      ),
 
           . cfg_op_req                  (cfg_op_req                   ),
+          . cfg_endian                  (cfg_endian                   ),
           . cfg_op_type                 (cfg_op_type                  ),
           . cfg_transfer_size           (cfg_transfer_size            ),
           . cfg_sck_period              (cfg_sck_period               ),
@@ -194,6 +202,7 @@ sspim_cfg u_cfg (
            // configuration signal
           . cfg_tgt_sel                 (cfg_tgt_sel                  ),
           . cfg_op_req                  (cfg_op_req                   ), // SPI operation request
+          . cfg_endian                  (cfg_endian                   ),
           . cfg_op_type                 (cfg_op_type                  ), // SPI operation type
           . cfg_transfer_size           (cfg_transfer_size            ), // SPI transfer size
           . cfg_sck_period              (cfg_sck_period               ), // sck clock period
