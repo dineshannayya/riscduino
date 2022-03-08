@@ -49,7 +49,9 @@ set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/lib/pulse_gen_type1.sv   \
      $script_dir/../../verilog/rtl/lib/pulse_gen_type2.sv   \
      $script_dir/../../verilog/rtl/lib/ser_inf_32b.sv       \
-     $script_dir/../../verilog/rtl/lib/registers.v"
+     $script_dir/../../verilog/rtl/lib/registers.v          \
+     $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
+     "
 
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -95,6 +97,7 @@ set ::env(FP_PDN_VWIDTH) 5
 set ::env(FP_PDN_HWIDTH) 5
 
 set ::env(GLB_RT_MAXLAYER) 5
+set ::env(RT_MAX_LAYER) {met4}
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
 set ::env(DIODE_INSERTION_STRATEGY) 4

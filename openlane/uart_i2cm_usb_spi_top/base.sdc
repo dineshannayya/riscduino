@@ -52,11 +52,17 @@ set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports
 set_input_delay  -min 2.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wr}]
 
 
-set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_ack}]
-set_output_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[*]}]
+set_output_delay -max 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_ack}]
+set_output_delay -max 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[*]}]
 
-set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_ack}]
-set_output_delay -min 1.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[*]}]
+set_output_delay -min -2.7500 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_ack}]
+set_output_delay -min -2.7500 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_rdata[*]}]
+
+set_multicycle_path -setup  -from [get_ports {reg_addr[*]}] -to [get_ports {reg_ack}] 2
+set_multicycle_path -setup  -from [get_ports {reg_addr[*]}] -to [get_ports {reg_rdata[*]}] 2
+
+set_multicycle_path -hold  -from [get_ports {reg_addr[*]}] -to [get_ports {reg_ack}] 1
+set_multicycle_path -hold  -from [get_ports {reg_addr[*]}] -to [get_ports {reg_rdata[*]}] 1
 
 ###############################################################################
 # Environment

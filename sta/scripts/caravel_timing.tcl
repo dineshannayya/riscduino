@@ -45,9 +45,9 @@
 	read_verilog $::env(CARAVEL_ROOT)/verilog/gl/caravel.v	
 
 	# User project netlist
-        read_verilog $::env(USER_ROOT)/verilog/gl/qspim.v
+        read_verilog $::env(USER_ROOT)/verilog/gl/qspim_top.v
         read_verilog $::env(USER_ROOT)/verilog/gl/yifive.v  
-        read_verilog $::env(USER_ROOT)/verilog/gl/uart_i2cm_usb_spi.v
+        read_verilog $::env(USER_ROOT)/verilog/gl/uart_i2c_usb_spi_top.v
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_host.v  
         read_verilog $::env(USER_ROOT)/verilog/gl/wb_interconnect.v
         read_verilog $::env(USER_ROOT)/verilog/gl/pinmux.v
@@ -161,6 +161,8 @@
 
 
 	read_sdc -echo ./sdc/caravel.sdc	
+	set_propagated_clock [all_clocks]
+
 	check_setup  -verbose >  unconstraints.rpt
 	report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -group_count 50	
 	report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -group_count 50	

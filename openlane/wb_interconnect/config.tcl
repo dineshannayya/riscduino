@@ -44,6 +44,7 @@ set ::env(VERILOG_FILES) "\
         $script_dir/../../verilog/rtl/lib/sync_wbb.sv                \
         $script_dir/../../verilog/rtl/lib/sync_fifo2.sv                \
         $script_dir/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
+        $script_dir/../../verilog/rtl/wb_interconnect/src/wb_slave_port.sv  \
         $script_dir/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
 	"
 
@@ -69,7 +70,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 200 2300"
+set ::env(DIE_AREA) "0 0 320 1800"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -77,17 +78,11 @@ set ::env(RUN_CVC) 0
 
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
-## PDN
-set ::env(FP_PDN_CORE_RING) 0
-set ::env(FP_PDN_VPITCH) 120
-set ::env(FP_PDN_HPITCH) 120
-
-set ::env(FP_PDN_VWIDTH) 1.6
-set ::env(FP_PDN_CORE_RING_VWIDTH) 1.6
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.30"
+set ::env(PL_TARGET_DENSITY) "0.20"
+set ::env(CELL_PAD) "10"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
@@ -118,8 +113,8 @@ set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
 set ::env(GLB_RT_ALLOW_CONGESTION) 0
 set ::env(GLB_RT_OVERFLOW_ITERS) 200
 
-set ::env(GLB_RT_MINLAYER) 2
-set ::env(GLB_RT_MAXLAYER) 6
+set ::env(GLB_RT_MAXLAYER) 5
+set ::env(RT_MAX_LAYER) {met4}
 
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"

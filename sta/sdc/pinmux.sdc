@@ -57,8 +57,8 @@ set_output_delay -min -3.000 -clock [get_clocks {mclk}] -add_delay [get_ports {q
 ###############################################################################
 # Environment
 ###############################################################################
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin $::env(SYNTH_DRIVING_CELL_PIN) [all_inputs]
-set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} [all_inputs]
+set cap_load 0.0334
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
 ###############################################################################
