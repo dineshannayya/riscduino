@@ -106,7 +106,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) [list 0.0 0.0 825.0 1550.0]
+set ::env(DIE_AREA) [list 0.0 0.0 815.0 1540.0]
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -116,7 +116,7 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.34"
+set ::env(PL_TARGET_DENSITY) "0.32"
 set ::env(FP_CORE_UTIL) "50"
 
 
@@ -125,6 +125,7 @@ set ::env(FP_CORE_UTIL) "50"
 
 
 set ::env(GLB_RT_MAXLAYER) 5
+set ::env(RT_MAX_LAYER) {met4}
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
@@ -133,7 +134,16 @@ set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_LVS_ERROR) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
+set ::env(QUIT_ON_SETUP_VIOLATIONS) "0"
+set ::env(QUIT_ON_HOLD_VIOLATIONS) "0"
+set ::env(QUIT_ON_ILLEGAL_OVERLAPS) "1"
+
+
+
+
+
+set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) "1"
 
 #Need to cross-check why global timing opimization creating setup vio with hugh hold fix
-set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
+set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
 

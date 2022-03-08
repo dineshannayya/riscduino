@@ -187,9 +187,11 @@
 ////           spi clock config = 0x2                             ////
 ////        2. spi_oen generation fix for different spi mode      ////
 ////        3. spi_csn de-assertion fix for different spi clk div ////
-////    3.7  Mar 2, Dinesh A                                      ////
+////    3.7  Mar 2 2022, Dinesh A                                 ////
 ////       1. qspi cs# port mapping changed from io 28:25 to 25:28////
 ////       2. sspi, bug fix in reg access and endian support added////
+////       3. Wishbone interconnect now support cross-connect     ////
+////          feature
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

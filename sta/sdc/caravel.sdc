@@ -48,12 +48,12 @@ set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
 
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[0]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[1]}]
-set_case_analysis 0 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[2]}]
+set_case_analysis 1 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[2]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top/cfg_cska_riscv[3]}]
 
 set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[0]}]
 set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[1]}]
-set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[2]}]
+set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[2]}]
 set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[3]}]
 
 set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[0]}]

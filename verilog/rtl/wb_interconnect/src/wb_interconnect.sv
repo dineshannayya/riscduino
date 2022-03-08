@@ -240,18 +240,28 @@ typedef struct packed {
   logic  	wbd_err;
 } type_wb_rd_intf;
 
-
-// Master Write Interface
-type_wb_wr_intf  m0_wb_wr;
-type_wb_wr_intf  m1_wb_wr;
-type_wb_wr_intf  m2_wb_wr;
-type_wb_wr_intf  m3_wb_wr;
-
 // Master Read Interface
-type_wb_rd_intf  m0_wb_rd;
-type_wb_rd_intf  m1_wb_rd;
-type_wb_rd_intf  m2_wb_rd;
-type_wb_rd_intf  m3_wb_rd;
+type_wb_rd_intf  m0_bus_rd;
+type_wb_rd_intf  m1_bus_rd;
+type_wb_rd_intf  m2_bus_rd;
+type_wb_rd_intf  m3_bus_rd;
+
+
+type_wb_rd_intf  m0_s0_wb_rd;
+type_wb_rd_intf  m1_s0_wb_rd;
+type_wb_rd_intf  m2_s0_wb_rd;
+type_wb_rd_intf  m3_s0_wb_rd;
+
+type_wb_rd_intf  m0_s1_wb_rd;
+type_wb_rd_intf  m1_s1_wb_rd;
+type_wb_rd_intf  m2_s1_wb_rd;
+type_wb_rd_intf  m3_s1_wb_rd;
+
+type_wb_rd_intf  m0_s2_wb_rd;
+type_wb_rd_intf  m1_s2_wb_rd;
+type_wb_rd_intf  m2_s2_wb_rd;
+type_wb_rd_intf  m3_s2_wb_rd;
+
 
 // Slave Write Interface
 type_wb_wr_intf  s0_wb_wr;
@@ -263,12 +273,6 @@ type_wb_rd_intf  s0_wb_rd;
 type_wb_rd_intf  s1_wb_rd;
 type_wb_rd_intf  s2_wb_rd;
 
-
-type_wb_wr_intf  m_bus_wr;  // Multiplexed Master I/F
-type_wb_rd_intf  m_bus_rd;  // Multiplexed Slave I/F
-
-type_wb_wr_intf  s_bus_wr;  // Multiplexed Master I/F
-type_wb_rd_intf  s_bus_rd;  // Multiplexed Slave I/F
 
 // channel repeater
 assign ch_clk_out  = ch_clk_in;
@@ -331,73 +335,321 @@ wire [3:0] m3_wbd_tid_i     = (m3_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_ME
                               (m3_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART : 
                               (m3_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
 			      4'b0000; 
-//----------------------------------------
-// Master Mapping
-// -------------------------------------
-assign m0_wb_wr.wbd_dat = m0_wbd_dat_i;
-assign m0_wb_wr.wbd_adr = {m0_wbd_adr_i[31:2],2'b00};
-assign m0_wb_wr.wbd_sel = m0_wbd_sel_i;
-assign m0_wb_wr.wbd_bl  = 'h1;
-assign m0_wb_wr.wbd_bry = 'b1;
-assign m0_wb_wr.wbd_we  = m0_wbd_we_i;
-assign m0_wb_wr.wbd_cyc = m0_wbd_cyc_i;
-assign m0_wb_wr.wbd_stb = m0_wbd_stb_i;
-assign m0_wb_wr.wbd_tid = m0_wbd_tid_i;
 
-assign m1_wb_wr.wbd_dat = m1_wbd_dat_i;
-assign m1_wb_wr.wbd_adr = {m1_wbd_adr_i[31:2],2'b00};
-assign m1_wb_wr.wbd_sel = m1_wbd_sel_i;
-assign m1_wb_wr.wbd_bl  = 'h1;
-assign m1_wb_wr.wbd_bry = 'b1;
-assign m1_wb_wr.wbd_we  = m1_wbd_we_i;
-assign m1_wb_wr.wbd_cyc = m1_wbd_cyc_i;
-assign m1_wb_wr.wbd_stb = m1_wbd_stb_i;
-assign m1_wb_wr.wbd_tid = m1_wbd_tid_i;
 
-assign m2_wb_wr.wbd_dat = m2_wbd_dat_i;
-assign m2_wb_wr.wbd_adr = {m2_wbd_adr_i[31:2],2'b00};
-assign m2_wb_wr.wbd_sel = m2_wbd_sel_i;
-assign m2_wb_wr.wbd_bl  = m2_wbd_bl_i;
-assign m2_wb_wr.wbd_bry = m2_wbd_bry_i;
-assign m2_wb_wr.wbd_we  = m2_wbd_we_i;
-assign m2_wb_wr.wbd_cyc = m2_wbd_cyc_i;
-assign m2_wb_wr.wbd_stb = m2_wbd_stb_i;
-assign m2_wb_wr.wbd_tid = m2_wbd_tid_i;
+// Target Port -0
+wb_slave_port  u_s0 (
 
-assign m3_wb_wr.wbd_dat = 'h0;
-assign m3_wb_wr.wbd_adr = {m3_wbd_adr_i[31:2],2'b00};
-assign m3_wb_wr.wbd_sel = m3_wbd_sel_i;
-assign m3_wb_wr.wbd_bl  = m3_wbd_bl_i;
-assign m3_wb_wr.wbd_bry = m3_wbd_bry_i;
-assign m3_wb_wr.wbd_we  = m3_wbd_we_i;
-assign m3_wb_wr.wbd_cyc = m3_wbd_cyc_i;
-assign m3_wb_wr.wbd_stb = m3_wbd_stb_i;
-assign m3_wb_wr.wbd_tid = m3_wbd_tid_i;
+          .clk_i                   (clk_i                  ), 
+          .rst_n                   (rst_n                  ),
+	  .cfg_slave_id            (TARGET_SPI_MEM         ),
 
-assign m0_wbd_dat_o  =  m0_wb_rd.wbd_dat;
-assign m0_wbd_ack_o  =  m0_wb_rd.wbd_ack;
-assign m0_wbd_lack_o =  m0_wb_rd.wbd_lack;
-assign m0_wbd_err_o  =  m0_wb_rd.wbd_err;
+         // Master 0 Interface
+          .m0_wbd_dat_i            (m0_wbd_dat_i           ),
+          .m0_wbd_adr_i            (m0_wbd_adr_i           ),
+          .m0_wbd_sel_i            (m0_wbd_sel_i           ),
+          .m0_wbd_we_i             (m0_wbd_we_i            ),
+          .m0_wbd_cyc_i            (m0_wbd_cyc_i           ),
+          .m0_wbd_stb_i            (m0_wbd_stb_i           ),
+	  .m0_wbd_tid_i            (m0_wbd_tid_i           ),
+          .m0_wbd_dat_o            (m0_s0_wb_rd.wbd_dat    ),
+          .m0_wbd_ack_o            (m0_s0_wb_rd.wbd_ack    ),
+          .m0_wbd_lack_o           (m0_s0_wb_rd.wbd_lack   ),
+          .m0_wbd_err_o            (m0_s0_wb_rd.wbd_err    ),
+         
+         // Master 1 Interface
+          .m1_wbd_dat_i            (m1_wbd_dat_i           ),
+          .m1_wbd_adr_i            (m1_wbd_adr_i           ),
+          .m1_wbd_sel_i            (m1_wbd_sel_i           ),
+          .m1_wbd_we_i             (m1_wbd_we_i            ),
+          .m1_wbd_cyc_i            (m1_wbd_cyc_i           ),
+          .m1_wbd_stb_i            (m1_wbd_stb_i           ),
+	  .m1_wbd_tid_i            (m1_wbd_tid_i           ),
+          .m1_wbd_dat_o            (m1_s0_wb_rd.wbd_dat    ),
+          .m1_wbd_ack_o            (m1_s0_wb_rd.wbd_ack    ),
+          .m1_wbd_lack_o           (m1_s0_wb_rd.wbd_lack   ),
+          .m1_wbd_err_o            (m1_s0_wb_rd.wbd_err    ),
+         
+         // Master 2 Interface
+          .m2_wbd_dat_i            (m2_wbd_dat_i           ),
+          .m2_wbd_adr_i            (m2_wbd_adr_i           ),
+          .m2_wbd_sel_i            (m2_wbd_sel_i           ),
+          .m2_wbd_bl_i             (m2_wbd_bl_i            ),
+          .m2_wbd_bry_i            (m2_wbd_bry_i           ),
+          .m2_wbd_we_i             (m2_wbd_we_i            ),
+          .m2_wbd_cyc_i            (m2_wbd_cyc_i           ),
+          .m2_wbd_stb_i            (m2_wbd_stb_i           ),
+	  .m2_wbd_tid_i            (m2_wbd_tid_i           ),
+          .m2_wbd_dat_o            (m2_s0_wb_rd.wbd_dat    ),
+          .m2_wbd_ack_o            (m2_s0_wb_rd.wbd_ack    ),
+          .m2_wbd_lack_o           (m2_s0_wb_rd.wbd_lack   ),
+          .m2_wbd_err_o            (m2_s0_wb_rd.wbd_err    ),
 
-assign m1_wbd_dat_o  =  m1_wb_rd.wbd_dat;
-assign m1_wbd_ack_o  =  m1_wb_rd.wbd_ack;
-assign m1_wbd_lack_o =  m1_wb_rd.wbd_lack;
-assign m1_wbd_err_o  =  m1_wb_rd.wbd_err;
+         // Master 3 Interface
+          .m3_wbd_adr_i            (m3_wbd_adr_i           ),
+          .m3_wbd_sel_i            (m3_wbd_sel_i           ),
+          .m3_wbd_bl_i             (m3_wbd_bl_i            ),
+          .m3_wbd_bry_i            (m3_wbd_bry_i           ),
+          .m3_wbd_we_i             (m3_wbd_we_i            ),
+          .m3_wbd_cyc_i            (m3_wbd_cyc_i           ),
+          .m3_wbd_stb_i            (m3_wbd_stb_i           ),
+	  .m3_wbd_tid_i            (m3_wbd_tid_i           ),
+          .m3_wbd_dat_o            (m3_s0_wb_rd.wbd_dat    ),
+          .m3_wbd_ack_o            (m3_s0_wb_rd.wbd_ack    ),
+          .m3_wbd_lack_o           (m3_s0_wb_rd.wbd_lack   ),
+          .m3_wbd_err_o            (m3_s0_wb_rd.wbd_err    ),
+         
+         
+         // Slave  Interface
+          .s_wbd_dat_i            (s0_wb_rd.wbd_dat        ),
+          .s_wbd_ack_i            (s0_wb_rd.wbd_ack        ),
+          .s_wbd_lack_i           (s0_wb_rd.wbd_lack       ),
+          .s_wbd_dat_o            (s0_wb_wr.wbd_dat        ),
+          .s_wbd_adr_o            (s0_wb_wr.wbd_adr        ),
+          .s_wbd_bry_o            (s0_wb_wr.wbd_bry        ),
+          .s_wbd_bl_o             (s0_wb_wr.wbd_bl         ),
+          .s_wbd_sel_o            (s0_wb_wr.wbd_sel        ),
+          .s_wbd_we_o             (s0_wb_wr.wbd_we         ),  
+          .s_wbd_cyc_o            (s0_wb_wr.wbd_cyc        ),
+          .s_wbd_stb_o            (s0_wb_wr.wbd_stb        )
+         
+	);
 
-assign m2_wbd_dat_o  =  m2_wb_rd.wbd_dat;
-assign m2_wbd_ack_o  =  m2_wb_rd.wbd_ack;
-assign m2_wbd_lack_o =  m2_wb_rd.wbd_lack;
-assign m2_wbd_err_o  =  m2_wb_rd.wbd_err;
+// Target Port -1
+wb_slave_port  u_s1 (
 
-assign m3_wbd_dat_o  =  m3_wb_rd.wbd_dat;
-assign m3_wbd_ack_o  =  m3_wb_rd.wbd_ack;
-assign m3_wbd_lack_o =  m3_wb_rd.wbd_lack;
-assign m3_wbd_err_o  =  m3_wb_rd.wbd_err;
+          .clk_i                   (clk_i                  ), 
+          .rst_n                   (rst_n                  ),
+	  .cfg_slave_id            (TARGET_UART            ),
+
+         // Master 0 Interface
+          .m0_wbd_dat_i            (m0_wbd_dat_i           ),
+          .m0_wbd_adr_i            (m0_wbd_adr_i           ),
+          .m0_wbd_sel_i            (m0_wbd_sel_i           ),
+          .m0_wbd_we_i             (m0_wbd_we_i            ),
+          .m0_wbd_cyc_i            (m0_wbd_cyc_i           ),
+          .m0_wbd_stb_i            (m0_wbd_stb_i           ),
+	  .m0_wbd_tid_i            (m0_wbd_tid_i           ),
+          .m0_wbd_dat_o            (m0_s1_wb_rd.wbd_dat    ),
+          .m0_wbd_ack_o            (m0_s1_wb_rd.wbd_ack    ),
+          .m0_wbd_lack_o           (m0_s1_wb_rd.wbd_lack   ),
+          .m0_wbd_err_o            (m0_s1_wb_rd.wbd_err    ),
+         
+         // Master 1 Interface
+          .m1_wbd_dat_i            (m1_wbd_dat_i           ),
+          .m1_wbd_adr_i            (m1_wbd_adr_i           ),
+          .m1_wbd_sel_i            (m1_wbd_sel_i           ),
+          .m1_wbd_we_i             (m1_wbd_we_i            ),
+          .m1_wbd_cyc_i            (m1_wbd_cyc_i           ),
+          .m1_wbd_stb_i            (m1_wbd_stb_i           ),
+	  .m1_wbd_tid_i            (m1_wbd_tid_i           ),
+          .m1_wbd_dat_o            (m1_s1_wb_rd.wbd_dat    ),
+          .m1_wbd_ack_o            (m1_s1_wb_rd.wbd_ack    ),
+          .m1_wbd_lack_o           (m1_s1_wb_rd.wbd_lack   ),
+          .m1_wbd_err_o            (m1_s1_wb_rd.wbd_err    ),
+         
+         // Master 2 Interface
+          .m2_wbd_dat_i            (m2_wbd_dat_i           ),
+          .m2_wbd_adr_i            (m2_wbd_adr_i           ),
+          .m2_wbd_sel_i            (m2_wbd_sel_i           ),
+          .m2_wbd_bl_i             (m2_wbd_bl_i            ),
+          .m2_wbd_bry_i            (m2_wbd_bry_i           ),
+          .m2_wbd_we_i             (m2_wbd_we_i            ),
+          .m2_wbd_cyc_i            (m2_wbd_cyc_i           ),
+          .m2_wbd_stb_i            (m2_wbd_stb_i           ),
+	  .m2_wbd_tid_i            (m2_wbd_tid_i           ),
+          .m2_wbd_dat_o            (m2_s1_wb_rd.wbd_dat    ),
+          .m2_wbd_ack_o            (m2_s1_wb_rd.wbd_ack    ),
+          .m2_wbd_lack_o           (m2_s1_wb_rd.wbd_lack   ),
+          .m2_wbd_err_o            (m2_s1_wb_rd.wbd_err    ),
+
+         // Master 3 Interface
+          .m3_wbd_adr_i            (m3_wbd_adr_i           ),
+          .m3_wbd_sel_i            (m3_wbd_sel_i           ),
+          .m3_wbd_bl_i             (m3_wbd_bl_i            ),
+          .m3_wbd_bry_i            (m3_wbd_bry_i           ),
+          .m3_wbd_we_i             (m3_wbd_we_i            ),
+          .m3_wbd_cyc_i            (m3_wbd_cyc_i           ),
+          .m3_wbd_stb_i            (m3_wbd_stb_i           ),
+	  .m3_wbd_tid_i            (m3_wbd_tid_i           ),
+          .m3_wbd_dat_o            (m3_s1_wb_rd.wbd_dat    ),
+          .m3_wbd_ack_o            (m3_s1_wb_rd.wbd_ack    ),
+          .m3_wbd_lack_o           (m3_s1_wb_rd.wbd_lack   ),
+          .m3_wbd_err_o            (m3_s1_wb_rd.wbd_err    ),
+         
+         
+         // Slave  Interface
+          .s_wbd_dat_i            (s1_wb_rd.wbd_dat        ),
+          .s_wbd_ack_i            (s1_wb_rd.wbd_ack        ),
+          .s_wbd_lack_i           (s1_wb_rd.wbd_lack       ),
+          .s_wbd_dat_o            (s1_wb_wr.wbd_dat        ),
+          .s_wbd_adr_o            (s1_wb_wr.wbd_adr        ),
+          .s_wbd_bry_o            (s1_wb_wr.wbd_bry        ),
+          .s_wbd_bl_o             (s1_wb_wr.wbd_bl         ),
+          .s_wbd_sel_o            (s1_wb_wr.wbd_sel        ),
+          .s_wbd_we_o             (s1_wb_wr.wbd_we         ),  
+          .s_wbd_cyc_o            (s1_wb_wr.wbd_cyc        ),
+          .s_wbd_stb_o            (s1_wb_wr.wbd_stb        )
+         
+	);
+
+// Target Port -2
+wb_slave_port  u_s2 (
+
+          .clk_i                   (clk_i                  ), 
+          .rst_n                   (rst_n                  ),
+	  .cfg_slave_id            (TARGET_PINMUX          ),
+
+         // Master 0 Interface
+          .m0_wbd_dat_i            (m0_wbd_dat_i           ),
+          .m0_wbd_adr_i            (m0_wbd_adr_i           ),
+          .m0_wbd_sel_i            (m0_wbd_sel_i           ),
+          .m0_wbd_we_i             (m0_wbd_we_i            ),
+          .m0_wbd_cyc_i            (m0_wbd_cyc_i           ),
+          .m0_wbd_stb_i            (m0_wbd_stb_i           ),
+	  .m0_wbd_tid_i            (m0_wbd_tid_i           ),
+          .m0_wbd_dat_o            (m0_s2_wb_rd.wbd_dat    ),
+          .m0_wbd_ack_o            (m0_s2_wb_rd.wbd_ack    ),
+          .m0_wbd_lack_o           (m0_s2_wb_rd.wbd_lack   ),
+          .m0_wbd_err_o            (m0_s2_wb_rd.wbd_err    ),
+         
+         // Master 1 Interface
+          .m1_wbd_dat_i            (m1_wbd_dat_i           ),
+          .m1_wbd_adr_i            (m1_wbd_adr_i           ),
+          .m1_wbd_sel_i            (m1_wbd_sel_i           ),
+          .m1_wbd_we_i             (m1_wbd_we_i            ),
+          .m1_wbd_cyc_i            (m1_wbd_cyc_i           ),
+          .m1_wbd_stb_i            (m1_wbd_stb_i           ),
+	  .m1_wbd_tid_i            (m1_wbd_tid_i           ),
+          .m1_wbd_dat_o            (m1_s2_wb_rd.wbd_dat    ),
+          .m1_wbd_ack_o            (m1_s2_wb_rd.wbd_ack    ),
+          .m1_wbd_lack_o           (m1_s2_wb_rd.wbd_lack   ),
+          .m1_wbd_err_o            (m1_s2_wb_rd.wbd_err    ),
+         
+         // Master 2 Interface
+          .m2_wbd_dat_i            (m2_wbd_dat_i           ),
+          .m2_wbd_adr_i            (m2_wbd_adr_i           ),
+          .m2_wbd_sel_i            (m2_wbd_sel_i           ),
+          .m2_wbd_bl_i             (m2_wbd_bl_i            ),
+          .m2_wbd_bry_i            (m2_wbd_bry_i           ),
+          .m2_wbd_we_i             (m2_wbd_we_i            ),
+          .m2_wbd_cyc_i            (m2_wbd_cyc_i           ),
+          .m2_wbd_stb_i            (m2_wbd_stb_i           ),
+	  .m2_wbd_tid_i            (m2_wbd_tid_i           ),
+          .m2_wbd_dat_o            (m2_s2_wb_rd.wbd_dat    ),
+          .m2_wbd_ack_o            (m2_s2_wb_rd.wbd_ack    ),
+          .m2_wbd_lack_o           (m2_s2_wb_rd.wbd_lack   ),
+          .m2_wbd_err_o            (m2_s2_wb_rd.wbd_err    ),
+
+         // Master 3 Interface
+          .m3_wbd_adr_i            (m3_wbd_adr_i           ),
+          .m3_wbd_sel_i            (m3_wbd_sel_i           ),
+          .m3_wbd_bl_i             (m3_wbd_bl_i            ),
+          .m3_wbd_bry_i            (m3_wbd_bry_i           ),
+          .m3_wbd_we_i             (m3_wbd_we_i            ),
+          .m3_wbd_cyc_i            (m3_wbd_cyc_i           ),
+          .m3_wbd_stb_i            (m3_wbd_stb_i           ),
+	  .m3_wbd_tid_i            (m3_wbd_tid_i           ),
+          .m3_wbd_dat_o            (m3_s2_wb_rd.wbd_dat    ),
+          .m3_wbd_ack_o            (m3_s2_wb_rd.wbd_ack    ),
+          .m3_wbd_lack_o           (m3_s2_wb_rd.wbd_lack   ),
+          .m3_wbd_err_o            (m3_s2_wb_rd.wbd_err    ),
+         
+         
+         // Slave  Interface
+          .s_wbd_dat_i            (s2_wb_rd.wbd_dat        ),
+          .s_wbd_ack_i            (s2_wb_rd.wbd_ack        ),
+          .s_wbd_lack_i           (s2_wb_rd.wbd_lack       ),
+          .s_wbd_dat_o            (s2_wb_wr.wbd_dat        ),
+          .s_wbd_adr_o            (s2_wb_wr.wbd_adr        ),
+          .s_wbd_bry_o            (s2_wb_wr.wbd_bry        ),
+          .s_wbd_bl_o             (s2_wb_wr.wbd_bl         ),
+          .s_wbd_sel_o            (s2_wb_wr.wbd_sel        ),
+          .s_wbd_we_o             (s2_wb_wr.wbd_we         ),  
+          .s_wbd_cyc_o            (s2_wb_wr.wbd_cyc        ),
+          .s_wbd_stb_o            (s2_wb_wr.wbd_stb        )
+         
+	);
+
+/////////////////////////////////////////////////
+// Master-0 Mapping
+// ---------------------------------------------
+
+assign m0_wbd_dat_o  = m0_bus_rd.wbd_dat;
+assign m0_wbd_ack_o  = m0_bus_rd.wbd_ack;
+assign m0_wbd_lack_o = m0_bus_rd.wbd_lack;
+assign m0_wbd_err_o  = m0_bus_rd.wbd_err;
+
+always_comb begin
+     case(m0_wbd_tid_i)
+        TARGET_SPI_MEM:	   m0_bus_rd = m0_s0_wb_rd;
+        TARGET_SPI_REG:	   m0_bus_rd = m0_s0_wb_rd;
+        TARGET_UART:	   m0_bus_rd = m0_s1_wb_rd;
+        TARGET_PINMUX:	   m0_bus_rd = m0_s2_wb_rd;
+        default:           m0_bus_rd = m0_s0_wb_rd;
+     endcase			
+end
+
+/////////////////////////////////////////////////
+// Master-1 Mapping
+// ---------------------------------------------
+
+assign m1_wbd_dat_o  = m1_bus_rd.wbd_dat;
+assign m1_wbd_ack_o  = m1_bus_rd.wbd_ack;
+assign m1_wbd_lack_o = m1_bus_rd.wbd_lack;
+assign m1_wbd_err_o  = m1_bus_rd.wbd_err;
+
+always_comb begin
+     case(m1_wbd_tid_i)
+        TARGET_SPI_MEM:	   m1_bus_rd = m1_s0_wb_rd;
+        TARGET_SPI_REG:	   m1_bus_rd = m1_s0_wb_rd;
+        TARGET_UART:	   m1_bus_rd = m1_s1_wb_rd;
+        TARGET_PINMUX:	   m1_bus_rd = m1_s2_wb_rd;
+        default:           m1_bus_rd = m1_s0_wb_rd;
+     endcase			
+end
+
+/////////////////////////////////////////////////
+// Master-2 Mapping
+// ---------------------------------------------
+
+assign m2_wbd_dat_o  = m2_bus_rd.wbd_dat;
+assign m2_wbd_ack_o  = m2_bus_rd.wbd_ack;
+assign m2_wbd_lack_o = m2_bus_rd.wbd_lack;
+assign m2_wbd_err_o  = m2_bus_rd.wbd_err;
+
+always_comb begin
+     case(m2_wbd_tid_i)
+        TARGET_SPI_MEM:	   m2_bus_rd = m2_s0_wb_rd;
+        TARGET_SPI_REG:	   m2_bus_rd = m2_s0_wb_rd;
+        TARGET_UART:	   m2_bus_rd = m2_s1_wb_rd;
+        TARGET_PINMUX:	   m2_bus_rd = m2_s2_wb_rd;
+        default:           m2_bus_rd = m2_s0_wb_rd;
+     endcase			
+end
+
+/////////////////////////////////////////////////
+// Master-3 Mapping
+// ---------------------------------------------
+
+assign m3_wbd_dat_o  = m3_bus_rd.wbd_dat;
+assign m3_wbd_ack_o  = m3_bus_rd.wbd_ack;
+assign m3_wbd_lack_o = m3_bus_rd.wbd_lack;
+assign m3_wbd_err_o  = m3_bus_rd.wbd_err;
+
+always_comb begin
+     case(m3_wbd_tid_i)
+        TARGET_SPI_MEM:	   m3_bus_rd = m3_s0_wb_rd;
+        TARGET_SPI_REG:	   m3_bus_rd = m3_s0_wb_rd;
+        TARGET_UART:	   m3_bus_rd = m3_s1_wb_rd;
+        TARGET_PINMUX:	   m3_bus_rd = m3_s2_wb_rd;
+        default:           m3_bus_rd = m3_s0_wb_rd;
+     endcase			
+end
 
 //----------------------------------------
 // Slave Mapping
 // -------------------------------------
-// Masked Now and added stagging FF now
  assign  s0_wbd_dat_o =  s0_wb_wr.wbd_dat ;
  assign  s0_wbd_adr_o =  s0_wb_wr.wbd_adr ;
  assign  s0_wbd_sel_o =  s0_wb_wr.wbd_sel ;
@@ -439,93 +691,8 @@ assign m3_wbd_err_o  =  m3_wb_rd.wbd_err;
  assign s2_wb_rd.wbd_err  = 1'b0; // s2_wbd_err_i ; - unused
 
 
-//
-// arbitor 
-//
-logic [1:0]  gnt;
-
-wb_arb	u_wb_arb(
-	.clk(clk_i), 
-	.rstn(rst_n),
-	.req({	m3_wbd_stb_i & !m3_wbd_lack_o,
-	        m2_wbd_stb_i & !m2_wbd_lack_o,
-		m1_wbd_stb_i & !m1_wbd_lack_o,
-		m0_wbd_stb_i & !m0_wbd_lack_o}),
-	.gnt(gnt)
-);
 
 
-// Generate Multiplexed Master Interface based on grant
-always_comb begin
-     case(gnt)
-        3'h0:	   m_bus_wr = m0_wb_wr;
-        3'h1:	   m_bus_wr = m1_wb_wr;
-        3'h2:	   m_bus_wr = m2_wb_wr;
-        3'h3:	   m_bus_wr = m3_wb_wr;
-        default:   m_bus_wr = m0_wb_wr;
-     endcase			
-end
-
-
-// Generate Multiplexed Slave Interface based on target Id
-wire [3:0] s_wbd_tid =  s_bus_wr.wbd_tid; // to fix iverilog warning
-always_comb begin
-     case(s_wbd_tid)
-        4'h0:	   s_bus_rd = s0_wb_rd;
-        4'h1:	   s_bus_rd = s1_wb_rd;
-        4'h2:	   s_bus_rd = s2_wb_rd;
-        default:   s_bus_rd = s0_wb_rd;
-     endcase			
-end
-
-
-// Connect Master => Slave
-assign  s0_wb_wr = (s_wbd_tid == 3'b000) ? s_bus_wr : 'h0;
-assign  s1_wb_wr = (s_wbd_tid == 3'b001) ? s_bus_wr : 'h0;
-assign  s2_wb_wr = (s_wbd_tid == 3'b010) ? s_bus_wr : 'h0;
-
-// Connect Slave to Master
-assign  m0_wb_rd = (gnt == 2'b00) ? m_bus_rd : 'h0;
-assign  m1_wb_rd = (gnt == 2'b01) ? m_bus_rd : 'h0;
-assign  m2_wb_rd = (gnt == 2'b10) ? m_bus_rd : 'h0;
-assign  m3_wb_rd = (gnt == 2'b11) ? m_bus_rd : 'h0;
-
-
-// Stagging FF to break write and read timing path
-sync_wbb u_sync_wbb(
-         .clk_i            (clk_i               ), 
-         .rst_n            (rst_n               ),
-         // WishBone Input master I/P
-         .wbm_dat_i      (m_bus_wr.wbd_dat    ),
-         .wbm_adr_i      (m_bus_wr.wbd_adr    ),
-         .wbm_sel_i      (m_bus_wr.wbd_sel    ),
-         .wbm_bl_i       (m_bus_wr.wbd_bl     ),
-         .wbm_bry_i      (m_bus_wr.wbd_bry    ),
-         .wbm_we_i       (m_bus_wr.wbd_we     ),
-         .wbm_cyc_i      (m_bus_wr.wbd_cyc    ),
-         .wbm_stb_i      (m_bus_wr.wbd_stb    ),
-         .wbm_tid_i      (m_bus_wr.wbd_tid    ),
-         .wbm_dat_o      (m_bus_rd.wbd_dat    ),
-         .wbm_ack_o      (m_bus_rd.wbd_ack    ),
-         .wbm_lack_o     (m_bus_rd.wbd_lack   ),
-         .wbm_err_o      (m_bus_rd.wbd_err    ),
-
-         // Slave Interface
-         .wbs_dat_i      (s_bus_rd.wbd_dat    ),
-         .wbs_ack_i      (s_bus_rd.wbd_ack    ),
-         .wbs_lack_i     (s_bus_rd.wbd_lack   ),
-         .wbs_err_i      (s_bus_rd.wbd_err    ),
-         .wbs_dat_o      (s_bus_wr.wbd_dat    ),
-         .wbs_adr_o      (s_bus_wr.wbd_adr    ),
-         .wbs_sel_o      (s_bus_wr.wbd_sel    ),
-         .wbs_bl_o       (s_bus_wr.wbd_bl     ),
-         .wbs_bry_o      (s_bus_wr.wbd_bry    ),
-         .wbs_we_o       (s_bus_wr.wbd_we     ),
-         .wbs_cyc_o      (s_bus_wr.wbd_cyc    ),
-         .wbs_stb_o      (s_bus_wr.wbd_stb    ),
-         .wbs_tid_o      (s_bus_wr.wbd_tid    )
-
-);
 
 
 endmodule

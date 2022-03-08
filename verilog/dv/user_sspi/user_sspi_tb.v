@@ -24,14 +24,20 @@
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
-////   Digital core.                                              ////
-////   1. User Risc core is booted using  compiled code of        ////
-////      user_risc_boot.c                                        ////
-////   2. User Risc core uses Serial Flash and SDRAM to boot      ////
-////   3. After successful boot, Risc core will  write signature  ////
-////      in to  user register from 0x3000_0018 to 0x3000_002C    ////
-////   4. Through the External Wishbone Interface we read back    ////
-////       and validate the user register to declared pass fail   ////
+////   Digital core flash access through External WB i/F.         ////
+////   1.  Check SPI Read Identification                          ////
+////   2.  Check the Direct Memory Read (Qual/Single/Quad)        ////        
+////   3.  Direct SPI Memory Prefetch - 3DW                       ////
+////   4.  Direct SPI Memory Prefetch - 2DW                       ////
+////   5.  Direct SPI Memory Prefetch - 1DW                       ////
+////   6.  Direct SPI Memory Prefetch - 7DW                       ////
+////   7.  1DW  Indirect Read                                     ////
+////   8.  2DW  Indirect Read                                     ////
+////   9.  3DW  Indirect Read                                     ////
+////   10. 4DW  Indirect Read                                     ////
+////   11. 5DW  Indirect Read                                     ////
+////   12. 8DW  Indirect Read                                     ////
+////   13. Sector Erase command + Page Write & Read Back          ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -40,7 +46,7 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 16th Feb 2021, Dinesh A                             ////
+////    0.1 - 01 Oct 2021, Dinesh A                               ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -73,36 +79,19 @@
 
 `timescale 1 ns / 1 ns
 
-`include "s25fl256s.sv"
+// Note in caravel, 0x30XX_XXXX only come to user interface
+// So, using wb_host bank select we have changing MSB address [31:24] = 0x10
+`define ADDR_SPACE_UART    32'h3001_0000
+`define ADDR_SPACE_SSPI    32'h3001_00C0
+`define ADDR_SPACE_PINMUX  32'h3002_0000
+
+`define TB_GLBL    user_sspi_tb
+
 `include "uprj_netlists.v"
-`include "mt48lc8m8a2.v"
 `include "is62wvs1288.v"
 
 
-`define ADDR_SPACE_PINMUX  32'h3002_0000
-
-localparam [31:0]      YCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
-localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
-localparam [31:0]      YCR1_SIM_EXT_IRQ_ADDR   = 32'hF000_0100;
-localparam [31:0]      YCR1_SIM_SOFT_IRQ_ADDR  = 32'hF000_0200;
-
- `define QSPIM_GLBL_CTRL          32'h10000000
- `define QSPIM_DMEM_G0_RD_CTRL    32'h10000004
- `define QSPIM_DMEM_G0_WR_CTRL    32'h10000008
- `define QSPIM_DMEM_G1_RD_CTRL    32'h1000000C
- `define QSPIM_DMEM_G1_WR_CTRL    32'h10000010
-
- `define QSPIM_DMEM_CS_AMAP        32'h10000014
- `define QSPIM_DMEM_CA_AMASK       32'h10000018
-
- `define QSPIM_IMEM_CTRL1          32'h1000001C
- `define QSPIM_IMEM_CTRL2          32'h10000020
- `define QSPIM_IMEM_ADDR           32'h10000024
- `define QSPIM_IMEM_WDATA          32'h10000028
- `define QSPIM_IMEM_RDATA          32'h1000002C
- `define QSPIM_SPI_STATUS          32'h10000030
-
-module user_risc_regress_tb;
+module user_sspi_tb;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -118,102 +107,27 @@ module user_risc_regress_tb;
         wire [31:0] wbd_ext_dat_o;  // data input
         wire        wbd_ext_ack_o;  // acknowlegement
         wire        wbd_ext_err_o;  // error
-	wire        clk;
 
 	// User I/O
 	wire [37:0] io_oeb;
 	wire [37:0] io_out;
 	wire [37:0] io_in;
 
+
+	reg [1:0] spi_chip_no;
+
 	wire gpio;
 	wire [37:0] mprj_io;
 	wire [7:0] mprj_io_0;
-	reg         test_fail;
+	reg        test_fail;
 	reg [31:0] read_data;
 
-
-	int unsigned                f_results;
-        int unsigned                f_info;
-        
-        string                      s_results;
-        string                      s_info;
-        `ifdef SIGNATURE_OUT
-        string                      s_testname;
-        bit                         b_single_run_flag;
-        `endif  //  SIGNATURE_OUT
-
-
-	`ifdef VERILATOR
-         logic [255:0]          test_file;
-	 logic [255:0]          test_ram_file;
-         `else // VERILATOR
-         string                 test_file;
-	 string                 test_ram_file;
-
-         `endif // VERILATOR
-
-
-        event	               reinit_event;
-	bit                    test_running;
-        int unsigned           tests_passed;
-        int unsigned           tests_total;
-
-	logic  [7:0]           tem_mem[0:4095];
-	logic  [31:0]          mem_data;
-
-
-parameter P_FSM_C      = 4'b0000; // Command Phase Only
-parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
-parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
-
-parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
-parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
-parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
-parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
-
-parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
-parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
-parameter P_FSM_CAMW   = 4'b1001; // Command -> Address -> MODE + Write Data
-
-parameter P_FSM_CDR    = 4'b1010; // COMMAND -> DUMMY -> READ
-parameter P_FSM_CDW    = 4'b1011; // COMMAND -> DUMMY -> WRITE
-parameter P_FSM_CR     = 4'b1100;  // COMMAND -> READ
-
-parameter P_MODE_SWITCH_IDLE     = 2'b00;
-parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
-parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
-
-parameter P_SINGLE = 2'b00;
-parameter P_DOUBLE = 2'b01;
-parameter P_QUAD   = 2'b10;
-parameter P_QDDR   = 2'b11;
-	//-----------------------------------------------------------------
-	// Since this is regression, reset will be applied multiple time
-	// Reset logic
-	// ----------------------------------------------------------------
-	bit [1:0]     rst_cnt;
-        bit           rst_init;
-	wire          rst_n;
-
-
-        assign rst_n = &rst_cnt;
-	assign wb_rst_i    =  !rst_n;
-        
-        always_ff @(posedge clk) begin
-	if (rst_init)   begin
-	     rst_cnt <= '0;
-	     -> reinit_event;
-	end
-            else if (~&rst_cnt) rst_cnt <= rst_cnt + 1'b1;
-        end
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
 	// would be the fast clock.
 
 	always #12.5 clock <= (clock === 1'b0);
-
-	assign clk = clock;
 
 	initial begin
 		clock = 0;
@@ -228,99 +142,116 @@ parameter P_QDDR   = 2'b11;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(1, user_risc_regress_tb);
-	   	$dumpvars(1, user_risc_regress_tb.u_top);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_qspi_master);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_intercon);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_mbist);
+	   	$dumpvars(5, user_sspi_tb);
 	   end
        `endif
 
-        integer i;
+	initial begin
+		$dumpon;
 
-        always @reinit_event
-	begin
-		// Initialize the SPI memory with hex content
-		// Wait for reset removal
-		wait (rst_n == 1);
-
-
-		// Initialize the SPI memory with hex content
-                $write("\033[0;34m---Initializing the SPI Memory with Hexfile: %s\033[0m\n", test_file);
-                $readmemh(test_file,u_spi_flash_256mb.Mem);
-
-		// some of the RISCV test need SRAM area for specific
-		// instruction execution like fence
-		$sformat(test_ram_file, "%s.ram",test_file);
-                $readmemh(test_ram_file,u_sram.memory);
-
-		/***
-		// Split the Temp memory content to two sram file
-                $readmemh(test_ram_file,tem_mem);
-		// Load the SRAM0/SRAM1 with 2KB data
-                $write("\033[0;34m---Initializing the u_sram0_2kb Memory with Hexfile: %s\033[0m\n",test_ram_file);
-		// Initializing the SRAM
-		for(i = 0 ; i < 2048; i = i +4) begin
-		    mem_data = {tem_mem[i+3],tem_mem[i+2],tem_mem[i+1],tem_mem[i+0]};
-		    //$display("Filling Mem Location : %x with data : %x",i, mem_data);
-		    u_top.u_sram0_2kb.mem[i/4] = mem_data;
-		end
-		for(i = 2048 ; i < 4096; i = i +4) begin
-		  mem_data = {tem_mem[i+3],tem_mem[i+2],tem_mem[i+1],tem_mem[i+0]};
-		  //$display("Filling Mem Location : %x with data : %x",i, mem_data);
-		  u_top.u_sram1_2kb.mem[(2048-i)/4] = mem_data;
-		end
-		***/
-
-		//for(i =32'h00; i < 32'h100; i = i+1)
-                //    $display("Location: %x, Data: %x", i, u_top.u_tsram0_2kb.mem[i]);
-
-
-		#200; 
+		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
-		$display("Monitor: Core reset removal");
+		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
 		wb_user_core_write('h3080_0000,'h1);
-	        repeat (2) @(posedge clock);
-		#1;
-		//------------ fuse_mhartid= 0x00
-                wb_user_core_write('h3002_0004,'h0);
 
+                // Enable SPI Multi Functional Ports
+                wb_user_core_write(`ADDR_SPACE_PINMUX+'h0038,'h400);
 
 	        repeat (2) @(posedge clock);
 		#1;
-		// Remove WB and SPI Reset, Keep SDARM and CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h11F);
 
-		// CS#2 Switch to QSPI Mode
+                // Remove the reset
+		// Remove WB and SPI/UART Reset, Keep CORE under Reset
+                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h01F);
+
+
+		test_fail = 0;
+		sspi_init();
+	        repeat (200) @(posedge clock);
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
+                $display("############################################");
+                $display("   Testing IS62/65WVS1288GALL SSRAM Read/Write Access       ");
+                $display("############################################");
+		// SSPI Indirect RAM READ ACCESS-
+		// Byte Read Option
+		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
+                spi_chip_no = 2'b00; // Select the Chip Select to zero
+		sspi_dw_read_check(8'h03,24'h0000,32'h03020100);
+		sspi_dw_read_check(8'h03,24'h0004,32'h07060504);
+		sspi_dw_read_check(8'h03,24'h0008,32'h0b0a0908);
+		sspi_dw_read_check(8'h03,24'h000C,32'h0f0e0d0c);
+		sspi_dw_read_check(8'h03,24'h0010,32'h13121110);
+		sspi_dw_read_check(8'h03,24'h0014,32'h17161514);
+		sspi_dw_read_check(8'h03,24'h0018,32'h1B1A1918);
+		sspi_dw_read_check(8'h03,24'h001C,32'h1F1E1D1C);
 
-		// Enable the DCACHE Remap to SRAM region
-		//wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
-		//
-		// Remove all the reset
-                wb_user_core_write('h3080_0000,'h8F);
+		sspi_dw_read_check(8'h03,24'h0040,32'h43424140);
+		sspi_dw_read_check(8'h03,24'h0044,32'h47464544);
+		sspi_dw_read_check(8'h03,24'h0048,32'h4B4A4948);
+		sspi_dw_read_check(8'h03,24'h004C,32'h4F4E4D4C);
 
+		sspi_dw_read_check(8'h03,24'h00a0,32'ha3a2a1a0);
+		sspi_dw_read_check(8'h03,24'h00a4,32'ha7a6a5a4);
+		sspi_dw_read_check(8'h03,24'h00a8,32'habaaa9a8);
+		sspi_dw_read_check(8'h03,24'h00aC,32'hafaeadac);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h11111111);
+		sspi_dw_read_check(8'h03,24'h0204,32'h22222222);
+		sspi_dw_read_check(8'h03,24'h0208,32'h33333333);
+		sspi_dw_read_check(8'h03,24'h020C,32'h44444444);
+
+		// SPI Write
+		sspi_dw_write(8'h02,24'h0000,32'h00112233);
+		sspi_dw_write(8'h02,24'h0004,32'h44556677);
+		sspi_dw_write(8'h02,24'h0008,32'h8899AABB);
+		sspi_dw_write(8'h02,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_write(8'h02,24'h0200,32'h11223344);
+		sspi_dw_write(8'h02,24'h0204,32'h55667788);
+		sspi_dw_write(8'h02,24'h0208,32'h99AABBCC);
+		sspi_dw_write(8'h02,24'h020C,32'hDDEEFF00);
+
+		// SPI Read Check
+		sspi_dw_read_check(8'h03,24'h0000,32'h00112233);
+		sspi_dw_read_check(8'h03,24'h0004,32'h44556677);
+		sspi_dw_read_check(8'h03,24'h0008,32'h8899AABB);
+		sspi_dw_read_check(8'h03,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h11223344);
+		sspi_dw_read_check(8'h03,24'h0204,32'h55667788);
+		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
+		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
+
+
+		repeat (100) @(posedge clock);
+			// $display("+1000 cycles");
+
+          	if(test_fail == 0) begin
+		   `ifdef GL
+	    	       $display("Monitor: SPI Master Mode (GL) Passed");
+		   `else
+		       $display("Monitor: SPI Master Mode (RTL) Passed");
+		   `endif
+	        end else begin
+		    `ifdef GL
+	    	        $display("Monitor: SPI Master Mode (GL) Failed");
+		    `else
+		        $display("Monitor: SPI Master Mode (RTL) Failed");
+		    `endif
+		 end
+	    	$display("###################################################");
+	        $finish;
 	end
 
+	initial begin
+		wb_rst_i <= 1'b1;
+		#100;
+		wb_rst_i <= 1'b0;	    	// Release reset
+	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
-
-//-------------------------------------------------------------------------------
-// Run tests
-//-------------------------------------------------------------------------------
-
-`include "riscv_runtests.sv"
-
-
-//-------------------------------------------------------------------------------
-// Core instance
-//-------------------------------------------------------------------------------
 
 user_project_wrapper u_top(
 `ifdef USE_POWER_PINS
@@ -357,24 +288,10 @@ user_project_wrapper u_top(
 
 );
 
-
-logic [31:0] riscv_dmem_req_cnt; // cnt dmem req
-initial 
-begin
-   riscv_dmem_req_cnt = 0;
-end
-
-always @(posedge u_top.wbd_riscv_dmem_stb_i)
-begin
-    riscv_dmem_req_cnt = riscv_dmem_req_cnt+1;
-    if((riscv_dmem_req_cnt %200) == 0)
-	$display("STATUS: Total Dmem Req Cnt: %d ",riscv_dmem_req_cnt);
-end
-
-
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
+
     end
 `endif    
 
@@ -382,47 +299,18 @@ end
 //  Integrate the Serial flash with qurd support to
 //  user core using the gpio pads
 //  ----------------------------------------------------
+   wire flash_io1;
+   wire flash_clk = io_out[16];
+   wire spiram_csb = io_out[13];
+   tri  #1 flash_io0 = io_out[15];
+   assign io_in[14] = flash_io1;
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
-   // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
-
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   tri  #1 flash_io2 = 1'b1;
+   tri  #1 flash_io3 = 1'b1;
 
 
-   // Quard flash
-     s25fl256s #(.mem_file_name("add.hex"),
-	         .otp_file_name("none"),
-                 .TimingModel("S25FL512SAGMFI010_F_30pF")) 
-		 u_spi_flash_256mb (
-           // Data Inputs/Outputs
-       .SI      (flash_io0),
-       .SO      (flash_io1),
-       // Controls
-       .SCK     (flash_clk),
-       .CSNeg   (flash_csb),
-       .WPNeg   (flash_io2),
-       .HOLDNeg (flash_io3),
-       .RSTNeg  (!wb_rst_i)
-
-       );
-
-
-   wire spiram_csb = io_out[27];
-
-   is62wvs1288 #(.mem_file_name("none"))
-	u_sram (
+   is62wvs1288 #(.mem_file_name("flash1.hex"))
+	u_sfram (
          // Data Inputs/Outputs
            .io0     (flash_io0),
            .io1     (flash_io1),
@@ -434,6 +322,14 @@ end
     );
 
 
+//----------------------------------------------------
+//  Task
+// --------------------------------------------------
+task test_err;
+begin
+     test_fail = 1;
+end
+endtask
 
 task wb_user_core_write;
 input [31:0] address;
@@ -456,7 +352,7 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
+  $display("STATUS: WB USER ACCESS WRITE Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
@@ -484,10 +380,45 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  //$display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
+
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     user_sspi_tb.test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
+  repeat (2) @(posedge clock);
+end
+endtask
+
 
 `ifdef GL
 
@@ -536,5 +467,7 @@ end
 
 `endif
 **/
+`include "sspi_task.v"
+
 endmodule
 `default_nettype wire

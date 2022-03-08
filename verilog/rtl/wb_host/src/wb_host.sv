@@ -82,13 +82,6 @@ module wb_host (
        output logic                usb_clk          ,
        // Global Reset control
        output logic                wbd_int_rst_n    ,
-       output logic                cpu_rst_n        ,
-       output logic                qspim_rst_n        ,
-       output logic                sspim_rst_n      ,
-       output logic                uart_rst_n       ,
-       output logic                i2cm_rst_n       ,
-       output logic                usb_rst_n        ,
-       output logic                bist_rst_n        ,
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -191,13 +184,6 @@ logic               wb_err_int            ; // error
 
 
 ctech_buf u_buf_wb_rst        (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
-ctech_buf u_buf_cpu_rst       (.A(cfg_glb_ctrl[1]),.X(cpu_rst_n));
-ctech_buf u_buf_qspim_rst     (.A(cfg_glb_ctrl[2]),.X(qspim_rst_n));
-ctech_buf u_buf_sspim_rst     (.A(cfg_glb_ctrl[3]),.X(sspim_rst_n));
-ctech_buf u_buf_uart_rst      (.A(cfg_glb_ctrl[4]),.X(uart_rst_n));
-ctech_buf u_buf_i2cm_rst      (.A(cfg_glb_ctrl[5]),.X(i2cm_rst_n));
-ctech_buf u_buf_usb_rst       (.A(cfg_glb_ctrl[6]),.X(usb_rst_n));
-ctech_buf u_buf_bist_rst      (.A(cfg_glb_ctrl[7]),.X(bist_rst_n));
 
 //--------------------------------------------------------------------------------
 // Look like wishbone reset removed early than user Power up sequence

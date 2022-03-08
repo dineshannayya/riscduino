@@ -71,25 +71,25 @@ set_input_delay -max 6.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_port
 set_input_delay -min 2.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_ack_i}]
 set_input_delay -min 2.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_i[*]}]
 
-set_output_delay -max 3.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_adr_o[*]}]
-set_output_delay -max 3.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_cyc_o}]
-set_output_delay -max 3.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_o[*]}]
-set_output_delay -max 3.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_sel_o[*]}]
-set_output_delay -max 3.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
-set_output_delay -max 3.0000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
+set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_adr_o[*]}]
+set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_cyc_o}]
+set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_o[*]}]
+set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_sel_o[*]}]
+set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
+set_output_delay -max 4.5000 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
 
-set_output_delay -min -1.7500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_adr_o[*]}]
-set_output_delay -min -1.7500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_cyc_o}]
-set_output_delay -min -1.7500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_o[*]}]
-set_output_delay -min -1.7500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_sel_o[*]}]
-set_output_delay -min -1.7500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
-set_output_delay -min -1.7500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
+set_output_delay -min -1.2500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_adr_o[*]}]
+set_output_delay -min -1.2500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_cyc_o}]
+set_output_delay -min -1.2500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_dat_o[*]}]
+set_output_delay -min -1.2500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_sel_o[*]}]
+set_output_delay -min -1.2500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_stb_o}]
+set_output_delay -min -1.2500 -clock [get_clocks {wbs_clk_i}] -add_delay [get_ports {wbs_we_o}]
 
 ###############################################################################
 # Environment
 ###############################################################################
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin $::env(SYNTH_DRIVING_CELL_PIN) [all_inputs]
-set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} [all_inputs]
+set cap_load 0.0334
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
 ###############################################################################

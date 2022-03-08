@@ -66,30 +66,30 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 
 ### Black-box verilog and views
 set ::env(VERILOG_FILES_BLACKBOX) "\
-        $proj_dir/../../verilog/gl/qspim.v \
+        $proj_dir/../../verilog/gl/qspim_top.v \
         $proj_dir/../../verilog/gl/wb_interconnect.v \
         $proj_dir/../../verilog/gl/pinmux.v     \
-        $proj_dir/../../verilog/gl/uart_i2cm_usb_spi.v     \
+        $proj_dir/../../verilog/gl/uart_i2c_usb_spi_top.v     \
 	$proj_dir/../../verilog/gl/wb_host.v \
 	$proj_dir/../../verilog/gl/yifive.v \
 	$proj_dir/../../verilog/gl/DFFRAM.v \
 	"
 
 set ::env(EXTRA_LEFS) "\
-	$lef_root/qspim.lef \
+	$lef_root/qspim_top.lef \
 	$lef_root/pinmux.lef \
 	$lef_root/wb_interconnect.lef \
-	$lef_root/uart_i2cm_usb_spi.lef \
+	$lef_root/uart_i2c_usb_spi_top.lef \
 	$lef_root/wb_host.lef \
 	$lef_root/yifive.lef \
 	$lef_root/DFFRAM.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
-	$gds_root/qspim.gds \
+	$gds_root/qspim_top.gds \
 	$gds_root/pinmux.gds \
 	$gds_root/wb_interconnect.gds \
-	$gds_root/uart_i2cm_usb_spi.gds \
+	$gds_root/uart_i2c_usb_spi_top.gds \
 	$gds_root/wb_host.gds \
 	$gds_root/yifive.gds \
 	$gds_root/DFFRAM.gds \
@@ -99,7 +99,8 @@ set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 #set ::env(VERILOG_INCLUDE_DIRS) [glob $proj_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
 
-set ::env(GLB_RT_MAXLAYER) 5
+set ::env(GLB_RT_MAXLAYER) 6
+set ::env(RT_MAX_LAYER) {met5}
 
 set ::env(FP_PDN_CHECK_NODES) 0
 
@@ -116,12 +117,12 @@ set ::env(VDD_PIN) "vccd1"
 set ::env(GND_PIN) "vssd1"
 
 set ::env(GLB_RT_OBS) " met5  0    0    2920   3520, \
-	                met4  125  950   675   1640, \
-	                met4  125  1800  675   2540, \
-	                met4  125  100   675    840, \
-	                met4  850  100  1400    840, \
-	                met4  325  2650  875  3400, \
-	                met4  1050 2650 1600  3400 \
+	                met4  125  1750  675   2490, \
+	                met4  125  2645  675   3385, \
+	                met4  125  900   675   1640, \
+	                met4  850  110  1400    850, \
+	                met4  850  2645 1400   3385, \
+	                met4  1575 2645 2125   3385 \
 	              "
                       
 set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 0, vdda2 vssa2 0"
@@ -160,11 +161,11 @@ set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
 
 set ::env(QUIT_ON_LVS_ERROR) "0"
+set ::env(QUIT_ON_TR_DRC) "1"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
-set ::env(QUIT_ON_TR_DRC) "0"
 
 set ::env(FP_PDN_IRDROP) "0"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
