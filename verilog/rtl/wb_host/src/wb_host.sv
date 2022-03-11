@@ -152,7 +152,7 @@ logic [31:0]        reg_0;  // Software_Reg_0
 logic  [3:0]        cfg_wb_clk_ctrl;
 logic  [3:0]        cfg_cpu_clk_ctrl;
 logic  [7:0]        cfg_rtc_clk_ctrl;
-logic  [3:0]        cfg_usb_clk_ctrl;
+logic  [7:0]        cfg_usb_clk_ctrl;
 logic  [7:0]        cfg_glb_ctrl;
 
 // uart Master Port
@@ -363,7 +363,7 @@ assign cfg_glb_ctrl         = reg_0[7:0];
 assign cfg_wb_clk_ctrl      = reg_0[11:8];
 assign cfg_rtc_clk_ctrl     = reg_0[19:12];
 assign cfg_cpu_clk_ctrl     = reg_0[23:20];
-assign cfg_usb_clk_ctrl     = reg_0[31:28];
+assign cfg_usb_clk_ctrl     = reg_0[31:24];
 
 
 always @( *)
@@ -544,8 +544,8 @@ wire   usb_clk_div;
 wire   usb_ref_clk;
 wire   usb_clk_int;
 
-wire       cfg_usb_clk_div       = cfg_usb_clk_ctrl[3];
-wire [2:0] cfg_usb_clk_ratio     = cfg_usb_clk_ctrl[2:0];
+wire       cfg_usb_clk_div       = cfg_usb_clk_ctrl[7];
+wire [6:0] cfg_usb_clk_ratio     = cfg_usb_clk_ctrl[6:0];
 
 assign usb_ref_clk = user_clock2 ;
 //assign usb_clk_int = (cfg_usb_clk_div)     ? usb_clk_div : usb_ref_clk;
@@ -554,7 +554,7 @@ ctech_mux2x1 u_usb_clk_sel (.A0 (usb_ref_clk), .A1 (usb_clk_div), .S  (cfg_usb_c
 
 ctech_clk_buf u_clkbuf_usb (.A (usb_clk_int), . X(usb_clk));
 
-clk_ctl #(2) u_usbclk (
+clk_ctl #(6) u_usbclk (
    // Outputs
        .clk_o         (usb_clk_div      ),
    // Inputs

@@ -279,6 +279,12 @@ wire   sw_rd_en_31 = sw_rd_en & (sw_addr == 5'h1F);
 //-----------------------------------------------------------------------
 
 // Chip ID
+// chip-id[3:0] mapping
+//    0 -  YIFIVE (MPW-2)
+//    1 -  Riscdunio (MPW-3)
+//    2 -  Riscdunio (MPW-4)
+//    3 -  Riscdunio (MPW-5)
+
 wire [15:0] manu_id      =  16'h8268; // Asci value of RD
 wire [3:0]  total_core   =  4'h1;
 wire [3:0]  chip_id      =  4'h3;
@@ -763,7 +769,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h0203_2022) u_reg_23	(
+gen_32b_reg  #(32'h1003_2022) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -776,9 +782,9 @@ gen_32b_reg  #(32'h0203_2022) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 3.7 = 0003700
+// Software Reg-3: Poject Revison 3.8 = 0003800
 // ----------------------------------------
-gen_32b_reg  #(32'h0003_7000) u_reg_24	(
+gen_32b_reg  #(32'h0003_8000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
