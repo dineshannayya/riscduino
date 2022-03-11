@@ -18,13 +18,12 @@
 ////                                                              ////
 ////  Standalone User validation Test bench                       ////
 ////                                                              ////
-////  This file is part of the YIFive cores project               ////
-////  https://github.com/dineshannayya/yifive_r0.git              ////
-////  http://www.opencores.org/cores/yifive/                      ////
+////  This file is part of the riscduino project                  ////
+////  https://github.com/dineshannayya/riscduino.git              ////
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
-////   sspi interfaface through External WB i/F.                  ////
+////   usb interfaface through External WB i/F.                   ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -33,32 +32,7 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 01 Oct 2021, Dinesh A                               ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
-//// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
-////                                                              ////
-//// This source file may be used and distributed without         ////
-//// restriction provided that this copyright statement is not    ////
-//// removed from the file and that any derivative work contains  ////
-//// the original copyright notice and the associated disclaimer. ////
-////                                                              ////
-//// This source file is free software; you can redistribute it   ////
-//// and/or modify it under the terms of the GNU Lesser General   ////
-//// Public License as published by the Free Software Foundation; ////
-//// either version 2.1 of the License, or (at your option) any   ////
-//// later version.                                               ////
-////                                                              ////
-//// This source is distributed in the hope that it will be       ////
-//// useful, but WITHOUT ANY WARRANTY; without even the implied   ////
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR      ////
-//// PURPOSE.  See the GNU Lesser General Public License for more ////
-//// details.                                                     ////
-////                                                              ////
-//// You should have received a copy of the GNU Lesser General    ////
-//// Public License along with this source; if not, download it   ////
-//// from http://www.opencores.org/lgpl.shtml                     ////
+////    0.1 - 09 Mar 2022, Dinesh A                               ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
@@ -69,17 +43,27 @@
 // Note in caravel, 0x30XX_XXXX only come to user interface
 // So, using wb_host bank select we have changing MSB address [31:24] = 0x10
 `define ADDR_SPACE_UART    32'h3001_0000
+`define ADDR_SPACE_USB     32'h3001_0080
 `define ADDR_SPACE_SSPI    32'h3001_00C0
 `define ADDR_SPACE_PINMUX  32'h3002_0000
 
-`define TB_GLBL    user_sspi_tb
+`define TB_GLBL    user_usb_tb
+`define USB_BFM    u_usb_agent
 
 `include "uprj_netlists.v"
-`include "is62wvs1288.v"
+`include "usb_agents.v"
+`include "test_control.v"
+`include "usb1d_defines.v"
+`include "usbd_files.v"
 
+module user_usb_tb;
 
-module user_sspi_tb;
+parameter  USB_HPER   = 10.4167; // 48Mhz Half cycle
+parameter  USER2_HPER = 2.6042; // 192Mhz Half cycle
+
 	reg clock;
+	reg user_clock2;
+	reg usb_48mhz_clk;
 	reg wb_rst_i;
 	reg power1, power2;
 	reg power3, power4;
@@ -109,12 +93,35 @@ module user_sspi_tb;
 	reg        test_fail;
 	reg [31:0] read_data;
 
+        //-----------------------------------
+        // Register Interface
+        // ----------------------------------
+        wire [31:0]   usbd_reg_addr;   // Register Address
+       	wire 	      usbd_reg_rdwrn;  // 0 -> write, 1-> read
+       	wire 	      usbd_reg_req;    //  Register Req
+        wire [31:0]   usbd_reg_wdata;  // Register write data
+        reg [31:0]    usbd_reg_rdata;  // Register Read Data
+        reg           usbd_reg_ack = 1'b1;    // Register Ack
+
+	reg  [31:0]   RegBank [0:15];
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
 	// would be the fast clock.
 
 	always #12.5 clock <= (clock === 1'b0);
+
+	// 48Mhz clock generation
+	always begin
+          #USB_HPER     usb_48mhz_clk = 1'b0;
+          #USB_HPER     usb_48mhz_clk = 1'b1;
+        end
+
+	// USER Clock generation
+	always begin
+          #USER2_HPER     user_clock2 = 1'b0;
+          #USER2_HPER     user_clock2 = 1'b1;
+        end
 
 	initial begin
 		clock = 0;
@@ -125,13 +132,38 @@ module user_sspi_tb;
                 wbd_ext_dat_i ='h0;  // data output
                 wbd_ext_sel_i ='h0;  // byte enable
 	end
+	initial begin
+		wb_rst_i <= 1'b1;
+		#100;
+		wb_rst_i <= 1'b0;	    	// Release reset
+	end
 
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(5, user_sspi_tb);
+	   	$dumpvars(5, user_usb_tb);
 	   end
        `endif
+
+        always@(posedge wb_rst_i  or posedge usb_48mhz_clk)
+	begin
+	   if(wb_rst_i == 1'b1) begin
+              usbd_reg_rdata = 'h0;
+              usbd_reg_ack   = 'h0;
+	   end else begin
+	      if(usbd_reg_req && usbd_reg_rdwrn == 1'b0 && !usbd_reg_ack) begin
+                 usbd_reg_ack = 'h1;
+		 RegBank[usbd_reg_addr[5:2]] = usbd_reg_wdata;
+		 $display("STATUS: Write Access Address : %x Data: %x",usbd_reg_addr[7:0],usbd_reg_wdata);
+	      end else if(usbd_reg_req && usbd_reg_rdwrn == 1'b1 && !usbd_reg_ack) begin
+                 usbd_reg_ack = 'h1;
+		 usbd_reg_rdata = RegBank[usbd_reg_addr[5:2]];
+		 $display("STATUS: Read Access Address : %x Data: %x",usbd_reg_addr[7:0],usbd_reg_rdata);
+	      end else begin
+                 usbd_reg_ack = 'h0;
+	      end
+	   end
+	end
 
 	initial begin
 		$dumpon;
@@ -148,95 +180,44 @@ module user_sspi_tb;
 
 	        repeat (2) @(posedge clock);
 		#1;
+         
+	        // Set USB clock : 192/4 = 48Mhz	
+                wb_user_core_write('h3080_0000,{8'h82,4'h0,8'h0,4'h0,8'h01});
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h01F);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h03F);
 
 
 		test_fail = 0;
-		sspi_init();
 	        repeat (200) @(posedge clock);
                 wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-                $display("############################################");
-                $display("   Testing IS62/65WVS1288GALL SSRAM Read/Write Access       ");
-                $display("############################################");
-		// SSPI Indirect RAM READ ACCESS-
-		// Byte Read Option
-		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
-                spi_chip_no = 2'b00; // Select the Chip Select to zero
-		sspi_dw_read_check(8'h03,24'h0000,32'h03020100);
-		sspi_dw_read_check(8'h03,24'h0004,32'h07060504);
-		sspi_dw_read_check(8'h03,24'h0008,32'h0b0a0908);
-		sspi_dw_read_check(8'h03,24'h000C,32'h0f0e0d0c);
-		sspi_dw_read_check(8'h03,24'h0010,32'h13121110);
-		sspi_dw_read_check(8'h03,24'h0014,32'h17161514);
-		sspi_dw_read_check(8'h03,24'h0018,32'h1B1A1918);
-		sspi_dw_read_check(8'h03,24'h001C,32'h1F1E1D1C);
 
-		sspi_dw_read_check(8'h03,24'h0040,32'h43424140);
-		sspi_dw_read_check(8'h03,24'h0044,32'h47464544);
-		sspi_dw_read_check(8'h03,24'h0048,32'h4B4A4948);
-		sspi_dw_read_check(8'h03,24'h004C,32'h4F4E4D4C);
 
-		sspi_dw_read_check(8'h03,24'h00a0,32'ha3a2a1a0);
-		sspi_dw_read_check(8'h03,24'h00a4,32'ha7a6a5a4);
-		sspi_dw_read_check(8'h03,24'h00a8,32'habaaa9a8);
-		sspi_dw_read_check(8'h03,24'h00aC,32'hafaeadac);
-
-		sspi_dw_read_check(8'h03,24'h0200,32'h11111111);
-		sspi_dw_read_check(8'h03,24'h0204,32'h22222222);
-		sspi_dw_read_check(8'h03,24'h0208,32'h33333333);
-		sspi_dw_read_check(8'h03,24'h020C,32'h44444444);
-
-		// SPI Write
-		sspi_dw_write(8'h02,24'h0000,32'h00112233);
-		sspi_dw_write(8'h02,24'h0004,32'h44556677);
-		sspi_dw_write(8'h02,24'h0008,32'h8899AABB);
-		sspi_dw_write(8'h02,24'h000C,32'hCCDDEEFF);
-
-		sspi_dw_write(8'h02,24'h0200,32'h11223344);
-		sspi_dw_write(8'h02,24'h0204,32'h55667788);
-		sspi_dw_write(8'h02,24'h0208,32'h99AABBCC);
-		sspi_dw_write(8'h02,24'h020C,32'hDDEEFF00);
-
-		// SPI Read Check
-		sspi_dw_read_check(8'h03,24'h0000,32'h00112233);
-		sspi_dw_read_check(8'h03,24'h0004,32'h44556677);
-		sspi_dw_read_check(8'h03,24'h0008,32'h8899AABB);
-		sspi_dw_read_check(8'h03,24'h000C,32'hCCDDEEFF);
-
-		sspi_dw_read_check(8'h03,24'h0200,32'h11223344);
-		sspi_dw_read_check(8'h03,24'h0204,32'h55667788);
-		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
-		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
+		//usb_test1;
+		usb_test2;
 
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
 
-          	if(test_fail == 0) begin
+          	if(test_control.error_count == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: SPI Master Mode (GL) Passed");
+	    	       $display("Monitor: USB Mode (GL) Passed");
 		   `else
-		       $display("Monitor: SPI Master Mode (RTL) Passed");
+		       $display("Monitor: USB Mode (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: SPI Master Mode (GL) Failed");
+	    	        $display("Monitor: USB Mode (GL) Failed");
 		    `else
-		        $display("Monitor: SPI Master Mode (RTL) Failed");
+		        $display("Monitor: USB Mode (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");
 	        $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -245,9 +226,9 @@ user_project_wrapper u_top(
     .vccd1(USER_VDD1V8),	// User area 1 1.8V supply
     .vssd1(VSS),	// User area 1 digital ground
 `endif
-    .wb_clk_i        (clock),  // System clock
-    .user_clock2     (1'b1),  // Real-time clock
-    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
+    .wb_clk_i    (clock       ),  // System clock
+    .user_clock2 (user_clock2 ),  // Real-time clock
+    .wb_rst_i    (wb_rst_i    ),  // Regular Reset signal
 
     .wbs_cyc_i   (wbd_ext_cyc_i),  // strobe/request
     .wbs_stb_i   (wbd_ext_stb_i),  // strobe/request
@@ -274,39 +255,158 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+    usb_agent u_usb_agent();
+    test_control test_control();
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
 
     end
-`endif    
+`endif  
 
-//------------------------------------------------------
-//  Integrate the Serial flash with qurd support to
-//  user core using the gpio pads
-//  ----------------------------------------------------
-   wire flash_io1;
-   wire flash_clk = io_out[16];
-   wire spiram_csb = io_out[13];
-   tri  #1 flash_io0 = io_out[15];
-   assign io_in[14] = flash_io1;
+// Drive USB Pads
+//
+tri usbd_txdp = (io_oeb[36] == 1'b0) ? io_out[36] : 1'bz;
+tri usbd_txdn = (io_oeb[37] == 1'b0) ? io_out[37] : 1'bz;
 
-   tri  #1 flash_io2 = 1'b1;
-   tri  #1 flash_io3 = 1'b1;
+assign io_in[36] = usbd_txdp;
+assign io_in[37] = usbd_txdn;
 
+// Full Speed Device Indication
 
-   is62wvs1288 #(.mem_file_name("flash1.hex"))
-	u_sfram (
-         // Data Inputs/Outputs
-           .io0     (flash_io0),
-           .io1     (flash_io1),
-           // Controls
-           .clk    (flash_clk),
-           .csb    (spiram_csb),
-           .io2    (flash_io2),
-           .io3    (flash_io3)
-    );
+pullup(usbd_txdp); 
+//pulldown(usbd_txdn);
+
+usb1d_top u_usb_top(
+
+	.clk_i           (usb_48mhz_clk), 
+	.rstn_i          (!wb_rst_i),
+ 
+		// USB PHY Interface
+	.usb_dp          (usbd_txdp), 
+	.usb_dn          (usbd_txdn), 
+ 
+	// USB Misc
+	.phy_tx_mode     (1'b1), 
+        .usb_rst         (),
+ 
+	// Interrupts
+	.dropped_frame   (), 
+	.misaligned_frame(),
+	.crc16_err       (),
+ 
+	// Vendor Features
+	.v_set_int       (), 
+	.v_set_feature   (), 
+	.wValue          (),
+	.wIndex          (), 
+	.vendor_data     (),
+ 
+	// USB Status
+	.usb_busy        (), 
+	.ep_sel          (),
+ 
+	// End point 1 configuration
+	.ep1_cfg         (	`ISO  | `IN  | 14'd0256		),
+	// End point 1 'OUT' FIFO i/f
+	.ep1_dout        (					),
+	.ep1_we          (					),
+	.ep1_full        (		1'b0			),
+	// End point 1 'IN' FIFO i/f
+	.ep1_din         (		8'h0		        ),
+	.ep1_re          (		   		        ),
+	.ep1_empty       (		1'b0     		),
+	.ep1_bf_en       (		1'b0			),
+	.ep1_bf_size     (		7'h0			),
+ 
+	// End point 2 configuration
+	.ep2_cfg         (	`ISO  | `OUT | 14'd0256		),
+	// End point 2 'OUT' FIFO i/f
+	.ep2_dout        (				        ),
+	.ep2_we          (				        ),
+	.ep2_full        (		1'b0     		),
+	// End point 2 'IN' FIFO i/f
+	.ep2_din         (		8'h0			),
+	.ep2_re          (					),
+	.ep2_empty       (		1'b0			),
+	.ep2_bf_en       (		1'b0			),
+	.ep2_bf_size     (		7'h0			),
+ 
+	// End point 3 configuration
+	.ep3_cfg         (	`BULK | `IN  | 14'd064		),
+	// End point 3 'OUT' FIFO i/f
+	.ep3_dout        (					),
+	.ep3_we          (					),
+	.ep3_full        (		1'b0			),
+	// End point 3 'IN' FIFO i/f
+	.ep3_din         (		8'h0      		),
+	.ep3_re          (		        		),
+	.ep3_empty       (		1'b0    		),
+	.ep3_bf_en       (		1'b0			),
+	.ep3_bf_size     (		7'h0			),
+ 
+	// End point 4 configuration
+	.ep4_cfg         (	`BULK | `OUT | 14'd064		),
+	// End point 4 'OUT' FIFO i/f
+	.ep4_dout        (		        		),
+	.ep4_we          (		        		),
+	.ep4_full        (		1'b0     		),
+	// End point 4 'IN' FIFO i/f
+	.ep4_din         (		8'h0			),
+	.ep4_re          (					),
+	.ep4_empty       (		1'b0			),
+	.ep4_bf_en       (		1'b0			),
+	.ep4_bf_size     (		7'h0			),
+ 
+	// End point 5 configuration
+	.ep5_cfg         (	`INT  | `IN  | 14'd064		),
+	// End point 5 'OUT' FIFO i/f
+	.ep5_dout        (					),
+	.ep5_we          (					),
+	.ep5_full        (		1'b0			),
+	// End point 5 'IN' FIFO i/f
+	.ep5_din         (		8'h0     		),
+	.ep5_re          (				        ),
+	.ep5_empty       (		1'b0     		),
+	.ep5_bf_en       (		1'b0			),
+	.ep5_bf_size     (		7'h0			),
+ 
+	// End point 6 configuration
+	.ep6_cfg         (		14'h00			),
+	// End point 6 'OUT' FIFO i/f
+	.ep6_dout        (					),
+	.ep6_we          (					),
+	.ep6_full        (		1'b0			),
+	// End point 6 'IN' FIFO i/f
+	.ep6_din         (		8'h0			),
+	.ep6_re          (					),
+	.ep6_empty       (		1'b0			),
+	.ep6_bf_en       (		1'b0			),
+	.ep6_bf_size     (		7'h0			),
+ 
+	// End point 7 configuration
+	.ep7_cfg         (		14'h00			),
+	// End point 7 'OUT' FIFO i/f
+	.ep7_dout        (					),
+	.ep7_we          (					),
+	.ep7_full        (		1'b0			),
+	// End point 7 'IN' FIFO i/f
+	.ep7_din         (		8'h0			),
+	.ep7_re          (					),
+	.ep7_empty       (		1'b0			),
+	.ep7_bf_en       (		1'b0			),
+	.ep7_bf_size     (		7'h0			),
+ 
+        // Register Interface
+	.reg_addr        (usbd_reg_addr),
+	.reg_rdwrn       (usbd_reg_rdwrn),
+	.reg_req         (usbd_reg_req),
+	.reg_wdata       (usbd_reg_wdata),
+	.reg_rdata       (usbd_reg_rdata),
+	.reg_ack         (usbd_reg_ack)
+ 
+	);
 
 
 //----------------------------------------------------
@@ -398,7 +498,7 @@ begin
   wbd_ext_sel_i ='h0;  // byte enable
   if(data !== cmp_data) begin
      $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
-     user_sspi_tb.test_fail = 1;
+     user_usb_tb.test_fail = 1;
   end else begin
      $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   end
@@ -454,7 +554,8 @@ end
 
 `endif
 **/
-`include "sspi_task.v"
+`include "tests/usb_test1.v"
+`include "tests/usb_test2.v"
 
 endmodule
 `default_nettype wire

@@ -57,8 +57,8 @@ module usb1_host (
     input                  in_dp   ,
     input                  in_dn   ,
 
-    input                  out_dp   ,
-    input                  out_dn   ,
+    output                 out_dp   ,
+    output                 out_dn   ,
     output                 out_tx_oen,
 
     // Master Port

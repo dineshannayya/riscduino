@@ -191,7 +191,10 @@
 ////       1. qspi cs# port mapping changed from io 28:25 to 25:28////
 ////       2. sspi, bug fix in reg access and endian support added////
 ////       3. Wishbone interconnect now support cross-connect     ////
-////          feature
+////          feature                                             ////
+////    3.8  Mar 10 2022, Dinesh A                                ////
+////         1. usb chip select bug inside uart_* wrapper         ////
+////         2. in wb_host, increased usb clk ctrl to 4 to 8 bit  ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

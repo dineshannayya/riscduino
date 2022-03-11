@@ -179,62 +179,61 @@ begin
           // cfg_wb_clk_ctrl      = reg_0[11:9];
           // cfg_rtc_clk_ctrl     = reg_0[19:12];
           // cfg_cpu_clk_ctrl     = reg_0[23:20];
-          // cfg_sdram_clk_ctrl   = reg_0[27:24];
-          // cfg_usb_clk_ctrl     = reg_0[31:28];
+          // cfg_usb_clk_ctrl     = reg_0[31:24];
 	  $display("Step-1, CPU: CLOCK1, RTC: CLOCK2 *2, USB: CLOCK2, WBS:CLOCK1");
 	  test_step = 1;
-          wb_user_core_write('h3080_0000,{4'h0,4'h0,4'h0,8'h0,4'h0,8'h00});
+          wb_user_core_write('h3080_0000,{8'h0,4'h0,8'h0,4'h0,8'h00});
 	  clock_monitor(CLK1_PERIOD,CLK2_PERIOD*2,CLK2_PERIOD,CLK1_PERIOD);
 
 	  $display("Step-2, CPU: CLOCK2, RTC: CLOCK2/(2+1), USB: CLOCK2/2, WBS:CLOCK2");
 	  test_step = 2;
-          wb_user_core_write('h3080_0000,{4'h8,4'h0,4'h8,8'h1,4'h8,8'h00});
+          wb_user_core_write('h3080_0000,{8'h80,4'h8,8'h1,4'h8,8'h00});
 	  clock_monitor(CLK2_PERIOD,(3)*CLK2_PERIOD,2*CLK2_PERIOD,CLK2_PERIOD);
 
 	  $display("Step-3, CPU: CLOCK1/2, RTC: CLOCK2/(2+2), USB: CLOCK2/(2+1), WBS:CLOCK1/2");
 	  test_step = 3;
-          wb_user_core_write('h3080_0000,{4'h9,4'h0,4'h4,8'h2,4'h4,8'h00});
+          wb_user_core_write('h3080_0000,{8'h81,4'h4,8'h2,4'h4,8'h00});
 	  clock_monitor(2*CLK1_PERIOD,(4)*CLK2_PERIOD,3*CLK2_PERIOD,2*CLK1_PERIOD);
 
 	  $display("Step-4, CPU: CLOCK1/3, RTC: CLOCK2/(2+3), USB: CLOCK2/(2+2), WBS:CLOCK1/3");
 	  test_step = 4;
-          wb_user_core_write('h3080_0000,{4'hA,4'h0,4'h5,8'h3,4'h5,8'h00});
+          wb_user_core_write('h3080_0000,{8'h82,4'h5,8'h3,4'h5,8'h00});
 	  clock_monitor(3*CLK1_PERIOD,5*CLK2_PERIOD,4*CLK2_PERIOD,3*CLK1_PERIOD);
 
 	  $display("Step-5, CPU: CLOCK1/4, RTC: CLOCK2/(2+4), USB: CLOCK2/(2+3), WBS:CLOCK1/4");
 	  test_step = 5;
-          wb_user_core_write('h3080_0000,{4'hB,4'h0,4'h6,8'h4,4'h6,8'h00});
+          wb_user_core_write('h3080_0000,{8'h83,4'h6,8'h4,4'h6,8'h00});
 	  clock_monitor(4*CLK1_PERIOD,6*CLK2_PERIOD,5*CLK2_PERIOD,4*CLK1_PERIOD);
 
 	  $display("Step-6, CPU: CLOCK1/(2+3), RTC: CLOCK2/(2+5), USB: CLOCK2/(2+4), WBS:CLOCK1/(2+3)");
 	  test_step = 6;
-          wb_user_core_write('h3080_0000,{4'hC,4'h0,4'h7,8'h5,4'h7,8'h00});
+          wb_user_core_write('h3080_0000,{8'h84,4'h7,8'h5,4'h7,8'h00});
 	  clock_monitor(5*CLK1_PERIOD,7*CLK2_PERIOD,6*CLK2_PERIOD,5*CLK1_PERIOD);
 
 	  $display("Step-7, CPU: CLOCK2/(2), RTC: CLOCK2/(2+6), USB: CLOCK2/(2+5), WBS:CLOCK2/(2)");
 	  test_step = 7;
-          wb_user_core_write('h3080_0000,{4'hD,4'h0,4'hC,8'h6,4'hC,8'h00});
+          wb_user_core_write('h3080_0000,{8'h85,4'hC,8'h6,4'hC,8'h00});
 	  clock_monitor(2*CLK2_PERIOD,8*CLK2_PERIOD,7*CLK2_PERIOD,2*CLK2_PERIOD);
 
 	  $display("Step-8, CPU: CLOCK2/3, RTC: CLOCK2/(2+7), USB: CLOCK2/(2+6), WBS:CLOCK2/3");
 	  test_step = 8;
-          wb_user_core_write('h3080_0000,{4'hE,4'h0,4'hD,8'h7,4'hD,8'h00});
+          wb_user_core_write('h3080_0000,{8'h86,4'hD,8'h7,4'hD,8'h00});
 	  clock_monitor(3*CLK2_PERIOD,9*CLK2_PERIOD,8*CLK2_PERIOD,3*CLK2_PERIOD);
 
 	  $display("Step-9, CPU: CLOCK2/4, RTC: CLOCK2/(2+8), USB: CLOCK2/(2+7), WBS:CLOCK2/4");
 	  test_step = 9;
-          wb_user_core_write('h3080_0000,{4'hF,4'h0,4'hE,8'h8,4'hE,8'h00});
+          wb_user_core_write('h3080_0000,{8'h87,4'hE,8'h8,4'hE,8'h00});
 	  clock_monitor(4*CLK2_PERIOD,10*CLK2_PERIOD,9*CLK2_PERIOD,4*CLK2_PERIOD);
 
-	  $display("Step-10, CPU: CLOCK2/(2+3), RTC: CLOCK2/(2+128), USB: CLOCK2/(2+7), WBS:CLOCK1/(2+3)");
+	  $display("Step-10, CPU: CLOCK2/(2+3), RTC: CLOCK2/(2+128), USB: CLOCK2/(2+8), WBS:CLOCK1/(2+3)");
 	  test_step = 10;
-          wb_user_core_write('h3080_0000,{4'hF,4'h0,4'hF,8'h80,4'hF,8'h00});
-	  clock_monitor(5*CLK2_PERIOD,130*CLK2_PERIOD,9*CLK2_PERIOD,5*CLK2_PERIOD);
+          wb_user_core_write('h3080_0000,{8'h88,4'hF,8'h80,4'hF,8'h00});
+	  clock_monitor(5*CLK2_PERIOD,130*CLK2_PERIOD,10*CLK2_PERIOD,5*CLK2_PERIOD);
 
-	  $display("Step-10, CPU: CLOCK2/(2+3), RTC: CLOCK2/(2+255), USB: CLOCK2/(2+7), WBS:CLOCK2/(2+3)");
+	  $display("Step-10, CPU: CLOCK2/(2+3), RTC: CLOCK2/(2+255), USB: CLOCK2/(2+9), WBS:CLOCK2/(2+3)");
 	  test_step = 10;
-          wb_user_core_write('h3080_0000,{4'hF,4'h0,4'hF,8'hFF,4'hF,8'h00});
-	  clock_monitor(5*CLK2_PERIOD,257*CLK2_PERIOD,9*CLK2_PERIOD,5*CLK2_PERIOD);
+          wb_user_core_write('h3080_0000,{8'h89,4'hF,8'hFF,4'hF,8'h00});
+	  clock_monitor(5*CLK2_PERIOD,257*CLK2_PERIOD,11*CLK2_PERIOD,5*CLK2_PERIOD);
 
          $display("###################################################");
          $display("Monitor: Checking the chip signature :");
@@ -242,8 +241,8 @@ begin
          wb_user_core_write('h3080_0000,'h1);
 
 	 wb_user_core_read_check(32'h30020058,read_data,32'h8273_8343);
-	 wb_user_core_read_check(32'h3002005C,read_data,32'h0203_2022);
-	 wb_user_core_read_check(32'h30020060,read_data,32'h0003_7000);
+	 wb_user_core_read_check(32'h3002005C,read_data,32'h1003_2022);
+	 wb_user_core_read_check(32'h30020060,read_data,32'h0003_8000);
 
       end
    

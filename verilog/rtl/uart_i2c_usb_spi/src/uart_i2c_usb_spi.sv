@@ -168,8 +168,8 @@ assign reg_ack   = (reg_addr[7:6] == `SEL_UART) ? reg_uart_ack   :
 
 wire reg_uart_cs  = (reg_addr[7:6] == `SEL_UART) ? reg_cs : 1'b0;
 wire reg_i2cm_cs  = (reg_addr[7:6] == `SEL_I2C)  ? reg_cs : 1'b0;
-wire reg_usb_cs   = (reg_addr[7:6] == `SEL_UART) ? reg_cs : 1'b0;
-wire reg_spim_cs  = (reg_addr[7:6] == `SEL_SPI) ?  reg_cs : 1'b0;
+wire reg_usb_cs   = (reg_addr[7:6] == `SEL_USB)  ? reg_cs : 1'b0;
+wire reg_spim_cs  = (reg_addr[7:6] == `SEL_SPI)  ?  reg_cs : 1'b0;
 
 uart_core  u_uart_core (  
 
