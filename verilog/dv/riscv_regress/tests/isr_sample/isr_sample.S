@@ -11,9 +11,10 @@
 #define MCAUSE_TMR_IRQ              (1 << 31 | IRQ_M_TIMER)
 
 // IPIC
-#define IRQ_LINES_ADDR              0x10020020      // simulation
-#define TRIG_EXT_IRQ_ADDR           0x10020020      // external irq is triggered when tb memory is set to non-zero // Bit [15:0]
-#define TRIG_SW_IRQ_ADDR            0x10020020      // software irq is triggered when tb memory is set to non-zero // Bit [16]
+#define IRQ_LINES_MASK              0x1002000C      // Interrupt Mask
+#define IRQ_LINES_ADDR              0x10020010      // simulation
+#define TRIG_EXT_IRQ_ADDR           0x10020010      // external irq is triggered when tb memory is set to non-zero // Bit [15:0]
+#define TRIG_SW_IRQ_ADDR            0x10020010      // software irq is triggered when tb memory is set to non-zero // Bit [16]
 
 #define IPIC_EOI                    0xBF4           // end of interrupt
 #define IPIC_SOI                    0xBF5           // start of interrupt
@@ -28,7 +29,7 @@
 #define IPIC_ICSR_IS                (1 << 4)        // in service
 
 //  Interrupt lines in use 
-#define IPIC_IRQ_LINE9              9
+#define IPIC_IRQ_LINE7              7
 #define EXT_IRQ_LINE_COMMON         0
 
 #include "timer.h"
@@ -154,8 +155,11 @@ test_start:
     csrw                mie, zero                      // disable all interrupts
     li                  t0, IRQ_LINES_ADDR
     sh                  zero, (t0)                     // set all exterinal interrupt lines low
+    li                  t0, IRQ_LINES_MASK
+    li                  t1, 0xFFFFF
+    sw                  t1, (t0)                     // Enable Interrupt Mask
     #ifdef IPIC_ENABLED
-        li                  t0, IPIC_IRQ_LINE9
+        li                  t0, IPIC_IRQ_LINE7
         csrw                IPIC_IDX, t0               // set IPIC to expect interupt on line 9...
         li                  t0, (IPIC_ICSR_IE | IPIC_ICSR_IM)
         csrw                IPIC_ICSR, t0              //  ....enable interrupt,set edge interrupt mode
@@ -164,7 +168,7 @@ test_start:
     csrs                mie, t0                        // enable external interrupt 
     li                  t0, TRIG_EXT_IRQ_ADDR
     #ifdef IPIC_ENABLED          
-        li                  t1, (1 << IPIC_IRQ_LINE9)
+        li                  t1, (1 << IPIC_IRQ_LINE7)
     #else
         li                  t1, (1 << EXT_IRQ_LINE_COMMON)
     #endif

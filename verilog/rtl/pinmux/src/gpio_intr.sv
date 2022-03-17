@@ -1,6 +1,6 @@
 
 // GPIO Interrupt Generation
-module gpio_intr (
+module gpio_intr_gen (
    input  logic         mclk                     ,// System clk
    input  logic         h_reset_n                ,// system reset
    input  logic [31:0]  gpio_prev_indata         ,// previously captured GPIO I/P pins data

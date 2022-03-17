@@ -66,16 +66,13 @@
 
 `timescale 1 ns / 1 ns
 
-// Note in caravel, 0x30XX_XXXX only come to user interface
-// So, using wb_host bank select we have changing MSB address [31:24] = 0x10
-`define ADDR_SPACE_UART    32'h3001_0000
-`define ADDR_SPACE_SSPI    32'h3001_00C0
-`define ADDR_SPACE_PINMUX  32'h3002_0000
 
 `define TB_GLBL    user_sspi_tb
 
 `include "uprj_netlists.v"
 `include "is62wvs1288.v"
+`include "user_reg_map.v"
+
 
 
 module user_sspi_tb;
@@ -141,23 +138,23 @@ module user_sspi_tb;
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write('h3080_0000,'h1);
+		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
                 // Enable SPI Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_PINMUX+'h0038,'h400);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h400);
 
 	        repeat (2) @(posedge clock);
 		#1;
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h01F);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
 
 
 		test_fail = 0;
 		sspi_init();
 	        repeat (200) @(posedge clock);
-                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
                 $display("############################################");
                 $display("   Testing IS62/65WVS1288GALL SSRAM Read/Write Access       ");
                 $display("############################################");

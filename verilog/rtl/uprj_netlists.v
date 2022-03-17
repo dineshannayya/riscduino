@@ -46,6 +46,7 @@
      `include "pinmux/src/pinmux_reg.sv"
      `include "pinmux/src/gpio_intr.sv"
      `include "pinmux/src/pwm.sv"
+     `include "pinmux/src/timer.sv"
      `include "lib/pulse_gen_type1.sv"
      `include "lib/pulse_gen_type2.sv"
 

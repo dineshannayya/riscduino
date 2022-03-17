@@ -195,6 +195,12 @@
 ////    3.8  Mar 10 2022, Dinesh A                                ////
 ////         1. usb chip select bug inside uart_* wrapper         ////
 ////         2. in wb_host, increased usb clk ctrl to 4 to 8 bit  ////
+////    3.9  Mar 16 2022, Dinesh A                                ////
+////         1. 3 Timer added                                     ////
+////         2. Pinmux Register address movement                  ////
+////         3. Risc fuse_mhartid is removed and internal tied    ////
+////            inside risc core                                  ////
+////         4. caravel wb addressing issue restrict to 0x300FFFFF////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -441,7 +447,6 @@ wire                           wbd_clk_spi                            ;
 wire                           wbd_clk_pinmux                         ;
 wire                           wbd_int_rst_n                          ;
 
-wire [31:0]                    fuse_mhartid                           ;
 wire [15:0]                    irq_lines                              ;
 wire                           soft_irq                               ;
 
@@ -465,7 +470,6 @@ wire [3:0]                     cfg_cska_qspi_rp                       ; // clock
 wire [3:0]                     cfg_cska_pinmux_rp                     ; // clock skew adjust for pinmux
 wire [3:0]                     cfg_cska_qspi_co_rp                    ; // clock skew adjust for global reg
 
-wire [31:0]                    fuse_mhartid_rp                        ; // Repeater
 wire [15:0]                    irq_lines_rp                           ; // Repeater
 wire                           soft_irq_rp                            ; // Repeater
 
@@ -670,8 +674,6 @@ ycr1_top_wb u_riscv_top (
           .core_clk                (cpu_clk                 ),
           .rtc_clk                 (rtc_clk                 ),
 
-    // Fuses
-          .fuse_mhartid            (fuse_mhartid_rp         ),
 
     // IRQ
           .irq_lines               (irq_lines_rp            ), 
@@ -909,7 +911,7 @@ qspim_top
 wb_interconnect  #(
 	`ifndef SYNTHESIS
           .CH_CLK_WD               (4                       ),
-	  .CH_DATA_WD              (69                      )
+	  .CH_DATA_WD              (37                      )
         `endif
 	) u_intercon (
 `ifdef USE_POWER_PINS
@@ -930,7 +932,6 @@ wb_interconnect  #(
 			 
 	                              soft_irq,
 			              irq_lines[15:0],
-			              fuse_mhartid[31:0],
 
 			              cfg_cska_qspi_co[3:0],
 		                      cfg_cska_pinmux[3:0],
@@ -942,7 +943,6 @@ wb_interconnect  #(
 
 	                              soft_irq_rp,
 			              irq_lines_rp[15:0],
-			              fuse_mhartid_rp[31:0],
 
 			              cfg_cska_qspi_co_rp[3:0],
 		                      cfg_cska_pinmux_rp[3:0],
@@ -1145,7 +1145,6 @@ pinmux u_pinmux(
 
 
        // Risc configuration
-          .fuse_mhartid            (fuse_mhartid            ),
           .irq_lines               (irq_lines               ),
           .soft_irq                (soft_irq                ),
           .user_irq                (user_irq                ),

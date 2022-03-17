@@ -65,7 +65,6 @@ module pinmux_reg (
 		       input  logic [1:0]      ext_intr_in,
 
 		      // Risc configuration
-                       output logic [31:0]     fuse_mhartid,
                        output logic [15:0]     irq_lines,
                        output logic            soft_irq,
                        output logic [2:0]      user_irq,
@@ -108,25 +107,13 @@ module pinmux_reg (
                        output  logic [31:0]     cfg_multi_func_sel       ,// multifunction pins
                         
                        // Outputs
-                       output logic [31:0]      gpio_prev_indata,       // prv data from GPIO I/P pins
+                       output logic [31:0]      gpio_prev_indata         ,// prv data from GPIO I/P pins
 
-		// BIST I/F
-	               output logic             bist_en,
-	               output logic             bist_run,
-	               output logic             bist_load,
-
-	               output logic             bist_sdi,
-	               output logic             bist_shift,
-	               input  logic             bist_sdo,
-
-	               input logic              bist_done,
-	               input logic [3:0]        bist_error,
-	               input logic [3:0]        bist_correct,
-	               input logic [3:0]        bist_error_cnt0,
-	               input logic [3:0]        bist_error_cnt1,
-	               input logic [3:0]        bist_error_cnt2,
-	               input logic [3:0]        bist_error_cnt3
-
+		       input   logic [2:0]      timer_intr               ,
+                       output  logic [2:0]      cfg_timer_update         ,
+                       output  logic [31:0]     cfg_timer0               ,      
+                       output  logic [31:0]     cfg_timer1               ,      
+                       output  logic [31:0]     cfg_timer2               
    ); 
 
 
@@ -170,6 +157,9 @@ logic [31:0]    reg_24; // Software-Reg3
 logic [31:0]    reg_25; // Software-Reg4
 logic [31:0]    reg_26; // Software-Reg5
 logic [31:0]    reg_27; // Software-Reg6
+logic [31:0]    reg_28; // Software-Reg6
+logic [31:0]    reg_29; // Software-Reg6
+logic [31:0]    reg_30; // Software-Reg6
 
 
 logic           cs_int;
@@ -205,23 +195,12 @@ end
 assign wb_req_pedge = (wb_req_d ==0) && (wb_req==1'b1);
 
 
-//-----------------------------------------------------------------
-// Reg 4/5 are BIST Serial I/F register and it takes minimum 32
-// cycle to respond ACK back
-// ----------------------------------------------------------------
-wire ser_acc     = sw_wr_en_30 | sw_rd_en_31;
-wire non_ser_acc = reg_cs ? !ser_acc : 1'b0;
-wire serial_ack;
-
 always @ (posedge mclk or negedge h_reset_n)
 begin : preg_out_Seq
    if (h_reset_n == 1'b0) begin
       reg_rdata  <= 'h0;
       reg_ack    <= 1'b0;
-   end else if (ser_acc && serial_ack)  begin
-      reg_rdata <= serail_dout ;
-      reg_ack   <= 1'b1;
-   end else if (non_ser_acc && !reg_ack) begin
+   end else if (reg_cs && !reg_ack) begin
       reg_rdata <= reg_out ;
       reg_ack   <= 1'b1;
    end else begin
@@ -278,6 +257,7 @@ wire   sw_rd_en_31 = sw_rd_en & (sw_addr == 5'h1F);
 // Individual register assignments
 //-----------------------------------------------------------------------
 
+
 // Chip ID
 // chip-id[3:0] mapping
 //    0 -  YIFIVE (MPW-2)
@@ -293,11 +273,22 @@ wire [7:0]  chip_rev     =  8'h01;
 assign reg_0 = {manu_id,total_core,chip_id,chip_rev};
 
 
-//-----------------------------------------------------------------------
-//   reg-1, reset value = 32'hA55A_A55A
-//   -----------------------------------------------------------------
+//------------------------------------------
+// reg-2: GLBL_CFG_0
+//------------------------------------------
+wire [31:0] cfg_glb_ctrl = reg_1;
 
-gen_32b_reg  #(32'hA55A_A55A) u_reg_1	(
+ctech_buf u_buf_cpu_intf_rst  (.A(cfg_glb_ctrl[0]),.X(cpu_intf_rst_n));
+ctech_buf u_buf_qspim_rst     (.A(cfg_glb_ctrl[1]),.X(qspim_rst_n));
+ctech_buf u_buf_sspim_rst     (.A(cfg_glb_ctrl[2]),.X(sspim_rst_n));
+ctech_buf u_buf_uart_rst      (.A(cfg_glb_ctrl[3]),.X(uart_rst_n));
+ctech_buf u_buf_i2cm_rst      (.A(cfg_glb_ctrl[4]),.X(i2cm_rst_n));
+ctech_buf u_buf_usb_rst       (.A(cfg_glb_ctrl[5]),.X(usb_rst_n));
+
+ctech_buf u_buf_cpu0_rst      (.A(cfg_glb_ctrl[8]),.X(cpu_core_rst_n[0]));
+ctech_buf u_buf_cpu1_rst      (.A(cfg_glb_ctrl[9]),.X(cpu_core_rst_n[1]));
+
+gen_32b_reg  #(32'h0) u_reg_1	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -309,22 +300,9 @@ gen_32b_reg  #(32'hA55A_A55A) u_reg_1	(
 	      .data_out   (reg_1         )
 	      );
 
-assign fuse_mhartid = reg_1;
-
-//------------------------------------------
+//----------------------------------------------
 // reg-2: GLBL_CFG_1
 //------------------------------------------
-wire [31:0] cfg_glb_ctrl = reg_2;
-
-ctech_buf u_buf_cpu_intf_rst  (.A(cfg_glb_ctrl[0]),.X(cpu_intf_rst_n));
-ctech_buf u_buf_qspim_rst     (.A(cfg_glb_ctrl[1]),.X(qspim_rst_n));
-ctech_buf u_buf_sspim_rst     (.A(cfg_glb_ctrl[2]),.X(sspim_rst_n));
-ctech_buf u_buf_uart_rst      (.A(cfg_glb_ctrl[3]),.X(uart_rst_n));
-ctech_buf u_buf_i2cm_rst      (.A(cfg_glb_ctrl[4]),.X(i2cm_rst_n));
-ctech_buf u_buf_usb_rst       (.A(cfg_glb_ctrl[5]),.X(usb_rst_n));
-
-ctech_buf u_buf_cpu0_rst      (.A(cfg_glb_ctrl[8]),.X(cpu_core_rst_n[0]));
-ctech_buf u_buf_cpu1_rst      (.A(cfg_glb_ctrl[9]),.X(cpu_core_rst_n[1]));
 
 gen_32b_reg  #(32'h0) u_reg_2	(
 	      //List of Inputs
@@ -338,9 +316,12 @@ gen_32b_reg  #(32'h0) u_reg_2	(
 	      .data_out   (reg_2         )
 	      );
 
-//----------------------------------------------
-// reg-3: GLBL_CFG_1
-//------------------------------------------
+assign cfg_pulse_1us       = reg_2[9:0];
+assign cfg_riscv_debug_sel = reg_2[31:30];
+
+//-----------------------------------------------------------------------
+//   reg-3 : Global Interrupt Mask
+//-----------------------------------------------------------------------
 
 gen_32b_reg  #(32'h0) u_reg_3	(
 	      //List of Inputs
@@ -354,8 +335,58 @@ gen_32b_reg  #(32'h0) u_reg_3	(
 	      .data_out   (reg_3         )
 	      );
 
-assign cfg_pulse_1us       = reg_3[9:0];
-assign cfg_riscv_debug_sel = reg_3[31:30];
+//-----------------------------------------------------------------------
+//   reg-4 : Global Interrupt Status
+//-----------------------------------------------------------------
+assign  irq_lines     = reg_3[15:0] & reg_4[15:0]; 
+assign  soft_irq      = reg_3[16]   & reg_4[16]; 
+assign  user_irq      = reg_3[19:17]& reg_4[19:17]; 
+
+
+generic_register #(8,0  ) u_reg4_be0 (
+	      .we            ({8{sw_wr_en_4 & 
+                                 wr_be[0]   }}   ),		 
+	      .data_in       (sw_reg_wdata[7:0]  ),
+	      .reset_n       (h_reset_n          ),
+	      .clk           (mclk               ),
+	      
+	      //List of Outs
+	      .data_out      (reg_4[7:0]         )
+          );
+
+
+wire [7:0] hware_intr_req = {gpio_intr, ext_intr_in[1:0], usb_intr, i2cm_intr,timer_intr[2:0]};
+
+generic_intr_stat_reg #(.WD(8),
+	                .RESET_DEFAULT(0)) u_reg4_be1 (
+		 //inputs
+		 .clk         (mclk              ),
+		 .reset_n     (h_reset_n         ),
+	         .reg_we      ({8{sw_wr_en_4 & reg_ack & 
+                                 wr_be[1]   }}  ),		 
+		 .reg_din    (sw_reg_wdata[15:8] ),
+		 .hware_req  (hware_intr_req     ),
+		 
+		 //outputs
+		 .data_out    (reg_4[15:8]       )
+	      );
+
+
+
+generic_register #(4,0  ) u_reg4_be2 (
+	      .we            ({4{sw_wr_en_4 & 
+                                 wr_be[2]   }}  ),		 
+	      .data_in       (sw_reg_wdata[19:16]),
+	      .reset_n       (h_reset_n           ),
+	      .clk           (mclk              ),
+	      
+	      //List of Outs
+	      .data_out      (reg_4[19:16]        )
+          );
+
+assign reg_4[31:20] = '0;
+
+
 //-----------------------------------------------------------------------
 // Logic for gpio_data_in 
 //-----------------------------------------------------------------------
@@ -365,41 +396,25 @@ logic [31:0] gpio_in_data_ss;
 always @ (posedge mclk or negedge h_reset_n)
 begin 
   if (h_reset_n == 1'b0) begin
-    reg_4  <= 'h0 ;
+    reg_5  <= 'h0 ;
     gpio_in_data_s  <= 32'd0;
     gpio_in_data_ss <= 32'd0;
   end
   else begin
     gpio_in_data_s   <= gpio_in_data;
     gpio_in_data_ss <= gpio_in_data_s;
-    reg_4           <= gpio_in_data_ss;
+    reg_5           <= gpio_in_data_ss;
   end
 end
 
 
-assign cfg_gpio_data_in = reg_4[31:0]; // to be used for edge interrupt detect
+assign cfg_gpio_data_in = reg_5[31:0]; // to be used for edge interrupt detect
 assign gpio_prev_indata = gpio_in_data_ss;
 
 //-----------------------------------------------------------------------
 // Logic for cfg_gpio_out_data 
 //-----------------------------------------------------------------------
-assign cfg_gpio_out_data = reg_5[31:0]; // data to the GPIO control blk 
-
-gen_32b_reg  #(32'h0) u_reg_5	(
-	      //List of Inputs
-	      .reset_n    (h_reset_n     ),
-	      .clk        (mclk          ),
-	      .cs         (sw_wr_en_5    ),
-	      .we         (wr_be         ),		 
-	      .data_in    (sw_reg_wdata  ),
-	      
-	      //List of Outs
-	      .data_out   (reg_5         )
-	      );
-//-----------------------------------------------------------------------
-// Logic for cfg_gpio_dir_sel 
-//-----------------------------------------------------------------------
-assign cfg_gpio_dir_sel = reg_6[31:0]; // data to the GPIO O/P pins 
+assign cfg_gpio_out_data = reg_6[31:0]; // data to the GPIO control blk 
 
 gen_32b_reg  #(32'h0) u_reg_6	(
 	      //List of Inputs
@@ -413,9 +428,9 @@ gen_32b_reg  #(32'h0) u_reg_6	(
 	      .data_out   (reg_6         )
 	      );
 //-----------------------------------------------------------------------
-// Logic for cfg_gpio_out_type 
+// Logic for cfg_gpio_dir_sel 
 //-----------------------------------------------------------------------
-assign cfg_gpio_out_type = reg_7[31:0]; // to be used for read
+assign cfg_gpio_dir_sel = reg_7[31:0]; // data to the GPIO O/P pins 
 
 gen_32b_reg  #(32'h0) u_reg_7	(
 	      //List of Inputs
@@ -428,54 +443,23 @@ gen_32b_reg  #(32'h0) u_reg_7	(
 	      //List of Outs
 	      .data_out   (reg_7         )
 	      );
-
-
 //-----------------------------------------------------------------------
-//   reg-8
-//-----------------------------------------------------------------
-assign  irq_lines     = reg_8[15:0]; 
-assign  soft_irq      = reg_8[16]; 
-assign  user_irq      = reg_8[19:17]; 
+// Logic for cfg_gpio_out_type 
+//-----------------------------------------------------------------------
+assign cfg_gpio_out_type = reg_8[31:0]; // to be used for read
 
-
-generic_register #(8,0  ) u_reg8_be0 (
-	      .we            ({8{sw_wr_en_8 & 
-                                 wr_be[0]   }}   ),		 
-	      .data_in       (sw_reg_wdata[7:0]  ),
-	      .reset_n       (h_reset_n          ),
-	      .clk           (mclk               ),
+gen_32b_reg  #(32'h0) u_reg_8	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_8    ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
 	      
 	      //List of Outs
-	      .data_out      (reg_8[7:0]         )
-          );
+	      .data_out   (reg_8         )
+	      );
 
-generic_register #(3,0  ) u_reg8_be1_1 (
-	      .we            ({3{sw_wr_en_8 & 
-                                 wr_be[1]   }}   ),		 
-	      .data_in       (sw_reg_wdata[10:8] ),
-	      .reset_n       (h_reset_n          ),
-	      .clk           (mclk               ),
-	      
-	      //List of Outs
-	      .data_out      (reg_8[10:8]        )
-          );
-
-
-assign reg_8[15:11] = {gpio_intr, ext_intr_in[1:0], usb_intr, i2cm_intr};
-
-
-generic_register #(4,0  ) u_reg8_be2 (
-	      .we            ({4{sw_wr_en_8 & 
-                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[19:16]),
-	      .reset_n       (h_reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_8[19:16]        )
-          );
-
-assign reg_8[31:20] = '0;
 
 
 //-----------------------------------------------------------------------
@@ -497,67 +481,29 @@ wire [31:0]  cfg_gpio_int_status = reg_9[31:0]; // to be used for read
 //	    Interrupt posting is higher priority than int clear by host 
 //--------------------------------------------------------
 wire [31:0] gpio_int_status = reg_9;				      
-always @(posedge mclk or negedge h_reset_n)
-begin
-   if(~h_reset_n)
-   begin
-      reg_9[31:0]   <= 32'h0;
-   end
-   else
-   begin
-      if(sw_wr_en_9 && wr_be[0])
-      begin
-         reg_9[7:0] <=  ((~sw_reg_wdata[7:0] & gpio_int_status[7:0]) | gpio_int_event[7:0]);
-      end
-      else if(sw_wr_en_10 && wr_be[0]) 
-      begin
-         reg_9[7:0] <= ((sw_reg_wdata[7:0] | gpio_int_status[7:0]) | gpio_int_event[7:0]);
-      end
-      else
-      begin
-         reg_9[7:0] <=   (gpio_int_status[7:0] | gpio_int_event[7:0]);
-      end
 
-      if(sw_wr_en_9 && wr_be[1])
-      begin
-         reg_9[15:8] <=  ((~sw_reg_wdata[15:8] & gpio_int_status[15:8]) | gpio_int_event[15:8]);
-      end
-      else if(sw_wr_en_10 && wr_be[1]) 
-      begin
-         reg_9[15:8] <= ((sw_reg_wdata[15:8] | gpio_int_status[15:8]) | gpio_int_event[15:8]);
-      end
-      else
-      begin
-         reg_9[15:8] <=   (gpio_int_status[15:8] | gpio_int_event[15:8]);
-      end
-
-      if(sw_wr_en_9 && wr_be[2])
-      begin
-         reg_9[23:16] <=  ((~sw_reg_wdata[23:16] & gpio_int_status[23:16]) | gpio_int_event[23:16]);
-      end
-      else if(sw_wr_en_10 && wr_be[2]) 
-      begin
-         reg_9[23:16] <= ((sw_reg_wdata[23:16] | gpio_int_status[23:16]) | gpio_int_event[23:16]);
-      end
-      else
-      begin
-         reg_9[23:16] <=   (gpio_int_status[23:16] | gpio_int_event[23:16]);
-      end
-
-      if(sw_wr_en_9 && wr_be[3])
-      begin
-         reg_9[31:24] <=  ((~sw_reg_wdata[31:24] & gpio_int_status[31:24]) | gpio_int_event[31:24]);
-      end
-      else if(sw_wr_en_10 && wr_be[3]) 
-      begin
-         reg_9[31:24] <= ((sw_reg_wdata[31:24] | gpio_int_status[31:24]) | gpio_int_event[31:24]);
-      end
-      else
-      begin
-         reg_9[31:24] <=   (gpio_int_status[31:24] | gpio_int_event[31:24]);
-      end
-   end
-end
+generic_intr_stat_reg #(.WD(32),
+	                .RESET_DEFAULT(0))  u_reg_9 (
+		 //inputs
+		 .clk         (mclk              ),
+		 .reset_n     (h_reset_n         ),
+	         .reg_we      ({
+		               {8{sw_wr_en_9 & reg_ack & wr_be[2]}},
+		               {8{sw_wr_en_9 & reg_ack & wr_be[2]}},
+		               {8{sw_wr_en_9 & reg_ack & wr_be[1]}},
+		               {8{sw_wr_en_9 & reg_ack & wr_be[0]}}
+		               }  ),		 
+		 .reg_din    (sw_reg_wdata[31:0] ),
+		 .hware_req  (gpio_int_event | {
+		               {8{sw_wr_en_10 & reg_ack}} & sw_reg_wdata[31:24],
+		               {8{sw_wr_en_10 & reg_ack}} & sw_reg_wdata[23:16],
+		               {8{sw_wr_en_10 & reg_ack}} & sw_reg_wdata[15:8] ,
+		               {8{sw_wr_en_10 & reg_ack}} & sw_reg_wdata[7:0]   
+		               }     ),
+		 
+		 //outputs
+		 .data_out    (reg_9[31:0]       )
+	      );
 //-------------------------------------------------
 // Returns same value as interrupt status register
 //------------------------------------------------
@@ -769,7 +715,7 @@ gen_32b_reg  #(32'h8273_8343) u_reg_22	(
 //-----------------------------------------
 // Software Reg-2, Release date: <DAY><MONTH><YEAR>
 // ----------------------------------------
-gen_32b_reg  #(32'h1003_2022) u_reg_23	(
+gen_32b_reg  #(32'h1603_2022) u_reg_23	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -782,9 +728,9 @@ gen_32b_reg  #(32'h1003_2022) u_reg_23	(
 	      );
 
 //-----------------------------------------
-// Software Reg-3: Poject Revison 3.8 = 0003800
+// Software Reg-3: Poject Revison 3.9 = 0003900
 // ----------------------------------------
-gen_32b_reg  #(32'h0003_8000) u_reg_24	(
+gen_32b_reg  #(32'h0003_9000) u_reg_24	(
 	      //List of Inputs
 	      .reset_n    (h_reset_n     ),
 	      .clk        (mclk          ),
@@ -844,8 +790,12 @@ gen_32b_reg  #(32'h0) u_reg_27	(
 
 //-----------------------------------------------------------------------
 //   reg-28
+// Assumption: wr_en is two cycle and reg_ack is asserted in second cycle
+//     In first cycle, local register will be updated
+//     In second cycle, update indication sent to timer block
 //   -----------------------------------------------------------------
-logic [31:0] cfg_bist_ctrl_1;
+assign cfg_timer0          = reg_28[18:0];
+assign cfg_timer_update[0] = sw_wr_en_28 & reg_ack; 
 
 gen_32b_reg  #(32'h0) u_reg_28	(
 	      //List of Inputs
@@ -856,61 +806,51 @@ gen_32b_reg  #(32'h0) u_reg_28	(
 	      .data_in    (sw_reg_wdata  ),
 	      
 	      //List of Outs
-	      .data_out   (cfg_bist_ctrl_1[31:0]  )
+	      .data_out   (reg_28[31:0]  )
 	      );
-
-
-
-assign bist_en             = cfg_bist_ctrl_1[0];
-assign bist_run            = cfg_bist_ctrl_1[1];
-assign bist_load           = cfg_bist_ctrl_1[2];
-
 
 //-----------------------------------------------------------------------
 //   reg-29
-//-----------------------------------------------------------------
-logic [31:0] cfg_bist_status_1;
+// Assumption: wr_en is two cycle and reg_ack is asserted in second cycle
+//     In first cycle, local register will be updated
+//     In second cycle, update indication sent to timer block
+//   -----------------------------------------------------------------
+assign cfg_timer1          = reg_29[18:0];
+assign cfg_timer_update[1] = sw_wr_en_29 & reg_ack;
 
-assign cfg_bist_status_1 = {  bist_error_cnt3, 1'b0, bist_correct[3], bist_error[3], bist_done,
-	                      bist_error_cnt2, 1'b0, bist_correct[2], bist_error[2], bist_done,
-	                      bist_error_cnt1, 1'b0, bist_correct[1], bist_error[1], bist_done,
-	                      bist_error_cnt0, 1'b0, bist_correct[0], bist_error[0], bist_done
-			   };
+gen_32b_reg  #(32'h0) u_reg_29	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_29   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_29[31:0]  )
+	      );
+
 
 //-----------------------------------------------------------------------
-//   reg-30 => Write to Serail I/F
-//   reg-31 => READ  from Serail I/F
-//-----------------------------------------------------------------
-logic        bist_sdi_int;
-logic        bist_shift_int;
-logic        bist_sdo_int;
-logic [31:0] serail_dout;
+//   reg-30
+// Assumption: wr_en is two cycle and reg_ack is asserted in second cycle
+//     In first cycle, local register will be updated
+//     In second cycle, update indication sent to timer block
+//   -----------------------------------------------------------------
+assign cfg_timer2          = reg_30[18:0];
+assign cfg_timer_update[2] = sw_wr_en_30 & reg_ack;
 
-assign bist_sdo_int = bist_sdo;
-assign  bist_shift = bist_shift_int;
-assign  bist_sdi   = bist_sdi_int ;
-
-ser_inf_32b u_ser_intf
-       (
-
-    // Master Port
-       .rst_n       (h_reset_n),  // Regular Reset signal
-       .clk         (mclk),  // System clock
-       .reg_wr      (sw_wr_en_30 & wb_req_pedge),  // Write Request
-       .reg_rd      (sw_rd_en_31 & wb_req_pedge),  // Read Request
-       .reg_wdata   (sw_reg_wdata) ,  // data output
-       .reg_rdata   (serail_dout),  // data input
-       .reg_ack     (serial_ack),  // acknowlegement
-
-    // Slave Port
-       .sdi         (bist_sdi_int),    // Serial SDI
-       .shift       (bist_shift_int),  // Shift Signal
-       .sdo         (bist_sdo_int) // Serial SDO
-
-    );
-
-
-
+gen_32b_reg  #(32'h0) u_reg_30	(
+	      //List of Inputs
+	      .reset_n    (h_reset_n     ),
+	      .clk        (mclk          ),
+	      .cs         (sw_wr_en_30   ),
+	      .we         (wr_be         ),		 
+	      .data_in    (sw_reg_wdata  ),
+	      
+	      //List of Outs
+	      .data_out   (reg_30[31:0]  )
+	      );
 
 //-----------------------------------------------------------------------
 // Register Read Path Multiplexer instantiation
@@ -949,10 +889,10 @@ begin
     5'b11001 : reg_out [31:0] = reg_25 [31:0];
     5'b11010 : reg_out [31:0] = reg_26 [31:0];
     5'b11011 : reg_out [31:0] = reg_27 [31:0];
-    5'b11100 : reg_out [31:0] = cfg_bist_ctrl_1 [31:0];
-    5'b11101 : reg_out [31:0] = cfg_bist_status_1 [31:0];
-    5'b11110 : reg_out [31:0] = serail_dout [31:0]; // Previous Shift Data
-    5'b11111 : reg_out [31:0] = serail_dout [31:0]; // Latest Shift Data
+    5'b11100 : reg_out [31:0] = reg_28 [31:0];
+    5'b11101 : reg_out [31:0] = reg_29 [31:0];
+    5'b11110 : reg_out [31:0] = reg_30 [31:0]; 
+    5'b11111 : reg_out [31:0] = 32'h0;
     default  : reg_out [31:0] = 32'h0;
   endcase
 end

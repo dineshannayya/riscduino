@@ -23,6 +23,8 @@
 `include "caravel_netlists.v"
 `include "spiflash.v"
 `include "uart_agent.v"
+`include "user_reg_map.v"
+`define ADDR_SPACE_PINMUX  32'h3002_0000
 
 module uart_master_tb;
 	reg clock;
@@ -133,7 +135,7 @@ reg            test_fail     ;
 
 
            // Remove Wb Reset
-           uartm_reg_write('h3080_0000,'h1);
+           uartm_reg_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
            repeat (2) @(posedge clock);
            #1;
@@ -141,19 +143,19 @@ reg            test_fail     ;
            $display("Monitor: Writing  expected value");
            
            test_fail = 0;
-           uartm_reg_write(32'h30020058,32'h11223344);
-           uartm_reg_write(32'h3002005C,32'h22334455);
-           uartm_reg_write(32'h30020060,32'h33445566);
-           uartm_reg_write(32'h30020064,32'h44556677);
-           uartm_reg_write(32'h30020068,32'h55667788);
-           uartm_reg_write(32'h3002006C,32'h66778899);
+           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,32'h11223344);
+           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,32'h22334455);
+           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,32'h33445566);
+           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,32'h44556677);
+           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,32'h55667788);
+           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,32'h66778899);
 
-           uartm_reg_read_check(32'h30020058,32'h11223344);
-           uartm_reg_read_check(32'h3002005C,32'h22334455);
-           uartm_reg_read_check(32'h30020060,32'h33445566);
-           uartm_reg_read_check(32'h30020064,32'h44556677);
-           uartm_reg_read_check(32'h30020068,32'h55667788);
-           uartm_reg_read_check(32'h3002006C,32'h66778899);
+           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,32'h11223344);
+           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,32'h22334455);
+           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,32'h33445566);
+           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,32'h44556677);
+           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,32'h55667788);
+           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,32'h66778899);
 
            $display("###################################################");
            if(test_fail == 0) begin
