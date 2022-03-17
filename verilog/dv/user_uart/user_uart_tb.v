@@ -78,12 +78,7 @@
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 `include "uart_agent.v"
-
-
-// Note in caravel, 0x30XX_XXXX only come to user interface
-// So, using wb_host bank select we have changing MSB address [31:24] = 0x10
-`define ADDR_SPACE_UART    32'h3001_0000
-`define ADDR_SPACE_PINMUX  32'h3002_0000
+`include "user_reg_map.v"
 
 
 module user_uart_tb;
@@ -178,15 +173,15 @@ begin
    $display("Monitor: Standalone User Uart Test Started");
    
    // Remove Wb Reset
-   wb_user_core_write('h3080_0000,'h1);
+   wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
    // Enable UART Multi Functional Ports
-   wb_user_core_write(`ADDR_SPACE_PINMUX+'h0038,'h100);
+   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h100);
    
    repeat (2) @(posedge clock);
    #1;
    // Remove all the reset
-   wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h11F);
+   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
 
    repeat (100) @(posedge clock);  // wait for Processor Get Ready
 

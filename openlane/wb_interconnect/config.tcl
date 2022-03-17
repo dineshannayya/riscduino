@@ -51,7 +51,7 @@ set ::env(VERILOG_FILES) "\
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 set ::env(SYNTH_PARAMS) "CH_CLK_WD 4,\
-	                 CH_DATA_WD 69 \
+	                 CH_DATA_WD 37 \
 			 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1

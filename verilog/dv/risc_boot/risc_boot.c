@@ -18,27 +18,11 @@
 // This include is relative to $CARAVEL_PATH (see Makefile)
 #include "verilog/dv/caravel/defs.h"
 #include "verilog/dv/caravel/stub.c"
+#include "../c_func/inc/user_reg_map.h"
 
 // User Project Slaves (0x3000_0000)
 
-#define reg_mprj_wbhost_reg0 (*(volatile uint32_t*)0x30800000)
-
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30020000)
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30020004)
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30020008)
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x3002000C)
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x30020010)
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x30020014)
-#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x30020018)
-#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x3002001C)
-#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x30020020)
-#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x30020024)
-#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x30020028)
-#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x3002002C)
-#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x30020030)
-#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x30020034)
-#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30020038)
-#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3002003C)
+#define reg_mprj_wbhost_reg0 (*(volatile uint32_t*)0x30080000)
 
 #define reg_mprj_uart_reg0 (*(volatile uint32_t*)0x30010000)
 #define reg_mprj_uart_reg1 (*(volatile uint32_t*)0x30010004)
@@ -178,11 +162,11 @@ void main()
 
 
     // Remove All Reset
-    reg_mprj_globl_reg2 = 0x11F;
+    reg_pinmux_gbl_cfg0 = 0x11F;
 
     // Enable UART Multi Functional Ports
 
-    reg_mprj_globl_reg14 = 0x100;
+    reg_pinmux_gpio_multi_func = 0x100;
 
     // configure the user uart
     reg_mprj_uart_reg0  = 0x7;

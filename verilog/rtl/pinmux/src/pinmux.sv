@@ -73,7 +73,6 @@ module pinmux (
                        output logic            reg_ack,
 
 		      // Risc configuration
-                       output logic [31:0]     fuse_mhartid,
                        output logic [15:0]     irq_lines,
                        output logic            soft_irq,
                        output logic [2:0]      user_irq,
@@ -131,17 +130,31 @@ module pinmux (
 		       output  logic           pulse1m_mclk,
 	               output  logic [31:0]    pinmux_debug
 
+
+
    ); 
 
 
 
+logic sreset_n;  // Sync Reset
    
 /* clock pulse */
 //********************************************************
-logic           pulse1u_mclk            ;// 1 UsSecond Pulse for waveform Generator
-logic           pulse1s_mclk            ;// 1Second Pulse for waveform Generator
-logic [9:0]     cfg_pulse_1us           ;// 1us pulse generation config
-                
+logic           pulse_1us               ; // 1 UsSecond Pulse for waveform Generator
+logic           pulse_1ms               ; // 1 UsSecond Pulse for waveform Generator
+logic           pulse_1s                ; // 1Second Pulse for waveform Generator
+logic [9:0]     cfg_pulse_1us           ; // 1us pulse generation config
+
+
+//---------------------------------------------------------
+// Timer Register                          
+// -------------------------------------------------------
+logic [2:0]    cfg_timer_update        ; // CPU write to timer register
+logic [18:0]   cfg_timer0              ; // Timer-0 register
+logic [18:0]   cfg_timer1              ; // Timer-1 register
+logic [18:0]   cfg_timer2              ; // Timer-2 register
+logic [2:0]    timer_intr              ;
+
 //---------------------------------------------------
 // 6 PWM variabled
 //---------------------------------------------------
@@ -218,11 +231,18 @@ clk_skew_adjust u_skew_pinmux
 	       .clk_out    (wbd_clk_pinmux              ) 
        );
 
-gpio_intr u_gpio_intr (
+reset_sync  u_rst_sync (
+	      .scan_mode  (1'b0        ),
+              .dclk       (mclk        ), // Destination clock domain
+	      .arst_n     (h_reset_n   ), // active low async reset
+              .srst_n     (sreset_n    )
+          );
+
+gpio_intr_gen u_gpio_intr (
    // System Signals
    // Inputs
           .mclk                    (mclk                    ),
-          .h_reset_n               (h_reset_n               ),
+          .h_reset_n               (sreset_n                ),
 
    // GPIO cfg input pins
           .gpio_prev_indata        (gpio_prev_indata        ),
@@ -242,38 +262,102 @@ gpio_intr u_gpio_intr (
 // 1us pulse
 pulse_gen_type2  #(.WD(10)) u_pulse_1us (
 
-	.clk_pulse                 (pulse1u_mclk),
-	.clk                       (mclk        ),
-        .reset_n                   (h_reset_n   ),
-	.cfg_max_cnt               (cfg_pulse_1us)
+	.clk_pulse_o               (pulse_1us        ),
+	.clk                       (mclk             ),
+        .reset_n                   (sreset_n         ),
+	.cfg_max_cnt               (cfg_pulse_1us    )
 
      );
 
 // 1millisecond pulse
 pulse_gen_type1 u_pulse_1ms (
 
-	.clk_pulse   (pulse1m_mclk),
-	.clk         (mclk        ),
-        .reset_n     (h_reset_n   ),
-	.trigger     (pulse1u_mclk)
+	.clk_pulse_o               (pulse_1ms       ),
+	.clk                       (mclk            ),
+        .reset_n                   (sreset_n        ),
+	.trigger                   (pulse_1us       )
 
       );
 
 // 1 second pulse
-pulse_gen_type2 u_pulse_1s (
+pulse_gen_type1 u_pulse_1s (
 
-	.clk_pulse   (pulse1s_mclk),
-	.clk         (mclk        ),
-        .reset_n     (h_reset_n   ),
-	.cfg_max_cnt (cfg_pulse_1us)
+	.clk_pulse_o               (pulse_1s    ),
+	.clk                       (mclk        ),
+        .reset_n                   (sreset_n    ),
+	.trigger                   (pulse_1ms   )
 
        );
+
+
+// Timer
+
+wire       cfg_timer0_enb    = cfg_timer0[16];
+wire [1:0] cfg_timer0_clksel = cfg_timer0[18:17];
+wire [15:0] cfg_timer0_compare = cfg_timer0[15:0];
+
+timer  u_timer_0
+  (
+     .reset_n                      (sreset_n             ),// system syn reset
+     .mclk                         (mclk                 ),// master clock
+     .pulse_1us                    (pulse_1us            ),
+     .pulse_1ms                    (pulse_1ms            ),
+     .pulse_1s                     (pulse_1s             ),
+
+     .cfg_timer_update             (cfg_timer_update[0]  ), 
+     .cfg_timer_enb                (cfg_timer0_enb       ),     
+     .cfg_timer_compare            (cfg_timer0_compare   ),
+     .cfg_timer_clksel             (cfg_timer0_clksel    ),// to select the timer 1us/1ms reference clock
+
+     .timer_intr                   (timer_intr[0]         )
+   );
+
+// Timer
+wire       cfg_timer1_enb      = cfg_timer1[16];
+wire [1:0] cfg_timer1_clksel   = cfg_timer1[18:17];
+wire [15:0] cfg_timer1_compare = cfg_timer1[15:0];
+timer  u_timer_1
+  (
+     .reset_n                      (sreset_n             ),// system syn reset
+     .mclk                         (mclk                 ),// master clock
+     .pulse_1us                    (pulse_1us            ),
+     .pulse_1ms                    (pulse_1ms            ),
+     .pulse_1s                     (pulse_1s             ),
+
+     .cfg_timer_update             (cfg_timer_update[1]  ), 
+     .cfg_timer_enb                (cfg_timer1_enb       ),     
+     .cfg_timer_compare            (cfg_timer1_compare   ),
+     .cfg_timer_clksel             (cfg_timer1_clksel    ),// to select the timer 1us/1ms reference clock
+
+     .timer_intr                   (timer_intr[1]         )
+   );
+
+// Timer
+wire       cfg_timer2_enb    = cfg_timer2[16];
+wire [1:0] cfg_timer2_clksel = cfg_timer2[18:17];
+wire [15:0] cfg_timer2_compare = cfg_timer2[15:0];
+timer  u_timer_2
+  (
+     .reset_n                      (sreset_n             ),// system syn reset
+     .mclk                         (mclk                 ),// master clock
+     .pulse_1us                    (pulse_1us            ),
+     .pulse_1ms                    (pulse_1ms            ),
+     .pulse_1s                     (pulse_1s             ),
+
+     .cfg_timer_update             (cfg_timer_update[2]  ), 
+     .cfg_timer_enb                (cfg_timer2_enb       ),     
+     .cfg_timer_compare            (cfg_timer2_compare   ),
+     .cfg_timer_clksel             (cfg_timer2_clksel    ),// to select the timer 1us/1ms reference clock
+
+     .timer_intr                   (timer_intr[2]        )
+   );
+
 
 pinmux_reg u_pinmux_reg(
       // System Signals
       // Inputs
           .mclk                         (mclk                    ),
-          .h_reset_n                    (h_reset_n               ),
+          .h_reset_n                    (sreset_n                ),
 
           .cpu_core_rst_n               (cpu_core_rst_n          ),
           .cpu_intf_rst_n               (cpu_intf_rst_n          ),
@@ -298,7 +382,6 @@ pinmux_reg u_pinmux_reg(
 
 	  .ext_intr_in                  (ext_intr_in             ),
 
-	  .fuse_mhartid                 (fuse_mhartid            ),
 	  .irq_lines                    (irq_lines               ),
 	  .soft_irq                     (soft_irq                ),
 	  .user_irq                     (user_irq                ),
@@ -338,22 +421,13 @@ pinmux_reg u_pinmux_reg(
        // Outputs
           .gpio_prev_indata             (gpio_prev_indata        ) ,
 
-       // BIST I/F
-          .bist_en                      (                        ),
-          .bist_run                     (                        ),
-          .bist_load                    (                        ),
-          
-          .bist_sdi                     (                        ),
-          .bist_shift                   (                        ),
-          .bist_sdo                     ('b0                     ),
-          
-          .bist_done                    ('b0                     ),
-          .bist_error                   ('h0                     ),
-          .bist_correct                 ('h0                     ),
-          .bist_error_cnt0              ('h0                     ),
-          .bist_error_cnt1              ('h0                     ),
-          .bist_error_cnt2              ('h0                     ),
-          .bist_error_cnt3              ('h0                     )
+
+          .timer_intr                   (timer_intr             ),
+          .cfg_timer_update             (cfg_timer_update       ),
+          .cfg_timer0                   (cfg_timer0             ),
+          .cfg_timer1                   (cfg_timer1             ),
+          .cfg_timer2                   (cfg_timer2             )
+
 
    ); 
 
@@ -361,9 +435,9 @@ pinmux_reg u_pinmux_reg(
 // 6 PWM Waveform Generator
 pwm  u_pwm_0 (
 	  .waveform                    (pwm_wfm[0]         ), 
-	  .h_reset_n                   (h_reset_n          ),
+	  .h_reset_n                   (sreset_n           ),
 	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse1m_mclk       ),
+	  .pulse1m_mclk                (pulse_1ms          ),
 	  .cfg_pwm_enb                 (cfg_pwm_enb[0]     ),
 	  .cfg_pwm_high                (cfg_pwm0_high      ),
 	  .cfg_pwm_low                 (cfg_pwm0_low       )
@@ -371,9 +445,9 @@ pwm  u_pwm_0 (
 
 pwm  u_pwm_1 (
 	  .waveform                    (pwm_wfm[1]         ), 
-	  .h_reset_n                   (h_reset_n          ),
+	  .h_reset_n                   (sreset_n           ),
 	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse1m_mclk       ),
+	  .pulse1m_mclk                (pulse_1ms          ),
 	  .cfg_pwm_enb                 (cfg_pwm_enb[1]     ),
 	  .cfg_pwm_high                (cfg_pwm1_high      ),
 	  .cfg_pwm_low                 (cfg_pwm1_low       )
@@ -381,9 +455,9 @@ pwm  u_pwm_1 (
    
 pwm  u_pwm_2 (
 	  .waveform                    (pwm_wfm[2]         ), 
-	  .h_reset_n                   (h_reset_n          ),
+	  .h_reset_n                   (sreset_n           ),
 	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse1m_mclk       ),
+	  .pulse1m_mclk                (pulse_1ms          ),
 	  .cfg_pwm_enb                 (cfg_pwm_enb[2]     ),
 	  .cfg_pwm_high                (cfg_pwm2_high      ),
 	  .cfg_pwm_low                 (cfg_pwm2_low       )
@@ -391,27 +465,27 @@ pwm  u_pwm_2 (
 
 pwm  u_pwm_3 (
 	  .waveform                    (pwm_wfm[3]         ), 
-	  .h_reset_n                   (h_reset_n          ),
+	  .h_reset_n                   (sreset_n           ),
 	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse1m_mclk       ),
+	  .pulse1m_mclk                (pulse_1ms          ),
 	  .cfg_pwm_enb                 (cfg_pwm_enb[3]     ),
 	  .cfg_pwm_high                (cfg_pwm3_high      ),
 	  .cfg_pwm_low                 (cfg_pwm3_low       )
      );
 pwm  u_pwm_4 (
 	  .waveform                    (pwm_wfm[4]         ), 
-	  .h_reset_n                   (h_reset_n          ),
+	  .h_reset_n                   (sreset_n           ),
 	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse1m_mclk       ),
+	  .pulse1m_mclk                (pulse_1ms          ),
 	  .cfg_pwm_enb                 (cfg_pwm_enb[4]     ),
 	  .cfg_pwm_high                (cfg_pwm4_high      ),
 	  .cfg_pwm_low                 (cfg_pwm4_low       )
      );
 pwm  u_pwm_5 (
 	  .waveform                    (pwm_wfm[5]         ), 
-	  .h_reset_n                   (h_reset_n          ),
+	  .h_reset_n                   (sreset_n           ),
 	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse1m_mclk       ),
+	  .pulse1m_mclk                (pulse_1ms          ),
 	  .cfg_pwm_enb                 (cfg_pwm_enb[5]     ),
 	  .cfg_pwm_high                (cfg_pwm5_high      ),
 	  .cfg_pwm_low                 (cfg_pwm5_low       )
@@ -599,7 +673,7 @@ always_comb begin
 
      //Pin-5        PD3/INT1/OC2B(PWM0)  digital_io[4]
      if(cfg_pwm_enb[0])              digital_io_out[4]   = pwm_wfm[0];
-     if(cfg_port_d_dir_sel[3])       digital_io_out[4]   = port_d_out[3];
+     else if(cfg_port_d_dir_sel[3])  digital_io_out[4]   = port_d_out[3];
 
      //Pin-6        PD4                 digital_io[5]
      if(cfg_port_d_dir_sel[4])       digital_io_out[5]   = port_d_out[4];

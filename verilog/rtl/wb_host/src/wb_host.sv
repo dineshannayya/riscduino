@@ -41,6 +41,16 @@
 ////          u_cpuclk,u_rtcclk,u_usbclk                          ////
 ////    0.3 - Nov 16 2021, Dinesh A                               ////
 ////          Wishbone out are register for better timing         ////   
+////    0.4 - Mar 15 2021, Dinesh A                               ////
+////          1. To fix the bug in caravel mgmt soc address range ////
+////          reduction to 0x3000_0000 to 0x300F_FFFF             ////
+////          Address Map has changes as follows                  ////
+////          0x3008_0000 to 0x3008_00FF - Local Wishbone Reg     ////
+////          0x3000_0000 to 0x3007_FFFF - SOC access with        ////
+////              indirect Map {Bank_Sel[15:3], wbm_adr_i[18:0]}  ////
+////          2.wbm_cyc_i need to qualified with wbm_stb_i        //// 
+////                                                              ////
+////                                                              //// 
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -146,7 +156,7 @@ logic               sw_wr_en_0;
 logic               sw_wr_en_1;
 logic               sw_wr_en_2;
 logic               sw_wr_en_3;
-logic [7:0]         cfg_bank_sel;
+logic [15:0]        cfg_bank_sel;
 logic [31:0]        reg_0;  // Software_Reg_0
 
 logic  [3:0]        cfg_wb_clk_ctrl;
@@ -245,13 +255,13 @@ wire [1:0] grnt;
 wb_arb u_arb(
 	.clk      (wbm_clk_i), 
 	.rstn     (wbm_rst_n), 
-	.req      ({1'b0,wbm_uart_stb_i,wbm_stb_i}), 
+	.req      ({1'b0,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
 	.gnt      (grnt)
         );
 
 // Select  the master based on the grant
-assign wb_cyc_i = (grnt == 2'b00) ? wbm_cyc_i : wbm_uart_cyc_i; 
-assign wb_stb_i = (grnt == 2'b00) ? wbm_stb_i : wbm_uart_stb_i; 
+assign wb_cyc_i = (grnt == 2'b00) ? wbm_cyc_i               : wbm_uart_cyc_i; 
+assign wb_stb_i = (grnt == 2'b00) ? (wbm_cyc_i & wbm_stb_i) : wbm_uart_stb_i; 
 assign wb_adr_i = (grnt == 2'b00) ? wbm_adr_i : wbm_uart_adr_i; 
 assign wb_we_i  = (grnt == 2'b00) ? wbm_we_i  : wbm_uart_we_i; 
 assign wb_dat_i = (grnt == 2'b00) ? wbm_dat_i : wbm_uart_dat_i; 
@@ -312,19 +322,19 @@ end
 
 
 //-----------------------------------------------------------------------
-// Local register decide based on address[31] == 1
+// Local register decide based on address[19] == 1
 //
 // Locally there register are define to control the reset and clock for user
 // area
 //-----------------------------------------------------------------------
-// caravel user space is 0x3000_0000 to 0x30FF_FFFF
+// caravel user space is 0x3000_0000 to 0x3007_FFFF
 // So we have allocated 
-// 0x3080_0000 - 0x3080_00FF - Assigned to WB Host Address Space
+// 0x3008_0000 - 0x3008_00FF - Assigned to WB Host Address Space
 // Since We need more than 16MB Address space to access SDRAM/SPI we have
 // added indirect MSB 8 bit address select option
-// So Address will be {Bank_Sel[7:0], wbm_adr_i[23:0}
+// So Address will be {Bank_Sel[15:3], wbm_adr_i[18:0]}
 // ---------------------------------------------------------------------
-assign reg_sel       = wb_req & (wb_adr_i[23] == 1'b1);
+assign reg_sel       = wb_req & (wb_adr_i[19] == 1'b1);
 
 assign sw_addr       = wb_adr_i [3:2];
 assign sw_rd_en      = reg_sel & !wb_we_i;
@@ -372,7 +382,7 @@ begin
 
   case (sw_addr [1:0])
     2'b00 :   reg_out [31:0] = reg_0;
-    2'b01 :   reg_out [31:0] = {24'h0,cfg_bank_sel [7:0]};     
+    2'b01 :   reg_out [31:0] = {16'h0,cfg_bank_sel [15:0]};     
     2'b10 :   reg_out [31:0] = cfg_clk_ctrl1 [31:0];    
     2'b11 :   reg_out [31:0] = cfg_clk_ctrl2 [31:0];     
     default : reg_out [31:0] = 'h0;
@@ -391,14 +401,14 @@ generic_register #(32,0  ) u_glb_ctrl (
 	      .data_out      (reg_0[31:0])
           );
 
-generic_register #(8,8'h10 ) u_bank_sel (
-	      .we            ({8{sw_wr_en_1}}   ),		 
-	      .data_in       (wb_dat_i[7:0]    ),
+generic_register #(16,16'h1000 ) u_bank_sel (
+	      .we            ({16{sw_wr_en_1}}   ),		 
+	      .data_in       (wb_dat_i[15:0]    ),
 	      .reset_n       (wbm_rst_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
-	      .data_out      (cfg_bank_sel[7:0] )
+	      .data_out      (cfg_bank_sel[15:0] )
           );
 
 
@@ -427,7 +437,7 @@ assign wb_stb_int = wb_req & !reg_sel;
 
 // Since design need more than 16MB address space, we have implemented
 // indirect access
-assign wb_adr_int = {cfg_bank_sel[7:0],wb_adr_i[23:0]};  
+assign wb_adr_int = {cfg_bank_sel[15:3],wb_adr_i[18:0]};  
 
 async_wb u_async_wb(
 // Master Port

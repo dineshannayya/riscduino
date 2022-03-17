@@ -20,10 +20,11 @@
 ////                                                              ////
 ////  This file is part of the YIFive cores project               ////
 ////  https://github.com/dineshannayya/yifive_r0.git              ////
+////  http://www.opencores.org/cores/yifive/                      ////
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
-////   i2c Master .                                               ////
+////   pwm interfaface through External WB i/F.                  ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -32,7 +33,7 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 16th Feb 2021, Dinesh A                             ////
+////    0.1 - 01 Oct 2021, Dinesh A                               ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -65,42 +66,47 @@
 
 `timescale 1 ns / 1 ns
 
+
+`define TB_GLBL    user_pwm_tb
+
 `include "uprj_netlists.v"
-`include "i2c_slave_model.v"
 `include "user_reg_map.v"
 
-module tb_top;
 
-reg            clock         ;
-reg            wb_rst_i      ;
-reg            power1, power2;
-reg            power3, power4;
+module user_pwm_tb;
+	reg clock;
+	reg wb_rst_i;
+	reg power1, power2;
+	reg power3, power4;
 
-reg            wbd_ext_cyc_i;  // strobe/request
-reg            wbd_ext_stb_i;  // strobe/request
-reg [31:0]     wbd_ext_adr_i;  // address
-reg            wbd_ext_we_i;  // write
-reg [31:0]     wbd_ext_dat_i;  // data output
-reg [3:0]      wbd_ext_sel_i;  // byte enable
+        reg        wbd_ext_cyc_i;  // strobe/request
+        reg        wbd_ext_stb_i;  // strobe/request
+        reg [31:0] wbd_ext_adr_i;  // address
+        reg        wbd_ext_we_i;  // write
+        reg [31:0] wbd_ext_dat_i;  // data output
+        reg [3:0]  wbd_ext_sel_i;  // byte enable
 
-wire [31:0]    wbd_ext_dat_o;  // data input
-wire           wbd_ext_ack_o;  // acknowlegement
-wire           wbd_ext_err_o;  // error
+        wire [31:0] wbd_ext_dat_o;  // data input
+        wire        wbd_ext_ack_o;  // acknowlegement
+        wire        wbd_ext_err_o;  // error
 
-// User I/O
-wire [37:0]    io_oeb        ;
-wire [37:0]    io_out        ;
-wire [37:0]    io_in         ;
+	// User I/O
+	wire [37:0] io_oeb;
+	wire [37:0] io_out;
+	wire [37:0] io_in;
 
-wire [37:0]    mprj_io       ;
-wire [7:0]     mprj_io_0     ;
-reg            test_fail     ;
-reg [31:0]     read_data     ;
-//----------------------------------
-// Uart Configuration
-// ---------------------------------
 
-integer i,j;
+	reg [1:0] spi_chip_no;
+
+	wire gpio;
+	wire [37:0] mprj_io;
+	wire [7:0] mprj_io_0;
+	reg        test_fail;
+	reg [31:0] read_data;
+	reg [31:0] OneMsPeriod;
+        integer    test_step;
+        wire       clock_mon;
+
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
@@ -109,6 +115,7 @@ integer i,j;
 	always #12.5 clock <= (clock === 1'b0);
 
 	initial begin
+		OneMsPeriod = 1000;
 		clock = 0;
                 wbd_ext_cyc_i ='h0;  // strobe/request
                 wbd_ext_stb_i ='h0;  // strobe/request
@@ -121,188 +128,145 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(0, tb_top);
+	   	$dumpvars(1, `TB_GLBL);
+	   	$dumpvars(0, `TB_GLBL.u_top.u_wb_host);
+	   	$dumpvars(0, `TB_GLBL.u_top.u_pinmux);
+	   	$dumpvars(0, `TB_GLBL.u_top.u_intercon);
 	   end
        `endif
+
+	initial begin
+		$dumpon;
+
+		#200; // Wait for reset removal
+	        repeat (10) @(posedge clock);
+		$display("Monitor: Standalone User Risc Boot Test Started");
+
+		// Remove Wb Reset
+		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+
+                // Enable PWM Multi Functional Ports
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h03F);
+
+	        repeat (2) @(posedge clock);
+		#1;
+
+                // Remove the reset
+		// Remove WB and SPI/UART Reset, Keep CORE under Reset
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
+
+		// config 1us based on system clock - 1000/25ns = 40 
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG1,39);
+
+		test_fail = 0;
+	        repeat (200) @(posedge clock);
+                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+
+	        $display("Step-1, PWM-0: 1ms/2 = 500Hz; PWM-1: 1ms/3; PWM-2: 1ms/4, PWM-3: 1ms/5, PWM-4: 1ms/6, PWM-5: 1ms/7");
+	        test_step = 1;
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM0,'h0000_0000);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM1,'h0000_0001);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM2,'h0001_0001);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM3,'h0001_0002);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM4,'h0002_0002);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM5,'h0002_0003);
+	        pwm_monitor(OneMsPeriod*2,OneMsPeriod*3,OneMsPeriod*4,OneMsPeriod*5,OneMsPeriod*6,OneMsPeriod*7);
+
+		repeat (100) @(posedge clock);
+			// $display("+1000 cycles");
+
+          	if(test_fail == 0) begin
+		   `ifdef GL
+	    	       $display("Monitor: PWM Mode (GL) Passed");
+		   `else
+		       $display("Monitor: PWM Mode (RTL) Passed");
+		   `endif
+	        end else begin
+		    `ifdef GL
+	    	        $display("Monitor: PWM Mode (GL) Failed");
+		    `else
+		        $display("Monitor: PWM Mode (RTL) Failed");
+		    `endif
+		 end
+	    	$display("###################################################");
+	        $finish;
+	end
 
 	initial begin
 		wb_rst_i <= 1'b1;
 		#100;
 		wb_rst_i <= 1'b0;	    	// Release reset
 	end
-initial
-begin
-   test_fail = 0;
-
-   #200; // Wait for reset removal
-   repeat (10) @(posedge clock);
-   $display("############################################");
-   $display("   Testing I2CM Read/Write Access           ");
-   $display("############################################");
-   
-
-   repeat (10) @(posedge clock);
-   #1;
-   // Enable I2M Block & WB Reset and Enable I2CM Mux Select
-   wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h01);
-
-   // Enable I2C Multi Functional Ports
-   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h200);
-
-   // Remove i2m reset
-   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h010);
-
-   repeat (100) @(posedge clock);  
-
-    @(posedge  clock);
-    $display("---------- Initialize I2C Master: %x ----------",`ADDR_SPACE_I2CM); 
-
-    //Wrire Prescale registers
-     wb_user_core_write(`ADDR_SPACE_I2CM+(8'h0<<2),8'hC7);  
-     wb_user_core_write(`ADDR_SPACE_I2CM+(8'h1<<2),8'h00);  
-    // Core Enable
-     wb_user_core_write(`ADDR_SPACE_I2CM+(8'h2<<2),8'h80);  
-    
-    // Writing Data
-
-    $display("---------- Writing Data ----------"); 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h20); // Slave Addr + WR  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h90);  
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-     
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h66);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10);  
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-   
-   /* Byte1: 12 */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h12);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10); // No Stop + Write  
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-   
-   /* Byte1: 34 */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h34);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10); // No Stop + Write 
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-   /* Byte1: 56 */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h56);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h10); // No Stop + Write 
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-   /* Byte1: 78 */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h78);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h50); // Stop + Write 
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-    //Reading Data
-    
-    //Wrire Address
-    $display("---------- Writing Data ----------"); 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h20);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h90);  
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-     
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h66);  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h50);  
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-    //Generate Read
-    $display("---------- Writing Data ----------"); 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h3<<2),8'h21); // Slave Addr + RD  
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h90);  
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-    /* BYTE-1 : 0x12  */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h20);  // RD + ACK
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-    //Compare received data
-    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3<<2),8'h12);  
-     
-    /* BYTE-2 : 0x34  */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h20);  // RD + ACK
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-    //Compare received data
-    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3<<2),8'h34);  
-
-    /* BYTE-3 : 0x56  */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4 <<2),8'h20);  // RD + ACK
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4<<2),read_data);  
-
-    //Compare received data
-    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3<<2),8'h56);  
-
-    /* BYTE-4 : 0x78  */ 
-    wb_user_core_write(`ADDR_SPACE_I2CM+(8'h4<<2),8'h68);  // STOP + RD + NACK 
-
-    read_data[1] = 1'b1;
-    while(read_data[1]==1)
-      wb_user_core_read(`ADDR_SPACE_I2CM+(8'h4 <<2),read_data);  
-
-    //Compare received data
-    wb_user_core_read_cmp(`ADDR_SPACE_I2CM+(8'h3 <<2),8'h78);  
-
-    repeat(100)@(posedge clock);
-
-
-
-     $display("###################################################");
-     if(test_fail == 0) begin
-        `ifdef GL
-            $display("Monitor: Standalone User I2M Test (GL) Passed");
-        `else
-            $display("Monitor: Standalone User I2M Test (RTL) Passed");
-        `endif
-     end else begin
-         `ifdef GL
-             $display("Monitor: Standalone User I2M Test (GL) Failed");
-         `else
-             $display("Monitor: Standalone User I2M Test (RTL) Failed");
-         `endif
-      end
-     $display("###################################################");
-     #100
-     $finish;
-end
-
-
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
+wire pwm0 = io_out[4];
+wire pwm1 = io_out[8];
+wire pwm2 = io_out[9];
+wire pwm3 = io_out[12];
+wire pwm4 = io_out[13];
+wire pwm5 = io_out[14];
+
+
+task pwm_monitor;
+input [31:0] pwm0_period;
+input [31:0] pwm1_period;
+input [31:0] pwm2_period;
+input [31:0] pwm3_period;
+input [31:0] pwm4_period;
+input [31:0] pwm5_period;
+begin
+   force clock_mon = pwm0;
+   check_clock_period("PWM0 Clock",pwm0_period);
+   release clock_mon;
+
+   force clock_mon = pwm1;
+   check_clock_period("PWM1 Clock",pwm1_period);
+   release clock_mon;
+
+   force clock_mon = pwm2;
+   check_clock_period("PWM2 Clock",pwm2_period);
+   release clock_mon;
+
+   force clock_mon = pwm3;
+   check_clock_period("PWM3 Clock",pwm3_period);
+   release clock_mon;
+
+   force clock_mon = pwm4;
+   check_clock_period("PWM4 Clock",pwm4_period);
+   release clock_mon;
+
+   force clock_mon = pwm5;
+   check_clock_period("PWM5 Clock",pwm5_period);
+   release clock_mon;
+end
+endtask
+
+
+//----------------------------------
+// Check the clock period
+//----------------------------------
+task check_clock_period;
+input [127:0] clk_name;
+input [31:0] clk_period; // in NS
+time prev_t, next_t, periodd;
+begin
+    $timeformat(-12,3,"ns",10);
+   repeat(1) @(posedge clock_mon);
+   repeat(1) @(posedge clock_mon);
+   prev_t  = $realtime;
+   repeat(2) @(posedge clock_mon);
+   next_t  = $realtime;
+   periodd = (next_t-prev_t)/2;
+   periodd = (periodd)/1e3;
+   if(clk_period != periodd) begin
+       $display("STATUS: FAIL => %s Exp Period: %d ms Rxd: %d ms",clk_name,clk_period,periodd);
+       test_fail = 1;
+   end else begin
+       $display("STATUS: PASS => %s  Period: %d ms ",clk_name,clk_period);
+   end
+end
+endtask
 
 user_project_wrapper u_top(
 `ifdef USE_POWER_PINS
@@ -346,25 +310,16 @@ user_project_wrapper u_top(
     end
 `endif    
 
-//---------------------------
-// I2C
-// --------------------------
-tri scl,sda;
 
-assign sda  =  (io_oeb[22] == 1'b0) ? io_out[22] : 1'bz;
-assign scl   = (io_oeb[23] == 1'b0) ? io_out[23]: 1'bz;
-assign io_in[22]  =  sda;
-assign io_in[23]  =  scl;
 
-pullup p1(scl); // pullup scl line
-pullup p2(sda); // pullup sda line
-
- 
-i2c_slave_model u_i2c_slave (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
+//----------------------------------------------------
+//  Task
+// --------------------------------------------------
+task test_err;
+begin
+     test_fail = 1;
+end
+endtask
 
 task wb_user_core_write;
 input [31:0] address;
@@ -387,7 +342,7 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
+  $display("STATUS: WB USER ACCESS WRITE Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
@@ -415,13 +370,14 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  //$display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  //$display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
 
-task  wb_user_core_read_cmp;
+task  wb_user_core_read_check;
 input [31:0] address;
+output [31:0] data;
 input [31:0] cmp_data;
 reg    [31:0] data;
 begin
@@ -443,17 +399,16 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  if(data === cmp_data) begin
-     $display("STATUS: DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     `TB_GLBL.test_fail = 1;
   end else begin
-     $display("ERROR: DEBUG WB USER ACCESS READ Address : %x, Exp Data : %x Rxd Data: ",address,cmp_data,data);
-     test_fail= 1;
-     #100
-     $finish;
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   end
   repeat (2) @(posedge clock);
 end
 endtask
+
 
 `ifdef GL
 
@@ -465,21 +420,13 @@ wire [31:0] wbd_spi_dat_i   = u_top.u_spi_master.wbd_dat_i;
 wire [31:0] wbd_spi_dat_o   = u_top.u_spi_master.wbd_dat_o;
 wire [3:0]  wbd_spi_sel_i   = u_top.u_spi_master.wbd_sel_i;
 
-wire        wbd_sdram_stb_i = u_top.u_sdram_ctrl.wb_stb_i;
-wire        wbd_sdram_ack_o = u_top.u_sdram_ctrl.wb_ack_o;
-wire        wbd_sdram_we_i  = u_top.u_sdram_ctrl.wb_we_i;
-wire [31:0] wbd_sdram_adr_i = u_top.u_sdram_ctrl.wb_addr_i;
-wire [31:0] wbd_sdram_dat_i = u_top.u_sdram_ctrl.wb_dat_i;
-wire [31:0] wbd_sdram_dat_o = u_top.u_sdram_ctrl.wb_dat_o;
-wire [3:0]  wbd_sdram_sel_i = u_top.u_sdram_ctrl.wb_sel_i;
-
-wire        wbd_uart_stb_i  = u_top.u_uart_i2c.u_uart_core.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_i2c.u_uart_core.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_i2c.u_uart_core.reg_wr;
-wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c.u_uart_core.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c.u_uart_core.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c.u_uart_core.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_i2c.u_uart_core.reg_be;
+wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb.reg_cs;
+wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb.reg_ack;
+wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb.reg_wr;
+wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb.reg_addr;
+wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb.reg_wdata;
+wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb.reg_rdata;
+wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb.reg_be;
 
 `endif
 
@@ -502,5 +449,6 @@ end
 
 `endif
 **/
+
 endmodule
 `default_nettype wire

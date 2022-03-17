@@ -1,7 +1,7 @@
 set ::env(IO_PCT) "0.2"
 set ::env(SYNTH_MAX_FANOUT) "5"
 set ::env(SYNTH_CAP_LOAD) "1"
-set ::env(SYNTH_TIMING_DERATE) 0.05
+set ::env(SYNTH_TIMING_DERATE) 0.01
 set ::env(SYNTH_CLOCK_SETUP_UNCERTAINITY) 0.25
 set ::env(SYNTH_CLOCK_HOLD_UNCERTAINITY) 0.25
 set ::env(SYNTH_CLOCK_TRANSITION) 0.15
@@ -111,15 +111,15 @@ set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[21]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[22]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[23]}]
-#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[24]}]
+set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[24]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[25]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[26]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[27]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[28]}]
-#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[29]}]
-#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[30]}]
-#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[31]}]
-#set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[32]}]
+set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[29]}]
+set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[30]}]
+set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[31]}]
+set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[32]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[33]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[34]}]
 set_input_delay $input_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {mprj_io[35]}]
@@ -131,22 +131,22 @@ set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [ge
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_io0}]
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_io1}]
 
-###############################################################################
-# User SPI constraints
-# Reducing the Tight SPI spec
-# As spi cs# asserted atleast 2 cycle before transaction, we are not constrainting it
-# In Spi Interace Data lanuch by negedge and capture at Posedge, So effective Interface hold and setup should not be
-# any issue. Any timing issue, we need to reduce the SPI interface clock
-#################################################################################
-
-set user_spi_out [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
-set user_spi_in  [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
-
-set_input_delay -clock spi_clk -clock_fall -min 0    -add_delay $user_spi_in
-set_input_delay -clock spi_clk -clock_fall -max 10   -add_delay $user_spi_in
-
-set_output_delay -clock spi_clk -clock_fall -min -0  -add_delay $user_spi_out
-set_output_delay -clock spi_clk -clock_fall -max  10 -add_delay $user_spi_out
+################################################################################
+## User SPI constraints
+## Reducing the Tight SPI spec
+## As spi cs# asserted atleast 2 cycle before transaction, we are not constrainting it
+## In Spi Interace Data lanuch by negedge and capture at Posedge, So effective Interface hold and setup should not be
+## any issue. Any timing issue, we need to reduce the SPI interface clock
+##################################################################################
+#
+#set user_spi_out [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
+#set user_spi_in  [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
+#
+#set_input_delay -clock spi_clk -clock_fall -min 0    -add_delay $user_spi_in
+#set_input_delay -clock spi_clk -clock_fall -max 10   -add_delay $user_spi_in
+#
+#set_output_delay -clock spi_clk -clock_fall -min -0  -add_delay $user_spi_out
+#set_output_delay -clock spi_clk -clock_fall -max  10 -add_delay $user_spi_out
 
 
 set_max_fanout $::env(SYNTH_MAX_FANOUT) [current_design]

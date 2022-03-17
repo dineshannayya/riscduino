@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------
 
 module pulse_gen_type1(
-	output logic clk_pulse,
+	output logic clk_pulse_o,
 
 	input logic clk,
         input logic reset_n,
@@ -17,7 +17,7 @@ parameter MAX_CNT = 999;
 
 logic [WD-1:0]  cnt;
 
-assign clk_pulse = (cnt == 0) && trigger;
+assign clk_pulse_o = (cnt == 0) && trigger;
 
 always @ (posedge clk or negedge reset_n)
 begin

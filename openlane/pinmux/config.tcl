@@ -46,11 +46,12 @@ set ::env(VERILOG_FILES) "\
      $script_dir/../../verilog/rtl/pinmux/src/pinmux_reg.sv \
      $script_dir/../../verilog/rtl/pinmux/src/gpio_intr.sv  \
      $script_dir/../../verilog/rtl/pinmux/src/pwm.sv        \
+     $script_dir/../../verilog/rtl/pinmux/src/timer.sv        \
      $script_dir/../../verilog/rtl/lib/pulse_gen_type1.sv   \
      $script_dir/../../verilog/rtl/lib/pulse_gen_type2.sv   \
-     $script_dir/../../verilog/rtl/lib/ser_inf_32b.sv       \
      $script_dir/../../verilog/rtl/lib/registers.v          \
      $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
+     $script_dir/../../verilog/rtl/lib/reset_sync.sv     \
      "
 
 

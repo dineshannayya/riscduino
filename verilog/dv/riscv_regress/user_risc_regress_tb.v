@@ -77,9 +77,9 @@
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 `include "is62wvs1288.v"
+`include "user_reg_map.v"
 
 
-`define ADDR_SPACE_PINMUX  32'h3002_0000
 
 localparam [31:0]      YCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
 localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
@@ -231,9 +231,8 @@ parameter P_QDDR   = 2'b11;
 	   	$dumpvars(1, user_risc_regress_tb);
 	   	$dumpvars(1, user_risc_regress_tb.u_top);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_qspi_master);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_intercon);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_mbist);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_pinmux);
 	   end
        `endif
 
@@ -282,29 +281,29 @@ parameter P_QDDR   = 2'b11;
 		$display("Monitor: Core reset removal");
 
 		// Remove Wb Reset
-		wb_user_core_write('h3080_0000,'h1);
+		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 	        repeat (2) @(posedge clock);
 		#1;
 		//------------ fuse_mhartid= 0x00
-                wb_user_core_write('h3002_0004,'h0);
+                //wb_user_core_write('h3002_0004,'h0);
 
 
 	        repeat (2) @(posedge clock);
 		#1;
 		// Remove WB and SPI Reset, Keep SDARM and CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+8'h8,'h11F);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
 
 		// CS#2 Switch to QSPI Mode
-                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
-		wb_user_core_write(`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`QSPIM_IMEM_WDATA,32'h0);
+                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
+		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
+		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
 
 		// Enable the DCACHE Remap to SRAM region
 		//wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
 		//
 		// Remove all the reset
-                wb_user_core_write('h3080_0000,'h8F);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
 
 	end
 
