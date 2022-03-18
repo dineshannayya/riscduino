@@ -255,7 +255,7 @@ wire [1:0] grnt;
 wb_arb u_arb(
 	.clk      (wbm_clk_i), 
 	.rstn     (wbm_rst_n), 
-	.req      ({1'b0,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
+	.req      ({2'b0,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
 	.gnt      (grnt)
         );
 

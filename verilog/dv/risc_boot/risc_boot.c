@@ -16,8 +16,8 @@
  */
 
 // This include is relative to $CARAVEL_PATH (see Makefile)
-#include "verilog/dv/caravel/defs.h"
-#include "verilog/dv/caravel/stub.c"
+#include <defs.h>
+#include <stub.c>
 #include "../c_func/inc/user_reg_map.h"
 
 // User Project Slaves (0x3000_0000)
@@ -36,7 +36,6 @@
 
 #define GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP   0x1C00
 
-#define SC_SIM_OUTPORT (0xf0000000)
 
 /*
          RiscV Hello World test.
@@ -64,38 +63,36 @@ void main()
 	Input: 0000_0001_0000_1111 (0x0402) = GPIO_MODE_USER_STD_INPUT_NOPULL
 	| DM     | VTRIP | SLOW  | AN_POL | AN_SEL | AN_EN | MOD_SEL | INP_DIS | HOLDH | OEB_N | MGMT_EN |
 	| 001    | 0     | 0     | 0      | 0      | 0     | 0       | 0       | 0     | 1     | 0       |
-
-	Input: 0000_0001_0000_1111 (0x1800) = GPIO_MODE_USER_STD_BIDIRECTIONAL
-	| DM     | VTRIP | SLOW  | AN_POL | AN_SEL | AN_EN | MOD_SEL | INP_DIS | HOLDH | OEB_N | MGMT_EN |
-	| 110    | 0     | 0     | 0      | 0      | 0     | 0       | 0       | 0     | 0     | 0       |
 	*/
 
 	/* Set up the housekeeping SPI to be connected internally so	*/
 	/* that external pin changes don't affect it.			*/
 
-	reg_spimaster_config = 0xa002;	// Enable, prescaler = 2,
+    reg_spi_enable = 1;
+    reg_wb_enable = 1;
+	// reg_spimaster_config = 0xa002;	// Enable, prescaler = 2,
                                         // connect to housekeeping SPI
 
 	// Connect the housekeeping SPI to the SPI master
 	// so that the CSB line is not left floating.  This allows
 	// all of the GPIO pins to be used for user functions.
-        reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
-        reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
 
+    reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
 
      /* Apply configuration */
     reg_mprj_xfer = 1;

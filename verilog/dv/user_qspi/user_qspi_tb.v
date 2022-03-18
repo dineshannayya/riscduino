@@ -79,7 +79,6 @@
 
 `timescale 1 ns / 1 ns
 
-`include "s25fl256s.sv"
 `include "uprj_netlists.v"
 `include "mt48lc8m8a2.v"
 `include "is62wvs1288.v"
@@ -1398,4 +1397,5 @@ end
 `endif
 **/
 endmodule
+`include "s25fl256s.sv"
 `default_nettype wire

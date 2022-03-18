@@ -17,12 +17,6 @@
 
 `timescale 1 ns / 1 ps
 
-`define FULL_CHIP_SIM
-
-`include "uprj_netlists.v"
-`include "caravel_netlists.v"
-`include "spiflash.v"
-
 module wb_port_tb;
 	reg clock;
 	reg RSTB;
@@ -64,7 +58,7 @@ module wb_port_tb;
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (30) begin
-			repeat (1000) @(posedge clock);
+			repeat (2000) @(posedge clock);
 			// $display("+1000 cycles");
 		end
 		$display("%c[1;31m",27);
