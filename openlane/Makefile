@@ -31,24 +31,24 @@ $(CONFIG) :
 	@exit 1
 
 $(BLOCKS) : % : ./%/config.tcl FORCE
-ifeq ($(OPENLANE_ROOT),)
-	@echo "Please export OPENLANE_ROOT"
-	@exit 1
-endif
-ifeq ($(PDK_ROOT),)
-	@echo "Please export PDK_ROOT"
-	@exit 1
-endif
+#ifeq ($(OPENLANE_ROOT),)
+#	@echo "Please export OPENLANE_ROOT"
+#	@exit 1
+#endif
+#ifeq ($(PDK_ROOT),)
+#	@echo "Please export PDK_ROOT"
+#	@exit 1
+#endif
 	@echo "###############################################"
 	@sleep 1
 
 	@if [ -f ./$*/interactive.tcl ]; then\
-		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
+		docker run -it  \
 		-v $(PWD)/..:/project \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_INTERACTIVE_COMMAND);\
 	else\
-		docker run -it -v $(OPENLANE_ROOT):/openLANE_flow \
+		docker run -it  \
 		-v $(PWD)/..:/project \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_BASIC_COMMAND);\

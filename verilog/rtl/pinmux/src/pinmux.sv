@@ -150,9 +150,9 @@ logic [9:0]     cfg_pulse_1us           ; // 1us pulse generation config
 // Timer Register                          
 // -------------------------------------------------------
 logic [2:0]    cfg_timer_update        ; // CPU write to timer register
-logic [18:0]   cfg_timer0              ; // Timer-0 register
-logic [18:0]   cfg_timer1              ; // Timer-1 register
-logic [18:0]   cfg_timer2              ; // Timer-2 register
+logic [31:0]   cfg_timer0              ; // Timer-0 register
+logic [31:0]   cfg_timer1              ; // Timer-1 register
+logic [31:0]   cfg_timer2              ; // Timer-2 register
 logic [2:0]    timer_intr              ;
 
 //---------------------------------------------------

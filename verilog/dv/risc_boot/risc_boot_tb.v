@@ -71,13 +71,6 @@
 
 `timescale 1 ns / 1 ps
 
-`define FULL_CHIP_SIM
-
-`include "s25fl256s.sv"
-`include "uprj_netlists.v"
-`include "caravel_netlists.v"
-`include "spiflash.v"
-`include "mt48lc8m8a2.v"
 `include "uart_agent.v"
 
 module risc_boot_tb;
@@ -133,15 +126,35 @@ module risc_boot_tb;
         begin
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
-           $dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
+           //$dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
            //$dumpvars(2,risc_boot_tb.uut);
-           $dumpvars(4,risc_boot_tb.uut.mprj);
-           $dumpvars(0,risc_boot_tb.tb_uart);
+           $dumpvars(1,risc_boot_tb.uut.mprj);
+           $dumpvars(0,risc_boot_tb.uut.mprj.u_wb_host);
+           $dumpvars(1,risc_boot_tb.uut.mprj.u_riscv_top);
+           //$dumpvars(0,risc_boot_tb.tb_uart);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");
         end
         `endif
 
+	initial begin
+
+		// Repeat cycles of 1000 clock edges as needed to complete testbench
+		repeat (80) begin
+			repeat (2000) @(posedge clock);
+			// $display("+1000 cycles");
+		end
+		$display("%c[1;31m",27);
+		$display ("##########################################################");
+		`ifdef GL
+			$display ("Monitor: Timeout, Test Risc Boot (GL) Failed");
+		`else
+			$display ("Monitor: Timeout, Test Risc Boot (RTL) Failed");
+		`endif
+		$display ("##########################################################");
+		$display("%c[0m",27);
+		$finish;
+	end
 
         initial
         begin
@@ -156,40 +169,37 @@ module risc_boot_tb;
         
            #200; // Wait for reset removal
 
-           fork
-	   begin
-          
-	      // Wait for Managment core to boot up 
-	      wait(checkbits == 16'h AB60);
-	      $display("Monitor: Test User Risc Boot Started");
-       
-	      // Wait for user risc core to boot up 
-              repeat (30000) @(posedge clock);  
-              tb_uart.uart_init;
-              tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
-                                             uart_stick_parity, uart_timeout, uart_divisor);
-              
-              for (i=0; i<40; i=i+1)
-              	uart_write_data[i] = $random;
-              
-              
-              
-              fork
-                 begin
-                    for (i=0; i<40; i=i+1)
-                    begin
-                      $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
-                       tb_uart.write_char (uart_write_data[i]);
-                    end
-                 end
-              
-                 begin
-                    for (j=0; j<40; j=j+1)
-                    begin
-                      tb_uart.read_char_chk(uart_write_data[j]);
-                    end
-                 end
-                 join
+		// Wait for Managment core to boot up 
+		wait(checkbits == 16'h AB60);
+		$display("Monitor: Test User Risc Boot Started");
+
+		// Wait for user risc core to boot up 
+		repeat (50000) @(posedge clock);  
+		tb_uart.uart_init;
+		tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+					     uart_stick_parity, uart_timeout, uart_divisor);
+
+		for (i=0; i<40; i=i+1)
+		uart_write_data[i] = $random;
+
+
+
+		fork
+		 begin
+		    for (i=0; i<40; i=i+1)
+		    begin
+		      $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
+		       tb_uart.write_char (uart_write_data[i]);
+		    end
+		 end
+
+		 begin
+		    for (j=0; j<40; j=j+1)
+		    begin
+		      tb_uart.read_char_chk(uart_write_data[j]);
+		    end
+		 end
+		 join
               
                  #100
                  tb_uart.report_status(uart_rx_nu, uart_tx_nu);
@@ -204,28 +214,19 @@ module risc_boot_tb;
                  if(uart_rx_nu != 40) test_fail = 1;
                  if(tb_uart.err_cnt != 0) test_fail = 1;
         
-	      end
-	      begin
-                   // Loop for TimeOut
-                   repeat (60000) @(posedge clock);
-                		// $display("+1000 cycles");
-                   test_fail = 1;
-              end
-              join_any
-              disable fork; //disable pending fork activity
 
               $display("###################################################");
               if(test_fail == 0) begin
                  `ifdef GL
-                     $display("Monitor: Standalone User UART Test (GL) Passed");
+                     $display("Monitor: Standalone User Risc Boot Test (GL) Passed");
                  `else
-                     $display("Monitor: Standalone User UART Test (RTL) Passed");
+                     $display("Monitor: Standalone User Risc Boot Test (RTL) Passed");
                  `endif
               end else begin
                   `ifdef GL
-                      $display("Monitor: Standalone User UART Test (GL) Failed");
+                      $display("Monitor: Standalone User Risc Boot Test (GL) Failed");
                   `else
-                      $display("Monitor: Standalone User UART Test (RTL) Failed");
+                      $display("Monitor: Standalone User Risc Boot Test (RTL) Failed");
                   `endif
                end
               $display("###################################################");
@@ -358,34 +359,7 @@ uart_agent tb_uart(
 initial begin
 end
 `endif    
-
-
-/**
-//-----------------------------------------------------------------------------
-// RISC IMEM amd DMEM Monitoring TASK
-//-----------------------------------------------------------------------------
-logic [`SCR1_DMEM_AWIDTH-1:0]           core2imem_addr_o_r;           // DMEM address
-logic [`SCR1_DMEM_AWIDTH-1:0]           core2dmem_addr_o_r;           // DMEM address
-logic                                   core2dmem_cmd_o_r;
-
-`define RISC_CORE  test_tb.uut.mprj.u_core.u_riscv_top.i_core_top
-
-always@(posedge `RISC_CORE.clk) begin
-    if(`RISC_CORE.imem2core_req_ack_i && `RISC_CORE.core2imem_req_o)
-          core2imem_addr_o_r <= `RISC_CORE.core2imem_addr_o;
-
-    if(`RISC_CORE.dmem2core_req_ack_i && `RISC_CORE.core2dmem_req_o) begin
-          core2dmem_addr_o_r <= `RISC_CORE.core2dmem_addr_o;
-          core2dmem_cmd_o_r  <= `RISC_CORE.core2dmem_cmd_o;
-    end
-
-    if(`RISC_CORE.imem2core_resp_i !=0)
-          $display("RISCV-DEBUG => IMEM ADDRESS: %x Read Data : %x Resonse: %x", core2imem_addr_o_r,`RISC_CORE.imem2core_rdata_i,`RISC_CORE.imem2core_resp_i);
-    if((`RISC_CORE.dmem2core_resp_i !=0) && core2dmem_cmd_o_r)
-          $display("RISCV-DEBUG => DMEM ADDRESS: %x Write Data: %x Resonse: %x", core2dmem_addr_o_r,`RISC_CORE.core2dmem_wdata_o,`RISC_CORE.dmem2core_resp_i);
-    if((`RISC_CORE.dmem2core_resp_i !=0) && !core2dmem_cmd_o_r)
-          $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", core2dmem_addr_o_r,`RISC_CORE.dmem2core_rdata_i,`RISC_CORE.dmem2core_resp_i);
-end
-*/
 endmodule
+// SSFLASH has 1ps/1ps time scale
+`include "s25fl256s.sv"
 `default_nettype wire
