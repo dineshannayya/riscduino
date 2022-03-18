@@ -155,7 +155,7 @@ begin
    repeat (100) @(posedge clock);  
 
     @(posedge  clock);
-    $display("---------- Initialize I2C Master: %x ----------",`ADDR_SPACE_I2CM); 
+    $display("---------- Initialize I2C Master ----------"); 
 
     //Wrire Prescale registers
      wb_user_core_write(`ADDR_SPACE_I2CM+(8'h0<<2),8'hC7);  

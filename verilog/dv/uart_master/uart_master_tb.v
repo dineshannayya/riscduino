@@ -24,7 +24,6 @@
 `include "spiflash.v"
 `include "uart_agent.v"
 `include "user_reg_map.v"
-`define ADDR_SPACE_PINMUX  32'h3002_0000
 
 module uart_master_tb;
 	reg clock;
