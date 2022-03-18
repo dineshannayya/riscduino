@@ -20,6 +20,7 @@ PRECHECK_ROOT?=${HOME}/mpw_precheck
 MCW_ROOT?=$(PWD)/mgmt_core_wrapper
 SIM?=RTL
 DUMP?=OFF
+RISC_CORE ?=0
 
 export SKYWATER_COMMIT=c094b6e83a4f9298e47f696ec5a7fd53535ec5eb
 export OPEN_PDKS_COMMIT=7519dfb04400f224f140749cda44ee7de6f5e095
@@ -40,6 +41,22 @@ else
 	CARAVEL_REPO := https://github.com/efabless/caravel
 	CARAVEL_TAG := $(MPW_TAG)
 endif
+
+# Install caravel as submodule, (1): submodule, (0): clone
+SUBMODULE?=1
+
+#RISCV COMPLIANCE test Environment
+COREMARK_DIR   = verilog/dv/riscv_regress/dependencies/coremark
+RISCV_COMP_DIR = verilog/dv/riscv_regress/dependencies/riscv-compliance
+RISCV_TEST_DIR = verilog/dv/riscv_regress/dependencies/riscv-tests
+
+COREMARK_REPO   =  https://github.com/eembc/coremark
+RISCV_COMP_REPO =  https://github.com/riscv/riscv-compliance
+RISCV_TEST_REPO =  https://github.com/riscv/riscv-tests
+
+COREMARK_BRANCH   =  7f420b6bdbff436810ef75381059944e2b0d79e8
+RISCV_COMP_BRANCH =  d51259b2a949be3af02e776c39e135402675ac9b
+RISCV_TEST_BRANCH =  e30978a71921159aec38eeefd848fca4ed39a826
 
 # Include Caravel Makefile Targets
 .PHONY: % : check-caravel
@@ -75,8 +92,8 @@ dv-targets-gl=$(dv_patterns:%=verify-%-gl)
 dv-targets-gl-sdf=$(dv_patterns:%=verify-%-gl-sdf)
 
 TARGET_PATH=$(shell pwd)
-verify_command="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} && make"
-dv_base_dependencies=
+verify_command="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} RISC_CORE=${RISC_CORE} && make"
+dv_base_dependencies= ./verilog/dv/% check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
 docker_run_verify=\
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_ROOT}:${PDK_ROOT} \
 		-v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
@@ -93,14 +110,8 @@ docker_run_verify=\
 .PHONY: harden
 harden: $(blocks)
 
-.PHONY: verify-all-rtl
-verify-all-rtl: $(dv-targets-rtl)
-
-.PHONY: verify-all-gl
-verify-all-gl: $(dv-targets-gl)
-
-.PHONY: verify-all-gl-sdf
-verify-all-gl-sdf: $(dv-targets-gl-sdf)
+.PHONY: verify
+verify: $(dv-targets)
 
 $(dv-targets-rtl): SIM=RTL
 $(dv-targets-rtl): verify-%-rtl: $(dv_base_dependencies)
@@ -201,6 +212,27 @@ check-pdk:
 		exit 1; \
 	fi
 
+check-coremark_repo:
+	@if [ ! -d "$(COREMARK_DIR)" ]; then \
+		echo "Installing Core Mark Repo.."; \
+		git clone $(COREMARK_REPO) $(COREMARK_DIR); \
+		cd $(COREMARK_DIR); git checkout $(COREMARK_BRANCH); \
+	fi
+
+check-riscv_comp_repo:
+	@if [ ! -d "$(RISCV_COMP_DIR)" ]; then \
+		echo "Installing Risc V Complance Repo.."; \
+		git clone $(RISCV_COMP_REPO) $(RISCV_COMP_DIR); \
+		cd $(RISCV_COMP_DIR); git checkout $(RISCV_COMP_BRANCH); \
+	fi
+
+check-riscv_test_repo:
+	@if [ ! -d "$(RISCV_TEST_DIR)" ]; then \
+		echo "Installing RiscV Test Repo.."; \
+		git clone $(RISCV_TEST_REPO) $(RISCV_TEST_DIR); \
+		cd $(RISCV_TEST_DIR); git checkout $(RISCV_TEST_BRANCH); \
+	fi
+
 zip:
 	gzip -f def/*
 	gzip -f lef/*
@@ -223,6 +255,3 @@ unzip:
 help:
 	cd $(CARAVEL_ROOT) && $(MAKE) help
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
-
-
-

@@ -130,8 +130,6 @@ module pinmux (
 		       output  logic           pulse1m_mclk,
 	               output  logic [31:0]    pinmux_debug
 
-
-
    ); 
 
 
