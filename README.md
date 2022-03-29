@@ -27,6 +27,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [Tests preparation](#tests-preparation)
     - [Running Simuation](#running-simulation)
 - [Tool sets](#tool-sets)
+- [News](#news)
+- [MPW Shuttle](#mpw-shuttle)
+- [Contacts](#contacts)
 - [Documentation](#documentation)
 
 
@@ -590,8 +593,70 @@ Riscduino Soc flow uses Openlane tool sets.
     4. `CVC` - Performs Circuit Validity Checks
 
 
+# News
+* **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
 
-## Contacts
+# MPW Shuttle
+<table>
+  <tr>
+    <td  align="center"> MPW</td> 
+    <td  align="center"> Tape-out</td>
+    <td  align="center"> Project Name</td>
+    <td  align="center"> Project Details</td>
+    <td  align="center"> Github</td>
+    <td  align="center"> Efabless</td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-2 </td> 
+    <td  align="center"> 18-June-2021  </td>
+    <td  align="center"> YiFive</td>
+    <td  align="center"> Single 32bit RISCV core without cache + SDRAM Controller + WB Interconnect</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/yifive">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/152">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-3 </td> 
+    <td  align="center"> 15-Nov-2021  </td>
+    <td  align="center"> Riscduino</td>
+    <td  align="center"> Single 32bit RISCV core without cache + Onchip SRAM + WB Interconnect</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/385">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-4 </td> 
+    <td  align="center"> 31-Dec-2021  </td>
+    <td  align="center"> Riscduino-R1</td>
+    <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM + WB Inter Connect</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/575">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-5 </td> 
+    <td  align="center"> 21-Mar-2022  </td>
+    <td  align="center"> Riscduino-SCORE</td>
+    <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/670">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-5 </td> 
+    <td  align="center"> 21-Mar-2022  </td>
+    <td  align="center"> Riscduino-DCORE</td>
+    <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/718">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-5 </td> 
+    <td  align="center"> 21-Mar-2022  </td>
+    <td  align="center"> Riscduino-QCORE</td>
+    <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/782">Link</a></td>
+  </tr>
+</table>
+
+# Contacts
 
 Report an issue: <https://github.com/dineshannayya/riscduino/issues>
 
