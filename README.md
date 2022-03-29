@@ -1,5 +1,5 @@
 ```
-  Riscduino SOC
+  Riscduino Single Risc Core SOC
 
 
 Permission to use, copy, modify, and/or distribute this soc for any
@@ -32,7 +32,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Overview
 
-Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
+Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arudino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
 
 # Riscduino Block Diagram
 
@@ -47,7 +47,7 @@ Riscduino is a 32 bit RISC V based SOC design pin compatible to arudino platform
 # Key features
 ```
     * Open sourced under Apache-2.0 License (see LICENSE file) - unrestricted commercial use allowed.
-    * 32 Bit RISC-V core
+    * Single 32 Bit RISC-V core
     * 2KB SRAM for instruction cache 
     * 2KB SRAM for data cache
     * 2KB SRAM for Tightly coupled memory - For Data Memory
@@ -163,6 +163,15 @@ Following Design changes are done on the basic version of syntacore RISC core
 ```
 
 
+# 6 Channel SAR ADC
+ In Process - Looking for community help ...
+
+<table>
+  <tr>
+    <td  align="center"><img src="./docs/source/_static/6-Channel-SAR-ADC.png" ></td>
+  </tr>
+
+</table>
 
 # SOC Memory Map
 
