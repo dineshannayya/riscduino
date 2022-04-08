@@ -1,9 +1,12 @@
 # Caravel user project includes
++incdir+$(USER_PROJECT_VERILOG)/rtl/
 +incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/includes
++incdir+$(USER_PROJECT_VERILOG)/dv/bfm
 +incdir+$(USER_PROJECT_VERILOG)/dv/model
 +incdir+$(USER_PROJECT_VERILOG)/dv/agents
+$(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/gpio_intr.sv

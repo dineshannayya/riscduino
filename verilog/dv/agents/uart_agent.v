@@ -14,6 +14,10 @@
 // limitations under the License.
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileContributor: Modified by Dinesh Annayya <dinesha@opencores.org>
+//
+
+`timescale  1ns/1ps
+
 module uart_agent (
 	mclk,
 	txd,

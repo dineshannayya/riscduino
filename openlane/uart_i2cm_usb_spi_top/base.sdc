@@ -7,7 +7,8 @@ current_design uart_i2c_usb_spi_top
 # Timing Constraints
 ###############################################################################
 create_clock -name app_clk -period 10.0000 [get_ports {app_clk}]
-create_clock -name line_clk -period 100.0000 [get_pins {u_uart_core.u_lineclk_buf.u_mux/X}]
+create_clock -name uart0_baud_clk -period 100.0000 [get_pins {u_uart0_core.u_lineclk_buf.u_mux/X}]
+create_clock -name uart1_baud_clk -period 100.0000 [get_pins {u_uart1_core.u_lineclk_buf.u_mux/X}]
 create_clock -name usb_clk -period 100.0000 [get_ports {usb_clk}]
 
 set_clock_transition 0.1500 [all_clocks]
@@ -19,7 +20,8 @@ set_clock_uncertainty -hold 0.2500 [all_clocks]
 set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {app_clk}]\
  -group [get_clocks {usb_clk}]\
- -group [get_clocks {line_clk}] -comment {Async Clock group}
+ -group [get_clocks {uart0_baud_clk}]\
+ -group [get_clocks {uart1_baud_clk}] -comment {Async Clock group}
 
 ### ClkSkew Adjust
 set_case_analysis 0 [get_ports {cfg_cska_uart[0]}]

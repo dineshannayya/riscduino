@@ -35,7 +35,8 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////                                                              ////
+////         0.2 - 7 April 2022, Dinesh-A                         ////
+////               2nd Uart Integrated                            ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -75,17 +76,17 @@ module uart_i2c_usb_spi_top
    input logic	       wbd_clk_int,
    output logic	       wbd_clk_uart,
 
-   input logic         uart_rstn  , // async reset
-   input logic         i2c_rstn  ,  // async reset
-   input logic         usb_rstn  ,  // async reset
-   input logic         spi_rstn  ,  // async reset
-   input logic         app_clk ,
-   input logic         usb_clk ,   // 48Mhz usb clock
+   input logic  [1:0]  uart_rstn  , // async reset
+   input logic         i2c_rstn    ,  // async reset
+   input logic         usb_rstn    ,  // async reset
+   input logic         spi_rstn    ,  // async reset
+   input logic         app_clk     ,
+   input logic         usb_clk     ,   // 48Mhz usb clock
 
         // Reg Bus Interface Signal
    input logic         reg_cs,
    input logic         reg_wr,
-   input logic [7:0]   reg_addr,
+   input logic [8:0]   reg_addr,
    input logic [31:0]  reg_wdata,
    input logic [3:0]   reg_be,
 
@@ -106,8 +107,8 @@ module uart_i2c_usb_spi_top
    output logic        i2cm_intr_o            ,
 
    // UART I/F
-   input  logic        uart_rxd               , 
-   output logic        uart_txd               ,
+   input  logic  [1:0] uart_rxd               , 
+   output logic  [1:0] uart_txd               ,
 
    // USB 1.1 HOST I/F
    input  logic        usb_in_dp              ,
@@ -123,7 +124,7 @@ module uart_i2c_usb_spi_top
    output logic        sspim_sck, // clock out
    output logic        sspim_so,  // serial data out
    input  logic        sspim_si,  // serial data in
-   output logic        sspim_ssn  // cs_n
+   output logic [3:0]  sspim_ssn  // cs_n
 
      );
 
@@ -139,57 +140,84 @@ clk_skew_adjust u_skew_uart
 	       .clk_out    (wbd_clk_uart                ) 
        );
 
-`define SEL_UART 2'b00
-`define SEL_I2C  2'b01
-`define SEL_USB  2'b10
-`define SEL_SPI  2'b11
+`define SEL_UART0 3'b000
+`define SEL_I2C   3'b001
+`define SEL_USB   3'b010
+`define SEL_SPI   3'b011
+`define SEL_UART1 3'b100
 
 
 
 //----------------------------------------
 //  Register Response Path Mux
 //  --------------------------------------
-logic [7:0]   reg_uart_rdata;
+logic [7:0]   reg_uart0_rdata;
+logic [7:0]   reg_uart1_rdata;
 logic [7:0]   reg_i2c_rdata;
 logic [31:0]  reg_usb_rdata;
 logic [31:0]  reg_spim_rdata;
-logic         reg_uart_ack;
+logic         reg_uart0_ack;
+logic         reg_uart1_ack;
 logic         reg_i2c_ack;
 logic         reg_usb_ack;
 logic         reg_spim_ack;
 
 
-assign reg_rdata = (reg_addr[7:6] == `SEL_UART) ? {24'h0,reg_uart_rdata} : 
-	           (reg_addr[7:6] == `SEL_I2C) ? {24'h0,reg_i2c_rdata} :
-	           (reg_addr[7:6] == `SEL_USB) ? reg_usb_rdata : reg_spim_rdata;
-assign reg_ack   = (reg_addr[7:6] == `SEL_UART) ? reg_uart_ack   : 
-	           (reg_addr[7:6] == `SEL_I2C) ? reg_i2c_ack   : 
-	           (reg_addr[7:6] == `SEL_USB) ? reg_usb_ack : reg_spim_ack;
+assign reg_rdata = (reg_addr[8:6] == `SEL_UART0) ? {24'h0,reg_uart0_rdata} : 
+	           (reg_addr[8:6] == `SEL_UART1) ? {24'h0,reg_uart1_rdata} :
+	           (reg_addr[8:6] == `SEL_I2C) ? {24'h0,reg_i2c_rdata} :
+	           (reg_addr[8:6] == `SEL_USB) ? reg_usb_rdata : reg_spim_rdata;
+assign reg_ack   = (reg_addr[8:6] == `SEL_UART0) ? reg_uart0_ack   : 
+	           (reg_addr[8:6] == `SEL_UART1) ? reg_uart1_ack   : 
+	           (reg_addr[8:6] == `SEL_I2C)   ? reg_i2c_ack     : 
+	           (reg_addr[8:6] == `SEL_USB)   ? reg_usb_ack     : reg_spim_ack;
 
-wire reg_uart_cs  = (reg_addr[7:6] == `SEL_UART) ? reg_cs : 1'b0;
-wire reg_i2cm_cs  = (reg_addr[7:6] == `SEL_I2C)  ? reg_cs : 1'b0;
-wire reg_usb_cs   = (reg_addr[7:6] == `SEL_USB)  ? reg_cs : 1'b0;
-wire reg_spim_cs  = (reg_addr[7:6] == `SEL_SPI)  ?  reg_cs : 1'b0;
+wire reg_uart0_cs  = (reg_addr[8:6] == `SEL_UART0) ? reg_cs : 1'b0;
+wire reg_uart1_cs  = (reg_addr[8:6] == `SEL_UART1) ? reg_cs : 1'b0;
+wire reg_i2cm_cs   = (reg_addr[8:6] == `SEL_I2C)   ? reg_cs : 1'b0;
+wire reg_usb_cs    = (reg_addr[8:6] == `SEL_USB)   ? reg_cs : 1'b0;
+wire reg_spim_cs   = (reg_addr[8:6] == `SEL_SPI)   ? reg_cs : 1'b0;
 
-uart_core  u_uart_core (  
+uart_core  u_uart0_core (  
 
-        .arst_n      (uart_rstn        ), // async reset
+        .arst_n      (uart_rstn[0]     ), // async reset
         .app_clk     (app_clk          ),
 
         // Reg Bus Interface Signal
-        .reg_cs      (reg_uart_cs      ),
+        .reg_cs      (reg_uart0_cs     ),
         .reg_wr      (reg_wr           ),
         .reg_addr    (reg_addr[5:2]    ),
         .reg_wdata   (reg_wdata[7:0]   ),
         .reg_be      (reg_be[0]        ),
 
         // Outputs
-        .reg_rdata   (reg_uart_rdata[7:0]),
-        .reg_ack     (reg_uart_ack     ),
+        .reg_rdata   (reg_uart0_rdata[7:0]),
+        .reg_ack     (reg_uart0_ack    ),
 
             // Pad Control
-        .rxd          (uart_rxd        ),
-        .txd          (uart_txd        )
+        .rxd          (uart_rxd[0]     ),
+        .txd          (uart_txd[0]     )
+     );
+
+uart_core  u_uart1_core (  
+
+        .arst_n      (uart_rstn[1]     ), // async reset
+        .app_clk     (app_clk          ),
+
+        // Reg Bus Interface Signal
+        .reg_cs      (reg_uart1_cs     ),
+        .reg_wr      (reg_wr           ),
+        .reg_addr    (reg_addr[5:2]    ),
+        .reg_wdata   (reg_wdata[7:0]   ),
+        .reg_be      (reg_be[0]        ),
+
+        // Outputs
+        .reg_rdata   (reg_uart1_rdata[7:0]),
+        .reg_ack     (reg_uart1_ack    ),
+
+            // Pad Control
+        .rxd          (uart_rxd[1]     ),
+        .txd          (uart_txd[1]     )
      );
 
 i2cm_top  u_i2cm (

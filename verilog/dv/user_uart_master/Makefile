@@ -43,6 +43,10 @@ YIFIVE_FIRMWARE_PATH = $(UPRJ_VERILOG_PATH)/dv/firmware
 SIM?=RTL
 DUMP?=OFF
 
+### To Enable IVERILOG FST DUMP
+export IVERILOG_DUMPER = fst
+
+
 .SUFFIXES:
 
 PATTERN = user_uart_master

@@ -1,0 +1,42 @@
+# //////////////////////////////////////////////////////////////////////////////
+# // SPDX-FileCopyrightText: 2021, Dinesh Annayya
+# // 
+# // Licensed under the Apache License, Version 2.0 (the "License");
+# // you may not use this file except in compliance with the License.
+# // You may obtain a copy of the License at
+# //
+# //      http://www.apache.org/licenses/LICENSE-2.0
+# //
+# // Unless required by applicable law or agreed to in writing, software
+# // distributed under the License is distributed on an "AS IS" BASIS,
+# // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# // See the License for the specific language governing permissions and
+# // limitations under the License.
+# // SPDX-License-Identifier: Apache-2.0
+# // SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>
+# // //////////////////////////////////////////////////////////////////////////
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common  user_uart.c -o user_uart.o
+
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common/  ../../rtl/syntacore/scr1/sim/tests/common/crt_tcm.S -o crt_tcm.o
+
+riscv64-unknown-elf-gcc -o user_uart.elf -T ../../rtl/syntacore/scr1/sim/tests/common/link_tcm.ld user_uart.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32
+
+riscv64-unknown-elf-objcopy -O verilog user_uart.elf user_uart.hex
+
+riscv64-unknown-elf-objdump -D user_uart.elf > user_uart.dump
+
+rm crt_tcm.o user_uart.o
+
+#iverilog with waveform dump
+iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I ../../../verilog/rtl/i2cm/src/includes -I ../../../verilog/rtl/usb1_host/src/includes -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_uart_tb.v -o user_uart_tb.vvp
+
+
+#iverilog -g2005-sv -I $PDK_PATH -DFUNCTIONAL -DSIM -I  ../../../caravel/verilog/rtl -I ../ -I ../../../verilog/rtl -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_uart_tb.v -o user_uart_tb.vvp
+
+# GLS 
+#iverilog -g2005-sv -D GL -D FUNCTIONAL -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/gl -I ../../../verilog -I /home/dinesha/workarea/pdk/sky130A -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_uart_tb.v -o user_uart_tb.vvp
+#
+
+vvp user_uart_tb.vvp | tee test.log
+
+\rm -rf user_uart_tb.vvp

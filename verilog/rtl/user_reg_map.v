@@ -3,10 +3,11 @@
 // So, using wb_host bank select we have changing MSB address [31:16] = 0x1000
 //
 `define ADDR_SPACE_QSPI    32'h3000_0000
-`define ADDR_SPACE_UART    32'h3001_0000
+`define ADDR_SPACE_UART0   32'h3001_0000
 `define ADDR_SPACE_I2CM    32'h3001_0040
 `define ADDR_SPACE_USB     32'h3001_0080
 `define ADDR_SPACE_SSPI    32'h3001_00C0
+`define ADDR_SPACE_UART1   32'h3001_0100
 `define ADDR_SPACE_PINMUX  32'h3002_0000
 `define ADDR_SPACE_WBHOST  32'h3008_0000
 

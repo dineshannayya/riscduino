@@ -44,6 +44,8 @@
 ////            i.e byte transfer [7:0],[15:8] ...[31:24]         ////
 ////            Note: As per SPI transfer still first bit sent    ////
 ////            out is big endian, i.e bit[7],[6] ..[0]           ////
+////    0.3 - April 6, 2022, Dinesh A                             ////
+////            Four chip select are driven out                   ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -98,7 +100,7 @@ module sspim_top (
            output logic        sck           , // clock out
            output logic        so            , // serial data out
            input  logic        si            , // serial data in
-           output logic        ssn             // cs_n
+           output logic  [3:0] ssn             // Chip Select
 
            );
  
@@ -123,9 +125,7 @@ logic  [7:0]         cfg_cs_byte                   ; // cs bit information
 logic  [31:0]        cfg_datain                    ; // data for transfer
 logic  [31:0]        cfg_dataout                   ; // data for received
 logic                hware_op_done                 ; // operation done
-logic [3:0]          cs_n                          ; // cs_n
 
-assign ssn =  cs_n[0]; // Only 1 chip select supported in riscdunio
 
 sspim_if  u_spi_if
           (
@@ -147,7 +147,7 @@ sspim_if  u_spi_if
           . sck                         (sck                          ),
           . so                          (so                           ),
           . si                          (si                           ),
-          . cs_n                        (cs_n                         )
+          . cs_n                        (ssn                          )
            );
 
 

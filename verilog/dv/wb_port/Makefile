@@ -21,6 +21,7 @@ BLOCKS := $(shell basename $(PWDD))
 
 # ---- Include Partitioned Makefiles ----
 
+DESIGNS?=../../..
 CONFIG = caravel_user_project
 
 ########################################################
@@ -50,7 +51,7 @@ export VERILOG_PATH = $(CORE_VERILOG_PATH)
 #######################################################################
 
 export GCC_PATH?=      $(TOOLS)/bin
-export GCC_PREFIX?=    riscv32-unknown-linux-gnu
+export GCC_PREFIX?=    riscv64-unknown-linux-gnu
 
 
 
@@ -121,7 +122,7 @@ hex:  ${BLOCKS:=.hex}
 # Comiple firmeware
 ##############################################################################
 %.elf: %.c $(LINKER_SCRIPT) $(SOURCE_FILES)
-	${GCC_PATH}/${GCC_PREFIX}-gcc -g \
+	${GCC_PREFIX}-gcc -g \
 	-I$(FIRMWARE_PATH) \
 	-I$(VERILOG_PATH)/dv/generated \
 	-I$(VERILOG_PATH)/dv/ \
@@ -131,15 +132,15 @@ hex:  ${BLOCKS:=.hex}
 	-ffreestanding -nostdlib -o $@ $(SOURCE_FILES) $<
 
 %.lst: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objdump -d -S $< > $@
+	${GCC_PREFIX}-objdump -d -S $< > $@
 
 %.hex: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objcopy -O verilog $< $@ 
+	${GCC_PREFIX}-objcopy -O verilog $< $@ 
 	# to fix flash base address
 	sed -ie 's/@10/@00/g' $@
 
 %.bin: %.elf
-	${GCC_PATH}/${GCC_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
+	${GCC_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
 	
 	
 ##############################################################################
@@ -204,8 +205,8 @@ endif
 ifeq (,$(wildcard $(PDK_ROOT)/sky130A))
 	$(error $(PDK_ROOT)/sky130A not found, please install pdk before running make)
 endif
-ifeq (,$(wildcard $(GCC_PATH)/$(GCC_PREFIX)-gcc ))
-	$(error $(GCC_PATH)/$(GCC_PREFIX)-gcc is not found, please export GCC_PATH and GCC_PREFIX before running make)
+ifeq (,$(wildcard $(GCC_PREFIX)-gcc ))
+	$(error $(GCC_PREFIX)-gcc is not found, please export GCC_PATH and GCC_PREFIX before running make)
 endif
 # check for efabless style installation
 ifeq (,$(wildcard $(PDK_ROOT)/sky130A/libs.ref/*/verilog))

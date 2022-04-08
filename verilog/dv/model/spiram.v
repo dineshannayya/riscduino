@@ -42,9 +42,8 @@
 //    WRMR          0x01    Write Mode Register
 //
 
-module is62wvs1288 #(
-	//parameter mem_file_name = "firmware.hex"
-	parameter mem_file_name = "none"
+module spiram #(
+	parameter mem_file_name = "firmware.hex"
 )(
 	input csb,
 	input clk,

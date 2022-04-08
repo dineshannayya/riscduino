@@ -14,39 +14,30 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-## Caravel Pointers
-CARAVEL_ROOT ?= ../../../caravel
-CARAVEL_PATH ?= $(CARAVEL_ROOT)
-CARAVEL_FIRMWARE_PATH = $(CARAVEL_PATH)/verilog/dv/caravel
-CARAVEL_VERILOG_PATH  = $(CARAVEL_PATH)/verilog
-CARAVEL_RTL_PATH = $(CARAVEL_VERILOG_PATH)/rtl
-CARAVEL_BEHAVIOURAL_MODELS = $(CARAVEL_VERILOG_PATH)/dv/caravel
 
+# ---- Include Partitioned Makefiles ----
 
-## User Project Pointers
-UPRJ_VERILOG_PATH ?= ../../../verilog
-UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
-UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
-UPRJ_BEHAVIOURAL_MODELS = ../model
-UPRJ_BEHAVIOURAL_AGENTS = ../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1c/src/includes
-UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
-UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
-UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
-UPRJ_INCLUDE_PATH5 = $(UPRJ_RTL_PATH)/mbist/include
+CONFIG = caravel_user_project
+ 
+#######################################################################
+## Caravel Verilog for Integration Tests
+#######################################################################
 
+DESIGNS?=../../..
+
+export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 ## YIFIVE FIRMWARE
-YIFIVE_FIRMWARE_PATH = $(UPRJ_VERILOG_PATH)/dv/firmware
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
 GCC64_PREFIX?=riscv64-unknown-elf
 
-## RISCV GCC 
-GCC_PATH?=/ef/apps/bin
-GCC_PREFIX?=riscv32-unknown-elf
-PDK_PATH?=/ef/tech/SW/sky130A
 
 ## Simulation mode: RTL/GL
 SIM?=RTL
 DUMP?=OFF
+
+### To Enable IVERILOG FST DUMP
+export IVERILOG_DUMPER = fst
+
 
 .SUFFIXES:
 
@@ -59,49 +50,25 @@ hex:  ${PATTERN:=.hex}
 vvp:  ${PATTERN:=.vvp}
 
 %.vvp: %_tb.v
-	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  user_uart.c -o user_uart.o
-	${GCC64_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  $(YIFIVE_FIRMWARE_PATH)/crt_tcm.S -o crt_tcm.o
-	${GCC64_PREFIX}-gcc -o user_uart.elf -T $(YIFIVE_FIRMWARE_PATH)/link_tcm.ld user_uart.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32
-	${GCC64_PREFIX}-objcopy -O verilog user_uart.elf user_uart.hex
-	${GCC64_PREFIX}-objdump -D user_uart.elf > user_uart.dump
-	rm crt_tcm.o user_uart.o
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	$< -o $@ 
     else  
-	iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	$< -o $@ 
    endif
 else  
-	iverilog -g2005-sv -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) -I $(CARAVEL_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS) -I $(UPRJ_GL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	$< -o $@ 
 endif
 
 %.vcd: %.vvp
 	vvp $<
 
-%.elf: %.c $(CARAVEL_FIRMWARE_PATH)/sections.lds $(CARAVEL_FIRMWARE_PATH)/start.s
-	${GCC64_PREFIX}-gcc -I $(CARAVEL_PATH) -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,$(CARAVEL_FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(CARAVEL_FIRMWARE_PATH)/start.s $<
-
-%.hex: 
-	echo @"This is user boot test, noting to compile the mangment core code"
-
-%.bin: %.elf
-	${GCC64_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
 
 # ---- Clean ----
 

@@ -65,9 +65,8 @@
 
 `timescale 1 ns / 1 ns
 
-`include "uprj_netlists.v"
+`include "DFFRAM/DFFRAM.v"
 `include "i2c_slave_model.v"
-`include "user_reg_map.v"
 
 module tb_top;
 
@@ -147,7 +146,7 @@ begin
    wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h01);
 
    // Enable I2C Multi Functional Ports
-   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h200);
+   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h4000);
 
    // Remove i2m reset
    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h010);
