@@ -64,12 +64,10 @@
 
 `default_nettype wire
 
-`timescale 1 ns / 1 ns
+`timescale 1 ns / 1 ps
 
 `define TB_GLBL    user_timer_tb
 
-`include "uprj_netlists.v"
-`include "user_reg_map.v"
 
 
 module user_timer_tb;

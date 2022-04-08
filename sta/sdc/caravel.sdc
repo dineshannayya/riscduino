@@ -19,10 +19,10 @@ create_clock -name cpu_ref_clk -period 10.0000  [get_pins {mprj/u_wb_host/u_cpu_
 create_clock -name cpu_clk     -period 20.0000  [get_pins {mprj/u_wb_host/cpu_clk}]
 create_clock -name rtc_clk     -period 50.0000  [get_pins {mprj/u_wb_host/rtc_clk}]
 create_clock -name usb_clk     -period 20.0000  [get_pins {mprj/u_wb_host/usb_clk}]
-create_clock -name uarts_clk   -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart_core.u_lineclk_buf.u_mux/X}]
+create_clock -name uarts0_clk  -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart0_core.u_lineclk_buf.u_mux/X}]
+create_clock -name uarts1_clk  -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart0_core.u_lineclk_buf.u_mux/X}]
 create_clock -name uartm_clk   -period 100.0000 [get_pins {mprj/u_wb_host/u_uart2wb.u_core.u_uart_clk.u_mux/X}]
 
-create_generated_clock -name spi_clk -add -source [get_pins {mprj/u_wb_host/wbs_clk_out}] -master_clock [get_clocks wbs_clk_i] -divide_by 2 -comment {Spi Clock} [get_ports mprj_io[24]]
 
 ## Case analysis
 
@@ -76,7 +76,8 @@ set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {cpu_ref_clk}]\
  -group [get_clocks {rtc_clk}]\
  -group [get_clocks {usb_clk}]\
- -group [get_clocks {uarts_clk}]\
+ -group [get_clocks {uarts0_clk}]\
+ -group [get_clocks {uarts1_clk}]\
  -group [get_clocks {uartm_clk}]\
  -comment {Async Clock group}
 
@@ -130,24 +131,6 @@ set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [ge
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_clk}]
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_io0}]
 set_output_delay $output_delay_value  -clock [get_clocks {clock}] -add_delay [get_ports {flash_io1}]
-
-################################################################################
-## User SPI constraints
-## Reducing the Tight SPI spec
-## As spi cs# asserted atleast 2 cycle before transaction, we are not constrainting it
-## In Spi Interace Data lanuch by negedge and capture at Posedge, So effective Interface hold and setup should not be
-## any issue. Any timing issue, we need to reduce the SPI interface clock
-##################################################################################
-#
-#set user_spi_out [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
-#set user_spi_in  [list mprj_io[29] mprj_io[30] mprj_io[31] mprj_io[32]]
-#
-#set_input_delay -clock spi_clk -clock_fall -min 0    -add_delay $user_spi_in
-#set_input_delay -clock spi_clk -clock_fall -max 10   -add_delay $user_spi_in
-#
-#set_output_delay -clock spi_clk -clock_fall -min -0  -add_delay $user_spi_out
-#set_output_delay -clock spi_clk -clock_fall -max  10 -add_delay $user_spi_out
-
 
 set_max_fanout $::env(SYNTH_MAX_FANOUT) [current_design]
 

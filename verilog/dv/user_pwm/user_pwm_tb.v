@@ -64,14 +64,12 @@
 
 `default_nettype wire
 
-`timescale 1 ns / 1 ns
+`timescale 1 ns / 1 ps
 
 
 `define TB_GLBL    user_pwm_tb
 
-`include "uprj_netlists.v"
-`include "user_reg_map.v"
-
+`include "DFFRAM/DFFRAM.v"
 
 module user_pwm_tb;
 	reg clock;

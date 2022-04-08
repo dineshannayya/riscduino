@@ -64,14 +64,13 @@
 
 `default_nettype wire
 
-`timescale 1 ns / 1 ns
+`timescale 1 ns/1 ps
 
+`include "DFFRAM/DFFRAM.v"
+`include "is62wvs1288.v"
 
 `define TB_GLBL    user_sspi_tb
 
-`include "uprj_netlists.v"
-`include "is62wvs1288.v"
-`include "user_reg_map.v"
 
 
 
@@ -141,7 +140,7 @@ module user_sspi_tb;
 		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
                 // Enable SPI Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h400);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h3C00);
 
 	        repeat (2) @(posedge clock);
 		#1;
@@ -156,7 +155,7 @@ module user_sspi_tb;
 	        repeat (200) @(posedge clock);
                 wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
                 $display("############################################");
-                $display("   Testing IS62/65WVS1288GALL SSRAM Read/Write Access       ");
+                $display("   Testing IS62/65WVS1288GALL SSRAM[0] Read/Write Access       ");
                 $display("############################################");
 		// SSPI Indirect RAM READ ACCESS-
 		// Byte Read Option
@@ -208,7 +207,182 @@ module user_sspi_tb;
 		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
 		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
 
+                $display("############################################");
+                $display("   Testing IS62/65WVS1288GALL SSRAM[1] Read/Write Access       ");
+                $display("############################################");
+		// SSPI Indirect RAM READ ACCESS-
+		// Byte Read Option
+		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
+                spi_chip_no = 2'b01; // Select the Chip Select to zero
+		sspi_dw_read_check(8'h03,24'h0000,32'h13121110);
+		sspi_dw_read_check(8'h03,24'h0004,32'h17161514);
+		sspi_dw_read_check(8'h03,24'h0008,32'h1B1A1918);
+		sspi_dw_read_check(8'h03,24'h000C,32'h1F1E1D1C);
+		
+		sspi_dw_read_check(8'h03,24'h0010,32'h23222120);
+		sspi_dw_read_check(8'h03,24'h0014,32'h27262524);
+		sspi_dw_read_check(8'h03,24'h0018,32'h2B2A2928);
+		sspi_dw_read_check(8'h03,24'h001C,32'h2F2E2D2C);
+		
+		sspi_dw_read_check(8'h03,24'h0020,32'h33323130);
+		sspi_dw_read_check(8'h03,24'h0024,32'h37363534);
+		sspi_dw_read_check(8'h03,24'h0028,32'h3B3A3938);
+		sspi_dw_read_check(8'h03,24'h002C,32'h3F3E3D3C);
 
+		sspi_dw_read_check(8'h03,24'h0030,32'h43424140);
+		sspi_dw_read_check(8'h03,24'h0034,32'h47464544);
+		sspi_dw_read_check(8'h03,24'h0038,32'h4B4A4948);
+		sspi_dw_read_check(8'h03,24'h003C,32'h4F4E4D4C);
+
+		sspi_dw_read_check(8'h03,24'h00a0,32'hb3b2b1b0);
+		sspi_dw_read_check(8'h03,24'h00a4,32'hb7b6b5b4);
+		sspi_dw_read_check(8'h03,24'h00a8,32'hbbbab9b8);
+		sspi_dw_read_check(8'h03,24'h00aC,32'hbfbebdbc);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h22222222);
+		sspi_dw_read_check(8'h03,24'h0204,32'h33333333);
+		sspi_dw_read_check(8'h03,24'h0208,32'h44444444);
+		sspi_dw_read_check(8'h03,24'h020C,32'h55555555);
+
+		// SPI Write
+		sspi_dw_write(8'h02,24'h0000,32'h00112233);
+		sspi_dw_write(8'h02,24'h0004,32'h44556677);
+		sspi_dw_write(8'h02,24'h0008,32'h8899AABB);
+		sspi_dw_write(8'h02,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_write(8'h02,24'h0200,32'h11223344);
+		sspi_dw_write(8'h02,24'h0204,32'h55667788);
+		sspi_dw_write(8'h02,24'h0208,32'h99AABBCC);
+		sspi_dw_write(8'h02,24'h020C,32'hDDEEFF00);
+
+		// SPI Read Check
+		sspi_dw_read_check(8'h03,24'h0000,32'h00112233);
+		sspi_dw_read_check(8'h03,24'h0004,32'h44556677);
+		sspi_dw_read_check(8'h03,24'h0008,32'h8899AABB);
+		sspi_dw_read_check(8'h03,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h11223344);
+		sspi_dw_read_check(8'h03,24'h0204,32'h55667788);
+		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
+		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
+
+                $display("############################################");
+                $display("   Testing IS62/65WVS1288GALL SSRAM[2] Read/Write Access       ");
+                $display("############################################");
+		// SSPI Indirect RAM READ ACCESS-
+		// Byte Read Option
+		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
+                spi_chip_no = 2'b10; // Select the Chip Select to zero
+		sspi_dw_read_check(8'h03,24'h0000,32'h23222120);
+		sspi_dw_read_check(8'h03,24'h0004,32'h27262524);
+		sspi_dw_read_check(8'h03,24'h0008,32'h2b2a2928);
+		sspi_dw_read_check(8'h03,24'h000C,32'h2f2e2d2c);
+
+		sspi_dw_read_check(8'h03,24'h0010,32'h33323130);
+		sspi_dw_read_check(8'h03,24'h0014,32'h37363534);
+		sspi_dw_read_check(8'h03,24'h0018,32'h3B3A3938);
+		sspi_dw_read_check(8'h03,24'h001C,32'h3F3E3D3C);
+		
+		sspi_dw_read_check(8'h03,24'h0020,32'h43424140);
+		sspi_dw_read_check(8'h03,24'h0024,32'h47464544);
+		sspi_dw_read_check(8'h03,24'h0028,32'h4B4A4948);
+		sspi_dw_read_check(8'h03,24'h002C,32'h4F4E4D4C);
+		
+		sspi_dw_read_check(8'h03,24'h0030,32'h53525150);
+		sspi_dw_read_check(8'h03,24'h0034,32'h57565554);
+		sspi_dw_read_check(8'h03,24'h0038,32'h5B5A5958);
+		sspi_dw_read_check(8'h03,24'h003C,32'h5F5E5D5C);
+
+		sspi_dw_read_check(8'h03,24'h0040,32'h63626160);
+		sspi_dw_read_check(8'h03,24'h0044,32'h67666564);
+		sspi_dw_read_check(8'h03,24'h0048,32'h6B6A6968);
+		sspi_dw_read_check(8'h03,24'h004C,32'h6F6E6D6C);
+
+		sspi_dw_read_check(8'h03,24'h00a0,32'hc3c2c1c0);
+		sspi_dw_read_check(8'h03,24'h00a4,32'hc7c6c5c4);
+		sspi_dw_read_check(8'h03,24'h00a8,32'hcbcac9c8);
+		sspi_dw_read_check(8'h03,24'h00aC,32'hcfcecdcc);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h33333333);
+		sspi_dw_read_check(8'h03,24'h0204,32'h44444444);
+		sspi_dw_read_check(8'h03,24'h0208,32'h55555555);
+		sspi_dw_read_check(8'h03,24'h020C,32'h66666666);
+
+		// SPI Write
+		sspi_dw_write(8'h02,24'h0000,32'h00112233);
+		sspi_dw_write(8'h02,24'h0004,32'h44556677);
+		sspi_dw_write(8'h02,24'h0008,32'h8899AABB);
+		sspi_dw_write(8'h02,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_write(8'h02,24'h0200,32'h11223344);
+		sspi_dw_write(8'h02,24'h0204,32'h55667788);
+		sspi_dw_write(8'h02,24'h0208,32'h99AABBCC);
+		sspi_dw_write(8'h02,24'h020C,32'hDDEEFF00);
+
+		// SPI Read Check
+		sspi_dw_read_check(8'h03,24'h0000,32'h00112233);
+		sspi_dw_read_check(8'h03,24'h0004,32'h44556677);
+		sspi_dw_read_check(8'h03,24'h0008,32'h8899AABB);
+		sspi_dw_read_check(8'h03,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h11223344);
+		sspi_dw_read_check(8'h03,24'h0204,32'h55667788);
+		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
+		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
+
+                $display("############################################");
+                $display("   Testing IS62/65WVS1288GALL SSRAM[3] Read/Write Access       ");
+                $display("############################################");
+		// SSPI Indirect RAM READ ACCESS-
+		// Byte Read Option
+		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
+                spi_chip_no = 2'b11; // Select the Chip Select to zero
+		sspi_dw_read_check(8'h03,24'h0000,32'h33323130);
+		sspi_dw_read_check(8'h03,24'h0004,32'h37363534);
+		sspi_dw_read_check(8'h03,24'h0008,32'h3b3a3938);
+		sspi_dw_read_check(8'h03,24'h000C,32'h3f3e3d3c);
+
+		sspi_dw_read_check(8'h03,24'h0010,32'h43424140);
+		sspi_dw_read_check(8'h03,24'h0014,32'h47464544);
+		sspi_dw_read_check(8'h03,24'h0018,32'h4B4A4948);
+		sspi_dw_read_check(8'h03,24'h001C,32'h4F4E4D4C);
+
+		sspi_dw_read_check(8'h03,24'h0020,32'h53525150);
+		sspi_dw_read_check(8'h03,24'h0024,32'h57565554);
+		sspi_dw_read_check(8'h03,24'h0028,32'h5B5A5958);
+		sspi_dw_read_check(8'h03,24'h002C,32'h5F5E5D5C);
+
+		sspi_dw_read_check(8'h03,24'h00a0,32'hd3d2d1d0);
+		sspi_dw_read_check(8'h03,24'h00a4,32'hd7d6d5d4);
+		sspi_dw_read_check(8'h03,24'h00a8,32'hdbdad9d8);
+		sspi_dw_read_check(8'h03,24'h00aC,32'hdfdedddc);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h44444444);
+		sspi_dw_read_check(8'h03,24'h0204,32'h55555555);
+		sspi_dw_read_check(8'h03,24'h0208,32'h66666666);
+		sspi_dw_read_check(8'h03,24'h020C,32'h77777777);
+
+		// SPI Write
+		sspi_dw_write(8'h02,24'h0000,32'h00112233);
+		sspi_dw_write(8'h02,24'h0004,32'h44556677);
+		sspi_dw_write(8'h02,24'h0008,32'h8899AABB);
+		sspi_dw_write(8'h02,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_write(8'h02,24'h0200,32'h11223344);
+		sspi_dw_write(8'h02,24'h0204,32'h55667788);
+		sspi_dw_write(8'h02,24'h0208,32'h99AABBCC);
+		sspi_dw_write(8'h02,24'h020C,32'hDDEEFF00);
+
+		// SPI Read Check
+		sspi_dw_read_check(8'h03,24'h0000,32'h00112233);
+		sspi_dw_read_check(8'h03,24'h0004,32'h44556677);
+		sspi_dw_read_check(8'h03,24'h0008,32'h8899AABB);
+		sspi_dw_read_check(8'h03,24'h000C,32'hCCDDEEFF);
+
+		sspi_dw_read_check(8'h03,24'h0200,32'h11223344);
+		sspi_dw_read_check(8'h03,24'h0204,32'h55667788);
+		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
+		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
 
@@ -285,7 +459,6 @@ user_project_wrapper u_top(
 //  ----------------------------------------------------
    wire flash_io1;
    wire flash_clk = io_out[16];
-   wire spiram_csb = io_out[13];
    tri  #1 flash_io0 = io_out[15];
    assign io_in[14] = flash_io1;
 
@@ -293,18 +466,57 @@ user_project_wrapper u_top(
    tri  #1 flash_io3 = 1'b1;
 
 
-   is62wvs1288 #(.mem_file_name("flash1.hex"))
-	u_sfram (
+   wire spiram_csb0 = io_out[13];
+   is62wvs1288 #(.mem_file_name("flash0.hex"))
+	u_sfram_0 (
          // Data Inputs/Outputs
            .io0     (flash_io0),
            .io1     (flash_io1),
            // Controls
            .clk    (flash_clk),
-           .csb    (spiram_csb),
+           .csb    (spiram_csb0),
            .io2    (flash_io2),
            .io3    (flash_io3)
     );
 
+   wire spiram_csb1 = io_out[12];
+   is62wvs1288 #(.mem_file_name("flash1.hex"))
+	u_sfram_1 (
+         // Data Inputs/Outputs
+           .io0     (flash_io0),
+           .io1     (flash_io1),
+           // Controls
+           .clk    (flash_clk),
+           .csb    (spiram_csb1),
+           .io2    (flash_io2),
+           .io3    (flash_io3)
+    );
+
+   wire spiram_csb2 = io_out[9];
+is62wvs1288 #(.mem_file_name("flash2.hex"))
+     u_sfram_2 (
+      // Data Inputs/Outputs
+	.io0     (flash_io0),
+	.io1     (flash_io1),
+	// Controls
+	.clk    (flash_clk),
+	.csb    (spiram_csb2),
+	.io2    (flash_io2),
+	.io3    (flash_io3)
+ );
+
+   wire spiram_csb3 = io_out[8];
+is62wvs1288 #(.mem_file_name("flash3.hex"))
+     u_sfram_3 (
+      // Data Inputs/Outputs
+	.io0     (flash_io0),
+	.io1     (flash_io1),
+	// Controls
+	.clk    (flash_clk),
+	.csb    (spiram_csb3),
+	.io2    (flash_io2),
+	.io3    (flash_io3)
+ );
 
 //----------------------------------------------------
 //  Task

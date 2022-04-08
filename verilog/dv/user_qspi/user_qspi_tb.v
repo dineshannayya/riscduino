@@ -77,13 +77,10 @@
 
 `default_nettype wire
 
-`timescale 1 ns / 1 ns
+`timescale 1 ns/1 ps
 
-`include "uprj_netlists.v"
-`include "mt48lc8m8a2.v"
+`include "DFFRAM/DFFRAM.v"
 `include "is62wvs1288.v"
-`include "user_reg_map.v"
-
 
 module user_qspi_tb;
 	reg clock;

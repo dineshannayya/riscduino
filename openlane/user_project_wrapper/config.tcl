@@ -16,7 +16,6 @@
 # Base Configurations. Don't Touch
 # section begin
 
-set ::env(PDK) "sky130A"
 set ::env(STD_CELL_LIBRARY) "sky130_fd_sc_hd"
 
 # YOU ARE NOT ALLOWED TO CHANGE ANY VARIABLES DEFINED IN THE FIXED WRAPPER CFGS 
@@ -115,6 +114,7 @@ set ::env(GND_NETS) "vssd1 vssd2 vssa1 vssa2"
 #
 set ::env(VDD_PIN) "vccd1"
 set ::env(GND_PIN) "vssd1"
+set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 0, vdda2 vssa2 0"
 
 set ::env(GLB_RT_OBS) " met5  0    0    2920   3520, \
 	                met4  125  1750  675   2490, \
@@ -125,7 +125,6 @@ set ::env(GLB_RT_OBS) " met5  0    0    2920   3520, \
 	                met4  1575 2645 2125   3385 \
 	              "
                       
-set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 0, vdda2 vssa2 0"
 
 #set ::env(FP_PDN_MACRO_HOOKS) " \
 #	u_intercon vccd1 vssd1 \

@@ -63,7 +63,7 @@ begin
       sspi_write_dword({cmd,address[23:0]},BIG_ENDIAN,8'h0);
       sspi_write_byte(32'h00,BIG_ENDIAN,8'h0);  // 8 Bit Dummy Cycle
       sspi_read_dword(LITTLE_ENDIAN,read_data,8'h1);
-      if(read_data != exp_data) begin
+      if(read_data !== exp_data) begin
          -> sspi_error_detected;
          $display("%m : ERROR :  Address: %x Exp : %x Rxd : %x",address,exp_data,read_data);
       end else begin

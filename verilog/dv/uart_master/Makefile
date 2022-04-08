@@ -14,88 +14,191 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-## PDK 
-PDK_PATH = $(PDK_ROOT)/sky130A
 
-## Caravel Pointers
-CARAVEL_ROOT ?= ../../../caravel
-CARAVEL_PATH ?= $(CARAVEL_ROOT)
-CARAVEL_FIRMWARE_PATH = $(CARAVEL_PATH)/verilog/dv/caravel
-CARAVEL_VERILOG_PATH  = $(CARAVEL_PATH)/verilog
-CARAVEL_RTL_PATH = $(CARAVEL_VERILOG_PATH)/rtl
-CARAVEL_BEHAVIOURAL_MODELS = $(CARAVEL_VERILOG_PATH)/dv/caravel
+ 
+PWDD := $(shell pwd)
+BLOCKS := $(shell basename $(PWDD))
 
-## User Project Pointers
-UPRJ_VERILOG_PATH ?= ../../../verilog
-UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
-UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
-UPRJ_BEHAVIOURAL_MODELS = ../model
-UPRJ_BEHAVIOURAL_AGENTS = ../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1c/src/includes
-UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
-UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
-UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
-UPRJ_INCLUDE_PATH5 = $(UPRJ_RTL_PATH)/mbist/include
-## RISCV GCC 
-GCC_PATH?=/ef/apps/bin
-GCC_PREFIX?=riscv32-unknown-elf
-GCC64_PREFIX?=riscv64-unknown-elf
+# ---- Include Partitioned Makefiles ----
 
-## Simulation mode: RTL/GL
-SIM_DEFINES = -DFUNCTIONAL -DSIM
+DESIGNS?=../../..
+CONFIG = caravel_user_project
+
+########################################################
+#include $(MCW_ROOT)/verilog/dv/make/env.makefile
+########################################################
+#######################################################################
+## Global Environment Variables for local repo  
+#######################################################################
+
+export PDK_PATH =      $(PDK_ROOT)/sky130A
+export VIP_PATH =      $(CORE_VERILOG_PATH)/dv/vip
+export FIRMWARE_PATH = $(CORE_VERILOG_PATH)/dv/firmware
+
+#######################################################################
+## Caravel Verilog for Integration Tests
+#######################################################################
+
+export CARAVEL_VERILOG_PATH ?=  $(CARAVEL_ROOT)/verilog
+export CORE_VERILOG_PATH    ?=  $(CARAVEL_ROOT)/mgmt_core_wrapper/verilog
+export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
+
+export CARAVEL_PATH = $(CARAVEL_VERILOG_PATH)
+export VERILOG_PATH = $(CORE_VERILOG_PATH)
+
+#######################################################################
+## Compiler Information 
+#######################################################################
+
+export GCC_PATH?=      $(TOOLS)/bin
+export GCC_PREFIX?=    riscv64-unknown-linux-gnu
+
+
+############## USER SPECIFIC DEFINE ##################
+
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
+
+######################################################
+
+
+
+
+
+########################################################
+#include $(MCW_ROOT)/verilog/dv/make/var.makefile
+########################################################
+
+CPU=vexriscv
+CPUFAMILY=riscv
+CPUFLAGS=-march=rv32i      -mabi=ilp32 -D__vexriscv__
+CPUENDIANNESS=little
+CLANG=0
+
+
+######################################################
+# include $(MCW_ROOT)/verilog/dv/make/cpu.makefile
+######################################################
+
+ifeq ($(CPU),picorv32)
+	LINKER_SCRIPT=$(FIRMWARE_PATH)/sections.lds
+	SOURCE_FILES=$(FIRMWARE_PATH)/start.s 
+	VERILOG_FILES=
+endif
+
+ifeq ($(CPU),ibex)
+	LINKER_SCRIPT=$(FIRMWARE_PATH)/link_ibex.ld
+	SOURCE_FILES=$(FIRMWARE_PATH)/crt0_ibex.S $(FIRMWARE_PATH)/simple_system_common.c
+# 	VERILOG_FILES=../ibex/*
+	VERILOG_FILES=
+endif
+
+ifeq ($(CPU),vexriscv)
+# 	LINKER_SCRIPT=$(FIRMWARE_PATH)/sections_vexriscv.lds
+# 	SOURCE_FILES=$(FIRMWARE_PATH)/start_caravel_vexriscv.s
+	LINKER_SCRIPT=$(FIRMWARE_PATH)/sections.lds
+	SOURCE_FILES=$(FIRMWARE_PATH)/crt0_vex.S $(FIRMWARE_PATH)/isr.c
+	VERILOG_FILES=
+endif
+
+
+
+#####################################################
+#include $(MCW_ROOT)/verilog/dv/make/sim.makefile
+######################################################
+
+export IVERILOG_DUMPER = fst
+
+# RTL/GL/GL_SDF
 SIM?=RTL
 DUMP?=OFF
 
+
 .SUFFIXES:
 
-PATTERN = uart_master
 
-all:  ${PATTERN:=.vcd}
+all:  ${BLOCKS:=.vcd} ${BLOCKS:=.lst}
 
-hex:  ${PATTERN:=.hex}
+hex:  ${BLOCKS:=.hex}
 
-vvp:  ${PATTERN:=.vvp}
+#.SUFFIXES:
+
+##############################################################################
+# Comiple firmeware
+##############################################################################
+%.elf: %.c $(LINKER_SCRIPT) $(SOURCE_FILES)
+	${GCC_PREFIX}-gcc -g \
+	-I$(FIRMWARE_PATH) \
+	-I$(VERILOG_PATH)/dv/generated \
+	-I$(VERILOG_PATH)/dv/ \
+	-I$(VERILOG_PATH)/common \
+	  $(CPUFLAGS) \
+	-Wl,-Bstatic,-T,$(LINKER_SCRIPT),--strip-debug \
+	-ffreestanding -nostdlib -o $@ $(SOURCE_FILES) $<
+
+%.lst: %.elf
+	${GCC_PREFIX}-objdump -d -S $< > $@
+
+%.hex: %.elf
+	${GCC_PREFIX}-objcopy -O verilog $< $@ 
+	# to fix flash base address
+	sed -ie 's/@10/@00/g' $@
+
+%.bin: %.elf
+	${GCC_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
+	
+	
+##############################################################################
+# Runing the simulations
+##############################################################################
 
 %.vvp: %_tb.v %.hex
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv $(SIM_DEFINES) -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) \
-	$< -o $@ 
+	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+        -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
     else  
-	iverilog -g2005-sv -DWFDUMP $(SIM_DEFINES) -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) \
-	$< -o $@ 
+	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+        -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
    endif
-else  
-	iverilog $(SIM_DEFINES) -DGL -I $(PDK_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) -I $(CARAVEL_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS) -I$(UPRJ_GL_PATH)  -I$(UPRJ_RTL_PATH)  -I $(UPRJ_VERILOG_PATH) \
-	$< -o $@ 
+endif 
+
+## GL
+ifeq ($(SIM),GL)
+    ifeq ($(CONFIG),caravel_user_project)
+		iverilog -Ttyp -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+        -f$(VERILOG_PATH)/includes/includes.gl.caravel \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) -o $@ $<
+    else
+		iverilog -Ttyp -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+        -f$(VERILOG_PATH)/includes/includes.gl.$(CONFIG) \
+		-f$(CARAVEL_PATH)/gl/__user_project_wrapper.v -o $@ $<
+    endif
+endif 
+
+## GL+SDF
+ifeq ($(SIM),GL_SDF)
+    ifeq ($(CONFIG),caravel_user_project)
+		cvc64  +interp \
+		+define+SIM +define+FUNCTIONAL +define+GL +define+USE_POWER_PINS +define+UNIT_DELAY +define+ENABLE_SDF \
+		+change_port_type +dump2fst +fst+parallel2=on   +nointeractive +notimingchecks +mipdopt \
+		-f $(VERILOG_PATH)/includes/includes.gl+sdf.caravel \
+		-f $(USER_PROJECT_VERILOG)/includes/includes.gl+sdf.$(CONFIG) $<
+	else
+		cvc64  +interp \
+		+define+SIM +define+FUNCTIONAL +define+GL +define+USE_POWER_PINS +define+UNIT_DELAY +define+ENABLE_SDF \
+		+change_port_type +dump2fst +fst+parallel2=on   +nointeractive +notimingchecks +mipdopt \
+		-f $(VERILOG_PATH)/includes/includes.gl+sdf.$(CONFIG) \
+		-f $CARAVEL_PATH/gl/__user_project_wrapper.v $<
+    endif
 endif
 
 %.vcd: %.vvp
-	vvp $<
+	vvp  $<
 
-%.elf: %.c $(CARAVEL_FIRMWARE_PATH)/sections.lds $(CARAVEL_FIRMWARE_PATH)/start.s check-env
-	${GCC64_PREFIX}-gcc -I $(CARAVEL_PATH) -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,$(CARAVEL_FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(CARAVEL_FIRMWARE_PATH)/start.s $<
-
-%.hex: %.elf
-	${GCC64_PREFIX}-objcopy -O verilog $< $@ 
-	# to fix flash base address
-	sed -i 's/@10000000/@00000000/g' $@
-
-%.bin: %.elf
-	${GCC64_PREFIX}-objcopy -O binary $< /dev/stdout | tail -c +1048577 > $@
+# twinwave: RTL-%.vcd GL-%.vcd
+#     twinwave RTL-$@ * + GL-$@ *
 
 check-env:
 ifndef PDK_ROOT
@@ -104,17 +207,18 @@ endif
 ifeq (,$(wildcard $(PDK_ROOT)/sky130A))
 	$(error $(PDK_ROOT)/sky130A not found, please install pdk before running make)
 endif
-#ifeq (,$(wildcard $(GCC64_PREFIX)-gcc ))
-#	$(error $(GCC64_PREFIX)-gcc is not found, please export GCC_PATH and GCC_PREFIX before running make)
-#endif
+ifeq (,$(wildcard $(GCC_PREFIX)-gcc ))
+	$(error $(GCC_PREFIX)-gcc is not found, please export GCC_PATH and GCC_PREFIX before running make)
+endif
 # check for efabless style installation
 ifeq (,$(wildcard $(PDK_ROOT)/sky130A/libs.ref/*/verilog))
 SIM_DEFINES := ${SIM_DEFINES} -DEF_STYLE
 endif
 
+
 # ---- Clean ----
 
 clean:
-	rm -f *.elf *.hex *.bin *.vvp *.vcd *.log
+	\rm  -f *.elf *.hex *.bin *.vvp *.log *.vcd *.lst *.hexe
 
 .PHONY: clean hex all

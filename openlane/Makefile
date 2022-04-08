@@ -31,14 +31,6 @@ $(CONFIG) :
 	@exit 1
 
 $(BLOCKS) : % : ./%/config.tcl FORCE
-#ifeq ($(OPENLANE_ROOT),)
-#	@echo "Please export OPENLANE_ROOT"
-#	@exit 1
-#endif
-#ifeq ($(PDK_ROOT),)
-#	@echo "Please export PDK_ROOT"
-#	@exit 1
-#endif
 	@echo "###############################################"
 	@sleep 1
 
@@ -57,17 +49,6 @@ $(BLOCKS) : % : ./%/config.tcl FORCE
 	cp $*/runs/$*/OPENLANE_VERSION ../signoff/$*/
 	cp $*/runs/$*/PDK_SOURCES ../signoff/$*/
 	cp $*/runs/$*/reports/final_summary_report.csv ../signoff/$*/
-
-.PHONY: openlane
-openlane:
-ifeq ($(OPENLANE_ROOT),)
-	@echo "Please export OPENLANE_ROOT"
-	@exit 1
-endif
-	git clone https://github.com/efabless/OpenLane --branch=$(OPENLANE_TAG) --depth=1 $(OPENLANE_ROOT) && \
-		cd $(OPENLANE_ROOT) && \
-		export IMAGE_NAME=efabless/openlane:$(OPENLANE_TAG) && \
-		make openlane
 
 FORCE:
 

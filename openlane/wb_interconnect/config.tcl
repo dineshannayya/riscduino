@@ -70,7 +70,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 320 1800"
+set ::env(DIE_AREA) "0 0 300 1725"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -82,7 +82,7 @@ set ::env(RUN_CVC) 0
 
 set ::env(PL_TIME_DRIVEN) 1
 set ::env(PL_TARGET_DENSITY) "0.20"
-set ::env(CELL_PAD) "10"
+set ::env(CELL_PAD) "8"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"

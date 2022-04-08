@@ -34,6 +34,9 @@
 ////  Revision :                                                  ////
 ////    0.1 - 16th Feb 2021, Dinesh A                             ////
 ////          initial version                                     ////
+////    0.2 - 6 April 2021, Dinesh A                              ////
+////          1. SSPI CS# increased from 1 to 4                   ////
+//            2. UART I/F increase from 1 to 2                    ////
 //////////////////////////////////////////////////////////////////////
 
 module pinmux (
@@ -55,11 +58,11 @@ module pinmux (
                        output logic            cpu_intf_rst_n   ,
                        output logic            qspim_rst_n      ,
                        output logic            sspim_rst_n      ,
-                       output logic            uart_rst_n       ,
+                       output logic [1:0]      uart_rst_n       ,
                        output logic            i2cm_rst_n       ,
                        output logic            usb_rst_n        ,
 
-		       output logic [1:0]      cfg_riscv_debug_sel,
+		       output logic [15:0]     cfg_riscv_ctrl,
 
 		       // Reg Bus Interface Signal
                        input logic             reg_cs,
@@ -106,8 +109,8 @@ module pinmux (
 		       output   logic          usb_dn_i,
 
 		       // UART I/F
-		       input   logic           uart_txd,
-		       output  logic           uart_rxd,
+		       input   logic  [1:0]    uart_txd,
+		       output  logic  [1:0]    uart_rxd,
 
 		       // I2CM I/F
 		       input   logic           i2cm_clk_o,
@@ -119,7 +122,7 @@ module pinmux (
 
 		       // SPI MASTER
 		       input   logic           spim_sck,
-		       input   logic           spim_ss,
+		       input   logic [3:0]     spim_ssn,
 		       input   logic           spim_miso,
 		       output  logic           spim_mosi,
 
@@ -365,7 +368,7 @@ pinmux_reg u_pinmux_reg(
           .i2cm_rst_n                   (i2cm_rst_n              ),
           .usb_rst_n                    (usb_rst_n               ),
 
-	  .cfg_riscv_debug_sel          (cfg_riscv_debug_sel     ),
+	  .cfg_riscv_ctrl               (cfg_riscv_ctrl          ),
 
 
       // Reg read/write Interface Inputs
@@ -542,9 +545,9 @@ pwm  u_pwm_5 (
 
 assign      cfg_pwm_enb          = cfg_multi_func_sel[5:0];
 wire [1:0]  cfg_int_enb          = cfg_multi_func_sel[7:6];
-wire        cfg_uart_enb         = cfg_multi_func_sel[8];
-wire        cfg_i2cm_enb         = cfg_multi_func_sel[9];
-wire        cfg_spim_enb         = cfg_multi_func_sel[10];
+wire [1:0]  cfg_uart_enb         = cfg_multi_func_sel[9:8];
+wire [3:0]  cfg_spim_enb         = cfg_multi_func_sel[13:10];
+wire        cfg_i2cm_enb         = cfg_multi_func_sel[14];
 
 wire [7:0]  cfg_port_a_dir_sel   = cfg_gpio_dir_sel[7:0];
 wire [7:0]  cfg_port_b_dir_sel   = cfg_gpio_dir_sel[15:8];
@@ -567,23 +570,24 @@ always_comb begin
      //Pin-1        PC6/RESET*          digital_io[0]
      port_c_in[6] = digital_io_in[0];
 
-     //Pin-2        PD0/RXD             digital_io[1]
+     //Pin-2        PD0/RXD[0]             digital_io[1]
      port_d_in[0] = digital_io_in[1];
-     if(cfg_uart_enb)  uart_rxd      = digital_io_in[1];
+     if(cfg_uart_enb[0])  uart_rxd[0]   = digital_io_in[1];
   
-     //Pin-3        PD1/TXD             digital_io[2]
+     //Pin-3        PD1/TXD[0]             digital_io[2]
      port_d_in[1] = digital_io_in[2];
 
 
-     //Pin-4        PD2/INT0            digital_io[3]
+     //Pin-4        PD2/RXD[1]/INT0       digital_io[3]
      port_d_in[2] = digital_io_in[3];
-     if(cfg_int_enb[0]) ext_intr_in[0] = digital_io_in[3];
+     if(cfg_uart_enb[1])     uart_rxd[1]    = digital_io_in[3];
+     else if(cfg_int_enb[0]) ext_intr_in[0] = digital_io_in[3];
 
      //Pin-5        PD3/INT1/OC2B(PWM0)  digital_io[4]
      port_d_in[3] = digital_io_in[4];
      if(cfg_int_enb[1]) ext_intr_in[1] = digital_io_in[4];
 
-     //Pin-6        PD4                 digital_io[5]
+     //Pin-6        PD4/TXD[1]          digital_io[5]
      port_d_in[4] = digital_io_in[5];
 
      //Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
@@ -612,7 +616,7 @@ always_comb begin
 
      //Pin-17       PB3/MOSI/OC2A(PWM5) digital_io[14]
      port_b_in[3] = digital_io_in[14];
-     if(cfg_spim_enb) spim_mosi = digital_io_in[14];
+     if(cfg_spim_enb[0]) spim_mosi = digital_io_in[14];
 
      //Pin-18       PB4/MISO            digital_io[15]
      port_b_in[4] = digital_io_in[15];
@@ -658,23 +662,24 @@ always_comb begin
      //Pin-1        PC6/RESET*          digital_io[0]
      if(cfg_port_c_dir_sel[6])       digital_io_out[0]   = port_c_out[6];
 
-     //Pin-2        PD0/RXD             digital_io[1]
+     //Pin-2        PD0/RXD[0]       digital_io[1]
      if(cfg_port_d_dir_sel[0])       digital_io_out[1]   = port_d_out[0];
   
-     //Pin-3        PD1/TXD             digital_io[2]
-     if     (cfg_uart_enb)           digital_io_out[2]   = uart_txd;
+     //Pin-3        PD1/TXD[0]             digital_io[2]
+     if     (cfg_uart_enb[0])        digital_io_out[2]   = uart_txd[0];
      else if(cfg_port_d_dir_sel[1])  digital_io_out[2]   = port_d_out[1];
 
 
-     //Pin-4        PD2/INT0            digital_io[3]
+     //Pin-4        PD2/RXD[1]/INT0  digital_io[3]
      if(cfg_port_d_dir_sel[2])       digital_io_out[3]   = port_d_out[2];
 
      //Pin-5        PD3/INT1/OC2B(PWM0)  digital_io[4]
      if(cfg_pwm_enb[0])              digital_io_out[4]   = pwm_wfm[0];
      else if(cfg_port_d_dir_sel[3])  digital_io_out[4]   = port_d_out[3];
 
-     //Pin-6        PD4                 digital_io[5]
-     if(cfg_port_d_dir_sel[4])       digital_io_out[5]   = port_d_out[4];
+     //Pin-6        PD4/TXD[1]                 digital_io[5]
+     if   (cfg_uart_enb[1])               digital_io_out[5]   = uart_txd[1];
+     else if(cfg_port_d_dir_sel[4])       digital_io_out[5]   = port_d_out[4];
 
      //Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
      if(cfg_port_b_dir_sel[6])       digital_io_out[6]   = port_b_out[6];
@@ -683,12 +688,14 @@ always_comb begin
      // Pin-10       PB7/XTAL2/TOSC2     digital_io[7]
      if(cfg_port_b_dir_sel[7])       digital_io_out[7]   = port_b_out[7];
 
-     //Pin-11       PD5/OC0B(PWM1)/T1   digital_io[8]
+     //Pin-11       PD5/SS[3]/OC0B(PWM1)/T1   digital_io[8]
      if(cfg_pwm_enb[1])              digital_io_out[8]   = pwm_wfm[1];
+     else if(cfg_spim_enb[3])        digital_io_out[8]  = spim_ssn[3];
      else if(cfg_port_d_dir_sel[5])  digital_io_out[8]   = port_d_out[5];
 
-     //Pin-12       PD6/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
+     //Pin-12       PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
      if(cfg_pwm_enb[2])              digital_io_out[9]   = pwm_wfm[2];
+     else if(cfg_spim_enb[2])        digital_io_out[9]   = spim_ssn[2];
      else if(cfg_port_d_dir_sel[6])  digital_io_out[9]   = port_d_out[6];
 
 
@@ -698,13 +705,14 @@ always_comb begin
      //Pin-14       PB0/CLKO/ICP1       digital_io[11]
      if(cfg_port_b_dir_sel[0])       digital_io_out[11]  = port_b_out[0];
 
-     //Pin-15       PB1/OC1A(PWM3)      digital_io[12]
+     //Pin-15       PB1/SS[1]/OC1A(PWM3)      digital_io[12]
      if(cfg_pwm_enb[3])              digital_io_out[12]  = pwm_wfm[3];
+     else if(cfg_spim_enb[1])        digital_io_out[12]  = spim_ssn[1];
      else if(cfg_port_b_dir_sel[1])  digital_io_out[12]  = port_b_out[1];
 
-     //Pin-16       PB2/SS/OC1B(PWM4)   digital_io[13]
+     //Pin-16       PB2/SS[0]/OC1B(PWM4)   digital_io[13]
      if(cfg_pwm_enb[4])              digital_io_out[13]  = pwm_wfm[4];
-     else if(cfg_spim_enb)           digital_io_out[13]  = spim_ss;
+     else if(cfg_spim_enb[0])        digital_io_out[13]  = spim_ssn[0];
      else if(cfg_port_b_dir_sel[2])  digital_io_out[13]  = port_b_out[2];
 
      //Pin-17       PB3/MOSI/OC2A(PWM5) digital_io[14]
@@ -712,11 +720,11 @@ always_comb begin
      else if(cfg_port_b_dir_sel[3])  digital_io_out[14]  = port_b_out[3];
 
      //Pin-18       PB4/MISO            digital_io[15]
-     if(cfg_spim_enb)                digital_io_out[15]  = spim_miso;
+     if(cfg_spim_enb[0])             digital_io_out[15]  = spim_miso;
      else if(cfg_port_b_dir_sel[4])  digital_io_out[15]  = port_b_out[4];
 
      //Pin-19       PB5/SCK             digital_io[16]
-     if(cfg_spim_enb)                digital_io_out[16]  = spim_sck;
+     if(cfg_spim_enb[0])             digital_io_out[16]  = spim_sck;
      else if(cfg_port_b_dir_sel[5])  digital_io_out[16]  = port_b_out[5];
      
      //Pin-23       PC0/ADC0            digital_io[18]/analog_io[11]
@@ -768,16 +776,17 @@ always_comb begin
      //Pin-1        PC6/RESET*          digital_io[0]
      if(cfg_port_c_dir_sel[6])       digital_io_oen[0]   = 1'b0;
 
-     //Pin-2        PD0/RXD             digital_io[1]
-     if     (cfg_uart_enb)           digital_io_oen[1]   = 1'b1;
+     //Pin-2        PD0/RXD[0]          digital_io[1]
+     if     (cfg_uart_enb[0])        digital_io_oen[1]   = 1'b1;
      else if(cfg_port_d_dir_sel[0])  digital_io_oen[1]   = 1'b0;
 
-     //Pin-3        PD1/TXD             digital_io[2]
-     if     (cfg_uart_enb)           digital_io_oen[2]   = 1'b0;
+     //Pin-3        PD1/TXD[0]          digital_io[2]
+     if     (cfg_uart_enb[0])        digital_io_oen[2]   = 1'b0;
      else if(cfg_port_d_dir_sel[1])  digital_io_oen[2]   = 1'b0;
 
-    //Pin-4        PD2/INT0            digital_io[3]
-     if(cfg_int_enb[0])              digital_io_oen[3]   = 1'b1;
+    //Pin-4        PD2/RXD[1]/INT0      digital_io[3]
+     if   (cfg_uart_enb[1])          digital_io_oen[3]   = 1'b1;
+     else if(cfg_int_enb[0])         digital_io_oen[3]   = 1'b1;
      else if(cfg_port_d_dir_sel[2])  digital_io_oen[3]   = 1'b0;
 
      //Pin-5        PD3/INT1/OC2B(PWM0)  digital_io[4]
@@ -785,8 +794,9 @@ always_comb begin
      else if(cfg_int_enb[1])         digital_io_oen[4]   = 1'b1;
      else if(cfg_port_d_dir_sel[3])  digital_io_oen[4]   = 1'b0;
 
-     //Pin-6        PD4                 digital_io[5]
-     if(cfg_port_d_dir_sel[4])       digital_io_oen[5]   = 1'b0;
+     //Pin-6        PD4/TXD[1]       digital_io[5]
+     if   (cfg_uart_enb[1])          digital_io_oen[5]   = 1'b0;
+     else if(cfg_port_d_dir_sel[4])  digital_io_oen[5]   = 1'b0;
 
      //Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
      if(cfg_port_b_dir_sel[6])       digital_io_oen[6]   = 1'b0;
@@ -794,12 +804,14 @@ always_comb begin
      // Pin-10       PB7/XTAL2/TOSC2     digital_io[7]
      if(cfg_port_b_dir_sel[7])       digital_io_oen[7]   = 1'b0;
 
-     //Pin-11       PD5/OC0B(PWM1)/T1   digital_io[8]
+     //Pin-11       PD5/SS[3]/OC0B(PWM1)/T1   digital_io[8]
      if(cfg_pwm_enb[1])              digital_io_oen[8]   = 1'b0;
+     else if(cfg_spim_enb[3])        digital_io_oen[8]   = 1'b0;
      else if(cfg_port_d_dir_sel[5])  digital_io_oen[8]   = 1'b0;
 
-     //Pin-12       PD6/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
+     //Pin-12       PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
      if(cfg_pwm_enb[2])              digital_io_oen[9]   = 1'b0;
+     else if(cfg_spim_enb[2])        digital_io_oen[9]   = 1'b0;
      else if(cfg_port_d_dir_sel[6])  digital_io_oen[9]   = 1'b0;
 
      //Pin-13       PD7/A1N1            digital_io[10]/analog_io[3]
@@ -808,26 +820,27 @@ always_comb begin
      //Pin-14       PB0/CLKO/ICP1       digital_io[11]
      if(cfg_port_b_dir_sel[0])       digital_io_oen[11]  = 1'b0;
 
-     //Pin-15       PB1/OC1A(PWM3)      digital_io[12]
+     //Pin-15       PB1/SS[1]/OC1A(PWM3)      digital_io[12]
      if(cfg_pwm_enb[3])              digital_io_oen[12]  = 1'b0;
+     else if(cfg_spim_enb[1])        digital_io_oen[12]  = 1'b0;
      else if(cfg_port_b_dir_sel[1])  digital_io_oen[12]  = 1'b0;
 
-     //Pin-16       PB2/SS/OC1B(PWM4)   digital_io[13]
+     //Pin-16       PB2/SS[0]/OC1B(PWM4)   digital_io[13]
      if(cfg_pwm_enb[4])              digital_io_oen[13]  = 1'b0;
-     else if(cfg_spim_enb)           digital_io_oen[13]  = 1'b0;
+     else if(cfg_spim_enb[0])        digital_io_oen[13]  = 1'b0;
      else if(cfg_port_b_dir_sel[2])  digital_io_oen[13]  = 1'b0;
 
      //Pin-17       PB3/MOSI/OC2A(PWM5) digital_io[14]
-     if(cfg_spim_enb)                digital_io_oen[14]  = 1'b1;
+     if(cfg_spim_enb[0])                digital_io_oen[14]  = 1'b1;
      else if(cfg_pwm_enb[5])         digital_io_oen[14]  = 1'b0;
      else if(cfg_port_b_dir_sel[3])  digital_io_oen[14]  = 1'b0;
 
-     //Pin-18       PB4/MISO            digital_io[15]
-     if(cfg_spim_enb)                digital_io_oen[15]  = 1'b0;
+     //Pin-18       PB4/MISO         digital_io[15]
+     if(cfg_spim_enb[0])             digital_io_oen[15]  = 1'b0;
      else if(cfg_port_b_dir_sel[4])  digital_io_oen[15]  = 1'b0;
 
      //Pin-19       PB5/SCK             digital_io[16]
-     if(cfg_spim_enb)                digital_io_oen[16]  = 1'b0;
+     if(cfg_spim_enb[0])                digital_io_oen[16]  = 1'b0;
      else if(cfg_port_b_dir_sel[5])  digital_io_oen[16]  = 1'b0;
      
      //Pin-23       PC0/ADC0            digital_io[18]/analog_io[11]

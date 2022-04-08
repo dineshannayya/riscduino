@@ -58,7 +58,7 @@ later version.
 //-------------------------------------------
 // async FIFO
 //-----------------------------------------------
-//`timescale  1ns/1ps
+`timescale  1ns/1ps
 
 module async_fifo (wr_clk,
                    wr_reset_n,

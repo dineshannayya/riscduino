@@ -16,14 +16,7 @@
 `default_nettype none
 
 `timescale 1 ns / 1 ps
-
-`define FULL_CHIP_SIM
-
-`include "uprj_netlists.v"
-`include "caravel_netlists.v"
-`include "spiflash.v"
 `include "uart_agent.v"
-`include "user_reg_map.v"
 
 module uart_master_tb;
 	reg clock;
@@ -116,13 +109,16 @@ reg            test_fail     ;
             uart_timeout            = 600;// wait time limit
             uart_fifo_enable        = 0;	// fifo mode disable
             tb_master_uart.debug_mode = 0; // disable debug display
+
+            #200; // Wait for reset removal
+
+ 	    wait(checkbits == 16'h AB60);
+		$display("Monitor: UART Master Test Started");
+
+	   repeat (50000) @(posedge clock);  
             tb_master_uart.uart_init;
             tb_master_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
         	                          uart_stick_parity, uart_timeout, uart_divisor);
-	   wait(checkbits == 16'h AB60);
-		$display("Monitor: UART Master Test Started");
-
-           repeat (4000) @(posedge clock);
            //$write ("\n(%t)Response:\n",$time);
            flag = 0;
            while(flag == 0)
@@ -279,4 +275,7 @@ uart_agent tb_master_uart(
 `include "uart_master_tasks.sv"
 
 endmodule
+
+// SSFLASH has 1ps/1ps time scale
+`include "s25fl256s.sv"
 `default_nettype wire

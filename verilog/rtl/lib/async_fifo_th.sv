@@ -70,6 +70,7 @@
 //           rd_total_aval       -->  Indicate total no of transfer available
 //-----------------------------------------------
 
+`timescale  1ns/1ps
 module async_fifo_th (
 	           wr_clk,
                    wr_reset_n,

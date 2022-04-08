@@ -14,37 +14,31 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-## Caravel Pointers
-CARAVEL_ROOT ?= ../../../caravel
-CARAVEL_PATH ?= $(CARAVEL_ROOT)
-CARAVEL_FIRMWARE_PATH = $(CARAVEL_PATH)/verilog/dv/caravel
-CARAVEL_VERILOG_PATH  = $(CARAVEL_PATH)/verilog
-CARAVEL_RTL_PATH = $(CARAVEL_VERILOG_PATH)/rtl
-CARAVEL_BEHAVIOURAL_MODELS = $(CARAVEL_VERILOG_PATH)/dv/caravel
 
+# ---- Include Partitioned Makefiles ----
 
-## User Project Pointers
-UPRJ_VERILOG_PATH ?= ../../../verilog
-UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
-UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
-UPRJ_BEHAVIOURAL_MODELS = ../model
-UPRJ_BEHAVIOURAL_AGENTS = ../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1c/src/includes
-UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/i2cm/src/includes
-UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
+CONFIG = caravel_user_project
+ 
+#######################################################################
+## Caravel Verilog for Integration Tests
+#######################################################################
 
+DESIGNS?=../../..
+
+export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 ## YIFIVE FIRMWARE
-YIFIVE_FIRMWARE_PATH = $(UPRJ_VERILOG_PATH)/dv/firmware
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
 GCC64_PREFIX?=riscv64-unknown-elf
 
-## RISCV GCC 
-GCC_PATH?=/ef/apps/bin
-GCC_PREFIX?=riscv32-unknown-elf
-PDK_PATH?=/opt/pdk/sky130A
 
 ## Simulation mode: RTL/GL
 SIM?=RTL
 DUMP?=OFF
+RISC_CORE?=0
+
+### To Enable IVERILOG FST DUMP
+export IVERILOG_DUMPER = fst
+
 
 .SUFFIXES:
 
@@ -58,35 +52,22 @@ vvp:  ${PATTERN:=.vvp}
 %.vvp: %_tb.v
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) \
-	-I $(UPRJ_INCLUDE_PATH3) \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	$< -o $@ 
     else  
-	iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) \
-	-I $(UPRJ_INCLUDE_PATH3) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	$< -o $@ 
    endif
 else  
-	iverilog -g2005-sv -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) -I $(CARAVEL_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS) -I $(UPRJ_GL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	$< -o $@ 
 endif
 
 %.vcd: %.vvp
 	vvp $<
-
-%.hex: 
-	echo @"This is user boot test, noting to compile the mangment core code"
 
 
 # ---- Clean ----

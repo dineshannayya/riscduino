@@ -167,6 +167,10 @@ export RISCV_ROM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -j .text.init -j .text -j .ro
 export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -O verilog
 export RISCV_READELF ?= $(CROSS_PREFIX)readelf -s
 
+
+### To Enable IVERILOG FST DUMP
+export IVERILOG_DUMPER = fst
+
 ifneq (,$(findstring e,$(ARCH_lowercase)))
 # Tests can be compiled for RVE only if gcc version 8.0.0 or higher
     GCCVERSIONGT7 := $(shell expr `$(RISCV_GCC) -dumpfullversion | cut -f1 -d'.'` \> 7)

@@ -98,7 +98,7 @@ void main()
     reg_mprj_xfer = 1;
     while (reg_mprj_xfer == 1);
 
-    reg_la2_oenb = reg_la2_iena = 0xFFFFFFFF;    // [95:64]
+    reg_la0_oenb = reg_la0_iena = 0xFFFFFFFF;    // [31:0]
 
     // Flag start of the test
 	reg_mprj_datal = 0xAB600000;
