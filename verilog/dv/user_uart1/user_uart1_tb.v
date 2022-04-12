@@ -74,7 +74,7 @@
 
 `timescale 1 ns/1 ps
 
-`include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "DFFRAM/DFFRAM.v"
 `include "uart_agent.v"
 
 

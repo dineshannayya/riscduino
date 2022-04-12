@@ -4,6 +4,7 @@
 
 SIM ?= RTL
 DUMP ?= OFF
+TOOLS?=/opt/riscv64i/
 
 # PARAMETERS
 

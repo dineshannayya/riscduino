@@ -66,6 +66,8 @@
 
 `timescale 1 ns / 1 ps
 
+`include "DFFRAM/DFFRAM.v"
+
 `define TB_GLBL    user_timer_tb
 
 

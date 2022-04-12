@@ -23,6 +23,7 @@ BLOCKS := $(shell basename $(PWDD))
 
 DESIGNS?=../../..
 CONFIG = caravel_user_project
+TOOLS?=/opt/riscv64i/
 
 ########################################################
 #include $(MCW_ROOT)/verilog/dv/make/env.makefile

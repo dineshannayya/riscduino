@@ -43,6 +43,7 @@
 `define TB_GLBL    user_usb_tb
 `define USB_BFM    u_usb_agent
 
+`include "DFFRAM/DFFRAM.v"
 `include "usb_agents.v"
 `include "test_control.v"
 `include "usb1d_defines.v"
