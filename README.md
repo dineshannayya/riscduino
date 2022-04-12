@@ -210,6 +210,7 @@ Syntacore SCR1 (https://github.com/syntacore/scr1)
 Following Design changes are done on the basic version of syntacore RISC core
 ```
    * Some of the sv syntex are changed to standard verilog format to make compatibile with opensource tool iverilog & yosys
+   * local Instruction Memory is increased from 4 to 8 location
    * Instruction Request are changed from Single word to 4 Word Burst
    * Multiplication and Divsion are changed to improve timing
    * Additional pipe line stages added to improve the RISC timing closure near to 50Mhz

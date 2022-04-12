@@ -496,24 +496,24 @@ pwm  u_pwm_5 (
 * Pin Mapping    ATMGE CONFIG
 *   ATMEGA328                        caravel Pin Mapping
 *   Pin-1        PC6/RESET*          digital_io[0]
-*   Pin-2        PD0/RXD             digital_io[1]
-*   Pin-3        PD1/TXD             digital_io[2]
-*   Pin-4        PD2/INT0            digital_io[3]
+*   Pin-2        PD0/RXD[0]          digital_io[1]
+*   Pin-3        PD1/TXD[0]          digital_io[2]
+*   Pin-4        PD2/RXD[1]/INT0     digital_io[3]
 *   Pin-5        PD3/INT1/OC2B(PWM0) digital_io[4]
-*   Pin-6        PD4                 digital_io[5]
+*   Pin-6        PD4/TXD[1]          digital_io[5]
 *   Pin-7        VCC                  -
 *   Pin-8        GND                  -
 *   Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
-*   Pin-10       PB7/XTAL2/TOSC2     digital_io[7]
-*   Pin-11       PD5/OC0B(PWM1)/T1   digital_io[8]
-*   Pin-12       PD6/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
-*   Pin-13       PD7/A1N1            digital_io[10]/analog_io[3]
-*   Pin-14       PB0/CLKO/ICP1       digital_io[11]
-*   Pin-15       PB1/OC1A(PWM3)      digital_io[12]
-*   Pin-16       PB2/SS/OC1B(PWM4)   digital_io[13]
-*   Pin-17       PB3/MOSI/OC2A(PWM5) digital_io[14]
-*   Pin-18       PB4/MISO            digital_io[15]
-*   Pin-19       PB5/SCK             digital_io[16]
+*   Pin-10       PB7/XTAL2/TOSC2           digital_io[7]
+*   Pin-11       PD5/SS[3]/OC0B(PWM1)/T1   digital_io[8]
+*   Pin-12       PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
+*   Pin-13       PD7/A1N1                  digital_io[10]/analog_io[3]
+*   Pin-14       PB0/CLKO/ICP1             digital_io[11]
+*   Pin-15       PB1/SS[1]OC1A(PWM3)       digital_io[12]
+*   Pin-16       PB2/SS[0]/OC1B(PWM4)      digital_io[13]
+*   Pin-17       PB3/MOSI/OC2A(PWM5)       digital_io[14]
+*   Pin-18       PB4/MISO                  digital_io[15]
+*   Pin-19       PB5/SCK                   digital_io[16]
 *   Pin-20       AVCC                -
 *   Pin-21       AREF                analog_io[10]
 *   Pin-22       GND                 -

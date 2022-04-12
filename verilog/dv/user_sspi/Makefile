@@ -24,6 +24,7 @@ CONFIG = caravel_user_project
 #######################################################################
 
 DESIGNS?=../../..
+TOOLS?=/opt/riscv64i/
 
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 ## YIFIVE FIRMWARE
@@ -73,6 +74,6 @@ endif
 # ---- Clean ----
 
 clean:
-	rm -f *.vvp *.vcd *.log *.fst
+	rm -rf *.vvp *.vcd *.log *.fst
 
 .PHONY: clean hex all

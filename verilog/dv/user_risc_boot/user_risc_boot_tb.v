@@ -74,6 +74,8 @@
 
 `timescale 1 ns / 1 ns
 
+`include "DFFRAM/DFFRAM.v"
+
 module user_risc_boot_tb;
 	reg clock;
 	reg wb_rst_i;

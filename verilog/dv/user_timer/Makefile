@@ -24,6 +24,7 @@ CONFIG = caravel_user_project
 #######################################################################
 
 DESIGNS?=../../..
+TOOLS?=/opt/riscv64i/
 
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 ## YIFIVE FIRMWARE

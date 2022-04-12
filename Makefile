@@ -86,15 +86,12 @@ blocks=$(shell cd openlane && find * -maxdepth 0 -type d)
 $(blocks): % :
 	export CARAVEL_ROOT=$(CARAVEL_ROOT) && cd openlane && $(MAKE) $*
 
-dv_patterns=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
-dv-targets-rtl=$(dv_patterns:%=verify-%-rtl)
-dv-targets-gl=$(dv_patterns:%=verify-%-gl)
-dv-targets-gl-sdf=$(dv_patterns:%=verify-%-gl-sdf)
 
+PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
+DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
 TARGET_PATH=$(shell pwd)
 verify_command="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} RISC_CORE=${RISC_CORE} && make"
-dv_base_dependencies= ./verilog/dv/% check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
-docker_run_verify=\
+$(DV_PATTERNS): verify-% : ./verilog/dv/%  check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_ROOT}:${PDK_ROOT} \
 		-v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
 		-e TARGET_PATH=${TARGET_PATH} -e PDK_ROOT=${PDK_ROOT} \
@@ -107,40 +104,13 @@ docker_run_verify=\
 		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:latest \
 		sh -c $(verify_command)
 
-.PHONY: harden
-harden: $(blocks)
 
 .PHONY: verify
-verify: $(dv-targets)
+verify: 
+	cd ./verilog/dv/ && \
+	export SIM=${SIM} DUMP=${DUMP} && \
+		$(MAKE) -j$(THREADS)
 
-$(dv-targets-rtl): SIM=RTL
-$(dv-targets-rtl): verify-%-rtl: $(dv_base_dependencies)
-	$(docker_run_verify)
-
-$(dv-targets-gl): SIM=GL
-$(dv-targets-gl): verify-%-gl: $(dv_base_dependencies)
-	$(docker_run_verify)
-
-$(dv-targets-gl-sdf): SIM=GL_SDF
-$(dv-targets-gl-sdf): verify-%-gl-sdf: $(dv_base_dependencies)
-	$(docker_run_verify)
-
-clean-targets=$(blocks:%=clean-%)
-.PHONY: $(clean-targets)
-$(clean-targets): clean-% :
-	rm -f ./verilog/gl/$*.v
-	rm -f ./spef/$*.spef
-	rm -f ./sdc/$*.sdc
-	rm -f ./sdf/$*.sdf
-	rm -f ./gds/$*.gds
-	rm -f ./mag/$*.mag
-	rm -f ./lef/$*.lef
-	rm -f ./maglef/*.maglef
-
-make_what=setup $(blocks) $(dv-targets-rtl) $(dv-targets-gl) $(dv-targets-gl-sdf) $(clean-targets)
-.PHONY: what
-what:
-	# $(make_what)
 
 # Install Openlane
 .PHONY: openlane
