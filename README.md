@@ -30,6 +30,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [News](#news)
 - [MPW Shuttle](#mpw-shuttle)
 - [Contacts](#contacts)
+- [How To Contribute](#how-to-contribute)
 - [Documentation](#documentation)
 
 
@@ -655,6 +656,19 @@ Riscduino Soc flow uses Openlane tool sets.
     <td  align="center"> <a href="https://platform.efabless.com/projects/782">Link</a></td>
   </tr>
 </table>
+
+# How To Contribute
+
+We are looking for community help in following activity, interested user can ping me in efabless slack platform
+
+*  **Analog Design**           - ADC, DAC, PLL,
+*  **Digital Design**          - New IP Integration, Encription,DSP, Floating point functions
+*  **Verification**            - Improving the Verification flow
+*  **Linux Porting**           - Build Root integration
+*  **Arudino Software Update** - Tool Customisation for Riscduino, Adding additional plug-in and Riscv compilation support
+*  **Riscv Simulator**         - integration to Riscduino
+*  **Any other ideas**          
+
 
 # Contacts
 
