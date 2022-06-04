@@ -1,42 +1,72 @@
 
-module ctech_mux2x1 (
-	input  logic A0,
-	input  logic A1,
+module ctech_mux2x1 #(parameter WB = 1) (
+	input  logic [WB-1:0] A0,
+	input  logic [WB-1:0] A1,
 	input  logic S ,
-	output logic X);
+	output logic [WB-1:0] X);
 
 `ifndef SYNTHESIS
 assign X = (S) ? A1 : A0;
 `else 
-sky130_fd_sc_hd__mux2_8 u_mux (.A0 (A0), .A1 (A1), .S  (S), .X (X));
+    generate
+       if (WB > 1)
+       begin : bus_
+         genvar tcnt;
+         for (tcnt = 0; $unsigned(tcnt) < WB; tcnt=tcnt+1) begin : bit_
+             sky130_fd_sc_hd__mux2_8 u_mux (.A0 (A0[tcnt]), .A1 (A1[tcnt]), .S  (S), .X (X[tcnt]));
+         end
+       end else begin
+          sky130_fd_sc_hd__mux2_8 u_mux (.A0 (A0), .A1 (A1), .S  (S), .X (X));
+       end
+    endgenerate
 `endif
 
 endmodule
 
-module ctech_mux2x1_2 (
-	input  logic A0,
-	input  logic A1,
+module ctech_mux2x1_2 #(parameter WB = 1) (
+	input  logic [WB-1:0] A0,
+	input  logic [WB-1:0] A1,
 	input  logic S ,
-	output logic X);
+	output logic [WB-1:0] X);
 
 `ifndef SYNTHESIS
 assign X = (S) ? A1 : A0;
 `else 
-sky130_fd_sc_hd__mux2_2 u_mux (.A0 (A0), .A1 (A1), .S  (S), .X (X));
+    generate
+       if (WB > 1)
+       begin : bus_
+         genvar tcnt;
+         for (tcnt = 0; $unsigned(tcnt) < WB; tcnt=tcnt+1) begin : bit_
+             sky130_fd_sc_hd__mux2_2 u_mux (.A0 (A0[tcnt]), .A1 (A1[tcnt]), .S  (S), .X (X[tcnt]));
+         end
+       end else begin 
+          sky130_fd_sc_hd__mux2_2 u_mux (.A0 (A0), .A1 (A1), .S  (S), .X (X));
+       end
+    endgenerate
 `endif
 
 endmodule
 
-module ctech_mux2x1_4 (
-	input  logic A0,
-	input  logic A1,
+module ctech_mux2x1_4 #(parameter WB = 1) (
+	input  logic [WB-1:0] A0,
+	input  logic [WB-1:0] A1,
 	input  logic S ,
-	output logic X);
+	output logic [WB-1:0] X);
 
 `ifndef SYNTHESIS
 assign X = (S) ? A1 : A0;
 `else 
-sky130_fd_sc_hd__mux2_4 u_mux (.A0 (A0), .A1 (A1), .S  (S), .X (X));
+    generate
+       if (WB > 1)
+       begin : bus_
+         genvar tcnt;
+         for (tcnt = 0; $unsigned(tcnt) < WB; tcnt=tcnt+1) begin : bit_
+             sky130_fd_sc_hd__mux2_4 u_mux (.A0 (A0[tcnt]), .A1 (A1[tcnt]), .S  (S), .X (X[tcnt]));
+         end
+       end else begin
+          sky130_fd_sc_hd__mux2_4 u_mux (.A0 (A0), .A1 (A1), .S  (S), .X (X));
+       end
+    endgenerate
 `endif
 
 endmodule

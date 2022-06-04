@@ -37,7 +37,7 @@
 ////   2. usb1_core:  usb1 core                                   ////
 ////   3. usb1_host : usb phy                                     ////
 ////                                                              ////
-////   Assumptiom: usb_clk is 48Mhz                               ////
+////   Assumptiom: usb_clk is 60Mhz                               ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -49,7 +49,15 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
-module usb1_host (
+module usb1_host 
+//-----------------------------------------------------------------
+// Params
+//-----------------------------------------------------------------
+#(
+     parameter USB_CLK_FREQ     = 60000000
+)
+
+(
     input  logic           usb_clk_i   ,
     input  logic           usb_rstn_i  ,
 
@@ -112,13 +120,35 @@ module usb1_host (
     logic [31:0]           reg_rdata;
     logic                  reg_ack;
 
+    logic                  wbm_rst_ssn;
+    logic                  usb_rst_ssn;
 
+
+//###################################
+// Wishbone Reset Synchronization
+//###################################
+reset_sync  u_wb_rst (
+	      .scan_mode  (1'b0           ),
+              .dclk       (wbm_clk_i      ), // Destination clock domain
+	      .arst_n     (wbm_rst_n      ), // active low async reset
+              .srst_n     (wbm_rst_ssn    )
+          );
+
+//###################################
+// USB Reset Synchronization
+//###################################
+reset_sync  u_usb_rst (
+	      .scan_mode  (1'b0           ),
+              .dclk       (usb_clk_i      ), // Destination clock domain
+	      .arst_n     (usb_rstn_i     ), // active low async reset
+              .srst_n     (usb_rst_ssn    )
+          );
 
 async_wb  #(.AW (6))
      u_async_wb(
 
     // Master Port
-       .wbm_rst_n        (wbm_rst_n            ),  // Regular Reset signal
+       .wbm_rst_n        (wbm_rst_ssn          ),  // Regular Reset signal
        .wbm_clk_i        (wbm_clk_i            ),  // System clock
        .wbm_cyc_i        (wbm_stb_i            ),  // strobe/request
        .wbm_stb_i        (wbm_stb_i            ),  // strobe/request
@@ -131,7 +161,7 @@ async_wb  #(.AW (6))
        .wbm_err_o        (wbm_err_o            ),  // error
 
     // Slave Port
-       .wbs_rst_n        (usb_rstn_i           ),  // Regular Reset signal
+       .wbs_rst_n        (usb_rst_ssn          ),  // Regular Reset signal
        .wbs_clk_i        (usb_clk_i            ),  // System clock
        .wbs_cyc_o        (                     ),  // strobe/request
        .wbs_stb_o        (reg_cs               ),  // strobe/request
@@ -145,10 +175,10 @@ async_wb  #(.AW (6))
 
     );
 
-usbh_core  u_core (
+usbh_core  #(.USB_CLK_FREQ(USB_CLK_FREQ)) u_core (
     // Inputs
     .clk_i               (usb_clk_i           ),
-    .rstn_i              (usb_rstn_i          ),
+    .rstn_i              (usb_rst_ssn         ),
 
     .reg_cs              (reg_cs              ),
     .reg_wr              (reg_wr              ),
@@ -182,10 +212,10 @@ usbh_core  u_core (
 
 
 
-usb_fs_phy  u_phy(
+usb_fs_phy  #(.USB_CLK_FREQ(USB_CLK_FREQ)) u_phy(
     // Inputs
          .clk_i               (usb_clk_i           ),
-         .rstn_i              (usb_rstn_i          ),
+         .rstn_i              (usb_rst_ssn         ),
          .utmi_data_out_i     (utmi_data_out_o     ),
          .utmi_txvalid_i      (utmi_txvalid_o      ),
          .utmi_op_mode_i      (utmi_op_mode_o      ),

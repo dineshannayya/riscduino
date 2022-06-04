@@ -287,7 +287,7 @@ sspim_top u_sspim (
      //---------------------------------
      .reg_cs      (reg_spim_cs      ),
      .reg_wr      (reg_wr           ),
-     .reg_addr    (reg_addr         ),
+     .reg_addr    ({2'b0,reg_addr[5:0]} ),
      .reg_wdata   (reg_wdata        ),
      .reg_be      (reg_be           ),
 

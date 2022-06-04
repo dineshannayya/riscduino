@@ -24,14 +24,7 @@
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
-////   Digital core.                                              ////
-////   1. User Risc core is booted using  compiled code of        ////
-////      user_risc_boot.c                                        ////
-////   2. User Risc core uses Serial Flash and SDRAM to boot      ////
-////   3. After successful boot, Risc core will  write signature  ////
-////      in to  user register from 0x3000_0018 to 0x3000_002C    ////
-////   4. Through the External Wishbone Interface we read back    ////
-////       and validate the user register to declared pass fail   ////
+////   gpio interfaface through External WB i/F.                  ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -40,7 +33,7 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 16th Feb 2021, Dinesh A                             ////
+////    0.1 - 01 Oct 2021, Dinesh A                               ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -73,34 +66,20 @@
 
 `timescale 1 ns / 1 ns
 
+// Note in caravel, 0x30XX_XXXX only come to user interface
+// So, using wb_host bank select we have changing MSB address [31:24] = 0x10
+`define ADDR_SPACE_UART    32'h3001_0000
+`define ADDR_SPACE_SSPI    32'h3001_00C0
+`define ADDR_SPACE_PINMUX  32'h3002_0000
+
+`define TB_GLBL    user_gpio_tb
+
 `include "uprj_netlists.v"
 `include "is62wvs1288.v"
 `include "user_reg_map.v"
 
 
-
-localparam [31:0]      YCR1_SIM_EXIT_ADDR      = 32'h0000_00F8;
-localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
-localparam [31:0]      YCR1_SIM_EXT_IRQ_ADDR   = 32'hF000_0100;
-localparam [31:0]      YCR1_SIM_SOFT_IRQ_ADDR  = 32'hF000_0200;
-
- `define QSPIM_GLBL_CTRL          32'h10000000
- `define QSPIM_DMEM_G0_RD_CTRL    32'h10000004
- `define QSPIM_DMEM_G0_WR_CTRL    32'h10000008
- `define QSPIM_DMEM_G1_RD_CTRL    32'h1000000C
- `define QSPIM_DMEM_G1_WR_CTRL    32'h10000010
-
- `define QSPIM_DMEM_CS_AMAP        32'h10000014
- `define QSPIM_DMEM_CA_AMASK       32'h10000018
-
- `define QSPIM_IMEM_CTRL1          32'h1000001C
- `define QSPIM_IMEM_CTRL2          32'h10000020
- `define QSPIM_IMEM_ADDR           32'h10000024
- `define QSPIM_IMEM_WDATA          32'h10000028
- `define QSPIM_IMEM_RDATA          32'h1000002C
- `define QSPIM_SPI_STATUS          32'h10000030
-
-module user_risc_regress_tb;
+module user_gpio_tb;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -116,94 +95,23 @@ module user_risc_regress_tb;
         wire [31:0] wbd_ext_dat_o;  // data input
         wire        wbd_ext_ack_o;  // acknowlegement
         wire        wbd_ext_err_o;  // error
-	wire        clk;
 
 	// User I/O
 	wire [37:0] io_oeb;
 	wire [37:0] io_out;
 	wire [37:0] io_in;
 
+
+	reg [1:0] spi_chip_no;
+
 	wire gpio;
 	wire [37:0] mprj_io;
 	wire [7:0] mprj_io_0;
-	reg         test_fail;
+	reg        test_fail;
 	reg [31:0] read_data;
+        integer    test_step;
+        wire       clock_mon;
 
-
-	int unsigned                f_results;
-        int unsigned                f_info;
-        
-        string                      s_results;
-        string                      s_info;
-        `ifdef SIGNATURE_OUT
-        string                      s_testname;
-        bit                         b_single_run_flag;
-        `endif  //  SIGNATURE_OUT
-
-
-	`ifdef VERILATOR
-         logic [255:0]          test_file;
-	 logic [255:0]          test_ram_file;
-         `else // VERILATOR
-         string                 test_file;
-	 string                 test_ram_file;
-
-         `endif // VERILATOR
-
-
-        event	               reinit_event;
-	bit                    test_running;
-        int unsigned           tests_passed;
-        int unsigned           tests_total;
-
-	logic  [7:0]           tem_mem[0:4095];
-	logic  [31:0]          mem_data;
-
-
-parameter P_FSM_C      = 4'b0000; // Command Phase Only
-parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
-parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
-
-parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
-parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
-parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
-parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
-
-parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
-parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
-parameter P_FSM_CAMW   = 4'b1001; // Command -> Address -> MODE + Write Data
-
-parameter P_FSM_CDR    = 4'b1010; // COMMAND -> DUMMY -> READ
-parameter P_FSM_CDW    = 4'b1011; // COMMAND -> DUMMY -> WRITE
-parameter P_FSM_CR     = 4'b1100;  // COMMAND -> READ
-
-parameter P_MODE_SWITCH_IDLE     = 2'b00;
-parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
-parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
-
-parameter P_SINGLE = 2'b00;
-parameter P_DOUBLE = 2'b01;
-parameter P_QUAD   = 2'b10;
-parameter P_QDDR   = 2'b11;
-	//-----------------------------------------------------------------
-	// Since this is regression, reset will be applied multiple time
-	// Reset logic
-	// ----------------------------------------------------------------
-	bit [1:0]     rst_cnt;
-        bit           rst_init;
-	wire          rst_n;
-
-
-        assign rst_n = &rst_cnt;
-	assign wb_rst_i    =  !rst_n;
-        
-        always_ff @(posedge clk) begin
-	if (rst_init)   begin
-	     rst_cnt <= '0;
-	     -> reinit_event;
-	end
-            else if (~&rst_cnt) rst_cnt <= rst_cnt + 1'b1;
-        end
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
@@ -211,9 +119,9 @@ parameter P_QDDR   = 2'b11;
 
 	always #12.5 clock <= (clock === 1'b0);
 
-	assign clk = clock;
 
 	initial begin
+		OneUsPeriod = 1;
 		clock = 0;
                 wbd_ext_cyc_i ='h0;  // strobe/request
                 wbd_ext_stb_i ='h0;  // strobe/request
@@ -226,98 +134,67 @@ parameter P_QDDR   = 2'b11;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(1, user_risc_regress_tb);
-	   	$dumpvars(1, user_risc_regress_tb.u_top);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_intercon);
-	   	$dumpvars(0, user_risc_regress_tb.u_top.u_pinmux);
+	   	$dumpvars(1, `TB_GLBL);
+	   	$dumpvars(0, `TB_GLBL.u_top.u_pinmux);
 	   end
        `endif
 
-        integer i;
+	initial begin
+		$dumpon;
 
-        always @reinit_event
-	begin
-		// Initialize the SPI memory with hex content
-		// Wait for reset removal
-		wait (rst_n == 1);
-
-
-		// Initialize the SPI memory with hex content
-                $write("\033[0;34m---Initializing the SPI Memory with Hexfile: %s\033[0m\n", test_file);
-                $readmemh(test_file,u_spi_flash_256mb.Mem);
-
-		// some of the RISCV test need SRAM area for specific
-		// instruction execution like fence
-		$sformat(test_ram_file, "%s.ram",test_file);
-                $readmemh(test_ram_file,u_sram.memory);
-
-		/***
-		// Split the Temp memory content to two sram file
-                $readmemh(test_ram_file,tem_mem);
-		// Load the SRAM0/SRAM1 with 2KB data
-                $write("\033[0;34m---Initializing the u_sram0_2kb Memory with Hexfile: %s\033[0m\n",test_ram_file);
-		// Initializing the SRAM
-		for(i = 0 ; i < 2048; i = i +4) begin
-		    mem_data = {tem_mem[i+3],tem_mem[i+2],tem_mem[i+1],tem_mem[i+0]};
-		    //$display("Filling Mem Location : %x with data : %x",i, mem_data);
-		    u_top.u_sram0_2kb.mem[i/4] = mem_data;
-		end
-		for(i = 2048 ; i < 4096; i = i +4) begin
-		  mem_data = {tem_mem[i+3],tem_mem[i+2],tem_mem[i+1],tem_mem[i+0]};
-		  //$display("Filling Mem Location : %x with data : %x",i, mem_data);
-		  u_top.u_sram1_2kb.mem[(2048-i)/4] = mem_data;
-		end
-		***/
-
-		//for(i =32'h00; i < 32'h100; i = i+1)
-                //    $display("Location: %x, Data: %x", i, u_top.u_tsram0_2kb.mem[i]);
-
-
-		#200; 
+		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
-		$display("Monitor: Core reset removal");
+		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
-	        repeat (2) @(posedge clock);
-		#1;
-		//------------ fuse_mhartid= 0x00
-                //wb_user_core_write('h3002_0004,'h0);
-
+		wb_user_core_write('h3080_0000,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
-		// Remove WB and SPI Reset, Keep SDARM and CORE under Reset
+                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+
+                // Remove the reset
+		// Remove WB and SPI/UART Reset, Keep CORE under Reset
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
 
-		// CS#2 Switch to QSPI Mode
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
+		// config 1us based on system clock - 1000/25ns = 40 
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG1,39);
 
-		// Enable the DCACHE Remap to SRAM region
-		//wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
-		//
-		// Remove all the reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
+		// Enable GPIO Interrupt
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'h8000);
 
+		test_fail = 0;
+	        repeat (200) @(posedge clock);
+
+
+		repeat (100) @(posedge clock);
+			// $display("+1000 cycles");
+
+          	if(test_fail == 0) begin
+		   `ifdef GL
+	    	       $display("Monitor: GPIO Mode (GL) Passed");
+		   `else
+		       $display("Monitor: GPIO Mode (RTL) Passed");
+		   `endif
+	        end else begin
+		    `ifdef GL
+	    	        $display("Monitor: GPIO Mode (GL) Failed");
+		    `else
+		        $display("Monitor: GPIO Mode (RTL) Failed");
+		    `endif
+		 end
+	    	$display("###################################################");
+	        $finish;
 	end
 
+	initial begin
+		wb_rst_i <= 1'b1;
+		#100;
+		wb_rst_i <= 1'b0;	    	// Release reset
+	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
-//-------------------------------------------------------------------------------
-// Run tests
-//-------------------------------------------------------------------------------
-
-`include "riscv_runtests.sv"
-
-
-//-------------------------------------------------------------------------------
-// Core instance
-//-------------------------------------------------------------------------------
 
 user_project_wrapper u_top(
 `ifdef USE_POWER_PINS
@@ -354,24 +231,10 @@ user_project_wrapper u_top(
 
 );
 
-
-logic [31:0] riscv_dmem_req_cnt; // cnt dmem req
-initial 
-begin
-   riscv_dmem_req_cnt = 0;
-end
-
-always @(posedge u_top.wbd_riscv_dmem_stb_i)
-begin
-    riscv_dmem_req_cnt = riscv_dmem_req_cnt+1;
-    if((riscv_dmem_req_cnt %200) == 0)
-	$display("STATUS: Total Dmem Req Cnt: %d ",riscv_dmem_req_cnt);
-end
-
-
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
+
     end
 `endif    
 
@@ -379,47 +242,18 @@ end
 //  Integrate the Serial flash with qurd support to
 //  user core using the gpio pads
 //  ----------------------------------------------------
+   wire flash_io1;
+   wire flash_clk = io_out[16];
+   wire spiram_csb = io_out[13];
+   tri  #1 flash_io0 = io_out[15];
+   assign io_in[14] = flash_io1;
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
-   // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
-
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   tri  #1 flash_io2 = 1'b1;
+   tri  #1 flash_io3 = 1'b1;
 
 
-   // Quard flash
-     s25fl256s #(.mem_file_name("add.hex"),
-	         .otp_file_name("none"),
-                 .TimingModel("S25FL512SAGMFI010_F_30pF")) 
-		 u_spi_flash_256mb (
-           // Data Inputs/Outputs
-       .SI      (flash_io0),
-       .SO      (flash_io1),
-       // Controls
-       .SCK     (flash_clk),
-       .CSNeg   (flash_csb),
-       .WPNeg   (flash_io2),
-       .HOLDNeg (flash_io3),
-       .RSTNeg  (!wb_rst_i)
-
-       );
-
-
-   wire spiram_csb = io_out[27];
-
-   is62wvs1288 #(.mem_file_name("none"))
-	u_sram (
+   is62wvs1288 #(.mem_file_name("flash1.hex"))
+	u_sfram (
          // Data Inputs/Outputs
            .io0     (flash_io0),
            .io1     (flash_io1),
@@ -431,6 +265,14 @@ end
     );
 
 
+//----------------------------------------------------
+//  Task
+// --------------------------------------------------
+task test_err;
+begin
+     test_fail = 1;
+end
+endtask
 
 task wb_user_core_write;
 input [31:0] address;
@@ -453,7 +295,7 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
+  $display("STATUS: WB USER ACCESS WRITE Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
@@ -482,10 +324,157 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  //$display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
+
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  repeat (1) @(negedge clock);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     `TB_GLBL.test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
+  repeat (2) @(posedge clock);
+end
+endtask
+// GPIO Pin Mapping
+//Pin-1        PC6/RESET*          digital_io[0]
+//Pin-2        PD0/RXD             digital_io[1]
+//Pin-3        PD1/TXD             digital_io[2]
+//Pin-4        PD2/INT0            digital_io[3]
+//Pin-5        PD3/INT1/OC2B(PWM0)  digital_io[4]
+//Pin-6        PD4                 digital_io[5]
+//Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
+//Pin-10       PB7/XTAL2/TOSC2     digital_io[7]
+//Pin-11       PD5/OC0B(PWM1)/T1   digital_io[8]
+//Pin-12       PD6/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
+//Pin-13       PD7/A1N1            digital_io[10]/analog_io[3]
+//Pin-14       PB0/CLKO/ICP1       digital_io[11]
+//Pin-15       PB1/OC1A(PWM3)      digital_io[12]
+//Pin-16       PB2/SS/OC1B(PWM4)   digital_io[13]
+//Pin-17       PB3/MOSI/OC2A(PWM5) digital_io[14]
+//Pin-18       PB4/MISO            digital_io[15]
+//Pin-19       PB5/SCK             digital_io[16]
+//Pin-23       PC0/ADC0            digital_io[18]/analog_io[11]
+//Pin-24       PC1/ADC1            digital_io[19]/analog_io[12]
+//Pin-25       PC2/ADC2            digital_io[20]/analog_io[13]
+//Pin-26       PC3/ADC3            digital_io[21]/analog_io[14]
+//Pin-27       PC4/ADC4/SDA        digital_io[22]/analog_io[15]
+//Pin-28       PC5/ADC5/SCL        digital_io[23]/analog_io[16]
+
+// Generate GPIO out data
+
+task gen_gpio_out;
+input  [31:0] datain;
+output [7:0] port_a_out;
+output [7:0] port_b_out;
+output [7:0] port_c_out;
+output [7:0] port_d_out;
+
+reg [7:0] port_a_out;
+reg [7:0] port_b_out;
+reg [7:0] port_c_out;
+reg [7:0] port_d_out;
+begin
+    port_a_out ='h0;
+    port_b_out ='h0;
+    port_c_out ='h0;
+    port_d_out ='h0;
+
+    port_c_out[6] =  datain[0];
+    port_d_out[0] =  datain[1];
+    port_d_out[1] =  datain[2];
+    port_d_out[2] =  datain[3];
+    port_d_out[3] =  datain[4];
+    port_d_out[4] =  datain[5];
+    port_b_out[6] =  datain[6];
+    port_b_out[7] =  datain[7];
+    port_d_out[5] =  datain[8];
+    port_d_out[6] =  datain[9];
+    port_d_out[7] =  datain[10];
+    port_b_out[0] =  datain[11];
+    port_b_out[1] =  datain[12];
+    port_b_out[2] =  datain[13];
+    port_b_out[3] =  datain[14];
+    port_b_out[4] =  datain[15];
+    port_b_out[5] =  datain[16];
+    port_c_out[0] =  datain[18];
+    port_c_out[1] =  datain[19];
+    port_c_out[2] =  datain[20];
+    port_c_out[3] =  datain[21];
+    port_c_out[4] =  datain[22];
+    port_c_out[5] =  datain[23];
+end
+endtask
+
+// generate expected gpio data out
+task exp_gpio_in;
+output [7:0] port_a_in;
+output [7:0] port_b_in;
+output [7:0] port_c_in;
+output [7:0] port_d_in;
+reg [7:0] port_a_in;
+reg [7:0] port_b_in;
+reg [7:0] port_c_in;
+reg [7:0] port_d_in;
+begin
+    port_a_in ='h0;
+    port_b_in ='h0;
+    port_c_in ='h0;
+    port_d_in ='h0;
+    
+    port_c_in[6] =  io_out[0];
+    port_d_in[0] =  io_out[1];
+    port_d_in[1] =  io_out[2];
+    port_d_in[2] =  io_out[3];
+    port_d_in[3] =  io_out[4];
+    port_d_in[4] =  io_out[5];
+    port_b_in[6] =  io_out[6];
+    port_b_in[7] =  io_out[7];
+    port_d_in[5] =  io_out[8];
+    port_d_in[6] =  io_out[9];
+    port_d_in[7] =  io_out[10];
+    port_b_in[0] =  io_out[11];
+    port_b_in[1] =  io_out[12];
+    port_b_in[2] =  io_out[13];
+    port_b_in[3] =  io_out[14];
+    port_b_in[4] =  io_out[15];
+    port_b_in[5] =  io_out[16];
+    port_c_in[0] =  io_out[18];
+    port_c_in[1] =  io_out[19];
+    port_c_in[2] =  io_out[20];
+    port_c_in[3] =  io_out[21];
+    port_c_in[4] =  io_out[22];
+    port_c_in[5] =  io_out[23];
+end
+endtask
+
 
 `ifdef GL
 
@@ -496,14 +485,6 @@ wire [31:0] wbd_spi_adr_i   = u_top.u_spi_master.wbd_adr_i;
 wire [31:0] wbd_spi_dat_i   = u_top.u_spi_master.wbd_dat_i;
 wire [31:0] wbd_spi_dat_o   = u_top.u_spi_master.wbd_dat_o;
 wire [3:0]  wbd_spi_sel_i   = u_top.u_spi_master.wbd_sel_i;
-
-wire        wbd_sdram_stb_i = u_top.u_sdram_ctrl.wb_stb_i;
-wire        wbd_sdram_ack_o = u_top.u_sdram_ctrl.wb_ack_o;
-wire        wbd_sdram_we_i  = u_top.u_sdram_ctrl.wb_we_i;
-wire [31:0] wbd_sdram_adr_i = u_top.u_sdram_ctrl.wb_addr_i;
-wire [31:0] wbd_sdram_dat_i = u_top.u_sdram_ctrl.wb_dat_i;
-wire [31:0] wbd_sdram_dat_o = u_top.u_sdram_ctrl.wb_dat_o;
-wire [3:0]  wbd_sdram_sel_i = u_top.u_sdram_ctrl.wb_sel_i;
 
 wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb.reg_cs;
 wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb.reg_ack;
@@ -534,6 +515,6 @@ end
 
 `endif
 **/
+
 endmodule
-`include "s25fl256s.sv"
 `default_nettype wire

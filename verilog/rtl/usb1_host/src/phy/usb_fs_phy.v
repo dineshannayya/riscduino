@@ -54,6 +54,13 @@
 //-----------------------------------------------------------------
 
 module usb_fs_phy
+//-----------------------------------------------------------------
+// Params
+//-----------------------------------------------------------------
+#(
+     parameter USB_CLK_FREQ     = 60000000
+)
+
 (
     // Inputs
      input           clk_i
@@ -86,6 +93,12 @@ module usb_fs_phy
 
 
 
+
+//-------------------------------------------------------------------------
+// For 60Mhz usb clock, data need to sample at once in 4 cycle (60/4 = 12Mhz)
+// For 48Mhz usb clock, data need to sample at once in 3 cycle (48/3 = 12Mhz)
+// ------------------------------------------------------------------------
+localparam SAMPLE_RATE       = (USB_CLK_FREQ == 60000000) ? 3'd4 : 3'd3;
 
 //-----------------------------------------------------------------
 // Wires / Registers
@@ -454,31 +467,36 @@ assign bit_edge_w = rxd_last_q ^ in_j_w;
 //-----------------------------------------------------------------
 // Sample Timer
 //-----------------------------------------------------------------
-reg [1:0] sample_cnt_q;
+reg [2:0] sample_cnt_q;
 reg       adjust_delayed_q;
 
 always @ (posedge clk_i or negedge rstn_i)
-if (!rstn_i)
-begin
-    sample_cnt_q        <= 2'd0;
+if (!rstn_i) begin
+    sample_cnt_q        <= 3'd0;
     adjust_delayed_q    <= 1'b0;
+end else begin
+   // Delayed adjustment
+   if (adjust_delayed_q)
+       adjust_delayed_q    <= 1'b0;
+   else if (bit_edge_w && (sample_cnt_q != 3'd0) && (state_q < STATE_TX_SYNC))
+       sample_cnt_q        <= 3'd0;
+   // Can't adjust sampling point now?
+   else if (bit_edge_w && (sample_cnt_q == 3'd0) && (state_q < STATE_TX_SYNC)) begin
+       // Want to reset sampling point but need to delay adjustment by 1 cycle!
+       adjust_delayed_q    <= 1'b1;
+       if(sample_cnt_q == SAMPLE_RATE) 
+           sample_cnt_q <= 'b0;
+        else
+          sample_cnt_q  <= sample_cnt_q + 'd1;
+   end else begin
+     if(sample_cnt_q == SAMPLE_RATE)
+         sample_cnt_q   <= 'b0;
+     else
+         sample_cnt_q   <= sample_cnt_q + 'd1;
+   end
 end
-// Delayed adjustment
-else if (adjust_delayed_q)
-    adjust_delayed_q    <= 1'b0;
-else if (bit_edge_w && (sample_cnt_q != 2'd0) && (state_q < STATE_TX_SYNC))
-    sample_cnt_q        <= 2'd0;
-// Can't adjust sampling point now?
-else if (bit_edge_w && (sample_cnt_q == 2'd0) && (state_q < STATE_TX_SYNC))
-begin
-    // Want to reset sampling point but need to delay adjustment by 1 cycle!
-    adjust_delayed_q    <= 1'b1;
-    sample_cnt_q        <= sample_cnt_q + 2'd1;
-end
-else
-    sample_cnt_q        <= sample_cnt_q + 2'd1;
 
-assign sample_w = (sample_cnt_q == 2'd0);
+assign sample_w = (sample_cnt_q == 'd0);
 
 //-----------------------------------------------------------------
 // NRZI Receiver

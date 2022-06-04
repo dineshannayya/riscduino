@@ -141,7 +141,7 @@ void main()
     reg_mprj_io_6 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
     reg_mprj_io_5 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
     reg_mprj_io_4 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_3 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_3 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
     reg_mprj_io_2 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
     reg_mprj_io_1 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
     reg_mprj_io_0 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
@@ -150,6 +150,7 @@ void main()
     reg_mprj_xfer = 1;
     while (reg_mprj_xfer == 1);
 
+    reg_la0_data = 0x001; // Remove Soft Reset
     reg_la0_data = 0x000;
     reg_la0_data = 0x001; // Remove Soft Reset
 

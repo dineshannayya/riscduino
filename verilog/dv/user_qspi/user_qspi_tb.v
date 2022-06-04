@@ -79,7 +79,7 @@
 
 `timescale 1 ns/1 ps
 
-`include "DFFRAM/DFFRAM.v"
+`include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "is62wvs1288.v"
 
 module user_qspi_tb;
@@ -1297,6 +1297,7 @@ begin
   wbd_ext_cyc_i ='h1;  // strobe/request
   wbd_ext_stb_i ='h1;  // strobe/request
   wait(wbd_ext_ack_o == 1);
+  repeat (1) @(negedge clock);
   data  = wbd_ext_dat_o;  
   repeat (1) @(posedge clock);
   #1;
@@ -1326,6 +1327,7 @@ begin
   wbd_ext_cyc_i ='h1;  // strobe/request
   wbd_ext_stb_i ='h1;  // strobe/request
   wait(wbd_ext_ack_o == 1);
+  repeat (1) @(negedge clock);
   data  = wbd_ext_dat_o;  
   repeat (1) @(posedge clock);
   #1;
@@ -1348,29 +1350,21 @@ endtask
 
 `ifdef GL
 
-wire        wbd_spi_stb_i   = u_top.u_spi_master.wbd_stb_i;
-wire        wbd_spi_ack_o   = u_top.u_spi_master.wbd_ack_o;
-wire        wbd_spi_we_i    = u_top.u_spi_master.wbd_we_i;
-wire [31:0] wbd_spi_adr_i   = u_top.u_spi_master.wbd_adr_i;
-wire [31:0] wbd_spi_dat_i   = u_top.u_spi_master.wbd_dat_i;
-wire [31:0] wbd_spi_dat_o   = u_top.u_spi_master.wbd_dat_o;
-wire [3:0]  wbd_spi_sel_i   = u_top.u_spi_master.wbd_sel_i;
+wire        wbd_spi_stb_i   = u_top.u_qspi_master.wbd_stb_i;
+wire        wbd_spi_ack_o   = u_top.u_qspi_master.wbd_ack_o;
+wire        wbd_spi_we_i    = u_top.u_qspi_master.wbd_we_i;
+wire [31:0] wbd_spi_adr_i   = u_top.u_qspi_master.wbd_adr_i;
+wire [31:0] wbd_spi_dat_i   = u_top.u_qspi_master.wbd_dat_i;
+wire [31:0] wbd_spi_dat_o   = u_top.u_qspi_master.wbd_dat_o;
+wire [3:0]  wbd_spi_sel_i   = u_top.u_qspi_master.wbd_sel_i;
 
-wire        wbd_sdram_stb_i = u_top.u_sdram_ctrl.wb_stb_i;
-wire        wbd_sdram_ack_o = u_top.u_sdram_ctrl.wb_ack_o;
-wire        wbd_sdram_we_i  = u_top.u_sdram_ctrl.wb_we_i;
-wire [31:0] wbd_sdram_adr_i = u_top.u_sdram_ctrl.wb_addr_i;
-wire [31:0] wbd_sdram_dat_i = u_top.u_sdram_ctrl.wb_dat_i;
-wire [31:0] wbd_sdram_dat_o = u_top.u_sdram_ctrl.wb_dat_o;
-wire [3:0]  wbd_sdram_sel_i = u_top.u_sdram_ctrl.wb_sel_i;
-
-wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb.reg_wr;
-wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb.reg_be;
+wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb_spi.reg_cs;
+wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb_spi.reg_ack;
+wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb_spi.reg_wr;
+wire [8:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb_spi.reg_addr;
+wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb_spi.reg_wdata;
+wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb_spi.reg_rdata;
+wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb_spi.reg_be;
 
 `endif
 

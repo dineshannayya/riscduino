@@ -27,6 +27,8 @@ iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $PDK_ROOT/sky130A \
 ../../user_risc_regress_tb.v \
 -o user_risc_regress_tb.vvp
 
+
+
 iverilog-vpi ../../../vpi/system/system.c
 
 vvp  -M. -msystem  user_risc_regress_tb.vvp +test_info=./test_info +test_results=./test_results.txt | tee sim_results.txt
