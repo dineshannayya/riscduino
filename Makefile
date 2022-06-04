@@ -95,6 +95,7 @@ $(DV_PATTERNS): verify-% : ./verilog/dv/%  check-coremark_repo check-riscv_comp_
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_ROOT}:${PDK_ROOT} \
 		-v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
 		-e TARGET_PATH=${TARGET_PATH} -e PDK_ROOT=${PDK_ROOT} \
+		-e PDK=${PDK} \
 		-e CARAVEL_ROOT=${CARAVEL_ROOT} \
 		-e TOOLS=/opt/riscv64i \
 		-e DESIGNS=$(TARGET_PATH) \
