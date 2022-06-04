@@ -1,5 +1,4 @@
 # SPDX-FileCopyrightText: 2020 Efabless Corporation
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,16 +12,16 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
-
 #SHELL = sh -xv
+
 BLOCKS = $(shell find * -maxdepth 0 -type d)
 CONFIG = $(foreach block,$(BLOCKS), ./$(block)/config.tcl)
 CLEAN = $(foreach block,$(BLOCKS), clean-$(block))
 
-OPENLANE_TAG = mpw5
+OPENLANE_TAG = mpw6
 OPENLANE_IMAGE_NAME = riscduino/openlane:$(OPENLANE_TAG)
-OPENLANE_BASIC_COMMAND = "cd /project/openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
-OPENLANE_INTERACTIVE_COMMAND = "cd /project/openlane && flow.tcl -it -file ./$*/interactive.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
+OPENLANE_BASIC_COMMAND = "cd $(PWD)/../openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
+OPENLANE_INTERACTIVE_COMMAND = "cd $(PWD)/../openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite -it -file ./$*/interactive.tcl"
 
 all: $(BLOCKS)
 
@@ -30,18 +29,45 @@ $(CONFIG) :
 	@echo "Missing $@. Please create a configuration for that design"
 	@exit 1
 
-$(BLOCKS) : % : ./%/config.tcl FORCE
+.PHONY: $(BLOCKS)
+$(BLOCKS) : % : ./%/config.tcl
+ifeq ($(OPENLANE_ROOT),)
+	@echo "Please export OPENLANE_ROOT"
+	@exit 1
+endif
+ifeq ($(PDK_ROOT),)
+	@echo "Please export PDK_ROOT"
+	@exit 1
+endif
 	@echo "###############################################"
 	@sleep 1
 
 	@if [ -f ./$*/interactive.tcl ]; then\
-		docker run -it  \
-		-v $(PWD)/..:/project \
+		docker run --rm -v $(OPENLANE_ROOT):/openlane \
+		-v $(PDK_ROOT):$(PDK_ROOT) \
+		-v $(PWD)/..:$(PWD)/.. \
+		-v $(MCW_ROOT):$(MCW_ROOT) \
+		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
+		-e MCW_ROOT=$(MCW_ROOT) \
+		-e PDK_ROOT=$(PDK_ROOT) \
+		-e CARAVEL_ROOT=$(CARAVEL_ROOT) \
+		-e PDK=$(PDK) \
+		-e TEST_MISMATCHES=tools \
+		-e MISMATCHES_OK=1 \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_INTERACTIVE_COMMAND);\
 	else\
-		docker run -it  \
-		-v $(PWD)/..:/project \
+		docker run --rm -v $(OPENLANE_ROOT):/openlane \
+		-v $(PDK_ROOT):$(PDK_ROOT) \
+		-v $(PWD)/..:$(PWD)/.. \
+		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
+		-v $(MCW_ROOT):$(MCW_ROOT) \
+		-e MCW_ROOT=$(MCW_ROOT) \
+		-e PDK=$(PDK) \
+		-e PDK_ROOT=$(PDK_ROOT) \
+		-e CARAVEL_ROOT=$(CARAVEL_ROOT) \
+		-e TEST_MISMATCHES=tools \
+		-e MISMATCHES_OK=1 \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_BASIC_COMMAND);\
 	fi
@@ -49,6 +75,25 @@ $(BLOCKS) : % : ./%/config.tcl FORCE
 	cp $*/runs/$*/OPENLANE_VERSION ../signoff/$*/
 	cp $*/runs/$*/PDK_SOURCES ../signoff/$*/
 	cp $*/runs/$*/reports/final_summary_report.csv ../signoff/$*/
+
+.PHONY: openlane
+openlane: check-openlane-env
+	if [ -d "$(OPENLANE_ROOT)" ]; then\
+		echo "Deleting exisiting $(OPENLANE_ROOT)" && \
+		rm -rf $(OPENLANE_ROOT) && sleep 2; \
+	fi
+	git clone https://github.com/The-OpenROAD-Project/OpenLane --branch=$(OPENLANE_TAG) --depth=1 $(OPENLANE_ROOT) && \
+		cd $(OPENLANE_ROOT) && \
+		export OPENLANE_IMAGE_NAME=efabless/openlane:$(OPENLANE_TAG) && \
+		export IMAGE_NAME=efabless/openlane:$(OPENLANE_TAG) && \
+		$(MAKE) pull-openlane
+
+.PHONY: check-openlane-env
+check-openlane-env:
+ifeq ($(OPENLANE_ROOT),)
+	@echo "Please export OPENLANE_ROOT"
+	@exit 1
+endif
 
 FORCE:
 

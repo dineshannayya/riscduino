@@ -7,8 +7,8 @@ current_design uart_i2c_usb_spi_top
 # Timing Constraints
 ###############################################################################
 create_clock -name app_clk -period 10.0000 [get_ports {app_clk}]
-create_clock -name uart0_baud_clk -period 100.0000 [get_pins {u_uart0_core.u_lineclk_buf.u_mux/X}]
-create_clock -name uart1_baud_clk -period 100.0000 [get_pins {u_uart1_core.u_lineclk_buf.u_mux/X}]
+create_clock -name uart0_baud_clk -period 100.0000 [get_pins {u_uart0_core.u_lineclk_buf.genblk1.u_mux/X}]
+create_clock -name uart1_baud_clk -period 100.0000 [get_pins {u_uart1_core.u_lineclk_buf.genblk1.u_mux/X}]
 create_clock -name usb_clk -period 100.0000 [get_ports {usb_clk}]
 
 set_clock_transition 0.1500 [all_clocks]
@@ -35,10 +35,13 @@ set_max_delay 5 -to   [get_ports {wbd_clk_uart}]
 set_max_delay 5 -from wbd_clk_int -to wbd_clk_uart
 
 
+set_input_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {i2c_rstn}]
+set_input_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {uart_rstn}]
+set_input_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {usb_rstn}]
 
-set_input_delay 3.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {i2c_rstn}]
-set_input_delay 3.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {uart_rstn}]
-set_input_delay 3.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {usb_rstn}]
+set_input_delay -min 1.5000 -clock [get_clocks {app_clk}] -add_delay [get_ports {i2c_rstn}]
+set_input_delay -min 1.5000 -clock [get_clocks {app_clk}] -add_delay [get_ports {uart_rstn}]
+set_input_delay -min 1.5000 -clock [get_clocks {app_clk}] -add_delay [get_ports {usb_rstn}]
 
 
 set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[*]}]

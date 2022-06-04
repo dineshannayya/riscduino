@@ -27,7 +27,7 @@ set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "app_clk usb_clk u_uart_core.u_lineclk_buf.u_mux/X"
+set ::env(CLOCK_PORT) "app_clk usb_clk u_uart0_core.u_lineclk_buf.genblk1.u_mux/X u_uart1_core.u_lineclk_buf.genblk1.u_mux/X"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 
@@ -72,6 +72,7 @@ set ::env(VERILOG_FILES) "\
     $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
     "
 
+set ::env(SYNTH_NO_FLAT) {1}
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/i2cm/src/includes $script_dir/../../verilog/rtl/usb1_host/src/includes ]
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -101,7 +102,7 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.45"
+set ::env(PL_TARGET_DENSITY) "0.46"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
@@ -114,13 +115,16 @@ set ::env(FP_PDN_HPITCH) 100
 set ::env(FP_PDN_VWIDTH) 5
 set ::env(FP_PDN_HWIDTH) 5
 
-set ::env(GLB_RT_MAXLAYER) 5
+#set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
 set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) {1}
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) {1}
+
+set ::env(GLB_RT_ADJUSTMENT) {0.25}
+set ::env(CELL_PAD) {2}
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"

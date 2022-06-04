@@ -19,41 +19,53 @@
 package require openlane;
 
 proc run_placement_step {args} {
-    if { ! [ info exists ::env(PLACEMENT_CURRENT_DEF) ] } {
-        set ::env(PLACEMENT_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(PLACEMENT_CURRENT_DEF)
-    }
+	if { ! [ info exists ::env(PLACEMENT_CURRENT_DEF) ] } {
+		set ::env(PLACEMENT_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(PLACEMENT_CURRENT_DEF)
+	}
 
-    run_placement
+	run_placement
 }
 
 proc run_cts_step {args} {
-    if { ! [ info exists ::env(CTS_CURRENT_DEF) ] } {
-        set ::env(CTS_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(CTS_CURRENT_DEF)
-    }
+	if { ! [ info exists ::env(CTS_CURRENT_DEF) ] } {
+		set ::env(CTS_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(CTS_CURRENT_DEF)
+	}
 
-    run_cts
-    run_resizer_timing
+	run_cts
+	run_resizer_timing
 }
 
 proc run_routing_step {args} {
-    if { ! [ info exists ::env(ROUTING_CURRENT_DEF) ] } {
-        set ::env(ROUTING_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(ROUTING_CURRENT_DEF)
-    }
-    run_routing
+	if { ! [ info exists ::env(ROUTING_CURRENT_DEF) ] } {
+		set ::env(ROUTING_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(ROUTING_CURRENT_DEF)
+	}
+	run_routing
+}
+
+proc run_parasitics_sta_step {args} {
+	if { ! [ info exists ::env(PARSITICS_CURRENT_DEF) ] } {
+		set ::env(PARSITICS_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(PARSITICS_CURRENT_DEF)
+	}
+
+	if { $::env(RUN_SPEF_EXTRACTION) } {
+		run_parasitics_sta
+	}
 }
 
 proc run_diode_insertion_2_5_step {args} {
-    if { ! [ info exists ::env(DIODE_INSERTION_CURRENT_DEF) ] } {
-        set ::env(DIODE_INSERTION_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(DIODE_INSERTION_CURRENT_DEF)
-    }
+	if { ! [ info exists ::env(DIODE_INSERTION_CURRENT_DEF) ] } {
+		set ::env(DIODE_INSERTION_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(DIODE_INSERTION_CURRENT_DEF)
+	}
 	if { ($::env(DIODE_INSERTION_STRATEGY) == 2) || ($::env(DIODE_INSERTION_STRATEGY) == 5) } {
 		run_antenna_check
 		heal_antenna_violators; # modifies the routed DEF
@@ -62,36 +74,41 @@ proc run_diode_insertion_2_5_step {args} {
 }
 
 proc run_lvs_step {{ lvs_enabled 1 }} {
-    if { ! [ info exists ::env(LVS_CURRENT_DEF) ] } {
-        set ::env(LVS_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(LVS_CURRENT_DEF)
-    }
-	if { $lvs_enabled } {
-		run_magic_spice_export
+	if { ! [ info exists ::env(LVS_CURRENT_DEF) ] } {
+		set ::env(LVS_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(LVS_CURRENT_DEF)
+	}
+
+	if { $lvs_enabled && $::env(RUN_LVS) } {
+		run_magic_spice_export;
 		run_lvs; # requires run_magic_spice_export
 	}
 
 }
 
 proc run_drc_step {{ drc_enabled 1 }} {
-    if { ! [ info exists ::env(DRC_CURRENT_DEF) ] } {
-        set ::env(DRC_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(DRC_CURRENT_DEF)
-    }
+	if { ! [ info exists ::env(DRC_CURRENT_DEF) ] } {
+		set ::env(DRC_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(DRC_CURRENT_DEF)
+	}
 	if { $drc_enabled } {
-		run_magic_drc
-		run_klayout_drc
+		if { $::env(RUN_MAGIC_DRC) } {
+			run_magic_drc
+		}
+		if {$::env(RUN_KLAYOUT_DRC)} {
+			run_klayout_drc
+		}
 	}
 }
 
 proc run_antenna_check_step {{ antenna_check_enabled 1 }} {
-    if { ! [ info exists ::env(ANTENNA_CHECK_CURRENT_DEF) ] } {
-        set ::env(ANTENNA_CHECK_CURRENT_DEF) $::env(CURRENT_DEF)
-    } else {
-        set ::env(CURRENT_DEF) $::env(ANTENNA_CHECK_CURRENT_DEF)
-    }
+	if { ! [ info exists ::env(ANTENNA_CHECK_CURRENT_DEF) ] } {
+		set ::env(ANTENNA_CHECK_CURRENT_DEF) $::env(CURRENT_DEF)
+	} else {
+		set ::env(CURRENT_DEF) $::env(ANTENNA_CHECK_CURRENT_DEF)
+	}
 	if { $antenna_check_enabled } {
 		run_antenna_check
 	}
@@ -99,8 +116,23 @@ proc run_antenna_check_step {{ antenna_check_enabled 1 }} {
 
 proc run_eco_step {args} {
 	if {  $::env(ECO_ENABLE) == 1 } {
-        run_eco
-    }
+		run_eco_flow
+	}
+}
+
+proc run_magic_step {args} {
+	if {$::env(RUN_MAGIC)} {
+		run_magic
+	}
+}
+
+proc run_klayout_step {args} {
+	if {$::env(RUN_KLAYOUT)} {
+		run_klayout
+	}
+	if {$::env(RUN_KLAYOUT_XOR)} {
+		run_klayout_gds_xor
+	}
 }
 
 proc save_final_views {args} {
@@ -113,19 +145,19 @@ proc save_final_views {args} {
 	set arg_list [list]
 
 	# If they don't exist, save_views will simply not copy them
-	lappend arg_list -lef_path $::env(finishing_results)/$::env(DESIGN_NAME).lef
-	lappend arg_list -gds_path $::env(finishing_results)/$::env(DESIGN_NAME).gds
-	lappend arg_list -mag_path $::env(finishing_results)/$::env(DESIGN_NAME).mag
-	lappend arg_list -maglef_path $::env(finishing_results)/$::env(DESIGN_NAME).lef.mag
-	lappend arg_list -spice_path $::env(finishing_results)/$::env(DESIGN_NAME).spice
-	
+	lappend arg_list -lef_path $::env(signoff_results)/$::env(DESIGN_NAME).lef
+	lappend arg_list -gds_path $::env(signoff_results)/$::env(DESIGN_NAME).gds
+	lappend arg_list -mag_path $::env(signoff_results)/$::env(DESIGN_NAME).mag
+	lappend arg_list -maglef_path $::env(signoff_results)/$::env(DESIGN_NAME).lef.mag
+	lappend arg_list -spice_path $::env(signoff_results)/$::env(DESIGN_NAME).spice
+
 	# Guaranteed to have default values
 	lappend arg_list -def_path $::env(CURRENT_DEF)
 	lappend arg_list -verilog_path $::env(CURRENT_NETLIST)
 
 	# Not guaranteed to have default values
-	if { [info exists ::env(SPEF_TYPICAL)] } {
-		lappend arg_list -spef_path $::env(SPEF_TYPICAL)
+	if { [info exists ::env(CURRENT_SPEF)] } {
+		lappend arg_list -spef_path $::env(CURRENT_SPEF)
 	}
 	if { [info exists ::env(CURRENT_SDF)] } {
 		lappend arg_list -sdf_path $::env(CURRENT_SDF)
@@ -154,15 +186,13 @@ proc run_post_run_hooks {} {
 	}
 }
 
-
-
-
 proc gen_pdn {args} {
-    puts_info "Generating PDN..."
+    increment_index
     TIMER::timer_start
-	
-    set ::env(SAVE_DEF) [index_file $::env(floorplan_tmpfiles).def]
-    set ::env(PGA_RPT_FILE) [index_file $::env(floorplan_tmpfiles).pga.rpt]
+    puts_info "Generating PDN..."
+
+    set ::env(SAVE_DEF) [index_file $::env(floorplan_tmpfiles)/pdn.def]
+    set ::env(PGA_RPT_FILE) [index_file $::env(floorplan_tmpfiles)/pdn.pga.rpt]
 
     run_openroad_script $::env(SCRIPTS_DIR)/openroad/pdn.tcl \
         |& -indexed_log [index_file $::env(floorplan_logs)/pdn.log]
@@ -177,12 +207,50 @@ proc gen_pdn {args} {
 }
 
 proc run_power_grid_generation {args} {
+	if { [info exists ::env(VDD_NETS)] || [info exists ::env(GND_NETS)] } {
+		# they both must exist and be equal in length
+		# current assumption: they cannot have a common ground
+		if { ! [info exists ::env(VDD_NETS)] || ! [info exists ::env(GND_NETS)] } {
+			puts_err "VDD_NETS and GND_NETS must *both* either be defined or undefined"
+			return -code error
+		}
+		# standard cell power and ground nets are assumed to be the first net
+		set ::env(VDD_PIN) [lindex $::env(VDD_NETS) 0]
+		set ::env(GND_PIN) [lindex $::env(GND_NETS) 0]
+	} elseif { [info exists ::env(SYNTH_USE_PG_PINS_DEFINES)] } {
+		set ::env(VDD_NETS) [list]
+		set ::env(GND_NETS) [list]
+		# get the pins that are in $synthesis_tmpfiles.pg_define.v
+		# that are not in $synthesis_results.v
+		#
+		set full_pins {*}[extract_pins_from_yosys_netlist $::env(synthesis_tmpfiles)/pg_define.v]
+		puts_info $full_pins
 
-	if {[info exists ::env(FP_PDN_POWER_STRAPS)]} {
-	     set power_domains [split $::env(FP_PDN_POWER_STRAPS) ","]
+		set non_pg_pins {*}[extract_pins_from_yosys_netlist $::env(synthesis_results)/$::env(DESIGN_NAME).v]
+		puts_info $non_pg_pins
+
+		# assumes the pins are ordered correctly (e.g., vdd1, vss1, vcc1, vss1, ...)
+		foreach {vdd gnd} $full_pins {
+			if { $vdd ne "" && $vdd ni $non_pg_pins } {
+				lappend ::env(VDD_NETS) $vdd
+			}
+			if { $gnd ne "" && $gnd ni $non_pg_pins } {
+				lappend ::env(GND_NETS) $gnd
+			}
+		}
+	} else {
+		set ::env(VDD_NETS) $::env(VDD_PIN)
+		set ::env(GND_NETS) $::env(GND_PIN)
 	}
 
-	# internal macros power connections 
+	puts_info "Power planning with power {$::env(VDD_NETS)} and ground {$::env(GND_NETS)}..."
+
+	if { [llength $::env(VDD_NETS)] != [llength $::env(GND_NETS)] } {
+		puts_err "VDD_NETS and GND_NETS must be of equal lengths"
+		return -code error
+	}
+
+	# check internal macros' power connection definitions
 	if {[info exists ::env(FP_PDN_MACRO_HOOKS)]} {
 		set macro_hooks [dict create]
 		set pdn_hooks [split $::env(FP_PDN_MACRO_HOOKS) ","]
@@ -192,73 +260,19 @@ proc run_power_grid_generation {args} {
 			set ground_net [lindex $pdn_hook 2]
 			dict append macro_hooks $instance_name [subst {$power_net $ground_net}]
 		}
-		
+
 		set power_net_indx [lsearch $::env(VDD_NETS) $power_net]
 		set ground_net_indx [lsearch $::env(GND_NETS) $ground_net]
 
 		# make sure that the specified power domains exist.
 		if { $power_net_indx == -1  || $ground_net_indx == -1 || $power_net_indx != $ground_net_indx } {
 			puts_err "Can't find $power_net and $ground_net domain. \
-			Make sure that both exist in $::env(VDD_NETS) and $::env(GND_NETS)." 
-		} 
-	}
-	
-	# generate multiple power grids per pair of (VDD,GND)
-	# offseted by WIDTH + SPACING
-	foreach domain $power_domains {
-		set ::env(VDD_NET)       [lindex $domain 0]
-	        set ::env(GND_NET)       [lindex $domain 1]
-	        set ::env(_WITH_STRAPS)  [lindex $domain 2]
-
-	        puts_info "Connecting Power: $::env(VDD_NET) & $::env(GND_NET) to All internal macros."
-		# internal macros power connections
-		set ::env(FP_PDN_MACROS) ""
-		if { $::env(FP_PDN_ENABLE_MACROS_GRID) == 1 } {
-			# if macros connections to power are explicitly set
-			# default behavoir macro pins will be connected to the first power domain
-			if { [info exists ::env(FP_PDN_MACRO_HOOKS)] } {
-				set ::env(FP_PDN_ENABLE_MACROS_GRID) 0
-				foreach {instance_name hooks} $macro_hooks {
-					set power [lindex $hooks 0]
-					set ground [lindex $hooks 1]			 
-					if { $power == $::env(VDD_NET) && $ground == $::env(GND_NET) } {
-						set ::env(FP_PDN_ENABLE_MACROS_GRID) 1
-                                                set ::env(FP_PDN_IRDROP) "0"
-						puts_info "Connecting $instance_name to $power and $ground nets."
-						lappend ::env(FP_PDN_MACROS) $instance_name
-					}
-				}
-			} 
-		} else {
-			puts_warn "All internal macros will not be connected to power $::env(VDD_NET) & $::env(GND_NET)."
+				Make sure that both exist in $::env(VDD_NETS) and $::env(GND_NETS)."
 		}
-		
-		gen_pdn
-
-		set ::env(FP_PDN_ENABLE_RAILS) 0
-		set ::env(FP_PDN_ENABLE_MACROS_GRID) 0
-                set ::env(FP_PDN_IRDROP) "0"
-
-		# allow failure until open_pdks is up to date...
-		catch {set ::env(FP_PDN_VOFFSET) [expr $::env(FP_PDN_VOFFSET)+$::env(FP_PDN_VWIDTH)+$::env(FP_PDN_VSPACING)]}
-		catch {set ::env(FP_PDN_HOFFSET) [expr $::env(FP_PDN_HOFFSET)+$::env(FP_PDN_HWIDTH)+$::env(FP_PDN_HSPACING)]}
-
-		catch {set ::env(FP_PDN_CORE_RING_VOFFSET) \
-			[expr $::env(FP_PDN_CORE_RING_VOFFSET)\
-			+2*($::env(FP_PDN_CORE_RING_VWIDTH)\
-			+max($::env(FP_PDN_CORE_RING_VSPACING), $::env(FP_PDN_CORE_RING_HSPACING)))]}
-		catch {set ::env(FP_PDN_CORE_RING_HOFFSET) [expr $::env(FP_PDN_CORE_RING_HOFFSET)\
-			+2*($::env(FP_PDN_CORE_RING_HWIDTH)+\
-			max($::env(FP_PDN_CORE_RING_VSPACING), $::env(FP_PDN_CORE_RING_HSPACING)))]}
-		puts "FP_PDN_VOFFSET: $::env(FP_PDN_VOFFSET)"
-		puts "FP_PDN_HOFFSET: $::env(FP_PDN_HOFFSET)"
-		puts "FP_PDN_CORE_RING_VOFFSET: $::env(FP_PDN_CORE_RING_VOFFSET)"
-		puts "FP_PDN_CORE_RING_HOFFSET: $::env(FP_PDN_CORE_RING_HOFFSET)"
-
 	}
-	set ::env(FP_PDN_ENABLE_RAILS) 1
-}
 
+	gen_pdn
+}
 
 proc run_floorplan {args} {
 	puts_info "Running Floorplanning..."
@@ -333,6 +347,10 @@ proc run_flow {args} {
 	prep {*}$args
     # signal trap SIGINT save_state;
 
+	if { [info exists flags_map(-gui)] } {
+		or_gui
+		return
+	}
 	if { [info exists arg_values(-override_env)] } {
 		set env_overrides [split $arg_values(-override_env) ','] 
 		foreach override $env_overrides {
@@ -344,25 +362,25 @@ proc run_flow {args} {
 	}
 
     set LVS_ENABLED 1
-    set DRC_ENABLED 1
+    set DRC_ENABLED 0
     set ANTENNACHECK_ENABLED 1
 
-    set steps [dict create \
-		"synthesis" {run_synthesis "" } \
-		"floorplan" {run_floorplan ""} \
-		"placement" {run_placement_step ""} \
-		"cts" {run_cts_step ""} \
-		"routing" {run_routing_step ""}\
-                "eco" {run_eco_step ""} \
-		"diode_insertion" {run_diode_insertion_2_5_step ""} \
-		"gds_magic" {run_magic ""} \
-		"gds_drc_klayout" {run_klayout ""} \
-		"gds_xor_klayout" {run_klayout_gds_xor ""} \
-		"lvs" "run_lvs_step $LVS_ENABLED" \
-		"drc" "run_drc_step $DRC_ENABLED" \
-		"antenna_check" "run_antenna_check_step $ANTENNACHECK_ENABLED" \
-		"cvc" {run_lef_cvc}
-    ]
+	set steps [dict create \
+		"synthesis" "run_synthesis" \
+		"floorplan" "run_floorplan" \
+		"placement" "run_placement_step" \
+		"cts" "run_cts_step" \
+		"routing" "run_routing_step" \
+		"parasitics_sta" "run_parasitics_sta_step" \
+		"eco" "run_eco_step" \
+		"diode_insertion" "run_diode_insertion_2_5_step" \
+		"gds_magic" "run_magic_step" \
+		"gds_klayout" "run_klayout_step" \
+		"lvs" "run_lvs_step $LVS_ENABLED " \
+		"drc" "run_drc_step $DRC_ENABLED " \
+		"antenna_check" "run_antenna_check_step $ANTENNACHECK_ENABLED " \
+		"cvc" "run_lef_cvc"
+	]
 
     set_if_unset arg_values(-to) "cvc";
 
