@@ -8,7 +8,12 @@ current_design wb_host
 ###############################################################################
 create_clock -name wbm_clk_i -period 10.0000 [get_ports {wbm_clk_i}]
 create_clock -name wbs_clk_i -period 10.0000 [get_ports {wbs_clk_i}]
-create_clock -name uart_clk -period 100.0000 [get_pins {u_uart2wb.u_core.u_uart_clk.u_mux/X}]
+create_clock -name uart_clk -period 100.0000 [get_pins {u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X}]
+
+create_clock -name int_pll_clock -period 10.0000  [get_pins {u_clkbuf_pll.u_buf/X}]
+create_clock -name wbs_ref_clk   -period 10.0000  [get_pins {u_wbs_ref_clkbuf.u_buf/X}]
+create_clock -name cpu_ref_clk   -period 10.0000  [get_pins {u_cpu_ref_clkbuf.u_buf/X}]
+create_clock -name usb_ref_clk   -period 10.0000  [get_pins {u_usb_ref_clkbuf.u_buf/X}]
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.2500 [all_clocks]
@@ -20,9 +25,14 @@ set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
 set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
 set_clock_groups -name async_clock -asynchronous \
- -group [get_clocks {uart_clk}]  \
- -group [get_clocks {wbs_clk_i}] \
- -group [get_clocks {wbm_clk_i}] -comment {Async Clock group}
+ -group [get_clocks {uart_clk}]      \
+ -group [get_clocks {wbs_clk_i}]     \
+ -group [get_clocks {wbm_clk_i}]     \
+ -group [get_clocks {int_pll_clock}] \
+ -group [get_clocks {wbs_ref_clk}]   \
+ -group [get_clocks {cpu_ref_clk}]   \
+ -group [get_clocks {usb_ref_clk}]   \
+ -comment {Async Clock group}
 
 ### ClkSkew Adjust
 set_case_analysis 0 [get_ports {cfg_cska_wh[0]}]
