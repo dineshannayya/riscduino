@@ -131,7 +131,9 @@ module pinmux (
                        input logic              uartm_txd  ,       
 
 		       output  logic           pulse1m_mclk,
-	               output  logic [31:0]    pinmux_debug
+	               output  logic [31:0]    pinmux_debug,
+
+		       input   logic           dbg_clk_mon
 
    ); 
 
@@ -503,10 +505,10 @@ pwm  u_pwm_5 (
 *   Pin-6        PD4/TXD[1]          digital_io[5]
 *   Pin-7        VCC                  -
 *   Pin-8        GND                  -
-*   Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
+*   Pin-9        PB6/XTAL1/TOSC1           digital_io[6]
 *   Pin-10       PB7/XTAL2/TOSC2           digital_io[7]
 *   Pin-11       PD5/SS[3]/OC0B(PWM1)/T1   digital_io[8]
-*   Pin-12       PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
+*   Pin-12       PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9]/analog_io[2]
 *   Pin-13       PD7/A1N1                  digital_io[10]/analog_io[3]
 *   Pin-14       PB0/CLKO/ICP1             digital_io[11]
 *   Pin-15       PB1/SS[1]OC1A(PWM3)       digital_io[12]
@@ -515,7 +517,7 @@ pwm  u_pwm_5 (
 *   Pin-18       PB4/MISO                  digital_io[15]
 *   Pin-19       PB5/SCK                   digital_io[16]
 *   Pin-20       AVCC                -
-*   Pin-21       AREF                analog_io[10]
+*   Pin-21       AREF                      analog_io[10]
 *   Pin-22       GND                 -
 *   Pin-23       PC0/ADC0            digital_io[18]/analog_io[11]
 *   Pin-24       PC1/ADC1            digital_io[19]/analog_io[12]
@@ -534,7 +536,7 @@ pwm  u_pwm_5 (
 *                sflash_io1          digital_io[30]
 *                sflash_io2          digital_io[31]
 *                sflash_io3          digital_io[32]
-*                reserved            digital_io[33]
+*                dbg_clk_mon         digital_io[33]
 *                uartm_rxd           digital_io[34]
 *                uartm_txd           digital_io[35]
 *                usb_dp              digital_io[36]
@@ -758,8 +760,8 @@ always_comb begin
      digital_io_out[31] = sflash_do[2] ;
      digital_io_out[32] = sflash_do[3] ;
                        
-     // Reserved
-     digital_io_out[33] = 1'b0;
+     // dbg_clk_mon - Pll clock output monitor
+     digital_io_out[33] = dbg_clk_mon;
 
      // UART MASTER I/f
      digital_io_out[34] = 1'b0         ; // RXD
@@ -874,7 +876,7 @@ always_comb begin
      digital_io_oen[31] = sflash_oen[2];
      digital_io_oen[32] = sflash_oen[3];
                        
-     // Reserved
+     // dbg_clk_mon
      digital_io_oen[33] = 1'b0  ;
      // UART MASTER
      digital_io_oen[34] = 1'b1; // RXD

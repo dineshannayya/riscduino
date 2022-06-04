@@ -18,21 +18,11 @@
 ////                                                              ////
 ////  Standalone User validation Test bench                       ////
 ////                                                              ////
-////  This file is part of the YIFive cores project               ////
-////  https://github.com/dineshannayya/yifive_r0.git              ////
-////  http://www.opencores.org/cores/yifive/                      ////
+////  This file is part of the Riscduino cores project            ////
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
-////   Digital core.                                              ////
-////   1. User Risc core is booted using  compiled code of        ////
-////      user_risc_boot.c                                        ////
-////   2. User Risc core uses Serial Flash and SDRAM to boot      ////
-////   3. After successful boot, Risc core will check the UART    ////
-////      RX Data, If it's available then it loop back the same   ////
-////      data in uart tx                                         ////
-////   4. Test bench send random 40 character towards User uart   ////
-////      and expect same data to return back                     ////
+////   Digital core with Risc core executing code from TCM/SRAM.  ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -72,60 +62,39 @@
 
 `default_nettype wire
 
-`timescale 1 ns/1 ps
+`timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
-`include "uart_agent.v"
+module user_sram_exec_tb;
+	reg clock;
+	reg wb_rst_i;
+	reg power1, power2;
+	reg power3, power4;
 
+        reg        wbd_ext_cyc_i;  // strobe/request
+        reg        wbd_ext_stb_i;  // strobe/request
+        reg [31:0] wbd_ext_adr_i;  // address
+        reg        wbd_ext_we_i;  // write
+        reg [31:0] wbd_ext_dat_i;  // data output
+        reg [3:0]  wbd_ext_sel_i;  // byte enable
 
-module user_uart1_tb;
+        wire [31:0] wbd_ext_dat_o;  // data input
+        wire        wbd_ext_ack_o;  // acknowlegement
+        wire        wbd_ext_err_o;  // error
 
-reg            clock         ;
-reg            wb_rst_i      ;
-reg            power1, power2;
-reg            power3, power4;
+	// User I/O
+	wire [37:0] io_oeb;
+	wire [37:0] io_out;
+	wire [37:0] io_in;
 
-reg            wbd_ext_cyc_i;  // strobe/request
-reg            wbd_ext_stb_i;  // strobe/request
-reg [31:0]     wbd_ext_adr_i;  // address
-reg            wbd_ext_we_i;  // write
-reg [31:0]     wbd_ext_dat_i;  // data output
-reg [3:0]      wbd_ext_sel_i;  // byte enable
-
-wire [31:0]    wbd_ext_dat_o;  // data input
-wire           wbd_ext_ack_o;  // acknowlegement
-wire           wbd_ext_err_o;  // error
-
-// User I/O
-wire [37:0]    io_oeb        ;
-wire [37:0]    io_out        ;
-wire [37:0]    io_in         ;
-
-wire [37:0]    mprj_io       ;
-wire [7:0]     mprj_io_0     ;
-reg            test_fail     ;
-reg [31:0]     read_data     ;
-//----------------------------------
-// Uart Configuration
-// ---------------------------------
-reg [1:0]      uart_data_bit        ;
-reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
-reg	       uart_stick_parity    ; // 1: force even parity
-reg	       uart_parity_en       ; // parity enable
-reg	       uart_even_odd_parity ; // 0: odd parity; 1: even parity
-
-reg [7:0]      uart_data            ;
-reg [15:0]     uart_divisor         ;	// divided by n * 16
-reg [15:0]     uart_timeout         ;// wait time limit
-
-reg [15:0]     uart_rx_nu           ;
-reg [15:0]     uart_tx_nu           ;
-reg [7:0]      uart_write_data [0:39];
-reg 	       uart_fifo_enable     ;	// fifo mode disable
-
+	wire gpio;
+	wire [37:0] mprj_io;
+	wire [7:0] mprj_io_0;
+	reg         test_fail;
+	reg [31:0] read_data;
 	integer    d_risc_id;
 
-integer i,j;
+
 
 	// External clock is used by default.  Make this artificially fast for the
 	// simulation.  Normally this would be a slow clock and the digital PLL
@@ -146,123 +115,87 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(0, user_uart1_tb);
+	   	$dumpvars(1, user_sram_exec_tb);
+	   	$dumpvars(1, user_sram_exec_tb.u_top);
+	   	$dumpvars(0, user_sram_exec_tb.u_top.u_riscv_top);
 	   end
        `endif
+
+	initial begin
+
+		$value$plusargs("risc_core_id=%d", d_risc_id);
+
+		#200; // Wait for reset removal
+	        repeat (10) @(posedge clock);
+		$display("Monitor: Standalone User Risc Boot Test Started");
+
+		// Remove Wb Reset
+		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+
+	        repeat (2) @(posedge clock);
+		#1;
+		// Remove all the reset
+		if(d_risc_id == 0) begin
+		     $display("STATUS: Working with Risc core 0");
+                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
+		end else begin
+		     $display("STATUS: Working with Risc core 1");
+                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h21F);
+		end
+
+
+		// Repeat cycles of 1000 clock edges as needed to complete testbench
+		repeat (30) begin
+			repeat (1000) @(posedge clock);
+			// $display("+1000 cycles");
+		end
+
+
+		$display("Monitor: Reading Back the expected value");
+		// User RISC core expect to write these value in global
+		// register, read back and decide on pass fail
+		// 0x30000018  = 0x11223344; 
+                // 0x3000001C  = 0x22334455; 
+                // 0x30000020  = 0x33445566; 
+                // 0x30000024  = 0x44556677; 
+                // 0x30000028 = 0x55667788; 
+                // 0x3000002C = 0x66778899; 
+
+                test_fail = 0;
+		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,read_data,32'h11223344);
+		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,read_data,32'h22334455);
+		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,read_data,32'h33445566);
+		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,read_data,32'h44556677);
+		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,read_data,32'h55667788);
+		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,read_data,32'h66778899);
+
+
+	   
+	    	$display("###################################################");
+          	if(test_fail == 0) begin
+		   `ifdef GL
+	    	       $display("Monitor: Standalone User Risc Boot (GL) Passed");
+		   `else
+		       $display("Monitor: Standalone User Risc Boot (RTL) Passed");
+		   `endif
+	        end else begin
+		    `ifdef GL
+	    	        $display("Monitor: Standalone User Risc Boot (GL) Failed");
+		    `else
+		        $display("Monitor: Standalone User Risc Boot (RTL) Failed");
+		    `endif
+		 end
+	    	$display("###################################################");
+	    $finish;
+	end
 
 	initial begin
 		wb_rst_i <= 1'b1;
 		#100;
 		wb_rst_i <= 1'b0;	    	// Release reset
 	end
-initial
-begin
-   uart_data_bit           = 2'b11;
-   uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
-   uart_stick_parity       = 0; // 1: force even parity
-   uart_parity_en          = 0; // parity enable
-   uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
-   uart_divisor            = 15;// divided by n * 16
-   uart_timeout            = 500;// wait time limit
-   uart_fifo_enable        = 0;	// fifo mode disable
-
-   $value$plusargs("risc_core_id=%d", d_risc_id);
-
-   #200; // Wait for reset removal
-   repeat (10) @(posedge clock);
-   $display("Monitor: Standalone User Uart Test Started");
-   
-   // Remove Wb Reset
-   wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
-
-   // Enable UART Multi Functional Ports
-   wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h200);
-   
-   repeat (2) @(posedge clock);
-   #1;
-   // Remove all the reset
-   if(d_risc_id == 0) begin
-	$display("STATUS: Working with Risc core 0");
-	wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h143);
-   end else if(d_risc_id == 1) begin
-	$display("STATUS: Working with Risc core 1");
-	wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h243);
-   end else if(d_risc_id == 2) begin
-	$display("STATUS: Working with Risc core 2");
-	wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h443);
-   end else if(d_risc_id == 3) begin
-	$display("STATUS: Working with Risc core 2");
-	wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h84F);
-   end
-
-   repeat (100) @(posedge clock);  // wait for Processor Get Ready
-
-   tb_uart.uart_init;
-   wb_user_core_write(`ADDR_SPACE_UART1+8'h0,{3'h0,2'b00,1'b1,1'b1,1'b1});  
-   tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
-	                          uart_stick_parity, uart_timeout, uart_divisor);
-
-   repeat (30000) @(posedge clock);  // wait for Processor Get Ready
-   
-   
-   for (i=0; i<40; i=i+1)
-   	uart_write_data[i] = $random;
-   
-   
-   
-   fork
-      begin
-         for (i=0; i<40; i=i+1)
-         begin
-           $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
-            tb_uart.write_char (uart_write_data[i]);
-         end
-      end
-   
-      begin
-         for (j=0; j<40; j=j+1)
-         begin
-           tb_uart.read_char_chk(uart_write_data[j]);
-         end
-      end
-      join
-   
-      #100
-      tb_uart.report_status(uart_rx_nu, uart_tx_nu);
-   
-      test_fail = 0;
-
-      // Check 
-      // if all the 40 byte transmitted
-      // if all the 40 byte received
-      // if no error 
-      if(uart_tx_nu != 40) test_fail = 1;
-      if(uart_rx_nu != 40) test_fail = 1;
-      if(tb_uart.err_cnt != 0) test_fail = 1;
-
-      $display("###################################################");
-      if(test_fail == 0) begin
-         `ifdef GL
-             $display("Monitor: Standalone User UART Test (GL) Passed");
-         `else
-             $display("Monitor: Standalone User UART Test (RTL) Passed");
-         `endif
-      end else begin
-          `ifdef GL
-              $display("Monitor: Standalone User UART Test (GL) Failed");
-          `else
-              $display("Monitor: Standalone User UART Test (RTL) Failed");
-          `endif
-       end
-      $display("###################################################");
-      #100
-      $finish;
-end
-
-
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
-
 
 user_project_wrapper u_top(
 `ifdef USE_POWER_PINS
@@ -302,9 +235,9 @@ user_project_wrapper u_top(
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
+
     end
 `endif    
-
 
 //------------------------------------------------------
 //  Integrate the Serial flash with qurd support to
@@ -328,13 +261,11 @@ user_project_wrapper u_top(
    assign io_in[31] = flash_io2;
    assign io_in[32] = flash_io3;
 
-
    // Quard flash
-     s25fl256s #(.mem_file_name("user_uart.hex"),
-	         .otp_file_name("none"), 
+     s25fl256s #(.mem_file_name("user_sram_exec.hex"),
+	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
-		 u_spi_flash_256mb
-       (
+		 u_spi_flash_256mb (
            // Data Inputs/Outputs
        .SI      (flash_io0),
        .SO      (flash_io1),
@@ -348,19 +279,6 @@ user_project_wrapper u_top(
        );
 
 
-//---------------------------
-//  UART Agent integration
-// --------------------------
-wire uart_txd,uart_rxd;
-
-assign uart_txd   = io_out[5];
-assign io_in[3]  = uart_rxd ;
- 
-uart_agent tb_uart(
-	.mclk                (clock              ),
-	.txd                 (uart_rxd           ),
-	.rxd                 (uart_txd           )
-	);
 
 
 task wb_user_core_write;
@@ -414,6 +332,41 @@ begin
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
   $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  repeat (2) @(posedge clock);
+end
+endtask
+
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  repeat (1) @(negedge clock);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
   repeat (2) @(posedge clock);
 end
 endtask

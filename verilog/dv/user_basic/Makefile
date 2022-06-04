@@ -24,7 +24,6 @@ CONFIG = caravel_user_project
 #######################################################################
 
 DESIGNS?=../../..
-TOOLS?=/opt/riscv64i/
 
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 
@@ -43,7 +42,6 @@ PATTERN = user_basic
 
 all:  ${PATTERN:=.vcd}
 
-hex:  ${PATTERN:=.hex}
 
 vvp:  ${PATTERN:=.vvp}
 
@@ -52,16 +50,26 @@ ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
 	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
     else  
 	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
    endif
 else  
-	iverilog -g2012 -DFUNCTIONAL -DSIM -DGL -I $(PDK_PATH) \
-	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
+   ifeq ($(DUMP),OFF)
+	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 
+    else  
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
+	$< -o $@ 
+   endif
 endif
 
 %.vcd: %.vvp

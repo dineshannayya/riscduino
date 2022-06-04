@@ -24,7 +24,7 @@ module wb_port_tb;
 	reg power1, power2;
 	reg power3, power4;
 
-	wire gpio;
+	tri gpio;
 	wire [37:0] mprj_io;
 	wire [7:0] mprj_io_0;
 	wire [15:0] checkbits;
@@ -43,14 +43,21 @@ module wb_port_tb;
 		clock = 0;
 	end
 
+pullup(mprj_io[3]); 
+
 	`ifdef WFDUMP
 	initial begin
 		$dumpfile("simx.vcd");
 		$dumpvars(1, wb_port_tb);
-		//$dumpvars(0, wb_port_tb.uut.soc);
-		//$dumpvars(1, wb_port_tb.uut.mprj);
+		$dumpvars(1, wb_port_tb.uut);
+		$dumpvars(1, wb_port_tb.uut.mgmt_buffers);
+		$dumpvars(1, wb_port_tb.uut.housekeeping);
+		$dumpvars(1, wb_port_tb.uut.pll);
+		$dumpvars(1, wb_port_tb.uut.soc);
+		$dumpvars(1, wb_port_tb.uut.soc.core);
+		$dumpvars(1, wb_port_tb.uut.mprj);
 		$dumpvars(1, wb_port_tb.uut.mprj.u_wb_host);
-		$dumpvars(2, wb_port_tb.uut.mprj.u_pinmux);
+		//$dumpvars(2, wb_port_tb.uut.mprj.u_pinmux);
 	end
        `endif
 

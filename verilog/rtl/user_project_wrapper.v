@@ -204,6 +204,14 @@
 ////    4.2  April 6 2022, Dinesh A                               ////
 ////         1. SSPI CS# increased from 1 to 4                    ////
 ////         2. uart port increase to two                         ////
+////    4.3  May 24 2022, Dinesh A                                ////
+////         Re targetted the design to mpw-6 tools set and risc  ////
+////         core logic are timing optimized to 100mhz            ////
+////    4.4  May 29 2022, Dinesh A                                ////
+////         1. Digital PLL integrated and clock debug signal add ////
+////           @digitial io [33] port                             ////
+////    4.5  June 2 2022, Dinesh A                                ////
+////         1. DFFRAM Replaced by SRAM                           ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -303,22 +311,20 @@ wire                           wbd_riscv_dcache_ack_o                 ; // ackno
 wire                           wbd_riscv_dcache_lack_o                ; // last burst acknowlegement
 wire                           wbd_riscv_dcache_err_o                 ; // error
 
-// DFFRAM I/F
-
-wire                           dcache_dffram_clk0                     ; // CLK
-wire                           dcache_dffram_cs0                      ; // Chip Select
-wire    [7:0]                  dcache_dffram_addr0                    ; // Address
-wire    [3:0]                  dcache_dffram_wmask0                   ; // Write Mask
-wire    [31:0]                 dcache_dffram_din0                     ; // Write Data
-wire    [31:0]                 dcache_dffram_dout0                    ; // Read Data
-
-wire                           dcache_dffram_clk1                     ; // CLK
-wire                           dcache_dffram_cs1                      ; // Chip Select
-wire    [7:0]                  dcache_dffram_addr1                    ; // Address
-wire    [3:0]                  dcache_dffram_wmask1                   ; // Write Mask
-wire    [31:0]                 dcache_dffram_din1                     ; // Write Data
-wire    [31:0]                 dcache_dffram_dout1                    ; // Read Data
-
+// CACHE SRAM Memory I/F
+wire                           dcache_mem_clk0                        ; // CLK
+wire                           dcache_mem_csb0                        ; // CS#
+wire                           dcache_mem_web0                        ; // WE#
+wire   [8:0]                   dcache_mem_addr0                       ; // Address
+wire   [3:0]                   dcache_mem_wmask0                      ; // WMASK#
+wire   [31:0]                  dcache_mem_din0                        ; // Write Data
+wire   [31:0]                  dcache_mem_dout0                       ; // Read Data
+   
+// SRAM-0 PORT-1, IMEM I/F
+wire                           dcache_mem_clk1                        ; // CLK
+wire                           dcache_mem_csb1                        ; // CS#
+wire  [8:0]                    dcache_mem_addr1                       ; // Address
+wire  [31:0]                   dcache_mem_dout1                       ; // Read Data
 //---------------------------------------------------------------------
 // Wishbone Risc V Icache Memory Interface
 //---------------------------------------------------------------------
@@ -333,21 +339,20 @@ wire                           wbd_riscv_icache_ack_o                 ; // ackno
 wire                           wbd_riscv_icache_lack_o                ; // last burst acknowlegement
 wire                           wbd_riscv_icache_err_o                 ; // error
 
-// DFFRAM I/F
-
-wire                           icache_dffram_clk0                     ; // CLK
-wire                           icache_dffram_cs0                      ; // Chip Select
-wire    [7:0]                  icache_dffram_addr0                    ; // Address
-wire    [3:0]                  icache_dffram_wmask0                   ; // Write Mask
-wire    [31:0]                 icache_dffram_din0                     ; // Write Data
-wire    [31:0]                 icache_dffram_dout0                    ; // Read Data
-
-wire                           icache_dffram_clk1                     ; // CLK
-wire                           icache_dffram_cs1                      ; // Chip Select
-wire    [7:0]                  icache_dffram_addr1                    ; // Address
-wire    [3:0]                  icache_dffram_wmask1                   ; // Write Mask
-wire    [31:0]                 icache_dffram_din1                     ; // Write Data
-wire    [31:0]                 icache_dffram_dout1                    ; // Read Data
+// CACHE SRAM Memory I/F
+wire                           icache_mem_clk0                        ; // CLK
+wire                           icache_mem_csb0                        ; // CS#
+wire                           icache_mem_web0                        ; // WE#
+wire   [8:0]                   icache_mem_addr0                       ; // Address
+wire   [3:0]                   icache_mem_wmask0                      ; // WMASK#
+wire   [31:0]                  icache_mem_din0                        ; // Write Data
+// wire   [31:0]               icache_mem_dout0                       ; // Read Data
+   
+// SRAM-0 PORT-1, IMEM I/F
+wire                           icache_mem_clk1                        ; // CLK
+wire                           icache_mem_csb1                        ; // CS#
+wire  [8:0]                    icache_mem_addr1                       ; // Address
+wire  [31:0]                   icache_mem_dout1                       ; // Read Data
 
 //---------------------------------------------------------------------
 // RISC V Wishbone Data Memory Interface
@@ -449,6 +454,7 @@ wire                           wbd_clk_wh                             ;
 wire                           wbd_clk_spi                            ;
 wire                           wbd_clk_pinmux                         ;
 wire                           wbd_int_rst_n                          ;
+wire                           wbd_pll_rst_n                          ;
 
 wire [15:0]                    irq_lines                              ;
 wire                           soft_irq                               ;
@@ -456,7 +462,6 @@ wire                           soft_irq                               ;
 
 wire [7:0]                     cfg_glb_ctrl                           ;
 wire [31:0]                    cfg_clk_ctrl1                          ;
-wire [31:0]                    cfg_clk_ctrl2                          ;
 wire [3:0]                     cfg_cska_wi                            ; // clock skew adjust for wishbone interconnect
 wire [3:0]                     cfg_cska_wh                            ; // clock skew adjust for web host
 
@@ -494,6 +499,7 @@ wire                           wbd_clk_wh_skew                        ; // clock
 
 wire [31:0]                    spi_debug                              ;
 wire [31:0]                    pinmux_debug                           ;
+wire                           dbg_clk_mon                            ; // clock monitoring port
 wire [63:0]                    riscv_debug                            ;
 
 // SFLASH I/F
@@ -540,23 +546,37 @@ wire                           analog_dac_out                         ;
 wire                           pulse1m_mclk                           ;
 wire                           h_reset_n                              ;
 
-`ifndef YCR1_TCM_MEM
+`ifndef SCR1_TCM_MEM
+// SRAM-0 PORT-0 - DMEM I/F
+wire                           sram0_clk0                             ; // CLK
+wire                           sram0_csb0                             ; // CS#
+wire                           sram0_web0                             ; // WE#
+wire   [8:0]                   sram0_addr0                            ; // Address
+wire   [3:0]                   sram0_wmask0                           ; // WMASK#
+wire   [31:0]                  sram0_din0                             ; // Write Data
+wire   [31:0]                  sram0_dout0                            ; // Read Data
 
-// DFFRAM I/F
+// SRAM-0 PORT-1, IMEM I/F
+wire                           sram0_clk1                             ; // CLK
+wire                           sram0_csb1                             ; // CS#
+wire  [8:0]                    sram0_addr1                            ; // Address
+wire  [31:0]                   sram0_dout1                            ; // Read Data
 
-wire                           tcm_dffram_clk0                        ; // CLK
-wire                           tcm_dffram_cs0                         ; // Chip Select
-wire    [7:0]                  tcm_dffram_addr0                       ; // Address
-wire    [3:0]                  tcm_dffram_wmask0                      ; // Write Mask
-wire    [31:0]                 tcm_dffram_din0                        ; // Write Data
-wire    [31:0]                 tcm_dffram_dout0                       ; // Read Data
-   
-wire                           tcm_dffram_clk1                        ; // CLK
-wire                           tcm_dffram_cs1                         ; // Chip Select
-wire    [7:0]                  tcm_dffram_addr1                       ; // Address
-wire    [3:0]                  tcm_dffram_wmask1                      ; // Write Mask
-wire    [31:0]                 tcm_dffram_din1                        ; // Write Data
-wire    [31:0]                 tcm_dffram_dout1                       ; // Read Data
+// SRAM-1 PORT-0 - DMEM I/F
+wire                           sram1_clk0                             ; // CLK
+wire                           sram1_csb0                             ; // CS#
+wire                           sram1_web0                             ; // WE#
+wire   [8:0]                   sram1_addr0                            ; // Address
+wire   [3:0]                   sram1_wmask0                           ; // WMASK#
+wire   [31:0]                  sram1_din0                             ; // Write Data
+wire   [31:0]                  sram1_dout0                            ; // Read Data
+
+// SRAM-1 PORT-1, IMEM I/F
+wire                           sram1_clk1                             ; // CLK
+wire                           sram1_csb1                             ; // CS#
+wire  [8:0]                    sram1_addr1                            ; // Address
+wire  [31:0]                   sram1_dout1                            ; // Read Data
+
 `endif
 
 // SPIM I/F
@@ -575,7 +595,15 @@ wire                           i2cm_intr_o                            ;
 wire                           uartm_rxd                              ;
 wire                           uartm_txd                              ;
 
-
+//----------------------------------------------------------------
+//  Digital PLL I/F
+//  -------------------------------------------------------------
+wire                           cfg_pll_enb                            ; // Enable PLL
+wire [4:0]                     cfg_pll_fed_div                        ; // PLL feedback division ratio
+wire                           cfg_dco_mode                           ; // Run PLL in DCO mode
+wire [25:0]                    cfg_dc_trim                            ; // External trim for DCO mode
+wire                           pll_ref_clk                            ; // Input oscillator to match
+wire [1:0]                     pll_clk_out                            ; // Two 90 degree clock phases
 
 wire [3:0]                     spi_csn                                ;
 
@@ -616,6 +644,7 @@ wb_host u_wb_host(
           .usb_clk                 (usb_clk                 ),
 
           .wbd_int_rst_n           (wbd_int_rst_n           ),
+          .wbd_pll_rst_n           (wbd_pll_rst_n           ),
 
     // Master Port
           .wbm_rst_i               (wb_rst_i                ),  
@@ -649,23 +678,46 @@ wb_host u_wb_host(
           .wbs_err_i               (wbd_int_err_o           ),  
 
           .cfg_clk_ctrl1           (cfg_clk_ctrl1           ),
-          .cfg_clk_ctrl2           (cfg_clk_ctrl2           ),
+
+          .cfg_pll_enb             (cfg_pll_enb             ), 
+          .cfg_pll_fed_div         (cfg_pll_fed_div         ), 
+          .cfg_dco_mode            (cfg_dco_mode            ), 
+          .cfg_dc_trim             (cfg_dc_trim             ),
+          .pll_ref_clk             (pll_ref_clk             ), 
+          .pll_clk_out             (pll_clk_out             ), 
 
           .la_data_in              (la_data_in[17:0]        ),
 
           .uartm_rxd               (uartm_rxd               ),
-          .uartm_txd               (uartm_txd               )
+          .uartm_txd               (uartm_txd               ),
+
+	  .dbg_clk_mon             (dbg_clk_mon             )
 
 
     );
 
+
+// This rtl/gds picked from efabless caravel project 
+digital_pll   u_pll(
+`ifdef USE_POWER_PINS
+    .VPWR                           (vccd1                  ),
+    .VGND                           (vssd1                  ),
+`endif
+    .resetb                         (wbd_pll_rst_n          ), 
+    .enable                         (cfg_pll_enb            ), 
+    .div                            (cfg_pll_fed_div        ), 
+    .dco                            (cfg_dco_mode           ), 
+    .ext_trim                       (cfg_dc_trim            ),
+    .osc                            (pll_ref_clk            ), 
+    .clockp                         (pll_clk_out            ) 
+    );
 
 
 
 //------------------------------------------------------------------------------
 // RISC V Core instance
 //------------------------------------------------------------------------------
-ycr1_top_wb u_riscv_top (
+ycr_top_wb u_riscv_top (
 `ifdef USE_POWER_PINS
           .vccd1                   (vccd1                   ),// User area 1 1.8V supply
           .vssd1                   (vssd1                   ),// User area 1 digital ground
@@ -677,12 +729,13 @@ ycr1_top_wb u_riscv_top (
     // Reset
           .pwrup_rst_n             (wbd_int_rst_n           ),
           .rst_n                   (wbd_int_rst_n           ),
-          .cpu_rst_n               (cpu_core_rst_n[0]       ),
+          .cpu_intf_rst_n          (cpu_intf_rst_n          ),
+          .cpu_core_rst_n          (cpu_core_rst_n[0]       ),
           .riscv_debug             (riscv_debug             ),
+	  .cfg_sram_lphase         (cfg_riscv_sram_lphase   ),
 	  .cfg_cache_ctrl          (cfg_riscv_cache_ctrl    ),
 
     // Clock
-          .core_clk_mclk           (cpu_clk                 ),
           .core_clk                (cpu_clk                 ),
           .rtc_clk                 (rtc_clk                 ),
 
@@ -695,22 +748,36 @@ ycr1_top_wb u_riscv_top (
     //    .test_mode               (1'b0                    ), // Moved inside IP
     //    .test_rst_n              (1'b1                    ), // Moved inside IP
 
-`ifndef YCR1_TCM_MEM
-	// DFFRAM I/F
-          .tcm_dffram_clk0         (tcm_dffram_clk0         ), // CLK
-          .tcm_dffram_cs0          (tcm_dffram_cs0          ), // Chip Select
-          .tcm_dffram_addr0        (tcm_dffram_addr0        ), // Address
-          .tcm_dffram_wmask0       (tcm_dffram_wmask0       ), // Write Mask
-          .tcm_dffram_din0         (tcm_dffram_din0         ), // Write Data
-          .tcm_dffram_dout0        (tcm_dffram_dout0        ), // Read Data
-                                                               
-          .tcm_dffram_clk1         (tcm_dffram_clk1         ), // CLK
-          .tcm_dffram_cs1          (tcm_dffram_cs1          ), // Chip Select
-          .tcm_dffram_addr1        (tcm_dffram_addr1        ), // Address
-          .tcm_dffram_wmask1       (tcm_dffram_wmask1       ), // Write Mask
-          .tcm_dffram_din1         (tcm_dffram_din1         ), // Write Data
-          .tcm_dffram_dout1        (tcm_dffram_dout1        ), // Read Data
+`ifndef SCR1_TCM_MEM
+    // SRAM-0 PORT-0
+          .sram0_clk0         (sram0_clk0                   ),
+          .sram0_csb0         (sram0_csb0                   ),
+          .sram0_web0         (sram0_web0                   ),
+          .sram0_addr0        (sram0_addr0                  ),
+          .sram0_wmask0       (sram0_wmask0                 ),
+          .sram0_din0         (sram0_din0                   ),
+          .sram0_dout0        (sram0_dout0                  ),
+    
+    // SRAM-0 PORT-0
+          .sram0_clk1         (sram0_clk1                   ),
+          .sram0_csb1         (sram0_csb1                   ),
+          .sram0_addr1        (sram0_addr1                  ),
+          .sram0_dout1        (sram0_dout1                  ),
 
+  //  // SRAM-1 PORT-0
+  //      .sram1_clk0         (sram1_clk0                   ),
+  //      .sram1_csb0         (sram1_csb0                   ),
+  //      .sram1_web0         (sram1_web0                   ),
+  //      .sram1_addr0        (sram1_addr0                  ),
+  //      .sram1_wmask0       (sram1_wmask0                 ),
+  //      .sram1_din0         (sram1_din0                   ),
+  //      .sram1_dout0        (sram1_dout0                  ),
+  //  
+  //  // SRAM PORT-0
+  //      .sram1_clk1         (sram1_clk1                   ),
+  //      .sram1_csb1         (sram1_csb1                   ),
+  //      .sram1_addr1        (sram1_addr1                  ),
+  //      .sram1_dout1        (sram1_dout1                  ),
 `endif
     
           .wb_rst_n                (wbd_int_rst_n           ),
@@ -728,20 +795,19 @@ ycr1_top_wb u_riscv_top (
           .wb_icache_lack_i        (wbd_riscv_icache_lack_o ),
           .wb_icache_err_i         (wbd_riscv_icache_err_o  ),
 
-            // DFFRAM I/F
-          .icache_dffram_clk0      (icache_dffram_clk0      ), // CLK
-          .icache_dffram_cs0       (icache_dffram_cs0       ), // Chip Select
-          .icache_dffram_addr0     (icache_dffram_addr0     ), // Address
-          .icache_dffram_wmask0    (icache_dffram_wmask0    ), // Write Mask
-          .icache_dffram_din0      (icache_dffram_din0      ), // Write Data
-          .icache_dffram_dout0     (icache_dffram_dout0     ), // Read Data
-                                                                
-          .icache_dffram_clk1      (icache_dffram_clk1      ), // CLK
-          .icache_dffram_cs1       (icache_dffram_cs1       ), // Chip Select
-          .icache_dffram_addr1     (icache_dffram_addr1     ), // Address
-          .icache_dffram_wmask1    (icache_dffram_wmask1    ), // Write Mask
-          .icache_dffram_din1      (icache_dffram_din1      ), // Write Data
-          .icache_dffram_dout1     (icache_dffram_dout1     ), // Read Data
+          .icache_mem_clk0    (icache_mem_clk0              ), // CLK
+          .icache_mem_csb0    (icache_mem_csb0              ), // CS#
+          .icache_mem_web0    (icache_mem_web0              ), // WE#
+          .icache_mem_addr0   (icache_mem_addr0             ), // Address
+          .icache_mem_wmask0  (icache_mem_wmask0            ), // WMASK#
+          .icache_mem_din0    (icache_mem_din0              ), // Write Data
+//        .icache_mem_dout0   (icache_mem_dout0             ), // Read Data
+                                
+                                
+          .icache_mem_clk1    (icache_mem_clk1              ), // CLK
+          .icache_mem_csb1    (icache_mem_csb1              ), // CS#
+          .icache_mem_addr1   (icache_mem_addr1             ), // Address
+          .icache_mem_dout1   (icache_mem_dout1             ), // Read Data
 
     // Data cache memory interface
           .wb_dcache_stb_o         (wbd_riscv_dcache_stb_i  ),
@@ -756,21 +822,20 @@ ycr1_top_wb u_riscv_top (
           .wb_dcache_lack_i        (wbd_riscv_dcache_lack_o ),
           .wb_dcache_err_i         (wbd_riscv_dcache_err_o  ),
 
+          .dcache_mem_clk0    (dcache_mem_clk0              ), // CLK
+          .dcache_mem_csb0    (dcache_mem_csb0              ), // CS#
+          .dcache_mem_web0    (dcache_mem_web0              ), // WE#
+          .dcache_mem_addr0   (dcache_mem_addr0             ), // Address
+          .dcache_mem_wmask0  (dcache_mem_wmask0            ), // WMASK#
+          .dcache_mem_din0    (dcache_mem_din0              ), // Write Data
+          .dcache_mem_dout0   (dcache_mem_dout0             ), // Read Data
+                                
+                                
+          .dcache_mem_clk1    (dcache_mem_clk1              ), // CLK
+          .dcache_mem_csb1    (dcache_mem_csb1              ), // CS#
+          .dcache_mem_addr1   (dcache_mem_addr1             ), // Address
+          .dcache_mem_dout1   (dcache_mem_dout1             ), // Read Data
 
-     // DFFRAM I/F
-          .dcache_dffram_clk0      (dcache_dffram_clk0      ), // CLK
-          .dcache_dffram_cs0       (dcache_dffram_cs0       ), // Chip Select
-          .dcache_dffram_addr0     (dcache_dffram_addr0     ), // Address
-          .dcache_dffram_wmask0    (dcache_dffram_wmask0    ), // Write Mask
-          .dcache_dffram_din0      (dcache_dffram_din0      ), // Write Data
-          .dcache_dffram_dout0     (dcache_dffram_dout0     ), // Read Data
-                                                         
-          .dcache_dffram_clk1      (dcache_dffram_clk1      ), // CLK
-          .dcache_dffram_cs1       (dcache_dffram_cs1       ), // Chip Select
-          .dcache_dffram_addr1     (dcache_dffram_addr1     ), // Address
-          .dcache_dffram_wmask1    (dcache_dffram_wmask1    ), // Write Mask
-          .dcache_dffram_din1      (dcache_dffram_din1      ), // Write Data
-          .dcache_dffram_dout1     (dcache_dffram_dout1     ), // Read Data
 
     // Data memory interface
           .wbd_dmem_stb_o          (wbd_riscv_dmem_stb_i    ),
@@ -782,90 +847,91 @@ ycr1_top_wb u_riscv_top (
           .wbd_dmem_ack_i          (wbd_riscv_dmem_ack_o    ),
           .wbd_dmem_err_i          (wbd_riscv_dmem_err_o    ) 
 );
-`ifndef YCR1_TCM_MEM
 
-DFFRAM u_tcm_1KB_mem0 (
+`ifndef SCR1_TCM_MEM
+sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram0_2kb(
 `ifdef USE_POWER_PINS
-          .VPWR                    (vccd1                   ),// area 1 1.8V supply
-          .VGND                    (vssd1                   ),// area 1 digital ground
+          .vccd1              (vccd1                        ),// area 1 1.8V supply
+          .vssd1              (vssd1                        ),// area 1 digital ground
 `endif
-          .CLK                     (tcm_dffram_clk0         ),
-          .WE                      (tcm_dffram_wmask0       ),
-          .EN                      (tcm_dffram_cs0          ),
-          .Di                      (tcm_dffram_din0         ),
-          .Do                      (tcm_dffram_dout0        ),
-          .A                       (tcm_dffram_addr0        )
-);
+// Port 0: RW
+          .clk0               (sram0_clk0                   ),
+          .csb0               (sram0_csb0                   ),
+          .web0               (sram0_web0                   ),
+          .wmask0             (sram0_wmask0                 ),
+          .addr0              (sram0_addr0                  ),
+          .din0               (sram0_din0                   ),
+          .dout0              (sram0_dout0                  ),
+// Port 1: R
+          .clk1               (sram0_clk1                   ),
+          .csb1               (sram0_csb1                   ),
+          .addr1              (sram0_addr1                  ),
+          .dout1              (sram0_dout1                  )
+  );
 
-DFFRAM u_tcm_1KB_mem1 (
+/***
+sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram1_2kb(
 `ifdef USE_POWER_PINS
-          .VPWR                    (vccd1                   ),// area 1 1.8V supply
-          .VGND                    (vssd1                   ),// area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-          .CLK                     (tcm_dffram_clk1         ),
-          .WE                      (tcm_dffram_wmask1       ),
-          .EN                      (tcm_dffram_cs1          ),
-          .Di                      (tcm_dffram_din1         ),
-          .Do                      (tcm_dffram_dout1        ),
-          .A                       (tcm_dffram_addr1        )
-);
-
+// Port 0: RW
+          .clk0               (sram1_clk0                   ),
+          .csb0               (sram1_csb0                   ),
+          .web0               (sram1_web0                   ),
+          .wmask0             (sram1_wmask0                 ),
+          .addr0              (sram1_addr0                  ),
+          .din0               (sram1_din0                   ),
+          .dout0              (sram1_dout0                  ),
+// Port 1: R
+          .clk1               (sram1_clk1                   ),
+          .csb1               (sram1_csb1                   ),
+          .addr1              (sram1_addr1                  ),
+          .dout1              (sram1_dout1                  )
+  );
+***/
 `endif
 
 
-
-DFFRAM u_icache_1KB_mem0 (
+sky130_sram_2kbyte_1rw1r_32x512_8 u_icache_2kb(
 `ifdef USE_POWER_PINS
-          .VPWR                    (vccd1                   ),// area 1 1.8V supply
-          .VGND                    (vssd1                   ),// area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-          .CLK                     (icache_dffram_clk0      ),
-          .WE                      (icache_dffram_wmask0    ),
-          .EN                      (icache_dffram_cs0       ),
-          .Di                      (icache_dffram_din0      ),
-          .Do                      (icache_dffram_dout0     ),
-          .A                       (icache_dffram_addr0     )
-);
+// Port 0: RW
+          .clk0               (icache_mem_clk0              ),
+          .csb0               (icache_mem_csb0              ),
+          .web0               (icache_mem_web0              ),
+          .wmask0             (icache_mem_wmask0            ),
+          .addr0              (icache_mem_addr0             ),
+          .din0               (icache_mem_din0              ),
+          .dout0              (                             ),
+// Port 1: R
+          .clk1               (icache_mem_clk1              ),
+          .csb1               (icache_mem_csb1              ),
+          .addr1              (icache_mem_addr1             ),
+          .dout1              (icache_mem_dout1             )
+  );
 
-DFFRAM u_icache_1KB_mem1 (
+sky130_sram_2kbyte_1rw1r_32x512_8 u_dcache_2kb(
 `ifdef USE_POWER_PINS
-          .VPWR                    (vccd1                   ),// area 1 1.8V supply
-          .VGND                    (vssd1                   ),// area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-          .CLK                     (icache_dffram_clk1      ),
-          .WE                      (icache_dffram_wmask1    ),
-          .EN                      (icache_dffram_cs1       ),
-          .Di                      (icache_dffram_din1      ),
-          .Do                      (icache_dffram_dout1     ),
-          .A                       (icache_dffram_addr1     )
-);
-
-
-DFFRAM u_dcache_1KB_mem0 (
-`ifdef USE_POWER_PINS
-          .VPWR                    (vccd1                   ),// area 1 1.8V supply
-          .VGND                    (vssd1                   ),// area 1 digital ground
-`endif
-          .CLK                     (dcache_dffram_clk0      ),
-          .WE                      (dcache_dffram_wmask0    ),
-          .EN                      (dcache_dffram_cs0       ),
-          .Di                      (dcache_dffram_din0      ),
-          .Do                      (dcache_dffram_dout0     ),
-          .A                       (dcache_dffram_addr0     )
-);
-
-DFFRAM u_dcache_1KB_mem1 (
-`ifdef USE_POWER_PINS
-          .VPWR                    (vccd1                   ),// area 1 1.8V supply
-          .VGND                    (vssd1                   ),// area 1 digital ground
-`endif
-          .CLK                     (dcache_dffram_clk1      ),
-          .WE                      (dcache_dffram_wmask1    ),
-          .EN                      (dcache_dffram_cs1       ),
-          .Di                      (dcache_dffram_din1      ),
-          .Do                      (dcache_dffram_dout1     ),
-          .A                       (dcache_dffram_addr1     )
-);
+// Port 0: RW
+          .clk0               (dcache_mem_clk0              ),
+          .csb0               (dcache_mem_csb0              ),
+          .web0               (dcache_mem_web0              ),
+          .wmask0             (dcache_mem_wmask0            ),
+          .addr0              (dcache_mem_addr0             ),
+          .din0               (dcache_mem_din0              ),
+          .dout0              (dcache_mem_dout0             ),
+// Port 1: R
+          .clk1               (dcache_mem_clk1              ),
+          .csb1               (dcache_mem_csb1              ),
+          .addr1              (dcache_mem_addr1             ),
+          .dout1              (dcache_mem_dout1             )
+  );
 
 
 /*********************************************************
@@ -1208,7 +1274,9 @@ pinmux u_pinmux(
 
 	  .pulse1m_mclk            (pulse1m_mclk            ),
 
-	  .pinmux_debug            (pinmux_debug            )
+	  .pinmux_debug            (pinmux_debug            ),
+
+	  .dbg_clk_mon             (dbg_clk_mon             )
 
 
 

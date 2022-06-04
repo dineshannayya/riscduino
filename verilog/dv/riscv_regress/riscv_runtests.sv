@@ -34,7 +34,7 @@ end
  logic [`SCR1_DMEM_AWIDTH-1:0]           core2dmem_addr_o_r;           // DMEM address
  logic                                   core2dmem_cmd_o_r;
  
- `define RISC_CORE  i_top.i_core_top
+ `define RISC_CORE  i_top.i_core_top_0
  
  always@(posedge `RISC_CORE.clk) begin
      if(`RISC_CORE.imem2core_req_ack_i && `RISC_CORE.core2imem_req_o)
@@ -55,7 +55,7 @@ end
 **/
 /***
   logic [31:0] test_count;
- `define RISC_CORE  u_top.u_riscv_top.i_core_top
+ `define RISC_CORE  u_top.u_riscv_top.i_core_top_0
  `define RISC_EXU  u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_exu
 
  initial begin
@@ -71,6 +71,10 @@ end
  end
 ***/
 
+wire [31:0] pc_curr_ff         = u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_pipe_exu.pc_curr_ff         ;
+wire [31:0] exu2pipe_pc_curr_o = u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_pipe_exu.exu2pipe_pc_curr_o ;
+wire [31:0] mprf_int_10        = u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_pipe_mprf.mprf_int[10]      ;
+
 always @(posedge clk) begin
     bit test_pass;
     int unsigned                            f_test;
@@ -78,11 +82,11 @@ always @(posedge clk) begin
     if (test_running) begin
         test_pass = 1;
         rst_init <= 1'b0;
-	if(u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_exu.pc_curr_ff === 32'hxxxx_xxxx) begin
+	if(pc_curr_ff === 32'hxxxx_xxxx) begin
 	   $display("ERROR: CURRENT PC Counter State is Known");
 	   $finish;
 	end
-        if ((u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_exu.exu2pipe_pc_curr_o == YCR1_SIM_EXIT_ADDR) & ~rst_init & &rst_cnt) begin
+        if ((exu2pipe_pc_curr_o == YCR1_SIM_EXIT_ADDR) & ~rst_init & &rst_cnt) begin
 
             `ifdef VERILATOR
                 logic [255:0] full_filename;
@@ -203,10 +207,10 @@ always @(posedge clk) begin
                 `endif  // SIGNATURE_OUT
             end else begin // Non compliance mode
                 test_running <= 1'b0;
-		if(u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_mprf.mprf_int[10] != 0)
-		   $display("ERROR: mprf_int[10]: %x not zero",u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_mprf.mprf_int[10]);
+		if(mprf_int_10 != 0)
+		   $display("ERROR: mprf_int[10]: %x not zero",mprf_int_10);
 
-                test_pass = (u_top.u_riscv_top.i_core_top.i_pipe_top.i_pipe_mprf.mprf_int[10] == 0);
+                test_pass = (mprf_int_10 == 0);
                 tests_total     += 1;
                 tests_passed    += test_pass;
                 `ifndef SIGNATURE_OUT
@@ -236,7 +240,7 @@ always @(posedge clk) begin
             if (f_test != 0) begin
             // Launch new test
                 `ifdef YCR1_TRACE_LOG_EN
-                    u_top.u_riscv_top.i_core_top.i_pipe_top.i_tracelog.test_name = test_file;
+                    u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_tracelog.test_name = test_file;
                 `endif // SCR1_TRACE_LOG_EN
                 //i_memory_tb.test_file = test_file;
                 //i_memory_tb.test_file_init = 1'b1;

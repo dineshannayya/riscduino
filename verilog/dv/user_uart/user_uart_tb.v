@@ -74,7 +74,7 @@
 
 `timescale 1 ns/1 ps
 
-`include "DFFRAM/DFFRAM.v"
+`include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "uart_agent.v"
 
 
@@ -144,8 +144,7 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(1, user_uart_tb);
-	   	$dumpvars(0, user_uart_tb.u_top);
+	   	$dumpvars(0, user_uart_tb);
 	   end
        `endif
 
@@ -200,14 +199,14 @@ begin
          for (i=0; i<40; i=i+1)
          begin
            $display ("\n... UART Agent Writing char %x ...", uart_write_data[i]);
-            user_uart_tb.tb_uart.write_char (uart_write_data[i]);
+            tb_uart.write_char (uart_write_data[i]);
          end
       end
    
       begin
          for (j=0; j<40; j=j+1)
          begin
-           user_uart_tb.tb_uart.read_char_chk(uart_write_data[j]);
+           tb_uart.read_char_chk(uart_write_data[j]);
          end
       end
       join
@@ -388,6 +387,7 @@ begin
   wbd_ext_cyc_i ='h1;  // strobe/request
   wbd_ext_stb_i ='h1;  // strobe/request
   wait(wbd_ext_ack_o == 1);
+  repeat (1) @(negedge clock);
   data  = wbd_ext_dat_o;  
   repeat (1) @(posedge clock);
   #1;
@@ -404,29 +404,21 @@ endtask
 
 `ifdef GL
 
-wire        wbd_spi_stb_i   = u_top.u_spi_master.wbd_stb_i;
-wire        wbd_spi_ack_o   = u_top.u_spi_master.wbd_ack_o;
-wire        wbd_spi_we_i    = u_top.u_spi_master.wbd_we_i;
-wire [31:0] wbd_spi_adr_i   = u_top.u_spi_master.wbd_adr_i;
-wire [31:0] wbd_spi_dat_i   = u_top.u_spi_master.wbd_dat_i;
-wire [31:0] wbd_spi_dat_o   = u_top.u_spi_master.wbd_dat_o;
-wire [3:0]  wbd_spi_sel_i   = u_top.u_spi_master.wbd_sel_i;
+wire        wbd_spi_stb_i   = u_top.u_qspi_master.wbd_stb_i;
+wire        wbd_spi_ack_o   = u_top.u_qspi_master.wbd_ack_o;
+wire        wbd_spi_we_i    = u_top.u_qspi_master.wbd_we_i;
+wire [31:0] wbd_spi_adr_i   = u_top.u_qspi_master.wbd_adr_i;
+wire [31:0] wbd_spi_dat_i   = u_top.u_qspi_master.wbd_dat_i;
+wire [31:0] wbd_spi_dat_o   = u_top.u_qspi_master.wbd_dat_o;
+wire [3:0]  wbd_spi_sel_i   = u_top.u_qspi_master.wbd_sel_i;
 
-wire        wbd_sdram_stb_i = u_top.u_sdram_ctrl.wb_stb_i;
-wire        wbd_sdram_ack_o = u_top.u_sdram_ctrl.wb_ack_o;
-wire        wbd_sdram_we_i  = u_top.u_sdram_ctrl.wb_we_i;
-wire [31:0] wbd_sdram_adr_i = u_top.u_sdram_ctrl.wb_addr_i;
-wire [31:0] wbd_sdram_dat_i = u_top.u_sdram_ctrl.wb_dat_i;
-wire [31:0] wbd_sdram_dat_o = u_top.u_sdram_ctrl.wb_dat_o;
-wire [3:0]  wbd_sdram_sel_i = u_top.u_sdram_ctrl.wb_sel_i;
-
-wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb.reg_wr;
-wire [7:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb.reg_be;
+wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb_spi.reg_cs;
+wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb_spi.reg_ack;
+wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb_spi.reg_wr;
+wire [8:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb_spi.reg_addr;
+wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb_spi.reg_wdata;
+wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb_spi.reg_rdata;
+wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb_spi.reg_be;
 
 `endif
 

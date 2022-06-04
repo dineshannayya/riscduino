@@ -18,6 +18,7 @@
 `define WBHOST_BANK_SEL           8'h04  // reg_1  - Bank Select
 `define WBHOST_CLK_CTRL1          8'h08  // reg_2  - Clock Control-1
 `define WBHOST_CLK_CTRL2          8'h0C  // reg_3  - Clock Control-2
+`define WBHOST_PLL_CTRL           8'h10  // reg_4  - PLL Control
 
 //--------------------------------------------------
 // Pinmux Register

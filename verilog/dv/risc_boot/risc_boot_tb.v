@@ -121,6 +121,9 @@ module risc_boot_tb;
 		clock = 0;
 	end
 
+pullup(mprj_io[3]); 
+
+
 	`ifdef WFDUMP
         initial
         begin
@@ -130,7 +133,6 @@ module risc_boot_tb;
            //$dumpvars(2,risc_boot_tb.uut);
            $dumpvars(1,risc_boot_tb.uut.mprj);
            $dumpvars(0,risc_boot_tb.uut.mprj.u_wb_host);
-           $dumpvars(1,risc_boot_tb.uut.mprj.u_riscv_top);
            //$dumpvars(0,risc_boot_tb.tb_uart);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");

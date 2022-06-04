@@ -1,0 +1,178 @@
+# Caravel user project includes
++define+UNIT_DELAY=#0.1
++incdir+$(USER_PROJECT_VERILOG)/rtl/
++incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
++incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes
++incdir+$(USER_PROJECT_VERILOG)/rtl/yifive/ycr2c/src/includes
++incdir+$(USER_PROJECT_VERILOG)/dv/bfm
++incdir+$(USER_PROJECT_VERILOG)/dv/model
++incdir+$(USER_PROJECT_VERILOG)/dv/agents
+$(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
+
+##################################################
+### USER PROJECT RTL
+##################################################
+#ifdef USER_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr1_top_wb.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/user_project_wrapper.v
+#endif
+
+##################################################
+### YCR INTERFACE
+##################################################
+#ifdef YCR_INTF_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/dcache_top.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/dcache_tag_fifo.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/icache_tag_fifo.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/icache_top.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/icache_app_fsm.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_async_wbb.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_dmem_wb.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_intf.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/ycr_intf.v
+#endif
+##################################################
+### YCR INTER CONNECT
+##################################################
+#ifdef YCR_ICONNECT_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_iconnect.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_cross_bar.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_router.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_dmem_router.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_tcm.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_timer.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_arb.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/ycr_iconnect.v
+#endif
+
+
+##################################################
+### YCR CORE
+##################################################
+#ifdef YCR_CORE_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_top.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_core_top.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_dm.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_tapc_synchronizer.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_clk_ctrl.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_scu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_tapc.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_tapc_shift_reg.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/ycr_dmi.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_ifu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_idu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_exu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_mprf.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_csr.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_ialu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_mul.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_div.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_lsu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_hdu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_tdu.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_ipic.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/ycr_core_top.v
+#endif
+##################################################
+### QSPIM
+##################################################
+#ifdef QSPIM_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_top.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_if.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_regs.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_fifo.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_clkgen.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_ctrl.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_rx.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_tx.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/qspim_top.v
+#endif
+
+
+##################################################
+### WB_HOST
+##################################################
+#ifdef WB_HOST_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/wb_host/src/wb_host.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart2wb.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart2_core.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart_msg_handler.v
+#else
+$(USER_PROJECT_VERILOG)/gl/wb_host.v
+#endif
+
+##################################################
+### PINMUX
+##################################################
+#ifdef PINMUX_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_reg.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/gpio_intr.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pwm.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/timer.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/pinmux.v
+#endif
+
+##################################################
+### UART
+##################################################
+#ifdef UART_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/uart/src/uart_core.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart/src/uart_cfg.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/i2cm/src/core/i2cm_bit_ctrl.v
+#-v $(USER_PROJECT_VERILOG)/rtl/i2cm/src/core/i2cm_byte_ctrl.v
+#-v $(USER_PROJECT_VERILOG)/rtl/i2cm/src/core/i2cm_top.v
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/core/usbh_core.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/core/usbh_crc16.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/core/usbh_crc5.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/core/usbh_fifo.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/core/usbh_sie.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/phy/usb_fs_phy.v
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/phy/usb_transceiver.v
+#-v $(USER_PROJECT_VERILOG)/rtl/usb1_host/src/top/usb1_host.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_top.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_ctl.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_if.sv 
+#-v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_cfg.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart_i2c_usb_spi/src/uart_i2c_usb_spi.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/uart_i2c_usb_spi_top.v
+#endif
+
+##################################################
+### WISHBONE INTERCONNECT
+##################################################
+#ifdef WB_INTER_RTL
+#-v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_slave_port.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_interconnect.sv
+#else
+$(USER_PROJECT_VERILOG)/gl/wb_interconnect.v
+#endif
+
+#-v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_arb.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart/src/uart_txfsm.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/uart/src/uart_rxfsm.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr2c/src/top/ycr_sram_mux.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr2c/src/core/primitives/ycr_reset_cells.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr2c/src/top/ycr_req_retiming.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/sync_wbb.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo2.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/async_fifo_th.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/clk_skew_adjust.gv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/reset_sync.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/ctech_cells.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/async_fifo.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/async_wb.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/async_reg_bus.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/clk_ctl.v
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/registers.v
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/double_sync_low.v
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type1.sv
+#-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type2.sv
