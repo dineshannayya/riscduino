@@ -75,7 +75,7 @@ install:
 # Install DV setup
 .PHONY: simenv
 simenv:
-	docker pull riscduino/dv_setup:latest
+	docker pull riscduino/dv_setup:mpw6
 
 .PHONY: setup
 setup: install check-env install_mcw pdk openlane
@@ -92,17 +92,12 @@ DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))
 TARGET_PATH=$(shell pwd)
 verify_command="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP} RISC_CORE=${RISC_CORE} && make"
 $(DV_PATTERNS): verify-% : ./verilog/dv/%  check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
-	docker run -v ${TARGET_PATH}:${TARGET_PATH} -v ${PDK_ROOT}:${PDK_ROOT} \
-		-v ${CARAVEL_ROOT}:${CARAVEL_ROOT} \
-		-e TARGET_PATH=${TARGET_PATH} -e PDK_ROOT=${PDK_ROOT} \
-		-e PDK=${PDK} \
-		-e CARAVEL_ROOT=${CARAVEL_ROOT} \
+	docker run -v ${TARGET_PATH}:${TARGET_PATH} \
+		-e TARGET_PATH=${TARGET_PATH} \
 		-e TOOLS=/opt/riscv64i \
 		-e DESIGNS=$(TARGET_PATH) \
-		-e CORE_VERILOG_PATH=$(CARAVEL_ROOT)/mgmt_core_wrapper/verilog \
 		-e GCC_PREFIX=riscv64-unknown-elf \
-		-e MCW_ROOT=$(MCW_ROOT) \
-		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:latest \
+		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:mpw6 \
 		sh -c $(verify_command)
 
 
