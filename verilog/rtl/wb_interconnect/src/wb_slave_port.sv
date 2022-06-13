@@ -61,6 +61,8 @@ module wb_slave_port  (
          input	logic [31:0]	m1_wbd_dat_i,
          input	logic [31:0]	m1_wbd_adr_i,
          input	logic [3:0]	m1_wbd_sel_i,
+         input	logic [2:0]	m1_wbd_bl_i,
+         input	logic    	m1_wbd_bry_i,
          input	logic 	        m1_wbd_we_i,
          input	logic 	        m1_wbd_cyc_i,
          input	logic 	        m1_wbd_stb_i,
@@ -172,8 +174,8 @@ assign m0_wb_wr.wbd_tid = m0_wbd_tid_i;
 assign m1_wb_wr.wbd_dat = m1_wbd_dat_i;
 assign m1_wb_wr.wbd_adr = {m1_wbd_adr_i[31:2],2'b00};
 assign m1_wb_wr.wbd_sel = m1_wbd_sel_i;
-assign m1_wb_wr.wbd_bl  = 'h1;
-assign m1_wb_wr.wbd_bry = 'b1;
+assign m1_wb_wr.wbd_bl  = {7'b0,m1_wbd_bl_i};
+assign m1_wb_wr.wbd_bry = m1_wbd_bry_i;
 assign m1_wb_wr.wbd_we  = m1_wbd_we_i;
 assign m1_wb_wr.wbd_cyc = m1_wbd_cyc_i;
 assign m1_wb_wr.wbd_stb = m1_stb_i;
