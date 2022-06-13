@@ -56,7 +56,7 @@ set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
 set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
 
-set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_cska_riscv[0]}]
+set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_cska_riscv[0]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_cska_riscv[1]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_cska_riscv[2]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_cska_riscv[3]}]
