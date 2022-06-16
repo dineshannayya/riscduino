@@ -70,6 +70,8 @@ set ::env(CELL_PAD) "6"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
 set ::env(PL_TARGET_DENSITY) 0.37
 
+set ::env(FP_IO_VEXTEND) {6}
+set ::env(FP_IO_HEXTEND) {6}
 
 set ::env(RT_MAX_LAYER) {met4}
 #set ::env(GLB_RT_MAXLAYER) "5"

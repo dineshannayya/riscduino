@@ -108,7 +108,6 @@
      `include "wb_interconnect/src/wb_slave_port.sv"
      `include "wb_interconnect/src/wb_interconnect.sv"
 
-
      `include "yifive/ycr1c/src/core/pipeline/ycr_pipe_hdu.sv"
      `include "yifive/ycr1c/src/core/pipeline/ycr_pipe_tdu.sv"
      `include "yifive/ycr1c/src/core/pipeline/ycr_ipic.sv"
