@@ -24,6 +24,8 @@ set ::env(DESIGN_NAME) wb_host
 
 set ::env(DESIGN_IS_CORE) "0"
 
+set ::env(OPENLANE_VERBOSE) {10}
+
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "wbm_clk_i wbs_clk_i u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X"

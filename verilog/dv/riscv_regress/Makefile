@@ -1,10 +1,32 @@
-#------------------------------------------------------------------------------
-# Makefile for SCR1
-#------------------------------------------------------------------------------
 
-SIM ?= RTL
-DUMP ?= OFF
-TOOLS?=/opt/riscv64i/
+# ---- Include Partitioned Makefiles ----
+
+CONFIG = caravel_user_project
+ 
+#######################################################################
+## Caravel Verilog for Integration Tests
+#######################################################################
+
+export root_dir := $(shell pwd)
+export bld_dir  := $(root_dir)/build/$(current_goal)_$(BUS)_$(CFG)_$(ARCH)_IPIC_$(IPIC)_TCM_$(TCM)_VIRQ_$(VECT_IRQ)_TRACE_$(TRACE)
+DESIGNS?=${root_dir}/../../..
+
+UPRJ_TESTS_PATH = $(root_dir)
+
+export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
+## YIFIVE FIRMWARE
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
+GCC64_PREFIX?=riscv64-unknown-elf
+
+
+## Simulation mode: RTL/GL
+SIM?=RTL
+DUMP?=OFF
+RISC_CORE?=0
+
+### To Enable IVERILOG FST DUMP
+export IVERILOG_DUMPER = fst
+
 
 # PARAMETERS
 
@@ -48,7 +70,7 @@ else
             VECT_IRQ  ?= 0
             IPIC      ?= 0
             TCM       ?= 0
-            SIM_CFG_DEF  = YCR1_CFG_$(CFG)
+            SIM_CFG_DEF  = YCR_CFG_$(CFG)
         endif
     endif
 endif
@@ -118,38 +140,16 @@ ifeq ($(current_goal),)
 endif
 
 
-export root_dir := $(shell pwd)
-export bld_dir  := $(root_dir)/build/$(current_goal)_$(BUS)_$(CFG)_$(ARCH)_IPIC_$(IPIC)_TCM_$(TCM)_VIRQ_$(VECT_IRQ)_TRACE_$(TRACE)
-
-## Caravel Pointers related to build directory
-CARAVEL_ROOT ?= $(root_dir)/../../../caravel
-CARAVEL_PATH ?= $(CARAVEL_ROOT)
-CARAVEL_FIRMWARE_PATH = $(CARAVEL_PATH)/verilog/dv/caravel
-CARAVEL_VERILOG_PATH  = $(CARAVEL_PATH)/verilog
-CARAVEL_RTL_PATH = $(CARAVEL_VERILOG_PATH)/rtl
-CARAVEL_BEHAVIOURAL_MODELS = $(CARAVEL_VERILOG_PATH)/dv/caravel
-
 
 ## User Project Pointers
-UPRJ_VERILOG_PATH ?= $(root_dir)/../../../verilog
-UPRJ_TESTS_PATH = $(root_dir)
-UPRJ_RTL_PATH = $(UPRJ_VERILOG_PATH)/rtl
-UPRJ_GL_PATH = $(UPRJ_VERILOG_PATH)/gl
-UPRJ_BEHAVIOURAL_MODELS = $(root_dir)/../model
-UPRJ_BEHAVIOURAL_AGENTS = $(root_dir)/../agents
-UPRJ_INCLUDE_PATH1 = $(UPRJ_RTL_PATH)/yifive/ycr1c/src/includes
-UPRJ_INCLUDE_PATH2 = $(UPRJ_RTL_PATH)/sdram_ctrl/src/defs
-UPRJ_INCLUDE_PATH3 = $(UPRJ_RTL_PATH)/i2cm/src/includes
-UPRJ_INCLUDE_PATH4 = $(UPRJ_RTL_PATH)/usb1_host/src/includes
-UPRJ_INCLUDE_PATH5 = $(UPRJ_RTL_PATH)/mbist/include
 
-sv_list            = ../../user_risc_regress_tb.v
+sv_list            = $(root_dir)/user_risc_regress_tb.v
 top_module         = user_risc_regress_tb
 
 # TB Paths
-export sim_dir  := $(UPRJ_TESTS_PATH)
+export sim_dir  := $(root_dir)
 export tst_dir  := $(sim_dir)/tests
-export inc_dir  := $(UPRJ_VERILOG_PATH)/dv/firmware
+export inc_dir  := $(sim_dir)/../firmware
 
 test_results := $(bld_dir)/test_results.txt
 test_info    := $(bld_dir)/test_info
@@ -167,10 +167,6 @@ export RISCV_ROM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -j .text.init -j .text -j .ro
 #export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -R .riscv.attributes -R .comment -R .debug_abbrev -R .debug_loc -R .debug_str -O verilog --verilog-data-width=4 --reverse-bytes=4
 export RISCV_RAM_OBJCOPY ?= $(CROSS_PREFIX)objcopy -R .text.init -R .text -R .rodata -R .rodata.str1.4 -O verilog
 export RISCV_READELF ?= $(CROSS_PREFIX)readelf -s
-
-
-### To Enable IVERILOG FST DUMP
-export IVERILOG_DUMPER = fst
 
 ifneq (,$(findstring e,$(ARCH_lowercase)))
 # Tests can be compiled for RVE only if gcc version 8.0.0 or higher
@@ -204,7 +200,7 @@ TARGETS += hello
 
 
 # Targets
-.PHONY: tests run_iverilog run_iverilog_wf run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf
+.PHONY: tests run_iverilog run_modelsim run_modelsim_wlf run_vcs run_ncsim run_verilator run_verilator_wf
 
 default: clean_test_list run_iverilog
 
@@ -276,18 +272,73 @@ run_modelsim: $(test_info)
 	printf "$$(cat $(test_results)) \n"
 
 run_iverilog: $(test_info)
+ifeq ($(SIM),RTL)
+   ifeq ($(DUMP),OFF)
 	cd $(bld_dir); \
 	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) -I $(UPRJ_TESTS_PATH) \
+	-I $(UPRJ_TESTS_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
+       -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$(sv_list) \
 	-o $(top_module).vvp; \
 	printf "" > $(test_results); \
         iverilog-vpi ../../../vpi/system/system.c; \
 	vvp  -M. -msystem  $(top_module).vvp \
+	+risc_core_id=$(RISC_CORE) \
+	+test_info=$(test_info) \
+	+test_results=$(test_results) \
+	| tee $(sim_results)  ;\
+	printf "Simulation performed on $$(vvp -V) \n" ;\
+	printf "                          Test               | build | simulation \n" ; \
+	printf "$$(cat $(test_results)) \n"
+    else  
+	cd $(bld_dir); \
+	iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-I $(UPRJ_TESTS_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
+	$(sv_list) \
+	-o $(top_module).vvp; \
+	printf "" > $(test_results); \
+        iverilog-vpi ../../../vpi/system/system.c; \
+	vvp  -M. -msystem  $(top_module).vvp \
+	+risc_core_id=$(RISC_CORE) \
+	+test_info=$(test_info) \
+	+test_results=$(test_results) \
+	| tee $(sim_results)  ;\
+	printf "Simulation performed on $$(vvp -V) \n" ;\
+	printf "                          Test               | build | simulation \n" ; \
+	printf "$$(cat $(test_results)) \n"
+   endif
+else  
+   ifeq ($(DUMP),OFF)
+	cd $(bld_dir); \
+	iverilog -g2005-sv -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-I $(UPRJ_TESTS_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
+	$(sv_list) \
+	-o $(top_module).vvp; \
+	printf "" > $(test_results); \
+        iverilog-vpi ../../../vpi/system/system.c; \
+	vvp  -M. -msystem  $(top_module).vvp \
+	+risc_core_id=$(RISC_CORE) \
+	+test_info=$(test_info) \
+	+test_results=$(test_results) \
+	| tee $(sim_results)  ;\
+	printf "Simulation performed on $$(vvp -V) \n" ;\
+	printf "                          Test               | build | simulation \n" ; \
+	printf "$$(cat $(test_results)) \n"
+    else  
+	cd $(bld_dir); \
+	iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	-I $(UPRJ_TESTS_PATH) \
+	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
+	$(sv_list) \
+	-o $(top_module).vvp; \
+	printf "" > $(test_results); \
+        iverilog-vpi ../../../vpi/system/system.c; \
+	vvp  -M. -msystem  $(top_module).vvp \
+	+risc_core_id=$(RISC_CORE) \
 	+test_info=$(test_info) \
 	+test_results=$(test_results) \
 	| tee $(sim_results)  ;\
@@ -295,25 +346,8 @@ run_iverilog: $(test_info)
 	printf "                          Test               | build | simulation \n" ; \
 	printf "$$(cat $(test_results)) \n"
 
-run_iverilog_wf: $(test_info)
-	cd $(bld_dir); \
-	iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
-	-I $(CARAVEL_BEHAVIOURAL_MODELS) -I $(CARAVEL_RTL_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_MODELS)    -I $(UPRJ_RTL_PATH) -I $(UPRJ_VERILOG_PATH) \
-	-I $(UPRJ_BEHAVIOURAL_AGENTS)    \
-	-I $(UPRJ_INCLUDE_PATH1)    -I $(UPRJ_INCLUDE_PATH2) -I $(UPRJ_INCLUDE_PATH3) \
-	-I $(UPRJ_INCLUDE_PATH4) -I $(UPRJ_INCLUDE_PATH5) -I $(UPRJ_TESTS_PATH) \
-	$(sv_list) \
-	-o $(top_module).vvp; \
-	printf "" > $(test_results); \
-        iverilog-vpi ../../../vpi/system/system.c; \
-	vvp  -M. -msystem  $(top_module).vvp \
-	+test_info=$(test_info) \
-	+test_results=$(test_results) \
-	| tee $(sim_results)  ;\
-	printf "Simulation performed on $$(vvp -V) \n" ;\
-	printf "                          Test               | build | simulation \n" ; \
-	printf "$$(cat $(test_results)) \n"
+   endif
+endif
 
 run_modelsim_wlf: $(test_info)
 	$(MAKE) -C $(root_dir)/sim build_modelsim_wlf SIM_CFG_DEF=$(SIM_CFG_DEF) SIM_TRACE_DEF=$(SIM_TRACE_DEF) SIM_BUILD_OPTS=$(SIM_BUILD_OPTS); \
