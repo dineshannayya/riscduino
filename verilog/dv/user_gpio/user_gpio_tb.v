@@ -66,20 +66,12 @@
 
 `default_nettype wire
 
-`timescale 1 ns / 1 ns
+`timescale 1 ns/1 ps
 
-// Note in caravel, 0x30XX_XXXX only come to user interface
-// So, using wb_host bank select we have changing MSB address [31:24] = 0x10
-`define ADDR_SPACE_UART    32'h3001_0000
-`define ADDR_SPACE_SSPI    32'h3001_00C0
-`define ADDR_SPACE_PINMUX  32'h3002_0000
-
-`define TB_GLBL    user_gpio_tb
-
-`include "uprj_netlists.v"
+`include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "is62wvs1288.v"
-`include "user_reg_map.v"
 
+`define TB_GLBL user_gpio_tb
 
 module user_gpio_tb;
 	reg clock;
