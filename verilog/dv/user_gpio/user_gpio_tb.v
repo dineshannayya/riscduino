@@ -25,6 +25,8 @@
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
 ////   gpio interfaface through External WB i/F.                  ////
+////      1.gpio posedge & negedge interrupt generation           ////
+////      2.gpio as input and output                              ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -120,8 +122,110 @@ module user_gpio_tb;
 	always #12.5 clock <= (clock === 1'b0);
 
 
+     /************* Port-A Mapping **********************************
+     *   ********************************************************/
+
+     reg  [7:0]  port_a_out;
+     wire [7:0]  port_a_in = 8'h0;
+
+     /************* Port-B Mapping **********************************
+     *   Pin-14       PB0/CLKO/ICP1             digital_io[11]
+     *   Pin-15       PB1/SS[1]OC1A(PWM3)       digital_io[12]
+     *   Pin-16       PB2/SS[0]/OC1B(PWM4)      digital_io[13]
+     *   Pin-17       PB3/MOSI/OC2A(PWM5)       digital_io[14]
+     *   Pin-18       PB4/MISO                  digital_io[15]
+     *   Pin-19       PB5/SCK                   digital_io[16]
+     *   Pin-9        PB6/XTAL1/TOSC1           digital_io[6]
+     *   Pin-10       PB7/XTAL2/TOSC2           digital_io[7]
+     *   ********************************************************/
+
+     reg  [7:0]  port_b_out;
+     wire [7:0]  port_b_in = {   io_out[7],
+		                 io_out[6],
+		                 io_out[16],
+		                 io_out[15],
+			         io_out[14],
+			         io_out[13],
+		                 io_out[12],
+		                 io_out[11]
+			     };
+     
+     assign {   io_in[7],
+		io_in[6],
+		io_in[16],
+		io_in[15],
+		io_in[14],
+		io_in[13],
+		io_in[12],
+		io_in[11]
+		} = port_b_out;
+
+     /************* Port-C Mapping **********************************
+     *   Pin-1        PC6/RESET*          digital_io[0]
+     *   Pin-23       PC0/ADC0            digital_io[18]/analog_io[11]
+     *   Pin-24       PC1/ADC1            digital_io[19]/analog_io[12]
+     *   Pin-25       PC2/ADC2            digital_io[20]/analog_io[13]
+     *   Pin-26       PC3/ADC3            digital_io[21]/analog_io[14]
+     *   Pin-27       PC4/ADC4/SDA        digital_io[22]/analog_io[15]
+     *   Pin-28       PC5/ADC5/SCL        digital_io[23]/analog_io[16]
+     *   ********************************************************/
+
+     reg  [7:0]  port_c_out;
+     wire [7:0]  port_c_in = {   1'b0,
+		             io_out[0],
+		             io_out[23],
+		             io_out[22],
+			     io_out[21],
+			     io_out[20],
+		             io_out[19],
+		             io_out[18]
+			     };
+      assign {  io_in[0],
+	        io_in[23],
+	        io_in[22],
+	        io_in[21],
+	        io_in[20],
+	        io_in[19],
+	        io_in[18]
+	        } = port_c_out[6:0];
+
+
+     /************* Port-D Mapping **********************************
+      *   Pin-2        PD0/RXD[0]                digital_io[1]
+      *   Pin-3        PD1/TXD[0]                digital_io[2]
+      *   Pin-4        PD2/RXD[1]/INT0           digital_io[3]
+      *   Pin-5        PD3/INT1/OC2B(PWM0)       digital_io[4]
+      *   Pin-6        PD4/TXD[1]                digital_io[5]
+      *   Pin-11       PD5/SS[3]/OC0B(PWM1)/T1   digital_io[8]
+      *   Pin-12       PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9]/analog_io[2]
+      *   Pin-13       PD7/A1N1                  digital_io[10]/analog_io[3]
+      *   ********************************************************/
+
+     reg  [7:0]  port_d_out;
+     wire [7:0]  port_d_in = {  io_out[10],
+		                io_out[9],
+		                io_out[8],
+		                io_out[5],
+			        io_out[4],
+			        io_out[3],
+		                io_out[2],
+		                io_out[1]
+			        };
+
+	assign {  io_in[10],
+		  io_in[9],
+		  io_in[8],
+		  io_in[5],
+		  io_in[4],
+		  io_in[3],
+		  io_in[2],
+		  io_in[1]
+		}  =  port_d_out;
+
+
+	/*****************************/
+
 	initial begin
-		OneUsPeriod = 1;
 		clock = 0;
                 wbd_ext_cyc_i ='h0;  // strobe/request
                 wbd_ext_stb_i ='h0;  // strobe/request
@@ -135,35 +239,104 @@ module user_gpio_tb;
 	   initial begin
 	   	$dumpfile("simx.vcd");
 	   	$dumpvars(1, `TB_GLBL);
+	   	$dumpvars(0, `TB_GLBL.u_top.u_wb_host);
+	   	$dumpvars(0, `TB_GLBL.u_top.u_intercon);
 	   	$dumpvars(0, `TB_GLBL.u_top.u_pinmux);
 	   end
        `endif
 
 	initial begin
-		$dumpon;
+		test_fail = 0;
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
-		// Remove Wb Reset
-		wb_user_core_write('h3080_0000,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
-                wb_user_core_write('h3080_0004,'h10); // Change the Bank Sel 10
+                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
-                // Remove the reset
-		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
+                // Disable Multi func
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h000);
 
-		// config 1us based on system clock - 1000/25ns = 40 
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG1,39);
+		/************* GPIO As Output ******************/
+		$display("#####################################");
+		$display("Step-1: Testing GPIO As Output ");
+		// Set the Direction as Output
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'hFFFFFFFF);
+		// Set the GPIO Output data: 0x55555555
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'h55555555);
+		cmp_gpio_output(8'h55,8'h55,8'h55,8'h55);
 
-		// Enable GPIO Interrupt
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'h8000);
+		// Set the GPIO Output data: 0xAAAAAAAA
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'hAAAAAAAA);
+		cmp_gpio_output(8'hAA,8'hAA,8'hAA,8'hAA);
 
-		test_fail = 0;
+		// Set the GPIO Output data: 0x5A5A5A5A5A5A
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'h5A5A5A5A);
+		cmp_gpio_output(8'h5A,8'h5A,8'h5A,8'h5A);
+		
+		// Set the GPIO Output data: 0xA5A5A5A5A5A5
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'hA5A5A5A5);
+		cmp_gpio_output(8'hA5,8'hA5,8'hA5,8'hA5);
+
+		/************* GPIO As Input ******************/
+		$display("#####################################");
+		$display("Step-2: Testing GPIO As Input ");
+		// Set the Direction as Input
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'h00000000);
+
+		cmp_gpio_input(8'h55,8'h55,8'h55,8'h55);
+		cmp_gpio_input(8'hAA,8'hAA,8'hAA,8'hAA);
+		cmp_gpio_input(8'h5A,8'h5A,8'h5A,8'h5A);
+		cmp_gpio_input(8'hA5,8'hA5,8'hA5,8'hA5);
+
+		/************* GPIO As Input & GPIO Pos edge Interrupt ******************/
+		$display("#####################################");
+		$display("Step-3: Testing GPIO As Posedge Interrupt ");
+		// Set the Direction as Input
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'h00000000);
+		// Set GPIO for posedge Interrupt
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_MASK,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_POS_INTR,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_NEG_INTR,'h00000000);
+		
+		// Drive GPIO with 0x55
+		cmp_gpio_pos_intr(8'h55,8'h55,8'h55,8'h55);
+		
+		// Drive GPIO with 0xAA
+		cmp_gpio_pos_intr(8'hAA,8'hAA,8'hAA,8'hAA);
+		
+		// Drive GPIO with 0x5A
+		cmp_gpio_pos_intr(8'h5A,8'h5A,8'h5A,8'h5A);
+		
+		// Drive GPIO with 0xA5
+		cmp_gpio_pos_intr(8'hA5,8'hA5,8'hA5,8'hA5);
+
+	        repeat (200) @(posedge clock);
+		/************* GPIO As Input & GPIO NEG edge Interrupt ******************/
+		$display("#####################################");
+		$display("Step-3: Testing GPIO As Negedge Interrupt ");
+		// Set the Direction as Input
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'h00000000);
+		// Set GPIO for negedge Interrupt
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_MASK,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_POS_INTR,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_NEG_INTR,'hFFFFFFFF);
+		
+		// Drive GPIO with 0x55
+		cmp_gpio_neg_intr(8'h55,8'h55,8'h55,8'h55);
+		
+		// Drive GPIO with 0xAA
+		cmp_gpio_neg_intr(8'hAA,8'hAA,8'hAA,8'hAA);
+		
+		// Drive GPIO with 0x5A
+		cmp_gpio_neg_intr(8'h5A,8'h5A,8'h5A,8'h5A);
+		
+		// Drive GPIO with 0xA5
+		cmp_gpio_neg_intr(8'hA5,8'hA5,8'hA5,8'hA5);
+
 	        repeat (200) @(posedge clock);
 
 
@@ -188,9 +361,9 @@ module user_gpio_tb;
 	end
 
 	initial begin
-		wb_rst_i <= 1'b1;
+		wb_rst_i  = 1'b1;
 		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
+		wb_rst_i  = 1'b0;	    	// Release reset
 	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
@@ -271,6 +444,174 @@ user_project_wrapper u_top(
 task test_err;
 begin
      test_fail = 1;
+end
+endtask
+
+
+/***************************
+* Check the GPIO Output
+* **************************/
+
+task cmp_gpio_output;
+input [7:0] exp_port_a;
+input [7:0] exp_port_b;
+input [7:0] exp_port_c;
+input [7:0] exp_port_d;
+begin
+    // Wait for some cycle to reg to be written through wbbone host
+    repeat (20) @(posedge clock); 
+
+    if((exp_port_a & 8'h00) != (port_a_in & 8'h00))
+    begin
+       $display("ERROR: PORT A Exp: %x  Rxd: %x",exp_port_a & 8'h00,port_a_in & 8'h00);
+       `TB_GLBL.test_fail = 1;
+    end else begin
+       $display("STATYS: PORT A Data: %x Matched  ",port_a_in & 8'h00);
+    end
+    
+    if((exp_port_b & 8'hFF) != (port_b_in & 8'hFF))
+    begin
+       $display("ERROR: PORT B Exp: %x  Rxd: %x",exp_port_b & 8'hFF,port_b_in & 8'hFF);
+       `TB_GLBL.test_fail = 1;
+    end else begin
+       $display("STATYS: PORT B Data: %x Matched  ",port_b_in & 8'hFF);
+    end
+    
+    if((exp_port_c & 8'h7F) != (port_c_in & 8'h7F))
+    begin
+       $display("ERROR: PORT C Exp: %x  Rxd: %x",exp_port_c & 8'h7F,port_c_in & 8'h7F);
+       `TB_GLBL.test_fail = 1;
+    end else begin
+       $display("STATYS: PORT C Data: %x Matched  ",port_c_in & 8'h7F);
+    end
+
+    if((exp_port_d & 8'hFF) != (port_d_in & 8'hFF))
+    begin
+       $display("ERROR: PORT D Exp: %x  Rxd: %x",exp_port_d & 8'hFF,port_d_in & 8'hFF);
+       `TB_GLBL.test_fail = 1;
+    end else begin
+       $display("STATYS: PORT D Data: %x Matched  ",port_d_in & 8'hFF);
+    end
+end
+endtask
+
+/***************************
+* Check the GPIO input
+* **************************/
+
+task cmp_gpio_input;
+input [7:0] port_a;
+input [7:0] port_b;
+input [7:0] port_c;
+input [7:0] port_d;
+begin
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,8'h0});
+end
+endtask
+
+
+// Check for posedge Interrupt
+task cmp_gpio_pos_intr;
+input [7:0] port_a;
+input [7:0] port_b;
+input [7:0] port_c;
+input [7:0] port_d;
+begin
+
+   // Drive GPIO with zero
+    cmp_gpio_input(8'h00,8'h00,8'h00,8'h00);
+
+    // Clear Global Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h00008000);
+
+   // Clear all the Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,'hFFFFFFFF);
+
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+
+    // Drive Ports
+    cmp_gpio_input(port_d,port_c,port_b,port_a);
+
+
+    // Wait for Edge Detection
+    repeat (20) @(posedge clock); 
+
+   // Drive GPIO with zero
+    cmp_gpio_input(8'h00,8'h00,8'h00,8'h00);
+
+    // Wait for Edge Detection
+    repeat (20) @(posedge clock); 
+
+    // Check the GPIO Interrupt
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,{port_d,port_c & 8'h7F,port_b,8'h0});
+    
+    // Check The Global Interrupt
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h8000);
+
+    // Clear The GPIO Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,32'hFFFFFFFF);
+
+    // Clear GPIO Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h8000);
+
+
+    // Check Interrupt are cleared
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+
+end
+endtask
+
+// Check for negedge Interrupt
+task cmp_gpio_neg_intr;
+input [7:0] port_a;
+input [7:0] port_b;
+input [7:0] port_c;
+input [7:0] port_d;
+begin
+
+   // Drive GPIO with All One's
+    cmp_gpio_input(8'hFF,8'hFF,8'hFF,8'hFF);
+
+    // Clear Global Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h00008000);
+
+   // Clear all the Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,'hFFFFFFFF);
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+
+    // Drive Ports
+    cmp_gpio_input(port_d,port_c,port_b,port_a);
+
+    // Wait for Edge Detection
+    repeat (20) @(posedge clock); 
+
+   // Drive GPIO with All One's
+    cmp_gpio_input(8'hFF,8'hFF,8'hFF,8'hFF);
+
+    // Wait for Edge Detection
+    repeat (20) @(posedge clock); 
+
+    // Neg edge interrupt is will compliment  of input value
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,{port_d ^ 8'hFF,(port_c ^ 8'hFF) & 8'h7F,port_b ^ 8'hFF,8'h0});
+    
+    // Check The Global Interrupt
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h8000);
+
+    // Clear The GPIO Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,32'hFFFFFFFF);
+
+    // Clear GPIO Interrupt
+    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h8000);
+
+    // Check Interrupt are cleared
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
 end
 endtask
 
@@ -361,117 +702,6 @@ begin
      $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   end
   repeat (2) @(posedge clock);
-end
-endtask
-// GPIO Pin Mapping
-//Pin-1        PC6/RESET*          digital_io[0]
-//Pin-2        PD0/RXD             digital_io[1]
-//Pin-3        PD1/TXD             digital_io[2]
-//Pin-4        PD2/INT0            digital_io[3]
-//Pin-5        PD3/INT1/OC2B(PWM0)  digital_io[4]
-//Pin-6        PD4                 digital_io[5]
-//Pin-9        PB6/XTAL1/TOSC1     digital_io[6]
-//Pin-10       PB7/XTAL2/TOSC2     digital_io[7]
-//Pin-11       PD5/OC0B(PWM1)/T1   digital_io[8]
-//Pin-12       PD6/OC0A(PWM2)/AIN0 digital_io[9] /analog_io[2]
-//Pin-13       PD7/A1N1            digital_io[10]/analog_io[3]
-//Pin-14       PB0/CLKO/ICP1       digital_io[11]
-//Pin-15       PB1/OC1A(PWM3)      digital_io[12]
-//Pin-16       PB2/SS/OC1B(PWM4)   digital_io[13]
-//Pin-17       PB3/MOSI/OC2A(PWM5) digital_io[14]
-//Pin-18       PB4/MISO            digital_io[15]
-//Pin-19       PB5/SCK             digital_io[16]
-//Pin-23       PC0/ADC0            digital_io[18]/analog_io[11]
-//Pin-24       PC1/ADC1            digital_io[19]/analog_io[12]
-//Pin-25       PC2/ADC2            digital_io[20]/analog_io[13]
-//Pin-26       PC3/ADC3            digital_io[21]/analog_io[14]
-//Pin-27       PC4/ADC4/SDA        digital_io[22]/analog_io[15]
-//Pin-28       PC5/ADC5/SCL        digital_io[23]/analog_io[16]
-
-// Generate GPIO out data
-
-task gen_gpio_out;
-input  [31:0] datain;
-output [7:0] port_a_out;
-output [7:0] port_b_out;
-output [7:0] port_c_out;
-output [7:0] port_d_out;
-
-reg [7:0] port_a_out;
-reg [7:0] port_b_out;
-reg [7:0] port_c_out;
-reg [7:0] port_d_out;
-begin
-    port_a_out ='h0;
-    port_b_out ='h0;
-    port_c_out ='h0;
-    port_d_out ='h0;
-
-    port_c_out[6] =  datain[0];
-    port_d_out[0] =  datain[1];
-    port_d_out[1] =  datain[2];
-    port_d_out[2] =  datain[3];
-    port_d_out[3] =  datain[4];
-    port_d_out[4] =  datain[5];
-    port_b_out[6] =  datain[6];
-    port_b_out[7] =  datain[7];
-    port_d_out[5] =  datain[8];
-    port_d_out[6] =  datain[9];
-    port_d_out[7] =  datain[10];
-    port_b_out[0] =  datain[11];
-    port_b_out[1] =  datain[12];
-    port_b_out[2] =  datain[13];
-    port_b_out[3] =  datain[14];
-    port_b_out[4] =  datain[15];
-    port_b_out[5] =  datain[16];
-    port_c_out[0] =  datain[18];
-    port_c_out[1] =  datain[19];
-    port_c_out[2] =  datain[20];
-    port_c_out[3] =  datain[21];
-    port_c_out[4] =  datain[22];
-    port_c_out[5] =  datain[23];
-end
-endtask
-
-// generate expected gpio data out
-task exp_gpio_in;
-output [7:0] port_a_in;
-output [7:0] port_b_in;
-output [7:0] port_c_in;
-output [7:0] port_d_in;
-reg [7:0] port_a_in;
-reg [7:0] port_b_in;
-reg [7:0] port_c_in;
-reg [7:0] port_d_in;
-begin
-    port_a_in ='h0;
-    port_b_in ='h0;
-    port_c_in ='h0;
-    port_d_in ='h0;
-    
-    port_c_in[6] =  io_out[0];
-    port_d_in[0] =  io_out[1];
-    port_d_in[1] =  io_out[2];
-    port_d_in[2] =  io_out[3];
-    port_d_in[3] =  io_out[4];
-    port_d_in[4] =  io_out[5];
-    port_b_in[6] =  io_out[6];
-    port_b_in[7] =  io_out[7];
-    port_d_in[5] =  io_out[8];
-    port_d_in[6] =  io_out[9];
-    port_d_in[7] =  io_out[10];
-    port_b_in[0] =  io_out[11];
-    port_b_in[1] =  io_out[12];
-    port_b_in[2] =  io_out[13];
-    port_b_in[3] =  io_out[14];
-    port_b_in[4] =  io_out[15];
-    port_b_in[5] =  io_out[16];
-    port_c_in[0] =  io_out[18];
-    port_c_in[1] =  io_out[19];
-    port_c_in[2] =  io_out[20];
-    port_c_in[3] =  io_out[21];
-    port_c_in[4] =  io_out[22];
-    port_c_in[5] =  io_out[23];
 end
 endtask
 
