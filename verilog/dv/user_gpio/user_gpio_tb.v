@@ -217,6 +217,8 @@ module user_gpio_tb;
 
 	/*****************************/
 
+	wire [15:0] irq_lines = u_top.u_pinmux.u_pinmux_reg.irq_lines;
+
 	initial begin
 		clock = 0;
                 wbd_ext_cyc_i ='h0;  // strobe/request
@@ -293,6 +295,7 @@ module user_gpio_tb;
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_MASK,'hFFFFFFFF);
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_POS_INTR,'hFFFFFFFF);
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_NEG_INTR,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'hFFFF);
 		
 		// Drive GPIO with 0x55
 		cmp_gpio_pos_intr(8'h55,8'h55,8'h55,8'h55);
@@ -316,6 +319,7 @@ module user_gpio_tb;
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_MASK,'hFFFFFFFF);
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_POS_INTR,'h00000000);
                 wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_NEG_INTR,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'hFFFF);
 		
 		// Drive GPIO with 0x55
 		cmp_gpio_neg_intr(8'h55,8'h55,8'h55,8'h55);
@@ -544,6 +548,11 @@ begin
     
     // Check The Global Interrupt
     wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h8000);
+    
+    if(irq_lines[15] != 1'b1) begin
+	$display("ERROR: Global GPIO Interrupt not detected");
+       `TB_GLBL.test_fail = 1;
+    end
 
     // Clear The GPIO Interrupt
     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,32'hFFFFFFFF);
@@ -555,6 +564,10 @@ begin
     // Check Interrupt are cleared
     wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h0);
     wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+    if(irq_lines[15] != 1'b0) begin
+	$display("ERROR: Global GPIO Interrupt is not cleared");
+       `TB_GLBL.test_fail = 1;
+    end
 
 end
 endtask
@@ -595,6 +608,11 @@ begin
     // Check The Global Interrupt
     wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h8000);
 
+    if(irq_lines[15] != 1'b1) begin
+	$display("ERROR: Global GPIO Interrupt not detected");
+       `TB_GLBL.test_fail = 1;
+    end
+
     // Clear The GPIO Interrupt
     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,32'hFFFFFFFF);
 
@@ -604,6 +622,11 @@ begin
     // Check Interrupt are cleared
     wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h0);
     wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+
+    if(irq_lines[15] != 1'b0) begin
+	$display("ERROR: Global GPIO Interrupt is not cleared");
+       `TB_GLBL.test_fail = 1;
+    end
 end
 endtask
 
