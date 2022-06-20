@@ -206,12 +206,6 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 	          begin
                      wait(port_b_in == 8'h18);
 	          end
-                  begin
-		     while(1) begin
-                        tb_uart.read_char3(read_data);
-                        $write ("%c",read_data);
-	             end
-                  end
                join_any
 	
 	       wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,read_data,32'h00000000);
