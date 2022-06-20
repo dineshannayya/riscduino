@@ -76,3 +76,15 @@
 `define QSPIM_IMEM_RDATA         8'h2C
 `define QSPIM_SPI_STATUS         8'h30
 
+//----------------------------------------------------------
+// UART Register Map
+//----------------------------------------------------------
+`define UART_CTRL         8'h00  // Reg-0
+`define UART_INTR_STAT    8'h04  // Reg-1
+`define UART_BAUD_CTRL1   8'h08  // Reg-2
+`define UART_BAUD_CTRL2   8'h0C  // Reg-3
+`define UART_STATUS       8'h10  // Reg-4
+`define UART_TDATA        8'h14  // Reg-5
+`define UART_RDATA        8'h18  // Reg-6
+`define UART_TFIFO_STAT   8'h1C  // Reg-7
+`define UART_RFIFO_STAT   8'h20  // Reg-8
