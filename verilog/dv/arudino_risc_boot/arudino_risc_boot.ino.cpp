@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#line 1 "/tmp/.arduinoIDE-unsaved2022521-1233968-h2rhfb.1e1mr/sketch_jun21a/sketch_jun21a.ino"
 #define uint32_t  long
 
 #define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x10020000)

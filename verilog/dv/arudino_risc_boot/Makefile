@@ -27,6 +27,7 @@ DESIGNS?=../../..
 TOOLS?=/opt/riscv64i/
 
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
+export RISCDUINO_BOARD ?=  $(USER_PROJECT_VERILOG)/dv/common/riscduino_board/custom_board/riscduino
 ## YIFIVE FIRMWARE
 YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
 GCC64_PREFIX?=riscv64-unknown-elf

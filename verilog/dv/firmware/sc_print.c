@@ -20,15 +20,36 @@
 #include <stdarg.h>
 #include "sc_print.h"
 
-#define SC_SIM_OUTPORT (0xf0000000)
-#define CHAR_BIT (8)
+#define SC_SIM_OUTPORT            (0xf0000000)
+#define REG_MPRJ_UART_CTRL        (0x10010000)
+#define REG_MPRJ_UART_INTR_STAT   (0x10010004)
+#define REG_MPRJ_UART_BAUD_CTRL1  (0x10010008)
+#define REG_MPRJ_UART_BAUD_CTRL2  (0x1001000C)
+#define REG_MPRJ_UART_STAT        (0x10010010)
+#define REG_MPRJ_UART_TXDATA      (0x10010014)
+#define REG_MPRJ_UART_RXDATA      (0x10010018)
+#define REG_MPRJ_UART_TFIFO_STAT  (0x1001001C)
+#define REG_MPRJ_UART_RFIFO_STAT  (0x10010020)
 
-static void
-sc_puts(long str, long strlen) {
+#define CHAR_BIT (8)
+/**
+static void sc_puts(long str, long strlen) {
 	volatile char *out_ptr = (volatile char*)SC_SIM_OUTPORT;
 	const char *in_ptr = (const char*)str;
 	for (long len = strlen; len > 0; --len)
 	  *out_ptr = *in_ptr++;
+}
+**/
+static void sc_puts(long str, long strlen) {
+	volatile char *out_ptr = (volatile char*)REG_MPRJ_UART_TXDATA;
+	volatile char *status  = (volatile char*)REG_MPRJ_UART_STAT;
+	const char *in_ptr = (const char*)str;
+	for (long len = strlen; len > 0; --len) {
+	  //if((*status & 0x1) != 0x1) {  // check UART TX fifo is not full
+	   *out_ptr = *in_ptr++;
+          //}
+	}
+
 }
 
 #undef putchar

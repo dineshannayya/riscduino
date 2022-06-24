@@ -60,7 +60,7 @@ _start:
 
     // Timer init
     li      t0, mtime_ctrl
-    li      t1, (1 << YCR1_MTIME_CTRL_EN)   // enable, use internal clock
+    li      t1, (1 << YCR_MTIME_CTRL_EN)   // enable, use internal clock
     sw      t1, (t0)
     li      t0, mtime_div
     li      t1, (100-1)                     // divide by 100

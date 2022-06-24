@@ -1486,4 +1486,4 @@ DECLARE_CAUSE("load page fault", CAUSE_LOAD_PAGE_FAULT)
 DECLARE_CAUSE("store page fault", CAUSE_STORE_PAGE_FAULT)
 #endif
 
-#include "ycr1_specific.h"
+#include "ycr_specific.h"

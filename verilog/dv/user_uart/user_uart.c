@@ -34,7 +34,8 @@ int main()
 
     while(1) {
        // Check UART RX fifo has data, if available loop back the data
-       if(reg_mprj_uart_reg8 != 0) { 
+       // Also check txfifo is not full
+       if((reg_mprj_uart_reg8 != 0) && ((reg_mprj_uart_reg4 & 0x1) != 0x1)) { 
 	   reg_mprj_uart_reg5 = reg_mprj_uart_reg6;
        }
     }

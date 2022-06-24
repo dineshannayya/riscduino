@@ -414,6 +414,81 @@ end
 
 endtask
 
+
+// Read Task without Timeout
+task read_char3;
+output [7:0]	rxd_data;
+reg	[7:0] rxd_data;
+integer i;
+reg 	[7:0] data;
+reg	parity;
+
+begin
+	data <= 8'h0;
+	parity <= 1;
+
+
+fork	
+   begin : loop_2
+
+// start cycle
+	@(negedge rxd) 
+	 read <= 1;
+
+// data cycle
+	@(posedge uart_rx_clk);
+	 for (i = 0; i < data_bit_number; i = i + 1)
+	  begin
+	    @(posedge uart_rx_clk)
+	    data[i] <=  rxd;
+	    parity <= parity ^ rxd;
+	  end		
+
+// parity cycle
+	if(control_setup.parity_en)
+	begin
+          @(posedge uart_rx_clk);
+	  if ((control_setup.even_odd_parity && (rxd == parity)) ||
+	     (!control_setup.even_odd_parity && (rxd != parity)))
+	     begin
+		$display ("%m: >>>>>  Parity Error");	
+ 		-> error_detected;
+		-> uart_parity_error;
+	     end
+	end
+
+// stop cycle 1
+        @(posedge uart_rx_clk);	
+	  if (!rxd)
+	     begin
+		$display ("%m: >>>>>  Stop signal 1 Error");	
+ 		-> error_detected;
+		-> uart_stop_error1;
+	     end
+
+// stop cycle 2
+	if (control_setup.stop_bit_number)
+	begin
+	      @(posedge uart_rx_clk);	// stop cycle 2
+		if (!rxd)
+		  begin
+		    $display ("%m: >>>>>  Stop signal 2 Error");	
+ 		    -> error_detected;
+		    -> uart_stop_error2;
+		  end
+	end
+
+	read <= 0;
+	-> uart_read_done;
+
+	rxd_data = data;
+   end
+join
+
+end
+
+endtask
+
 ////////////////////////////////////////////////////////////////////////////////
 task write_char;
 input [7:0] data;
