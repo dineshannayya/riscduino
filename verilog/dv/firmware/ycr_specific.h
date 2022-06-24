@@ -16,8 +16,8 @@
 // SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>           ////
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef __YCR1__SPECIFIC
-#define __YCR1__SPECIFIC
+#ifndef __YCR__SPECIFIC
+#define __YCR__SPECIFIC
 
 #define mcounten        0x7E0
 
@@ -29,10 +29,10 @@
 #define mtimecmp        0x0C490010
 #define mtimecmph       0x0C490014
 
-#define YCR1_MTIME_CTRL_EN          0
-#define YCR1_MTIME_CTRL_CLKSRC      1
+#define YCR_MTIME_CTRL_EN          0
+#define YCR_MTIME_CTRL_CLKSRC      1
 
-#define YCR1_MTIME_CTRL_WR_MASK     0x3
-#define YCR1_MTIME_DIV_WR_MASK      0x3FF
+#define YCR_MTIME_CTRL_WR_MASK     0x3
+#define YCR_MTIME_DIV_WR_MASK      0x3FF
 
 #endif // _YCR1__SPECIFIC
