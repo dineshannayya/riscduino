@@ -608,13 +608,24 @@ Following Design changes are done on the basic version of syntacore RISC core
 
 The simulation package includes the following tests:
 
-* **risc_boot**           - Simple User Risc core boot 
-* **wb_port**             - User Wishbone validation
+* **risc_boot**           - Complete caravel User Risc core boot 
+* **wb_port**             - Complete caravel User Wishbone validation
+* **uart_master**         - complete caravel user uart master test
 * **user_risc_boot**      - Standalone User Risc core boot
-* **user_mbist_test1**    - Standalone MBIST test
+* **user_sspi**           - Standalone SSPI test
+* **user_qspi**           - Standalone Quad SPI test
 * **user_spi**            - Standalone SPI test
 * **user_i2c**            - Standalone I2C test
-* **user_risc_soft_boot** - Standalone Risc with SRAM as Boot
+* **user_usb**            - Standalone USB Host test
+* **user_risc_boot**      - Standalone Risc Boot test
+* **user_uart**           - Standalone Risc with UART-0 Test
+* **user_uart1**          - Standalone Risc with UART-1 Test
+* **user_gpio**           - Standalone GPIO Test
+* **user_pwm**            - Standalone pwm Test
+* **user_timer**          - Standalone timer Test
+* **user_uart_master**    - Standalone uart master test
+* **riscv_regress**       - Standalone riscv compliance and regression test suite
+
 
 
 # Running Simulation
@@ -675,6 +686,11 @@ Riscduino Soc flow uses Openlane tool sets.
     3. `Netgen` - Performs LVS Checks
     4. `CVC` - Performs Circuit Validity Checks
 
+# Riscduino documentation
+    Riscduino documentation available at <https://riscduino.readthedocs.io/en/latest/>
+
+# Arduino ide integration
+    We are in initial phase of Riscduino board integration into arduino and integration details are available at <https://github.com/dineshannayya/riscduino_board/>
 
 # News
 * **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
