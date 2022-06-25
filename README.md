@@ -579,29 +579,55 @@ Following Design changes are done on the basic version of syntacore RISC core
    sudo usermod -aG docker <your user name>
    # Reboot the system to enable the docker setup
 ```
-##  Step-2: Update the Submodule, To to project area
+##  Step-2: Clone and update the Submodule
 ```bash
+   git clone https://github.com/dineshannayya/riscduino.git
+   cd riscduino
    git submodule init
    git submodule update
 ```
-## Step-3: clone Openlane scripts under workarea
+
+## Note-1: RTL to GDS Docker
+    - Required openlane and pdk are moved inside the riscduino docker to avoid the external dependency. 
+    - flow automatically pull the required docker based on MPW version.
+    - RTL to gds docker is hardcoded inside File: openlane/Makefile
 ```bash
-   git clone https://github.com/The-OpenROAD-Project/OpenLane.git
+     OPENLANE_TAG = mpw6
+     OPENLANE_IMAGE_NAME = riscduino/openlane:$(OPENLANE_TAG)
+```
+## Note-1.1: View the RTL to GDS Docker content
+    - for MPW-6 caravel pdk and openlane avaible inside riscduino/openlane:mpw6 docker 
+    - caravel, openlane and pdk envionment are automatically pointed to internal docker pointer
+    - To view the docker contents
+```bash
+    docker run -ti --rm riscduino/openlane:mpw6  bash
+    cd /opt/pdk_mpw6     -  pdk folder
+    cd /opt/caravel      -  caravel folder 
+    cd /openlane         -  openlane folder
+    env   - Show the internally defined env's
+        CARAVEL_ROOT=/opt/caravel
+        PDK_ROOT=/opt/pdk_mpw6
 ```
 
-## Step-4: add Environment setting
+## Note-2: RTL Simulation Docker
+    - Required caravel and pdk are moved inside the riscduino docker to avoid the external dependency. 
+    - flow automatically pull the required docker based on MPW version.
+    - To view the docker contents
+    - RTL simulation docker hardcoded inside File: Makefile
+        simenv:
+	    docker pull riscduino/dv_setup:mpw6
+
+## Note-2.1: View the RTL Simulation Docker content
+    - for MPW-6 caravel and pdk avaible inside riscduino/dv_setup:mpw6 docker this is used for RTL to gds flows
+    - caravel and pdk envionment are automatically pointed to internal docker pointer
+    - To view the docker contents
 ```bash
-    export CARAVEL_ROOT=<Carvel Installed Path>
-    export OPENLANE_ROOT=<OpenLane Installed Path>
-    export OPENLANE_IMAGE_NAME=efabless/openlane:latest
-    export PDK_ROOT=<PDK Installed PATH>
-    export PDK_PATH=<PDK Install Path>/sky130A
-```
-## Step-5: To install the PDK
-```bash
-   source ~/.bashrc
-   cd OpenLane
-   make pdk
+    docker run -ti --rm riscduino/dv_setup:mpw6  bash
+    cd /opt/pdk_mpw6     -  pdk folder
+    cd /opt/caravel      -  caravel folder 
+    env   - Show the internally defined env's
+        CARAVEL_ROOT=/opt/caravel
+        PDK_ROOT=/opt/pdk_mpw6
 ```
 
 # Tests preparation
@@ -650,6 +676,21 @@ Examples:
     make verify-wb_port SIM=RTL DUMP=OFF
     make verify-wb_port SIM=RTL DUMP=ON
     make verify-riscv_regress
+```
+# Running RTL to GDS flows
+   - First run the individual macro file
+   - Last run the user_project_wrapper
+``` sh
+   cd openlane
+   make pinmux
+   make qspim_top
+   make uart_i2cm_usb_spi_top
+   make wb_host
+   make wb_interconnect
+   make ycr_intf
+   make ycr_core_top
+   make ycr_iconnect
+   make user_project_wrapper
 ```
 
 # Tool Sets
