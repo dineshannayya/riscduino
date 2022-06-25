@@ -579,12 +579,13 @@ Following Design changes are done on the basic version of syntacore RISC core
    sudo usermod -aG docker <your user name>
    # Reboot the system to enable the docker setup
 ```
-##  Step-2: Clone and update the Submodule
+##  Step-2: Clone , update the Submodule, unzip the content
 ```bash
    git clone https://github.com/dineshannayya/riscduino.git
    cd riscduino
    git submodule init
    git submodule update
+   make unzip
 ```
 
 ## Note-1: RTL to GDS Docker
