@@ -83,4 +83,4 @@ set ::env(GND_NETS) [list {vssd1} {vssd2}]
 set ::env(SYNTH_USE_PG_PINS_DEFINES) "USE_POWER_PINS"
 
 ## LVS mismatch is to be solved manually by shorting VDD and VSS pins to the core ring 
-set ::env(QUIT_ON_LVS_ERROR) "0"
+set ::env(QUIT_ON_LVS_ERROR) "1"
