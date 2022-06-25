@@ -101,5 +101,5 @@ set ::env(DIODE_INSERTION_STRATEGY) 4
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
-set ::env(QUIT_ON_LVS_ERROR) "0"
+set ::env(QUIT_ON_LVS_ERROR) "1"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
