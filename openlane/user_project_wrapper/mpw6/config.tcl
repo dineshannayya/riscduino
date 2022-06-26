@@ -132,14 +132,17 @@ set ::env(GLB_RT_OBS) "                              \
 	                met1  150 130  833.1  546.54,\
 	                met2  150 130  833.1  546.54,\
                         met3  150 130  833.1  546.54,\
+
 	                li1   950 130  1633.1 546.54,\
 	                met1  950 130  1633.1 546.54,\
 	                met2  950 130  1633.1 546.54,\
                         met3  950 130  1633.1 546.54,\
+
                         li1   150  750 833.1  1166.54,\
                         met1  150  750 833.1  1166.54,\
                         met2  150  750 833.1  1166.54,\
                         met3  150  750 833.1  1166.54,\
+
                         met1  2250 2150 2800  2600,\
                         met2  2250 2150 2800  2600,\
                         met3  2250 2150 2800  2600,\
@@ -151,50 +154,71 @@ set ::env(GLB_RT_OBS) "                              \
 
 set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 0, vdda2 vssa2 0"
 
-#set ::env(FP_PDN_MACRO_HOOKS) " \
-#	u_intercon vccd1 vssd1,\
-#	u_pinmux vccd1 vssd1,\
-#	u_qspi_master vccd1 vssd1,\
-#	u_riscv_top vccd1 vssd1,\
-#	u_tsram0_2kb vccd1 vssd1,\
-#	u_icache_2kb vccd1 vssd1,\
-#	u_dcache_2kb vccd1 vssd1,\
-#	u_sram0_2kb vccd1 vssd1,\
-#	u_sram1_2kb vccd1 vssd1,\
-#	u_sram2_2kb vccd1 vssd1,\
-#	u_sram3_2kb vccd1 vssd1,\
-#	u_uart_i2c_usb_spi vccd1 vssd1,\
-#	u_wb_host vccd1 vssd1,\
-#	u_riscv_top.i_core_top_0 vccd1 vssd1, \
-#	u_riscv_top.u_intf vccd1 vssd1 \
-#      	"
+set ::env(FP_PDN_MACRO_HOOKS) " \
+	u_intercon vccd1 vssd1,\
+	u_pinmux vccd1 vssd1,\
+	u_qspi_master vccd1 vssd1,\
+	u_riscv_top vccd1 vssd1,\
+	u_tsram0_2kb vccd1 vssd1,\
+	u_icache_2kb vccd1 vssd1,\
+	u_dcache_2kb vccd1 vssd1,\
+	u_sram0_2kb vccd1 vssd1,\
+	u_sram1_2kb vccd1 vssd1,\
+	u_sram2_2kb vccd1 vssd1,\
+	u_sram3_2kb vccd1 vssd1,\
+	u_uart_i2c_usb_spi vccd1 vssd1,\
+	u_wb_host vccd1 vssd1,\
+	u_riscv_top.i_core_top_0 vccd1 vssd1, \
+	u_riscv_top.u_intf vccd1 vssd1 \
+       	"
 
 
 # The following is because there are no std cells in the example wrapper project.
 set ::env(SYNTH_TOP_LEVEL) 0
 set ::env(PL_RANDOM_GLB_PLACEMENT) 1
+
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) 0
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) 0
+
 set ::env(FP_PDN_ENABLE_RAILS) 0
+
 set ::env(DIODE_INSERTION_STRATEGY) 0
 set ::env(FILL_INSERTION) 0
 set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
+
 set ::env(QUIT_ON_LVS_ERROR) "1"
 set ::env(QUIT_ON_MAGIC_DRC) "0"
 set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
+
 set ::env(FP_PDN_IRDROP) "0"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
 set ::env(FP_PDN_VERTICAL_HALO) "10"
+
+#
+
+set ::env(FP_PDN_CORE_RING_HOFFSET) {12.45}
+set ::env(FP_PDN_CORE_RING_HSPACING) {1.7}
+set ::env(FP_PDN_CORE_RING_HWIDTH) {3.1}
+
+set ::env(FP_PDN_CORE_RING_VOFFSET) {12.45}
+set ::env(FP_PDN_CORE_RING_VSPACING) {1.7}
+set ::env(FP_PDN_CORE_RING_VWIDTH) {3.1}
+
+
 set ::env(FP_PDN_VOFFSET) "5"
 set ::env(FP_PDN_VPITCH) "80"
 set ::env(FP_PDN_VSPACING) "15.5"
 set ::env(FP_PDN_VWIDTH) "3.1"
+
 set ::env(FP_PDN_HOFFSET) "10"
 set ::env(FP_PDN_HPITCH) "90"
 set ::env(FP_PDN_HSPACING) "10"
 set ::env(FP_PDN_HWIDTH) "3.1"
+
+
+

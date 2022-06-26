@@ -207,6 +207,7 @@ zip:
 	gzip -f maglef/*
 	gzip -f spef/*
 	gzip -f spi/lvs/*
+	gzip -f verilog/gl/*
 
 unzip:
 	gzip -d def/*
@@ -216,6 +217,7 @@ unzip:
 	gzip -d maglef/*
 	gzip -d spef/*
 	gzip -d spi/lvs/*
+	gzip -d verilog/gl/*
 
 .PHONY: help
 help:
