@@ -75,7 +75,9 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
-module arudino_risc_boot_tb;
+`include "uart_agent.v"
+
+module arduino_hello_world_tb;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -102,17 +104,38 @@ module arudino_risc_boot_tb;
 	wire [7:0] mprj_io_0;
 	reg         test_fail;
 	reg [31:0] read_data;
+        //----------------------------------
+        // Uart Configuration
+        // ---------------------------------
+        reg [1:0]      uart_data_bit        ;
+        reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
+        reg	       uart_stick_parity    ; // 1: force even parity
+        reg	       uart_parity_en       ; // parity enable
+        reg	       uart_even_odd_parity ; // 0: odd parity; 1: even parity
+        
+        reg [7:0]      uart_data            ;
+        reg [15:0]     uart_divisor         ;	// divided by n * 16
+        reg [15:0]     uart_timeout         ;// wait time limit
+        
+        reg [15:0]     uart_rx_nu           ;
+        reg [15:0]     uart_tx_nu           ;
+        reg [7:0]      uart_write_data [0:39];
+        reg 	       uart_fifo_enable     ;	// fifo mode disable
+	reg            flag                 ;
+        
+	integer    d_risc_id;
+
+         integer i,j;
 
 
 
-	// External clock is used by default.  Make this artificially fast for the
-	// simulation.  Normally this would be a slow clock and the digital PLL
-	// would be the fast clock.
 
-	always #12.5 clock <= (clock === 1'b0);
+	// 50Mhz CLock
+	always #10 clock <= (clock === 1'b0);
 
 	initial begin
 		clock = 0;
+	        flag  = 0;
                 wbd_ext_cyc_i ='h0;  // strobe/request
                 wbd_ext_stb_i ='h0;  // strobe/request
                 wbd_ext_adr_i ='h0;  // address
@@ -124,11 +147,55 @@ module arudino_risc_boot_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arudino_risc_boot_tb);
+	   	$dumpvars(3, arduino_hello_world_tb);
+	   	//$dumpvars(0, arduino_hello_world_tb.u_top.u_riscv_top.i_core_top_0);
+	   	//$dumpvars(0, arduino_hello_world_tb.u_top.u_riscv_top.u_connect);
+	   	//$dumpvars(0, arduino_hello_world_tb.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, arduino_hello_world_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
 	   end
        `endif
 
+       /*************************************************************************
+       * This is Baud Rate to clock divider conversion for Test Bench
+       * Note: DUT uses 16x baud clock, where are test bench uses directly
+       * baud clock, Due to 16x Baud clock requirement at RTL, there will be
+       * some resolution loss, we expect at lower baud rate this resolution
+       * loss will be less. For Quick simulation perpose higher baud rate used
+       * *************************************************************************/
+       task tb_set_uart_baud;
+       input [31:0] ref_clk;
+       input [31:0] baud_rate;
+       output [31:0] baud_div;
+       reg   [31:0] baud_div;
+       begin
+	  // for 230400 Baud = (50Mhz/230400) = 216.7
+	  baud_div = ref_clk/baud_rate; // Get the Bit Baud rate
+	  // Baud 16x = 216/16 = 13
+          baud_div = baud_div/16; // To find the RTL baud 16x div value to find similar resolution loss in test bench
+	  // Test bench baud clock , 16x of above value
+	  // 13 * 16 = 208,  
+	  // (Note if you see original value was 216, now it's 208 )
+          baud_div = baud_div * 16;
+	  // Test bench half cycle counter to toggle it 
+	  // 208/2 = 104
+           baud_div = baud_div/2;
+	  //As counter run's from 0 , substract from 1
+	   baud_div = baud_div-1;
+       end
+       endtask
+       
+
 	initial begin
+               uart_data_bit           = 2'b11;
+               uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
+               uart_stick_parity       = 0; // 1: force even parity
+               uart_parity_en          = 0; // parity enable
+               uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
+	       tb_set_uart_baud(50000000,230400,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
+               uart_timeout            = 2000;// wait time limit
+               uart_fifo_enable        = 0;	// fifo mode disable
+
+		$value$plusargs("risc_core_id=%d", d_risc_id);
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
@@ -139,49 +206,78 @@ module arudino_risc_boot_tb;
 
 	        repeat (2) @(posedge clock);
 		#1;
-		// Remove all the reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
+                // Remove all the reset
+                if(d_risc_id == 0) begin
+                     $display("STATUS: Working with Risc core 0");
+                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
+                end else if(d_risc_id == 1) begin
+                     $display("STATUS: Working with Risc core 1");
+                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h21F);
+                end else if(d_risc_id == 2) begin
+                     $display("STATUS: Working with Risc core 2");
+                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h41F);
+                end else if(d_risc_id == 3) begin
+                     $display("STATUS: Working with Risc core 3");
+                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h81F);
+                end
 
+                repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
-		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (30) begin
-			repeat (1000) @(posedge clock);
-			// $display("+1000 cycles");
-		end
+                tb_uart.uart_init;
+                tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+                                               uart_stick_parity, uart_timeout, uart_divisor);
 
+                repeat (45000) @(posedge clock);  // wait for Processor Get Ready
+	        flag  = 1;
+                
+                
+                uart_write_data[0]  = "H";
+                uart_write_data[1]  = "e";
+                uart_write_data[2]  = "l";
+                uart_write_data[3]  = "l";
+                uart_write_data[4]  = "o";
+                uart_write_data[5]  = " ";
+                uart_write_data[6]  = "W";
+                uart_write_data[7]  = "o";
+                uart_write_data[8]  = "r";
+                uart_write_data[9]  = "l";
+                uart_write_data[10] = "d";
+                uart_write_data[11] = "!";
+                
+                
+                fork
+                   begin
+                      for (j=0; j<12; j=j+1)
+                      begin
+                        tb_uart.read_char_chk(uart_write_data[j]);
+                      end
+                   end
+                   join
+                
+                   #100
+                   tb_uart.report_status(uart_rx_nu, uart_tx_nu);
+                
+                   test_fail = 0;
 
-		$display("Monitor: Reading Back the expected value");
-		// User RISC core expect to write these value in global
-		// register, read back and decide on pass fail
-		// 0x30000018  = 0x11223344; 
-                // 0x3000001C  = 0x22334455; 
-                // 0x30000020  = 0x33445566; 
-                // 0x30000024  = 0x44556677; 
-                // 0x30000028 = 0x55667788; 
-                // 0x3000002C = 0x66778899; 
-
-                test_fail = 0;
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,read_data,32'h11223344);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,read_data,32'h22334455);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,read_data,32'h33445566);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,read_data,32'h44556677);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,read_data,32'h55667788);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,read_data,32'h66778899);
-
+                   // Check 
+                   // if all the 12 byte received
+                   // if no error 
+                   if(uart_rx_nu != 12) test_fail = 1;
+                   if(tb_uart.err_cnt != 0) test_fail = 1;
 
 	   
 	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: Standalone User Risc Boot (GL) Passed");
+	    	       $display("Monitor: Standalone Hello World (GL) Passed");
 		   `else
-		       $display("Monitor: Standalone User Risc Boot (RTL) Passed");
+		       $display("Monitor: Standalone Hello World (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: Standalone User Risc Boot (GL) Failed");
+	    	        $display("Monitor: Standalone Hello World (GL) Failed");
 		    `else
-		        $display("Monitor: Standalone User Risc Boot (RTL) Failed");
+		        $display("Monitor: Standalone Hello World (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");
@@ -261,7 +357,7 @@ user_project_wrapper u_top(
    assign io_in[32] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arudino_risc_boot.ino.hex"),
+     s25fl256s #(.mem_file_name("arduino_hello_world.ino.hex"),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
@@ -278,6 +374,19 @@ user_project_wrapper u_top(
        );
 
 
+//---------------------------
+//  UART Agent integration
+// --------------------------
+wire uart_txd,uart_rxd;
+
+assign uart_txd   = io_out[2];
+assign io_in[1]  = uart_rxd ;
+ 
+uart_agent tb_uart(
+	.mclk                (clock              ),
+	.txd                 (uart_rxd           ),
+	.rxd                 (uart_txd           )
+	);
 
 
 task wb_user_core_write;

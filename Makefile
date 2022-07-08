@@ -94,9 +94,9 @@ verify_command="cd ${TARGET_PATH}/verilog/dv/$* && export SIM=${SIM} DUMP=${DUMP
 $(DV_PATTERNS): verify-% : ./verilog/dv/%  check-coremark_repo check-riscv_comp_repo check-riscv_test_repo
 	docker run -v ${TARGET_PATH}:${TARGET_PATH} \
 		-e TARGET_PATH=${TARGET_PATH} \
-		-e TOOLS=/opt/riscv64i \
+		-e TOOLS=/opt/riscv32i \
 		-e DESIGNS=$(TARGET_PATH) \
-		-e GCC_PREFIX=riscv64-unknown-elf \
+		-e GCC_PREFIX=riscv32-unknown-elf \
 		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:mpw6 \
 		sh -c $(verify_command)
 
