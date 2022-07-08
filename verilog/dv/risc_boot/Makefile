@@ -23,7 +23,7 @@ BLOCKS := $(shell basename $(PWDD))
 
 DESIGNS?=../../..
 CONFIG = caravel_user_project
-TOOLS?=/opt/riscv64i/
+TOOLS?=/opt/riscv32i/
 
 ########################################################
 #include $(MCW_ROOT)/verilog/dv/make/env.makefile
@@ -51,9 +51,9 @@ export VERILOG_PATH = $(CORE_VERILOG_PATH)
 ## Compiler Information 
 #######################################################################
 
-export TOOLS     ?=  /opt/riscv64i 
+export TOOLS     ?=  /opt/riscv32i 
 export GCC_PATH  ?=  $(TOOLS)/bin
-export GCC_PREFIX?=    riscv64-unknown-linux-gnu
+export GCC_PREFIX?=    riscv32-unknown-linux-gnu
 
 
 ############## USER SPECIFIC DEFINE ##################

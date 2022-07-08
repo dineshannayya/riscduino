@@ -185,8 +185,9 @@ uart_cfg u_cfg (
 
 //##############################################################
 // 16x Baud clock generation
+//  Baud Rate config = (F_CPU / (BAUD * 16)) - 2 
 // Example: to generate 19200 Baud clock from 50Mhz Link clock
-//    50 * 1000 * 1000 / (2 + cfg_baud_16x) = 19200 * 16
+//    cfg_baud_16x = ((50 * 1000 * 1000) / (19200 * 16)) - 2
 //    cfg_baud_16x = 0xA0 (160)
 //###############################################################
 

@@ -16,7 +16,7 @@ UPRJ_TESTS_PATH = $(root_dir)
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 ## YIFIVE FIRMWARE
 YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
-GCC64_PREFIX?=riscv64-unknown-elf
+GCC_PREFIX?=riscv32-unknown-elf
 
 
 ## Simulation mode: RTL/GL
@@ -158,7 +158,7 @@ sim_results  := $(bld_dir)/sim_results.txt
 todo_list    := $(bld_dir)/todo.txt
 
 # Environment
-export CROSS_PREFIX  ?= riscv64-unknown-elf-
+export CROSS_PREFIX  ?= riscv32-unknown-elf-
 export RISCV_GCC     ?= $(CROSS_PREFIX)gcc
 export RISCV_OBJDUMP ?= $(CROSS_PREFIX)objdump -D
 export RISCV_OBJCOPY ?= $(CROSS_PREFIX)objcopy -O verilog

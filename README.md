@@ -38,7 +38,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 # Overview
 
 Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arudino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
+<table>
+  <tr>
+    <td  align="center"><img src="./docs/source/_static/Riscduino_Integration.png" ></td>
+  </tr>
 
+</table>
 # Riscduino Block Diagram
 
 <table>
@@ -194,7 +199,7 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
   <tr align="center"> <td> SFlash          </td> <td> sflash_io1             </td> <td>                 </td> <td> digital_io[30]                       </td></tr>
   <tr align="center"> <td> SFlash          </td> <td> sflash_io2             </td> <td>                 </td> <td> digital_io[31]                       </td></tr>
   <tr align="center"> <td> SFlash          </td> <td> sflash_io3             </td> <td>                 </td> <td> digital_io[32]                       </td></tr>
-  <tr align="center"> <td> SSRAM           </td> <td> Reserved               </td> <td>                 </td> <td> digital_io[33]                       </td></tr>
+  <tr align="center"> <td> SSRAM           </td> <td> dbg_clk_mon            </td> <td>                 </td> <td> digital_io[33]                       </td></tr>
   <tr align="center"> <td> SSRAM           </td> <td> uartm rxd              </td> <td>                 </td> <td> digital_io[34]                       </td></tr>
   <tr align="center"> <td> SSRAM           </td> <td> uartm txd              </td> <td>                 </td> <td> digital_io[35]                       </td></tr>
   <tr align="center"> <td> usb1.1          </td> <td> usb_dp                 </td> <td>                 </td> <td> digital_io[36]                       </td></tr>
@@ -659,24 +664,34 @@ The simulation package includes the following tests:
 
 Examples:
 ``` sh
-    make verify-wb_port  
-    make verify-risc_boot
-    make verify-uart_master
-    make verify-user_basic
-    make verify-user_uart
-    make verify-user_uart1
-    make verify-user_spi
-    make verify-user_i2cm
-    make verify-user_risc_boot
-    make verify-user_pwm
-    make verify-user_timer
-    make verify-user_sspi
-    make verify-user_qspi
-    make verify-user_usb
-    make verify-user_uart_master
-    make verify-wb_port SIM=RTL DUMP=OFF
-    make verify-wb_port SIM=RTL DUMP=ON
-    make verify-riscv_regress
+    make verify-wb_port                        - User Wishbone Test from caravel
+    make verify-risc_boot                      - User Risc core test from caravel
+    make verify-uart_master                    - User uart master test from caravel
+    make verify-user_basic                     - Standalone Basic signal and clock divider test
+    make verify-user_uart                      - Standalone user uart-0 test using user risc core
+    make verify-user_uart1                     - Standalone user uart-0 test using user risc core
+    make verify-user_i2cm                      - Standalone user i2c test
+    make verify-user_risc_boot                 - standalone user risc core-0 boot test
+    make verify-user_pwm                       - standalone user pwm test
+    make verify-user_timer                     - standalone user timer test
+    make verify-user_sspi                      - standalone user spi test
+    make verify-user_qspi                      - standalone user quad spi test
+    make verify-user_usb                       - standalone user usb host test
+    make verify-user_gpio                      - standalone user gpio test
+    make verify-user_aes                       - standalone aes test with risc core-0
+    make verify-user_cache_bypass              - standalone icache and dcache bypass test with risc core-0
+    make verify-user_uart_master               - standalone user uart master test
+    make verify-user_sram_exec                 - standalone riscv core-0 test with executing code from data memory
+    make verify-riscv_regress                  - standalone riscv compliance test suite
+    make verify-arudino_risc_boot              - standalone riscv core-0 boot using arduino tool set
+    make verify-arudino_hello_world            - standalone riscv core-0 hello world test using arduino tool set
+
+   
+    make verify-user_uart SIM=RTL DUMP=OFF     - Standalone user uart-0 test using user risc core with waveform dump off
+    make verify-user_uart SIM=RTL DUMP=ON      - Standalone user uart-0 test using user risc core with waveform dump on
+    make verify-user_uart SIM=GL DUMP=OFF      - Standalone user uart-0 test using user risc core with gatelevel netlist
+    make verify-user_uart SIM=GL DUMP=ON       - Standalone user uart-0 test using user risc core with gatelevel netlist and waveform on
+
 ```
 # Running RTL to GDS flows
    - First run the individual macro file
