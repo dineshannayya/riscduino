@@ -205,6 +205,15 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
   <tr align="center"> <td> usb1.1          </td> <td> usb_dp                 </td> <td>                 </td> <td> digital_io[36]                       </td></tr>
   <tr align="center"> <td> usb1.1          </td> <td> usb_dn                 </td> <td>                 </td> <td> digital_io[37]                       </td></tr>
 </table>
+
+
+# Riscduino documentation
+*  Riscduino documentation available at : <https://riscduino.readthedocs.io/en/latest/>
+
+# Arduino ide integration
+*  We are in initial phase of Riscduino board integration into arduino and integration details are available at : <https://github.com/dineshannayya/riscduino_board/>
+
+
 # Sub IP features
 
 ## RISC V Core
@@ -743,11 +752,6 @@ Riscduino Soc flow uses Openlane tool sets.
     3. `Netgen` - Performs LVS Checks
     4. `CVC` - Performs Circuit Validity Checks
 
-# Riscduino documentation
-*  Riscduino documentation available at : <https://riscduino.readthedocs.io/en/latest/>
-
-# Arduino ide integration
-*  We are in initial phase of Riscduino board integration into arduino and integration details are available at : <https://github.com/dineshannayya/riscduino_board/>
 
 # News
 * **Riscduino Aim** - <https://www.youtube.com/watch?v=lFVnicPhTI0>
