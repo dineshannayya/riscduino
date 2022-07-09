@@ -37,7 +37,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Overview
 
-Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arudino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
+Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
 <table>
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscduino_Integration.png" ></td>
@@ -70,7 +70,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arudino p
     * 6 Channel ADC (in Progress)
     * 6 x PWM
     * 3 x Timer (16 Bit), 1us/1ms/1second resolution
-    * Pin Compatbible to arudino uno
+    * Pin Compatbible to arduino uno
     * Wishbone compatible design
     * Written in System Verilog
     * Open-source tool set
@@ -683,8 +683,8 @@ Examples:
     make verify-user_uart_master               - standalone user uart master test
     make verify-user_sram_exec                 - standalone riscv core-0 test with executing code from data memory
     make verify-riscv_regress                  - standalone riscv compliance test suite
-    make verify-arudino_risc_boot              - standalone riscv core-0 boot using arduino tool set
-    make verify-arudino_hello_world            - standalone riscv core-0 hello world test using arduino tool set
+    make verify-arduino_risc_boot              - standalone riscv core-0 boot using arduino tool set
+    make verify-arduino_hello_world            - standalone riscv core-0 hello world test using arduino tool set
 
    
     make verify-user_uart SIM=RTL DUMP=OFF     - Standalone user uart-0 test using user risc core with waveform dump off
