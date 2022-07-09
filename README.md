@@ -37,7 +37,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 
 # Overview
 
-Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino platform and this soc targetted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
+Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino platform and this soc targeted for efabless Shuttle program.  This project uses only open source tool set for simulation,synthesis and backend tools.  The SOC flow follow the openlane methodology and SOC environment is compatible with efabless/carvel methodology.
 <table>
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscduino_Integration.png" ></td>
@@ -744,13 +744,13 @@ Riscduino Soc flow uses Openlane tool sets.
     4. `CVC` - Performs Circuit Validity Checks
 
 # Riscduino documentation
-    Riscduino documentation available at <https://riscduino.readthedocs.io/en/latest/>
+*  Riscduino documentation available at : <https://riscduino.readthedocs.io/en/latest/>
 
 # Arduino ide integration
-    We are in initial phase of Riscduino board integration into arduino and integration details are available at <https://github.com/dineshannayya/riscduino_board/>
+*  We are in initial phase of Riscduino board integration into arduino and integration details are available at : <https://github.com/dineshannayya/riscduino_board/>
 
 # News
-* **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
+* **Riscduino Aim** - <https://www.youtube.com/watch?v=lFVnicPhTI0>
 
 # How To Contribute
 
