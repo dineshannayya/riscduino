@@ -53,6 +53,9 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/lib/ser_shift.sv
 -v $(USER_PROJECT_VERILOG)/rtl/digital_core/src/glbl_cfg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_host/src/wb_host.sv
+-v $(USER_PROJECT_VERILOG)/rtl/sspis/src/sspis_top.sv
+-v $(USER_PROJECT_VERILOG)/rtl/sspis/src/sspis_if.sv
+-v $(USER_PROJECT_VERILOG)/rtl/sspis/src/spi2wb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/async_wb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_wbb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo2.sv

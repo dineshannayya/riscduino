@@ -140,7 +140,9 @@ module user_sspi_tb;
 		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
                 // Enable SPI Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h3C00);
+                // wire        cfg_spim_enb         = cfg_multi_func_sel[10];
+                // wire [3:0]  cfg_spim_cs_enb      = cfg_multi_func_sel[14:11];
+                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h7C00);
 
 	        repeat (2) @(posedge clock);
 		#1;
