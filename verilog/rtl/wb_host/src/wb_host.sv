@@ -139,6 +139,12 @@ module wb_host (
        input  logic                uartm_rxd        ,
        output logic                uartm_txd        ,
 
+       input  logic                sclk             ,
+       input  logic                ssn              ,
+       input  logic                sdin             ,
+       output logic                sdout            ,
+       output logic                sdout_oen        ,
+
        output logic                dbg_clk_mon
 
     );
@@ -187,6 +193,17 @@ logic [3:0]         wbm_uart_sel_i        ;  // byte enable
 logic [31:0]        wbm_uart_dat_o        ;  // data input
 logic               wbm_uart_ack_o        ;  // acknowlegement
 logic               wbm_uart_err_o        ;  // error
+
+// SPI SLAVE Port
+logic               wbm_spi_cyc_i        ;  // strobe/request
+logic               wbm_spi_stb_i        ;  // strobe/request
+logic [31:0]        wbm_spi_adr_i        ;  // address
+logic               wbm_spi_we_i         ;  // write
+logic [31:0]        wbm_spi_dat_i        ;  // data output
+logic [3:0]         wbm_spi_sel_i        ;  // byte enable
+logic [31:0]        wbm_spi_dat_o        ;  // data input
+logic               wbm_spi_ack_o        ;  // acknowlegement
+logic               wbm_spi_err_o        ;  // error
 
 // Selected Master Port
 logic               wb_cyc_i              ;  // strobe/request
@@ -292,33 +309,57 @@ uart2wb u_uart2wb (
 
      );
 
+sspis_top u_spi2wb(
+
+	     .sys_clk         (wbm_clk_i       ),
+	     .rst_n           (wbm_rst_n       ),
+
+             .sclk            (sclk            ),
+             .ssn             (ssn             ),
+             .sdin            (sdin            ),
+             .sdout           (sdout           ),
+             .sdout_oen       (sdout_oen       ),
+
+          // WB Master Port
+             .wbm_cyc_o       (wbm_spi_cyc_i   ),  // strobe/request
+             .wbm_stb_o       (wbm_spi_stb_i   ),  // strobe/request
+             .wbm_adr_o       (wbm_spi_adr_i   ),  // address
+             .wbm_we_o        (wbm_spi_we_i    ),  // write
+             .wbm_dat_o       (wbm_spi_dat_i   ),  // data output
+             .wbm_sel_o       (wbm_spi_sel_i   ),  // byte enable
+             .wbm_dat_i       (wbm_spi_dat_o   ),  // data input
+             .wbm_ack_i       (wbm_spi_ack_o   ),  // acknowlegement
+             .wbm_err_i       (wbm_spi_err_o   )   // error
+    );
 
 // Arbitor to select between external wb vs uart wb
 wire [1:0] grnt;
 wb_arb u_arb(
 	.clk      (wbm_clk_i), 
 	.rstn     (wbm_rst_n), 
-	.req      ({2'b0,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
+	.req      ({1'b0,wbm_spi_stb_i,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
 	.gnt      (grnt)
         );
 
 // Select  the master based on the grant
-assign wb_cyc_i = (grnt == 2'b00) ? wbm_cyc_i               : wbm_uart_cyc_i; 
-assign wb_stb_i = (grnt == 2'b00) ? (wbm_cyc_i & wbm_stb_i) : wbm_uart_stb_i; 
-assign wb_adr_i = (grnt == 2'b00) ? wbm_adr_i : wbm_uart_adr_i; 
-assign wb_we_i  = (grnt == 2'b00) ? wbm_we_i  : wbm_uart_we_i; 
-assign wb_dat_i = (grnt == 2'b00) ? wbm_dat_i : wbm_uart_dat_i; 
-assign wb_sel_i = (grnt == 2'b00) ? wbm_sel_i : wbm_uart_sel_i; 
+assign wb_cyc_i = (grnt == 2'b00) ? wbm_cyc_i               :(grnt == 2'b01) ? wbm_uart_cyc_i :wbm_spi_cyc_i; 
+assign wb_stb_i = (grnt == 2'b00) ? (wbm_cyc_i & wbm_stb_i) :(grnt == 2'b01) ? wbm_uart_stb_i :wbm_spi_stb_i; 
+assign wb_adr_i = (grnt == 2'b00) ? wbm_adr_i               :(grnt == 2'b01) ? wbm_uart_adr_i :wbm_spi_adr_i; 
+assign wb_we_i  = (grnt == 2'b00) ? wbm_we_i                :(grnt == 2'b01) ? wbm_uart_we_i  :wbm_spi_we_i ; 
+assign wb_dat_i = (grnt == 2'b00) ? wbm_dat_i               :(grnt == 2'b01) ? wbm_uart_dat_i :wbm_spi_dat_i; 
+assign wb_sel_i = (grnt == 2'b00) ? wbm_sel_i               :(grnt == 2'b01) ? wbm_uart_sel_i :wbm_spi_sel_i; 
 
 assign wbm_dat_o = (grnt == 2'b00) ? wb_dat_o : 'h0;
 assign wbm_ack_o = (grnt == 2'b00) ? wb_ack_o : 'h0;
 assign wbm_err_o = (grnt == 2'b00) ? wb_err_o : 'h0;
 
-
 assign wbm_uart_dat_o = (grnt == 2'b01) ? wb_dat_o : 'h0;
 assign wbm_uart_ack_o = (grnt == 2'b01) ? wb_ack_o : 'h0;
 assign wbm_uart_err_o = (grnt == 2'b01) ? wb_err_o : 'h0;
 
+assign wbm_spi_dat_o = (grnt == 2'b10) ? wb_dat_o : 'h0;
+assign wbm_spi_ack_o = (grnt == 2'b10) ? wb_ack_o : 'h0;
+assign wbm_spi_err_o = (grnt == 2'b10) ? wb_err_o : 'h0;
 
 
 

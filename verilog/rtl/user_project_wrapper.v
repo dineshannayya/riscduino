@@ -40,7 +40,7 @@
 ////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////      - Dinesh Annayya, dinesh.annayya@gmail.com              ////
 ////                                                              ////
 ////  Revision :                                                  ////
 ////    0.1 - 16th Feb 2021, Dinesh A                             ////
@@ -214,6 +214,13 @@
 ////         1. DFFRAM Replaced by SRAM                           ////
 ////    4.6  June 13 2022, Dinesh A                               ////
 ////         1. icache and dcache bypass config addded            ////
+////    4.7  July 08 2022, Dinesh A                               ////
+////          Pinmux changes to support SPI CS port matching to   ////
+////          arduino                                             ////
+////    4.8  July 20 2022, Dinesh A                               ////
+////         SPI ISP boot option added in wb_host, spi slave uses ////
+////         same spi master interface, but will be active only   ////
+////         when internal SPI config disabled + RESET PIN = 0    ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -590,6 +597,12 @@ wire                           sspim_so                               ; // seria
 wire                           sspim_si                               ; // serial data in
 wire    [3:0]                  sspim_ssn                              ; // cs_n
 
+// SPIS I/F
+wire                           sspis_sck                              ; // clock out
+wire                           sspis_so                               ; // serial data out
+wire                           sspis_si                               ; // serial data in
+wire                           sspis_ssn                              ; // cs_n
+
 
 wire                           usb_intr_o                             ;
 wire                           i2cm_intr_o                            ;
@@ -697,6 +710,12 @@ wb_host u_wb_host(
 
           .uartm_rxd               (uartm_rxd               ),
           .uartm_txd               (uartm_txd               ),
+
+          .sclk                    (sspis_sck               ),
+          .ssn                     (sspis_ssn               ),
+          .sdin                    (sspis_si                ),
+          .sdout                   (sspis_so                ),
+          .sdout_oen               (                        ),
 
 	  .dbg_clk_mon             (dbg_clk_mon             )
 
@@ -1281,6 +1300,12 @@ pinmux u_pinmux(
           .spim_ssn                (sspim_ssn               ),
           .spim_miso               (sspim_so                ),
           .spim_mosi               (sspim_si                ),
+       
+       // SPI SLAVE
+          .spis_sck                (sspis_sck               ),
+          .spis_ssn                (sspis_ssn               ),
+          .spis_miso               (sspis_so                ),
+          .spis_mosi               (sspis_si                ),
 
       // UART MASTER I/F
           .uartm_rxd               (uartm_rxd               ),
