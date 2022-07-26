@@ -85,9 +85,6 @@ set ::env(PL_TIME_DRIVEN) 1
 set ::env(PL_TARGET_DENSITY) "0.30"
 set ::env(CELL_PAD) "4"
 
-set ::env(FP_IO_VEXTEND) {6}
-set ::env(FP_IO_HEXTEND) {6}
-
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
