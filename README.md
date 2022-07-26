@@ -349,18 +349,16 @@ Following Design changes are done on the basic version of syntacore RISC core
 
 # SOC Size
 
-| Block             | Total Cell | Seq      | Combo   |
-| ------            | ---------  | -------- | -----   |
-| RISC              | 20982      | 3164     | 17818   |
-| PINMUX            | 5693       | 1022     |  4671   |
-| SPI               | 7120       | 1281     |  5839   |
-| UART_I2C_USB_SPI  | 11196      | 2448     |  8748   |
-| WB_HOST           | 2796       | 588      |  2208   |
-| WB_INTC           | 1878       | 108      |  1770   |
-| SAR_ADC           | 118        |  18      |   100   |
-| MBIST             | 3125       | 543      |  2582   |
-|                   |            |          |         |
-| TOTAL             | 52908      | 9172     | 43736   |
+| Block             | Total Cell | Combo   | Seq      |
+| ------            | ---------  | -----   | -------- |
+| RISC              | 46285      | 40434   | 5851     |
+| QSPI              | 8662       |  7157   | 1505     |
+| UART_I2C_USB_SPI  | 22813      | 13061   | 2865     |
+| WB_HOST           | 5800       |  4701   | 1099     |
+| WB_INTC           | 11477      | 10081   | 1396     |
+| PINMUX            | 6740       |  5568   | 1172     |
+|                   |            |         |          |
+| TOTAL             | 94890      | 81002   | 13888    |
 
 
 
