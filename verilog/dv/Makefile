@@ -19,7 +19,7 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = wb_port risc_boot user_risc_boot user_uart user_uart1 user_qspi user_i2cm riscv_regress user_basic user_usb user_pwm user_timer user_uart_master uart_master user_sram_exec user_cache_bypass user_gpio arduino_risc_boot arduino_hello_world arduino_ascii_table arduino_multi_serial user_spi_isp
+PATTERNS = wb_port risc_boot user_risc_boot user_uart user_uart1 user_qspi user_i2cm riscv_regress user_basic user_usb user_pwm user_timer user_uart_master uart_master user_sram_exec user_cache_bypass user_gpio user_spi_isp arduino_risc_boot arduino_hello_world arduino_ascii_table arduino_multi_serial arduino_arrays arduino_switchCase2
 
 all:  ${PATTERNS}
 	for i in ${PATTERNS}; do \
