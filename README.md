@@ -86,6 +86,9 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
   <tr>
     <td  align="center"><img src="./docs/source/_static/Riscduino-derivatives.png" ></td>
   </tr>
+  <tr>
+    <td  align="center"><img src="./docs/source/_static/Riscduino_Series_placement.png" ></td>
+  </tr>
 
 </table>
 
@@ -127,7 +130,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
   <tr>
     <td  align="center"> MPW-5 </td> 
     <td  align="center"> 21-Mar-2022  </td>
-    <td  align="center"> Riscduino-SCORE</td>
+    <td  align="center"> Riscduino-SCORE (S0)</td>
     <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/670">Link</a></td>
@@ -135,7 +138,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
   <tr>
     <td  align="center"> MPW-5 </td> 
     <td  align="center"> 21-Mar-2022  </td>
-    <td  align="center"> Riscduino-DCORE</td>
+    <td  align="center"> Riscduino-DCORE (D0)</td>
     <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/718">Link</a></td>
@@ -143,10 +146,34 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
   <tr>
     <td  align="center"> MPW-5 </td> 
     <td  align="center"> 21-Mar-2022  </td>
-    <td  align="center"> Riscduino-QCORE</td>
+    <td  align="center"> Riscduino-QCORE (Q0)</td>
     <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/782">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-6 </td> 
+    <td  align="center"> 07-June-2022  </td>
+    <td  align="center"> Riscduino-SCORE (S3)</td>
+    <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/1047">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-6 </td> 
+    <td  align="center"> 07-June-2022  </td>
+    <td  align="center"> Riscduino-DCORE (D1)</td>
+    <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/838">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-6 </td> 
+    <td  align="center"> 07-June-2022 </td>
+    <td  align="center"> Riscduino-QCORE (Q1)</td>
+    <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/839">Link</a></td>
   </tr>
 </table>
 
