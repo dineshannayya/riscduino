@@ -18,30 +18,23 @@
 ////                                                              ////
 ////  Standalone User validation Test bench                       ////
 ////                                                              ////
-////  This file is part of the YIFive cores project               ////
-////  https://github.com/dineshannayya/yifive_r0.git              ////
-////  http://www.opencores.org/cores/yifive/                      ////
+////  This file is part of the riscdunio cores project            ////
+////  https://github.com/dineshannayya/riscdunio.git              ////
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
 ////   Digital core.                                              ////
-////   1. User Risc core is booted using  compiled code of        ////
-////      user_risc_boot.c                                        ////
-////   2. User Risc core uses Serial Flash and SDRAM to boot      ////
-////   3. After successful boot, Risc core will  write signature  ////
-////      in to  user register from 0x1003_0058 to 0x1003_006C    ////
-////   4. Through the External Wishbone Interface we read back    ////
-////       from 0x3003_0058 to 0x3003_006C                        ////
-////       and validate the user register to declared pass fail   ////
+////   This test bench to valid Arduino example:                  ////
+////                                                              ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////      - Dinesh Annayya, dinesh.annayya@gmail.com              ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 16th Feb 2021, Dinesh A                             ////
+////    0.1 - 29th July 2022, Dinesh A                            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////

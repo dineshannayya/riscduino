@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#line 1 "/tmp/.arduinoIDE-unsaved202265-51666-197w8ma.2pxu/ASCIITable/ASCIITable.ino"
 /*
   ASCII table
 
@@ -21,11 +20,8 @@
   https://www.arduino.cc/en/Tutorial/BuiltInExamples/ASCIITable
 */
 
-#line 22 "/tmp/.arduinoIDE-unsaved202265-51666-197w8ma.2pxu/ASCIITable/ASCIITable.ino"
 void setup();
-#line 39 "/tmp/.arduinoIDE-unsaved202265-51666-197w8ma.2pxu/ASCIITable/ASCIITable.ino"
 void loop();
-#line 22 "/tmp/.arduinoIDE-unsaved202265-51666-197w8ma.2pxu/ASCIITable/ASCIITable.ino"
 // first visible ASCIIcharacter '!' is number 33:
 int thisByte = 33;
 void setup() {

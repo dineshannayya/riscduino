@@ -18,22 +18,23 @@
 ////                                                              ////
 ////  Standalone User validation Test bench                       ////
 ////                                                              ////
-////  This file is part of the YIFive cores project               ////
-////  https://github.com/dineshannayya/yifive_r0.git              ////
-////  http://www.opencores.org/cores/yifive/                      ////
+////  This file is part of the riscdunio cores project            ////
+////  https://github.com/dineshannayya/riscdunio.git              ////
 ////                                                              ////
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
 ////   Digital core.                                              ////
+////   This test bench to valid Arduino example:                  ////
+////     <example><05.control><Arrays>                            ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////      - Dinesh Annayya, dinesh.annayya@gmail.com              ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 16th Feb 2021, Dinesh A                             ////
+////    0.1 - 29th July 2022, Dinesh A                            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -193,7 +194,7 @@ parameter P_QDDR   = 2'b11;
 	    repeat (2) @(posedge clock);
 		#1;
 
-        // Remove WB and SPI Reset, Keep SDARM and CORE under Reset
+        // Remove WB and SPI Reset and CORE under Reset
         wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
 
 		// QSPI SRAM:CS#2 Switch to QSPI Mode

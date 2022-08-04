@@ -456,7 +456,7 @@ user_project_wrapper u_top(
 `endif    
 
 //------------------------------------------------------
-//  Integrate the Serial flash with qurd support to
+//  Integrate the Serial flash with quad support to
 //  user core using the gpio pads
 //  ----------------------------------------------------
    wire flash_io1;
