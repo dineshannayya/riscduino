@@ -40,23 +40,23 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-        $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-        $script_dir/../../verilog/rtl/lib/sync_wbb.sv                \
-        $script_dir/../../verilog/rtl/lib/sync_fifo2.sv                \
-        $script_dir/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
-        $script_dir/../../verilog/rtl/wb_interconnect/src/wb_slave_port.sv  \
-        $script_dir/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_wbb.sv                \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_fifo2.sv                \
+        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
+        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_slave_port.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(SYNTH_PARAMS) "CH_CLK_WD 4,\
-	                 CH_DATA_WD 37 \
+set ::env(SYNTH_PARAMETERS) "CH_CLK_WD=4\
+	                 CH_DATA_WD=37 \
 			 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -88,7 +88,7 @@ set ::env(CELL_PAD) "8"
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
 
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 ## CTS
@@ -104,14 +104,17 @@ set ::env(PL_RESIZER_MAX_SLEW_MARGIN) 2
 set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
 
 ## Routing
-set ::env(GLB_RT_ADJUSTMENT) 0
-set ::env(GLB_RT_L2_ADJUSTMENT) 0.21
-set ::env(GLB_RT_L3_ADJUSTMENT) 0.21
-set ::env(GLB_RT_L4_ADJUSTMENT) 0.1
-set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
-set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
-set ::env(GLB_RT_ALLOW_CONGESTION) 0
-set ::env(GLB_RT_OVERFLOW_ITERS) 200
+set ::env(GRT_ADJUSTMENT) 0.1
+set ::env(DPL_CELL_PADDING) 1
+
+#set ::env(GLB_RT_ADJUSTMENT) 0
+#set ::env(GLB_RT_L2_ADJUSTMENT) 0.21
+#set ::env(GLB_RT_L3_ADJUSTMENT) 0.21
+#set ::env(GLB_RT_L4_ADJUSTMENT) 0.1
+#set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
+#set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
+#set ::env(GLB_RT_ALLOW_CONGESTION) 0
+#set ::env(GLB_RT_OVERFLOW_ITERS) 200
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}

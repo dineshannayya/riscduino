@@ -12,7 +12,7 @@ create_clock -name uart1_baud_clk -period 100.0000 [get_pins {u_uart1_core.u_lin
 create_clock -name usb_clk -period 100.0000 [get_ports {usb_clk}]
 
 set_clock_transition 0.1500 [all_clocks]
-set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 
@@ -44,9 +44,9 @@ set_input_delay -min 1.5000 -clock [get_clocks {app_clk}] -add_delay [get_ports 
 set_input_delay -min 1.5000 -clock [get_clocks {app_clk}] -add_delay [get_ports {usb_rstn}]
 
 
-set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[*]}]
+set_input_delay  -max 5.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_addr[*]}]
 set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_be[*]}]
-set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_cs}]
+set_input_delay  -max 5.7500 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_cs}]
 set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wdata[*]}]
 set_input_delay  -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {reg_wr}]
 

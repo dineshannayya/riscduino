@@ -45,6 +45,7 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_ctl.sv  
 -v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_if.sv
 -v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_cfg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/sspim/src/sspim_clkgen.sv
 -v $(USER_PROJECT_VERILOG)/rtl/uart_i2c_usb_spi/src/uart_i2c_usb_spi.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/async_fifo.sv  
 -v $(USER_PROJECT_VERILOG)/rtl/lib/registers.v

@@ -16,7 +16,7 @@ create_clock -name cpu_ref_clk   -period 10.0000  [get_pins {u_cpu_ref_clkbuf.u_
 create_clock -name usb_ref_clk   -period 10.0000  [get_pins {u_usb_ref_clkbuf.u_buf/X}]
 
 set_clock_transition 0.1500 [all_clocks]
-set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05

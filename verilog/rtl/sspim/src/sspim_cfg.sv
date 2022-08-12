@@ -46,7 +46,15 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
+/*******************************************************************
+SPI Mode:
+     Mode 0 (the default)− Clock is normally low (CPOL = 0), and Data sampled on rising edge and shifted out on the falling edge.  (CPHA = 0). - Supported
+     Mode 1              − Clock is normally low (CPOL = 0), and Data sampled on the falling edge and shifted out on the rising edge. (CPHA = 1). - Not Supported
+     Mode 2              − Clock is normally high (CPOL = 1), and Data sampled on the rising edge and shifted out on the falling edge. (CPHA = 0). - Supported
+     Mode 3              − Clock is normally high (CPOL = 1), and Data sampled on the falling edge and shifted out on the rising edge (CPHA = 1). - Not Supported
 
+
+********************************************************************/
 
 
 module sspim_cfg (
@@ -54,9 +62,12 @@ module sspim_cfg (
               input  logic          reset_n            ,
               
               output logic [1:0]    cfg_tgt_sel        ,
-              
+
+              output logic          cfg_cpol           , // spi clock idle phase
+              output logic          cfg_cpha           , // spi data sample and lanch phase
+              output logic          cfg_bit_order      , // SPI TX/RX Bit Order,  1 -> LSBFIRST or  0 -> MSBFIRST
               output logic          cfg_op_req         , // SPI operation request
-	      output logic          cfg_endian         , // Endian selection
+	          output logic          cfg_endian         , // Endian selection
               output logic [1:0]    cfg_op_type        , // SPI operation type
               output logic [1:0]    cfg_transfer_size  , // SPI transfer size
               output logic [5:0]    cfg_sck_period     , // sck clock period
@@ -98,6 +109,7 @@ logic  [31:0]    reg_0;  // Software_Reg_0
 logic  [31:0]    reg_1;  // Software-Reg_1
 logic  [31:0]    reg_2;  // Software-Reg_2
 logic  [31:0]    reg_out;
+logic  [1:0]     cfg_spi_mode;
 
 //-----------------------------------------------------------------------
 // Main code starts here
@@ -168,7 +180,13 @@ end
 //-----------------------------------------------------------------------
 // Logic for Register 0 : SPI Control Register
 //-----------------------------------------------------------------------
+
+assign cfg_cpha = cfg_spi_mode[0];
+assign cfg_cpol = cfg_spi_mode[1];
+
 assign    cfg_op_req         = reg_0[31];    // cpu request
+assign    cfg_bit_order      = reg_0[28];    //  1 -> LSBFIRST or  0 -> MSBFIRST
+assign    cfg_spi_mode       = reg_0[27:26]; // spi mode
 assign    cfg_endian         = reg_0[25];    // Endian, 0 - little, 1 - Big
 assign    cfg_tgt_sel        = reg_0[24:23]; // target chip select
 assign    cfg_op_type        = reg_0[22:21]; // SPI operation type
@@ -210,18 +228,17 @@ generic_register #(8,0  ) u_spi_ctrl_be2 (
 	      .data_out      (reg_0[23:16]       )
           );
 
-generic_register #(2,0  ) u_spi_ctrl_be3 (
-	      .we            ({2{sw_wr_en_0 & 
+generic_register #(7,0  ) u_spi_ctrl_be3 (
+	      .we            ({7{sw_wr_en_0 & 
                                 wr_be[3]   }}  ),		 
-	      .data_in       (reg_wdata[25:24] ),
+	      .data_in       (reg_wdata[30:24] ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_0[25:24]       )
+	      .data_out      (reg_0[30:24]       )
           );
 
-assign reg_0[30:26] = 5'h0;
 
 req_register #(0  ) u_spi_ctrl_req (
 	      .cpu_we       ({sw_wr_en_0 & 

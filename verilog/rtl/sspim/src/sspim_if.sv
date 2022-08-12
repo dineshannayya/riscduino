@@ -47,24 +47,25 @@
 
 module sspim_if
           (
-          input  logic clk,
-          input  logic reset_n,
-          input  logic sck_pe,
-          input  logic sck_int,
-          input  logic cs_int_n,
+          input  logic       clk,
+          input  logic       reset_n,
+          input  logic       sck_int,
+          input  logic       cs_int_n,
+          input  logic       cfg_bit_order, // 1 -> LSBFIRST or  0 -> MSBFIRST
           
           input  logic       load_byte,
           input  logic [1:0] cfg_tgt_sel,
 
           input  logic [7:0] byte_out,
-          input  logic       shift_out,
-          input  logic       shift_in,
+          input  logic       sck_active,
+          input  logic       shift,
+          input  logic       sample,
 
-          output logic  [7:0] byte_in,
-          output logic        sck,
-          output logic        so,
-          output logic  [3:0] cs_n,
-          input  logic        si
+          output logic  [7:0]byte_in,
+          output logic       sck,
+          output logic       so,
+          output logic  [3:0]cs_n,
+          input  logic       si
            );
 
 
@@ -72,6 +73,9 @@ module sspim_if
   logic [7:0]    so_reg;
   logic [7:0]    si_reg;
 
+
+   wire shift_out = shift & sck_active;
+   wire sample_in  = sample & sck_active;
 
   //Output Shift Register
 
@@ -86,13 +90,19 @@ module sspim_if
            if(shift_out) begin 
               // Handling backto back case : 
               // Last Transfer bit + New Trasfer Load
-              so <= so_reg[7];
+              if(cfg_bit_order) so <= so_reg[0]; // LSB FIRST
+              else              so <= so_reg[7]; // MSB FIRST
            end
         end // if (load_byte)
         else begin
            if(shift_out) begin
-              so <= so_reg[7];
-              so_reg <= {so_reg[6:0],1'b0};
+              if(cfg_bit_order) begin // LSB FIRST
+                 so     <= so_reg[0];
+                 so_reg <= {1'b0,so_reg[7:1]};
+              end else begin
+                 so     <= so_reg[7];
+                 so_reg <= {so_reg[6:0],1'b0};
+              end
            end // if (shift_out)
         end // else: !if(load_byte)
      end // else: !if(!reset_n)
@@ -103,11 +113,14 @@ module sspim_if
   always @(posedge clk or negedge reset_n) begin
      if(!reset_n) begin
         si_reg <= 8'h0;
-     end
-     else begin
-        if(sck_pe & shift_in) begin
-           si_reg[7:0] <= {si_reg[6:0],si};
-        end // if (sck_pe & shift_in)
+     end else begin
+        if(sample_in) begin
+           if(cfg_bit_order) begin // LSB FIRST
+               si_reg[7:0] <= {si,si_reg[7:1]};
+           end else begin // MSB FIRST
+               si_reg[7:0] <= {si_reg[6:0],si};
+           end
+        end // if (sample_in)
      end // else: !if(!reset_n)
   end // always @ (posedge clk or negedge reset_n)
 

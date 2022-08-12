@@ -41,23 +41,23 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-        $script_dir/../../verilog/rtl/lib/clk_skew_adjust.gv \
-        $script_dir/../../verilog/rtl/lib/reset_sync.sv      \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_top.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_if.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_regs.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_fifo.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_clkgen.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_ctrl.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_rx.sv \
-        $script_dir/../../verilog/rtl/qspim/src/qspim_tx.sv \
-	$script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv      \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_top.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_if.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_regs.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_fifo.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_clkgen.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_ctrl.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_rx.sv \
+        $::env(DESIGN_DIR)/../../verilog/rtl/qspim/src/qspim_tx.sv \
+	    $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv     \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -95,7 +95,7 @@ set ::env(FP_PDN_HWIDTH) 5
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 

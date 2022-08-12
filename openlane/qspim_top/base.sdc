@@ -24,7 +24,7 @@ set_case_analysis 0 [get_ports {cfg_cska_sp_co[0]}]
 set_propagated_clock [get_clocks {spiclk}]
 
 set_clock_transition 0.1500 [all_clocks]
-set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05

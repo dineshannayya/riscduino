@@ -221,6 +221,10 @@
 ////         SPI ISP boot option added in wb_host, spi slave uses ////
 ////         same spi master interface, but will be active only   ////
 ////         when internal SPI config disabled + RESET PIN = 0    ////
+////    4.9  Aug 5 2022, Dinesh A                                 ////
+////         changes in sspim                                     ////
+////           A. SPI Mode 0 to 3 support added,                  ////
+////           B. SPI Duplex mode TX-RX Mode added                ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

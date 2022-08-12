@@ -11,7 +11,7 @@ create_generated_clock -name icache_mem_clk0 -add -source [get_ports {core_clk}]
 create_generated_clock -name icache_mem_clk1 -add -source [get_ports {core_clk}] -master_clock [get_clocks core_clk] -divide_by 1 -comment {icache mem clock1} [get_ports icache_mem_clk1]
 
 set_clock_transition 0.1500 [all_clocks]
-set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05

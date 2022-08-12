@@ -24,8 +24,6 @@ set ::env(DESIGN_NAME) wb_host
 
 set ::env(DESIGN_IS_CORE) "0"
 
-set ::env(OPENLANE_VERBOSE) {10}
-
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "wbm_clk_i wbs_clk_i u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X"
@@ -42,31 +40,31 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-     $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-     $script_dir/../../verilog/rtl/wb_host/src/wb_host.sv \
-     $script_dir/../../verilog/rtl/lib/async_fifo.sv      \
-     $script_dir/../../verilog/rtl/lib/async_wb.sv        \
-     $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
-     $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
-     $script_dir/../../verilog/rtl/lib/registers.v        \
-     $script_dir/../../verilog/rtl/lib/reset_sync.sv      \
-     $script_dir/../../verilog/rtl/lib/async_reg_bus.sv   \
-     $script_dir/../../verilog/rtl/uart/src/uart_txfsm.sv \
-     $script_dir/../../verilog/rtl/uart/src/uart_rxfsm.sv \
-     $script_dir/../../verilog/rtl/lib/double_sync_low.v  \
-     $script_dir/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
-     $script_dir/../../verilog/rtl/uart2wb/src/uart2wb.sv \
-     $script_dir/../../verilog/rtl/uart2wb/src/uart2_core.sv \
-     $script_dir/../../verilog/rtl/uart2wb/src/uart_msg_handler.v \
-     $script_dir/../../verilog/rtl/sspis/src/sspis_top.sv \
-     $script_dir/../../verilog/rtl/sspis/src/sspis_if.sv \
-     $script_dir/../../verilog/rtl/sspis/src/spi2wb.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_host.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_fifo.sv      \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_wb.sv        \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v          \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v        \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv      \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_reg_bus.sv   \
+     $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_txfsm.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_rxfsm.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/double_sync_low.v  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2wb.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2_core.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart_msg_handler.v \
+     $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/sspis_top.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/sspis_if.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/spi2wb.sv \
      "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -104,7 +102,7 @@ set ::env(FP_PDN_HWIDTH) 5
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
 set ::env(DIODE_INSERTION_STRATEGY) 4
 

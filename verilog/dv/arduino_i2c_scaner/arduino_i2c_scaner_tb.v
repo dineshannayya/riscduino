@@ -25,7 +25,7 @@
 ////   This is a standalone test bench to validate the            ////
 ////   Digital core.                                              ////
 ////   This test bench to valid Arduino example:                  ////
-////     <example><SPi><DigitalPortControl>                       ////
+////     <example><Wire><i2c_scanner>                             ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -68,10 +68,10 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
-`include "is62wvs1288.v"
-`include "bfm_ad5205.sv"
+`include "uart_agent.v"
+`include "i2c_slave_model.v"
 
-module arduino_digital_port_control_tb;
+module arduino_i2c_scaner_tb;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -98,37 +98,29 @@ module arduino_digital_port_control_tb;
 	wire [7:0] mprj_io_0;
 	reg         test_fail;
 	reg [31:0] read_data;
+    //----------------------------------
+    // Uart Configuration
+    // ---------------------------------
+    reg [1:0]      uart_data_bit        ;
+    reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
+    reg	       uart_stick_parity    ; // 1: force even parity
+    reg	       uart_parity_en       ; // parity enable
+    reg	       uart_even_odd_parity ; // 0: odd parity; 1: even parity
+    
+    reg [7:0]      uart_data            ;
+    reg [15:0]     uart_divisor         ;	// divided by n * 16
+    reg [15:0]     uart_timeout         ;// wait time limit
+    
+    reg [15:0]     uart_rx_nu           ;
+    reg [15:0]     uart_tx_nu           ;
+    reg [7:0]      uart_write_data [0:39];
+    reg 	       uart_fifo_enable     ;	// fifo mode disable
 	reg            flag                 ;
+    reg            compare_start        ; // User Need to make sure that compare start match with RiscV core completing initial booting
 
-parameter P_FSM_C      = 4'b0000; // Command Phase Only
-parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
-parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
-
-parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
-parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
-parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
-parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
-
-parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
-parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
-parameter P_FSM_CAMW   = 4'b1001; // Command -> Address -> MODE + Write Data
-
-parameter P_FSM_CDR    = 4'b1010; // COMMAND -> DUMMY -> READ
-parameter P_FSM_CDW    = 4'b1011; // COMMAND -> DUMMY -> WRITE
-parameter P_FSM_CR     = 4'b1100;  // COMMAND -> READ
-
-parameter P_MODE_SWITCH_IDLE     = 2'b00;
-parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
-parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
-
-parameter P_SINGLE = 2'b00;
-parameter P_DOUBLE = 2'b01;
-parameter P_QUAD   = 2'b10;
-parameter P_QDDR   = 2'b11;
-
+	reg [31:0]     check_sum            ;
         
 	integer    d_risc_id;
-    integer    channel,level;
 
          integer i,j;
 
@@ -140,51 +132,79 @@ parameter P_QDDR   = 2'b11;
 
 	initial begin
 		clock = 0;
-	        flag  = 0;
-                wbd_ext_cyc_i ='h0;  // strobe/request
-                wbd_ext_stb_i ='h0;  // strobe/request
-                wbd_ext_adr_i ='h0;  // address
-                wbd_ext_we_i  ='h0;  // write
-                wbd_ext_dat_i ='h0;  // data output
-                wbd_ext_sel_i ='h0;  // byte enable
+	    flag  = 0;
+        compare_start = 0;
+        wbd_ext_cyc_i ='h0;  // strobe/request
+        wbd_ext_stb_i ='h0;  // strobe/request
+        wbd_ext_adr_i ='h0;  // address
+        wbd_ext_we_i  ='h0;  // write
+        wbd_ext_dat_i ='h0;  // data output
+        wbd_ext_sel_i ='h0;  // byte enable
 	end
 
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_digital_port_control_tb);
-	   	//$dumpvars(0, arduino_digital_port_control_tb.u_top.u_riscv_top.i_core_top_0);
-	   	//$dumpvars(0, arduino_digital_port_control_tb.u_top.u_riscv_top.u_connect);
-	   	//$dumpvars(0, arduino_digital_port_control_tb.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_digital_port_control_tb.u_top.u_pinmux);
-	   	$dumpvars(0, arduino_digital_port_control_tb.u_top.u_uart_i2c_usb_spi);
+	   	$dumpvars(3, arduino_i2c_scaner_tb);
+	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.i_core_top_0);
+	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.u_connect);
+	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
+	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_uart_i2c_usb_spi.u_i2cm);
 	   end
        `endif
 
+       /*************************************************************************
+       * This is Baud Rate to clock divider conversion for Test Bench
+       * Note: DUT uses 16x baud clock, where are test bench uses directly
+       * baud clock, Due to 16x Baud clock requirement at RTL, there will be
+       * some resolution loss, we expect at lower baud rate this resolution
+       * loss will be less. For Quick simulation perpose higher baud rate used
+       * *************************************************************************/
+       task tb_set_uart_baud;
+       input [31:0] ref_clk;
+       input [31:0] baud_rate;
+       output [31:0] baud_div;
+       reg   [31:0] baud_div;
+       begin
+	  // for 230400 Baud = (50Mhz/230400) = 216.7
+	  baud_div = ref_clk/baud_rate; // Get the Bit Baud rate
+	  // Baud 16x = 216/16 = 13
+          baud_div = baud_div/16; // To find the RTL baud 16x div value to find similar resolution loss in test bench
+	  // Test bench baud clock , 16x of above value
+	  // 13 * 16 = 208,  
+	  // (Note if you see original value was 216, now it's 208 )
+          baud_div = baud_div * 16;
+	  // Test bench half cycle counter to toggle it 
+	  // 208/2 = 104
+           baud_div = baud_div/2;
+	  //As counter run's from 0 , substract from 1
+	   baud_div = baud_div-1;
+       end
+       endtask
        
 
 	initial begin
-
-		#200; // Wait for reset removal
-	        repeat (10) @(posedge clock);
-		$display("Monitor: Standalone User Risc Boot Test Started");
+        uart_data_bit           = 2'b11;
+        uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
+        uart_stick_parity       = 0; // 1: force even parity
+        uart_parity_en          = 0; // parity enable
+        uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
+	    tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
+        uart_timeout            = 2000;// wait time limit
+        uart_fifo_enable        = 0;	// fifo mode disable
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
+
+		#200; // Wait for reset removal
+	    repeat (10) @(posedge clock);
+		$display("Monitor: Standalone User Risc Boot Test Started");
+
 		// Remove Wb Reset
 		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	    repeat (2) @(posedge clock);
 		#1;
-
-        // Remove WB and SPI Reset and CORE under Reset
-        wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
-
-		// QSPI SRAM:CS#2 Switch to QSPI Mode
-        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
-
         // Remove all the reset
         if(d_risc_id == 0) begin
              $display("STATUS: Working with Risc core 0");
@@ -202,50 +222,61 @@ parameter P_QDDR   = 2'b11;
 
         repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
+	    tb_uart.debug_mode = 0; // disable debug display
+        tb_uart.uart_init;
+        tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+                                       uart_stick_parity, uart_timeout, uart_divisor);
 
-        repeat (20000) @(posedge clock);  // wait for Processor Get Ready
-        flag = 1;
+        repeat (45000) @(posedge clock);  // wait for Processor Get Ready
+	    flag  = 0;
+		check_sum = 0;
+        compare_start = 1;
+        
+        fork
+           begin
+              while(flag == 0)
+              begin
+                 tb_uart.read_char(read_data,flag);
+		         if(flag == 0)  begin
+		            $write ("%c",read_data);
+		            check_sum = check_sum+read_data;
+		         end
+              end
+           end
+           begin
+              repeat (200000) @(posedge clock);  // wait for Processor Get Ready
+           end
+           join_any
+        
+           #100
+           tb_uart.report_status(uart_rx_nu, uart_tx_nu);
+        
+           test_fail = 0;
 
-      fork
-      begin
-          for (channel = 0; channel < 1; channel = channel+1) begin
-            // change the resistance on this channel from min to max:
-            for (level = 0; level < 255; level = level+1) begin
-                wait(u_ad5205.channel == channel && u_ad5205.position ==  level);
-                $display("Channel: %x and Position: %x",u_ad5205.channel,u_ad5205.position);
-            end
-            // change the resistance on this channel from min to max:
-            for (level = 0; level < 255; level = level+1) begin
-                wait((u_ad5205.channel == channel) && (u_ad5205.position ==  (255 -level)));
-                $display("Channel: %x and Position: %x",u_ad5205.channel,u_ad5205.position);
-            end
-          end
-          test_fail = 0;
-      end
-      begin
-         repeat (6000000) @(posedge clock);  // wait for Processor Get Ready
-         test_fail = 1;
-      end
-      join_any
+		   $display("Total Rx Char: %d Check Sum : %x ",uart_rx_nu, check_sum);
+           // Check 
+           // if all the 102 byte received
+           // if no error 
+           if(uart_rx_nu != 102) test_fail = 1;
+           if(check_sum != 32'h1fab) test_fail = 1;
+           if(tb_uart.err_cnt != 0) test_fail = 1;
 
-      #100
-
-	  $display("###################################################");
-      if(test_fail == 0) begin
-	    `ifdef GL
-	           $display("Monitor: Ardunio Digital Port Control  (GL) Passed");
-	    `else
-	       $display("Monitor: Ardunio Digital Port Control (RTL) Passed");
-	    `endif
-	  end else begin
-	  `ifdef GL
-	      $display("Monitor: Ardunio Digital Port Control (GL) Failed");
-	  `else
-	      $display("Monitor: Ardunio Digital Port Control (RTL) Failed");
-	  `endif
-	  end
-	    $display("###################################################");
-      #100
+	   
+	    	$display("###################################################");
+          	if(test_fail == 0) begin
+		   `ifdef GL
+	    	       $display("Monitor: Standalone String (GL) Passed");
+		   `else
+		       $display("Monitor: Standalone String (RTL) Passed");
+		   `endif
+	        end else begin
+		    `ifdef GL
+	    	        $display("Monitor: Standalone String (GL) Failed");
+		    `else
+		        $display("Monitor: Standalone String (RTL) Failed");
+		    `endif
+		 end
+	    	$display("###################################################");
 	    $finish;
 	end
 
@@ -292,25 +323,24 @@ user_project_wrapper u_top(
 
 );
 
-//-------------------------------------------------------------------------------------
-//  Integrate the Serial SPI to ad5204/5206 (4-/6-Channel Digital Potentiometers)
-//  https://www.analog.com/media/en/technical-documentation/data-sheets/ad5204_5206.pdf
-//  -----------------------------------------------------------------------------------
-   wire sspi_sck = io_out[16];
-   wire sspi_sdi = io_out[15];
-   wire sspi_ssn = io_out[13];
+//---------------------------
+// I2C
+// --------------------------
+tri scl,sda;
 
-   wire [2:0]      p_channel; // potentiometer channel
-   wire [7:0]      p_position; // potentiometer position
+assign sda  =  (io_oeb[22] == 1'b0) ? io_out[22] : 1'bz;
+assign scl   = (io_oeb[23] == 1'b0) ? io_out[23]: 1'bz;
+assign io_in[22]  =  sda;
+assign io_in[23]  =  scl;
 
-   bfm_ad5205 u_ad5205(
-              .sck      (sspi_sck    ),
-              .sdi      (sspi_sdi    ),
-              .ssn      (sspi_ssn    ),
+pullup p1(scl); // pullup scl line
+pullup p2(sda); // pullup sda line
 
-              .channel  (p_channel   ),
-              .position (p_position  )
-             );
+ 
+i2c_slave_model  #(.I2C_ADR(7'h4)) u_i2c_slave (
+	.scl   (scl), 
+	.sda   (sda)
+       );
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -342,8 +372,8 @@ user_project_wrapper u_top(
    assign io_in[32] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_digital_port_control.ino.hex"),
-	         .otp_file_name("none"),
+     s25fl256s #(.mem_file_name("arduino_i2c_scaner.ino.hex"),
+	             .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
@@ -358,22 +388,20 @@ user_project_wrapper u_top(
 
        );
 
-   wire spiram_csb = io_out[27];
 
-   is62wvs1288 #(.mem_file_name("none"))
-	u_sram (
-         // Data Inputs/Outputs
-           .io0     (flash_io0),
-           .io1     (flash_io1),
-           // Controls
-           .clk    (flash_clk),
-           .csb    (spiram_csb),
-           .io2    (flash_io2),
-           .io3    (flash_io3)
-    );
+//---------------------------
+//  UART Agent integration
+// --------------------------
+wire uart_txd,uart_rxd;
 
-//-------------------------------------
-
+assign uart_txd   = io_out[2];
+assign io_in[1]  = uart_rxd ;
+ 
+uart_agent tb_uart(
+	.mclk                (clock              ),
+	.txd                 (uart_rxd           ),
+	.rxd                 (uart_txd           )
+	);
 
 
 task wb_user_core_write;

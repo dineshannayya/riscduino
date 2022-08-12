@@ -33,38 +33,38 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(LEC_ENABLE) 0
 
 set ::env(VERILOG_FILES) "\
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_top.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_core_top.sv                    \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_dm.sv                          \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_tapc_synchronizer.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_clk_ctrl.sv                    \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_scu.sv                         \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_tapc.sv                        \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_tapc_shift_reg.sv              \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/ycr_dmi.sv                         \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/primitives/ycr_reset_cells.sv      \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_ifu.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_idu.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_exu.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_mprf.sv          \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_csr.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_ialu.sv          \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_mul.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_div.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_lsu.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_hdu.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_tdu.sv           \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_ipic.sv               \
-        $script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_req_retiming.sv               \
-        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/sync_fifo2.sv                     \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_top.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_core_top.sv                    \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_dm.sv                          \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_tapc_synchronizer.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_clk_ctrl.sv                    \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_scu.sv                         \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_tapc.sv                        \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_tapc_shift_reg.sv              \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/ycr_dmi.sv                         \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/primitives/ycr_reset_cells.sv      \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_ifu.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_idu.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_exu.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_mprf.sv          \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_csr.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_ialu.sv          \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_mul.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_div.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_lsu.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_hdu.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_tdu.sv           \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/pipeline/ycr_ipic.sv               \
+    $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_req_retiming.sv               \
+    $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/sync_fifo2.sv                     \
 	"
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/includes ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -72,17 +72,19 @@ set ::env(VDD_PIN) [list {vccd1}]
 set ::env(GND_PIN) [list {vssd1}]
 
 ## Floorplan
-set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
+set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 540 950 "
+set ::env(DIE_AREA) "0 0 550 950 "
 
-set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
-set ::env(PL_TARGET_DENSITY) 0.43
+set ::env(PL_TARGET_DENSITY) 0.42
 set ::env(CELL_PAD) "4"
+
+## Routing
+set ::env(GRT_ADJUSTMENT) 0.2
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 3
 
 

@@ -18,7 +18,7 @@ BLOCKS = $(shell find * -maxdepth 0 -type d)
 CONFIG = $(foreach block,$(BLOCKS), ./$(block)/config.tcl)
 CLEAN = $(foreach block,$(BLOCKS), clean-$(block))
 
-OPENLANE_TAG = mpw5
+OPENLANE_TAG = mpw7
 OPENLANE_IMAGE_NAME = riscduino/openlane:$(OPENLANE_TAG)
 OPENLANE_BASIC_COMMAND = "cd $(PWD)/../openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite"
 OPENLANE_INTERACTIVE_COMMAND = "cd $(PWD)/../openlane && flow.tcl -design ./$* -save_path .. -save -tag $* -overwrite -it -file ./$*/interactive.tcl"
@@ -43,15 +43,29 @@ endif
 	@sleep 1
 
 	@if [ -f ./$*/interactive.tcl ]; then\
-		docker run --rm  \
+		docker run --rm -v $(OPENLANE_ROOT):/openlane \
+		-v $(PDK_ROOT):$(PDK_ROOT) \
 		-v $(PWD)/..:$(PWD)/.. \
+		-v $(MCW_ROOT):$(MCW_ROOT) \
+		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
+		-e MCW_ROOT=$(MCW_ROOT) \
+		-e PDK_ROOT=$(PDK_ROOT) \
+		-e CARAVEL_ROOT=$(CARAVEL_ROOT) \
+		-e PDK=$(PDK) \
 		-e TEST_MISMATCHES=tools \
 		-e MISMATCHES_OK=1 \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_INTERACTIVE_COMMAND);\
 	else\
-		docker run --rm \
+		docker run --rm -v $(OPENLANE_ROOT):/openlane \
+		-v $(PDK_ROOT):$(PDK_ROOT) \
 		-v $(PWD)/..:$(PWD)/.. \
+		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
+		-v $(MCW_ROOT):$(MCW_ROOT) \
+		-e MCW_ROOT=$(MCW_ROOT) \
+		-e PDK=$(PDK) \
+		-e PDK_ROOT=$(PDK_ROOT) \
+		-e CARAVEL_ROOT=$(CARAVEL_ROOT) \
 		-e TEST_MISMATCHES=tools \
 		-e MISMATCHES_OK=1 \
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \

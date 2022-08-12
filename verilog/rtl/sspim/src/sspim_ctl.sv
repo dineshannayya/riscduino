@@ -52,25 +52,24 @@ module sspim_ctl
        ( 
   input  logic          clk,
   input  logic          reset_n,
+  input  logic          cfg_cpol,
   input  logic          cfg_op_req,
   input  logic          cfg_endian,
   input  logic [1:0]    cfg_op_type,
   input  logic [1:0]    cfg_transfer_size,
+  input  logic [4:0]    cfg_sck_cs_period, 
     
-  input  logic [5:0]    cfg_sck_period,
-  input  logic [4:0]    cfg_sck_cs_period, // cs setup & hold period
   input  logic [7:0]    cfg_cs_byte,
   input  logic [31:0]   cfg_datain,
   output logic [31:0]   cfg_dataout,
 
   output logic [7:0]    byte_out, // Byte out for Serial Shifting out
   input  logic [7:0]    byte_in,  // Serial Received Byte
-  output logic          sck_int,
   output logic          cs_int_n,
-  output logic          sck_pe,
-  output logic          sck_ne,
-  output logic          shift_out,
-  output logic          shift_in,
+  input logic           shift,
+  input logic           sample,
+
+  output logic          sck_active,
   output logic          load_byte,
   output logic          op_done
          
@@ -80,74 +79,25 @@ module sspim_ctl
 
  parameter LITTLE_ENDIAN  = 1'b0;
  parameter BIG_ENDIAN     = 1'b1;
+ 
+ parameter SPI_WR         = 2'b00;
+ parameter SPI_RD         = 2'b01;
+ parameter SPI_WR_RD      = 2'b10;
 
-  logic [5:0]       clk_cnt;
   logic [5:0]       sck_cnt;
 
   logic [3:0]       spiif_cs;
-  logic             shift_enb;
-  logic             clr_sck_cnt ;
-  logic             sck_out_en;
 
-  logic  [5:0]      sck_half_period;
   logic [2:0]       byte_cnt;
 
 
   `define SPI_IDLE   4'b0000
   `define SPI_CS_SU  4'b0001
-  `define SPI_WRITE  4'b0010
-  `define SPI_READ   4'b0011
-  `define SPI_CS_HLD 4'b0100
-  `define SPI_WAIT   4'b0101
+  `define SPI_DATA   4'b0010
+  `define SPI_CS_HLD 4'b0011
+  `define SPI_WAIT   4'b0100
 
 
-  assign sck_half_period = {1'b0, cfg_sck_period[5:1]};
-  // The first transition on the sck_toggle happens one SCK period
-  // after op_en or boot_en is asserted
-  always @(posedge clk or negedge reset_n) begin
-     if(!reset_n) begin
-        sck_ne   <= 1'b0;
-        clk_cnt  <= 6'h1;
-        sck_pe   <= 1'b0;
-        sck_int  <= 1'b0;
-     end // if (!reset_n)
-     else 
-     begin
-        if(cfg_op_req) 
-        begin
-           if(clk_cnt == sck_half_period) 
-           begin
-              sck_ne <= 1'b1;
-              sck_pe <= 1'b0;
-              if(sck_out_en) sck_int <= 0;
-              clk_cnt <= clk_cnt + 1'b1;
-           end // if (clk_cnt == sck_half_period)
-           else 
-           begin
-              if(clk_cnt == cfg_sck_period) 
-              begin
-                 sck_ne <= 1'b0;
-                 sck_pe <= 1'b1;
-                 if(sck_out_en) sck_int <= 1;
-                 clk_cnt <= 6'h1;
-              end // if (clk_cnt == cfg_sck_period)
-              else 
-              begin
-                 clk_cnt <= clk_cnt + 1'b1;
-                 sck_pe <= 1'b0;
-                 sck_ne <= 1'b0;
-              end // else: !if(clk_cnt == cfg_sck_period)
-           end // else: !if(clk_cnt == sck_half_period)
-        end // if (op_en)
-        else 
-        begin
-           clk_cnt    <= 6'h1;
-           sck_pe     <= 1'b0;
-           sck_ne     <= 1'b0;
-        end // else: !if(op_en)
-     end // else: !if(!reset_n)
-  end // always @ (posedge clk or negedge reset_n)
-  
 
 wire [1:0] cs_data =  (byte_cnt == 2'b00) ? cfg_cs_byte[7:6]  :
                       (byte_cnt == 2'b01) ? cfg_cs_byte[5:4]  :
@@ -162,104 +112,72 @@ assign byte_out =     (cfg_endian == LITTLE_ENDIAN) ?
                             (byte_cnt == 2'b10) ? cfg_datain[15:8]  : cfg_datain[7:0]) ;
          
          
-assign shift_out =  shift_enb && sck_ne;
 
 always @(posedge clk or negedge reset_n) begin
    if(!reset_n) begin
       spiif_cs    <= `SPI_IDLE;
       sck_cnt     <= 6'h0;
-      shift_in    <= 1'b0;
-      clr_sck_cnt <= 1'b1;
       byte_cnt    <= 2'b00;
       cs_int_n    <= 1'b1;
-      sck_out_en  <= 1'b0;
-      shift_enb   <= 1'b0;
       cfg_dataout <= 32'h0;
       load_byte   <= 1'b0;
+      sck_active  <= 1'b0;
    end
    else begin
-      if(sck_ne)
-         sck_cnt <=  clr_sck_cnt  ? 6'h0 : sck_cnt + 1 ;
-
       case(spiif_cs)
       `SPI_IDLE   : 
       begin
+          sck_active  <= 1'b0;
+          load_byte   <= 1'b0;
           op_done     <= 0;
-          clr_sck_cnt <= 1'b1;
-          sck_out_en  <= 1'b0;
-          shift_enb   <= 1'b0;
           if(cfg_op_req) 
           begin
               cfg_dataout <= 32'h0;
               spiif_cs    <= `SPI_CS_SU;
-           end 
-           else begin
+           end else begin
               spiif_cs <= `SPI_IDLE;
            end 
       end 
 
       `SPI_CS_SU  : 
        begin
-          if(sck_ne) begin
+          if(shift) begin
             cs_int_n <= cs_data[1];
             if(sck_cnt == cfg_sck_cs_period) begin
-               clr_sck_cnt <= 1'b1;
-               if(cfg_op_type == 0) begin // Write Mode
+               sck_cnt <=  'h0;
+               if((cfg_op_type == SPI_WR) || (cfg_op_type == SPI_WR_RD )) begin // Write Mode
                   load_byte   <= 1'b1;
-                  spiif_cs    <= `SPI_WRITE;
-                  shift_enb   <= 1'b0;
-               end else begin
-                  shift_in    <= 1;
-                  spiif_cs    <= `SPI_READ;
-                end
-             end
-             else begin 
-                clr_sck_cnt <= 1'b0;
-             end
+               end 
+               spiif_cs    <= `SPI_DATA;
+            end else begin 
+               sck_cnt <=  sck_cnt + 1 ;
+            end
          end
       end 
 
-      `SPI_WRITE : 
+      `SPI_DATA : 
        begin 
          load_byte   <= 1'b0;
-         if(sck_ne) begin
-           if(sck_cnt == 3'h7 )begin
-              clr_sck_cnt <= 1'b1;
-              spiif_cs    <= `SPI_CS_HLD;
-              shift_enb   <= 1'b0;
-              sck_out_en  <= 1'b0; // Disable clock output
-           end
-           else begin
-              shift_enb   <= 1'b1;
-              sck_out_en  <= 1'b1;
-              clr_sck_cnt <= 1'b0;
-           end
-         end else begin
-            shift_enb   <= 1'b1;
-         end
-      end 
-
-      `SPI_READ : 
-       begin 
-         if(sck_ne) begin
-             if( sck_cnt == 3'h7 ) begin
-                clr_sck_cnt <= 1'b1;
-                shift_in    <= 0;
-                spiif_cs    <= `SPI_CS_HLD;
-                sck_out_en  <= 1'b0; // Disable clock output
-             end
-             else begin
-                sck_out_en  <= 1'b1; // Disable clock output
-                clr_sck_cnt <= 1'b0;
-             end
+         if((shift && (cfg_cpol == 1)) || (sample && (cfg_cpol == 0)) ) begin
+               sck_active  <= 1'b1;
+         end else if((sample && (cfg_cpol == 1)) || (shift && (cfg_cpol == 0)) ) begin
+            if(sck_cnt == 4'h8 )begin
+               sck_active  <= 1'b0;
+               sck_cnt     <=  'h0;
+               spiif_cs    <= `SPI_CS_HLD;
+            end
+            else begin
+               sck_active  <= 1'b1;
+               sck_cnt     <=  sck_cnt + 1 ;
+            end
          end
       end 
 
       `SPI_CS_HLD : begin
-         if(sck_ne) begin
+         if(shift) begin
              cs_int_n <= cs_data[0];
             if(sck_cnt == cfg_sck_cs_period) begin
-               if(cfg_op_type == 1) begin // Read Mode
+               if((cfg_op_type == SPI_RD) || (cfg_op_type == SPI_WR_RD)) begin // Read Mode
                   cfg_dataout <= (cfg_endian == LITTLE_ENDIAN) ?
 			         ((byte_cnt[1:0] == 2'b00) ? { cfg_dataout[31:8],byte_in } :
                                   (byte_cnt[1:0] == 2'b01) ? { cfg_dataout[31:16], byte_in, cfg_dataout[7:0] } :
@@ -270,7 +188,7 @@ always @(posedge clk or negedge reset_n) begin
                                   (byte_cnt[1:0] == 2'b10) ? { cfg_dataout[31:16], byte_in, cfg_dataout[7:0]  } :
                                                              { cfg_dataout[31:8],byte_in}) ;
                end
-               clr_sck_cnt <= 1'b1;
+               sck_cnt     <=  'h0;
                if(byte_cnt == cfg_transfer_size) begin
                   spiif_cs <= `SPI_WAIT;
                   byte_cnt <= 0;
@@ -281,7 +199,7 @@ always @(posedge clk or negedge reset_n) begin
                end
             end
             else begin
-                clr_sck_cnt <= 1'b0;
+                sck_cnt     <=  sck_cnt + 1 ;
             end
          end 
       end // case: `SPI_CS_HLD    

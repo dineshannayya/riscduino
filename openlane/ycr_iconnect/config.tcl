@@ -34,40 +34,41 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(LEC_ENABLE) 0
 
 set ::env(VERILOG_FILES) "\
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_iconnect.sv                  \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_cross_bar.sv                 \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_router.sv                    \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_dmem_router.sv                \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_sram_mux.sv                   \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_tcm.sv                        \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_timer.sv                      \
-        $script_dir/../../verilog/rtl/yifive/ycr1c/src/top/ycr_req_retiming.sv               \
-        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/ycr_arb.sv                        \
-        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/ctech_cells.sv                    \
-        $script_dir/../../verilog/rtl/yifive/ycr1c/src/lib/sync_fifo2.sv                     \
-	$script_dir/../../verilog/rtl/yifive/ycr1c/src/core/primitives/ycr_reset_cells.sv    \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_iconnect.sv                  \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_cross_bar.sv                 \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_router.sv                    \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_dmem_router.sv                \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_sram_mux.sv                   \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_tcm.sv                        \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_timer.sv                      \
+        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_req_retiming.sv               \
+        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/ycr_arb.sv                        \
+        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/ctech_cells.sv                    \
+        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/sync_fifo2.sv                     \
+	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/primitives/ycr_reset_cells.sv    \
 	"
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/yifive/ycr1c/src/includes ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/includes ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
 ## Floorplan
-set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
+set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 380 1100"
 
-#set ::env(PDN_CFG) $script_dir/pdn_cfg.tcl
-#set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
+#set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn_cfg.tcl
+#set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro_placement.cfg
 set ::env(PL_TARGET_DENSITY) 0.20
-set ::env(CELL_PAD) "2"
+set ::env(CELL_PAD) 2
+set ::env(GRT_ADJUSTMENT) {0.2}
 
-set ::env(GLB_RT_ADJUSTMENT) {0.2}
+#set ::env(GLB_RT_ADJUSTMENT) {0.2}
 
 #set ::env(PL_ROUTABILITY_DRIVEN) "1"
 set ::env(PL_TIME_DRIVEN) "1"
@@ -97,7 +98,7 @@ set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) {1}
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 20
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 20
 set ::env(DIODE_INSERTION_STRATEGY) 3
 
 

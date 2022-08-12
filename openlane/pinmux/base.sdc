@@ -10,7 +10,7 @@ create_clock -name mclk -period 10.0000 [get_ports {mclk}]
 set_propagated_clock [get_clocks {mclk}]
 
 set_clock_transition 0.1500 [all_clocks]
-set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05

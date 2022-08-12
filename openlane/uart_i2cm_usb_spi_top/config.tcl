@@ -41,44 +41,45 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-    $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-    $script_dir/../../verilog/rtl/uart/src/uart_core.sv  \
-    $script_dir/../../verilog/rtl/uart/src/uart_cfg.sv   \
-    $script_dir/../../verilog/rtl/uart/src/uart_rxfsm.sv \
-    $script_dir/../../verilog/rtl/uart/src/uart_txfsm.sv \
-    $script_dir/../../verilog/rtl/lib/async_wb.sv   \
-    $script_dir/../../verilog/rtl/lib/async_fifo.sv      \
-    $script_dir/../../verilog/rtl/lib/async_fifo_th.sv   \
-    $script_dir/../../verilog/rtl/lib/reset_sync.sv      \
-    $script_dir/../../verilog/rtl/lib/double_sync_low.v  \
-    $script_dir/../../verilog/rtl/lib/clk_ctl.v          \
-    $script_dir/../../verilog/rtl/lib/registers.v        \
-    $script_dir/../../verilog/rtl/i2cm/src/core/i2cm_bit_ctrl.v      \
-    $script_dir/../../verilog/rtl/i2cm/src/core/i2cm_byte_ctrl.v     \
-    $script_dir/../../verilog/rtl/i2cm/src/core/i2cm_top.v           \
-    $script_dir/../../verilog/rtl/usb1_host/src/core/usbh_core.sv    \
-    $script_dir/../../verilog/rtl/usb1_host/src/core/usbh_crc16.sv   \
-    $script_dir/../../verilog/rtl/usb1_host/src/core/usbh_crc5.sv    \
-    $script_dir/../../verilog/rtl/usb1_host/src/core/usbh_fifo.sv    \  
-    $script_dir/../../verilog/rtl/usb1_host/src/core/usbh_sie.sv     \
-    $script_dir/../../verilog/rtl/usb1_host/src/phy/usb_fs_phy.v     \
-    $script_dir/../../verilog/rtl/usb1_host/src/phy/usb_transceiver.v\
-    $script_dir/../../verilog/rtl/usb1_host/src/top/usb1_host.sv     \
-    $script_dir/../../verilog/rtl/sspim/src/sspim_top.sv             \
-    $script_dir/../../verilog/rtl/sspim/src/sspim_ctl.sv             \
-    $script_dir/../../verilog/rtl/sspim/src/sspim_if.sv              \
-    $script_dir/../../verilog/rtl/sspim/src/sspim_cfg.sv             \
-    $script_dir/../../verilog/rtl/uart_i2c_usb_spi/src/uart_i2c_usb_spi.sv\
-    $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
+    $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+    $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_core.sv  \
+    $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_cfg.sv   \
+    $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_rxfsm.sv \
+    $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_txfsm.sv \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_wb.sv   \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_fifo.sv      \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_fifo_th.sv   \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv      \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/double_sync_low.v  \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v          \
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v        \
+    $::env(DESIGN_DIR)/../../verilog/rtl/i2cm/src/core/i2cm_bit_ctrl.v      \
+    $::env(DESIGN_DIR)/../../verilog/rtl/i2cm/src/core/i2cm_byte_ctrl.v     \
+    $::env(DESIGN_DIR)/../../verilog/rtl/i2cm/src/core/i2cm_top.v           \
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/core/usbh_core.sv    \
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/core/usbh_crc16.sv   \
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/core/usbh_crc5.sv    \
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/core/usbh_fifo.sv    \  
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/core/usbh_sie.sv     \
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/phy/usb_fs_phy.v     \
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/phy/usb_transceiver.v\
+    $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/top/usb1_host.sv     \
+    $::env(DESIGN_DIR)/../../verilog/rtl/sspim/src/sspim_top.sv             \
+    $::env(DESIGN_DIR)/../../verilog/rtl/sspim/src/sspim_ctl.sv             \
+    $::env(DESIGN_DIR)/../../verilog/rtl/sspim/src/sspim_if.sv              \
+    $::env(DESIGN_DIR)/../../verilog/rtl/sspim/src/sspim_cfg.sv             \
+    $::env(DESIGN_DIR)/../../verilog/rtl/sspim/src/sspim_clkgen.sv             \
+    $::env(DESIGN_DIR)/../../verilog/rtl/uart_i2c_usb_spi/src/uart_i2c_usb_spi.sv\
+    $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv     \
     "
 
 set ::env(SYNTH_NO_FLAT) {1}
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
-set ::env(VERILOG_INCLUDE_DIRS) [glob $script_dir/../../verilog/rtl/i2cm/src/includes $script_dir/../../verilog/rtl/usb1_host/src/includes ]
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/i2cm/src/includes $::env(DESIGN_DIR)/../../verilog/rtl/usb1_host/src/includes ]
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -91,7 +92,7 @@ set ::env(GND_PIN) [list {vssd1}]
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
-set ::env(DIE_AREA) [list 0.0 0.0 510.0 725.0]
+set ::env(DIE_AREA) [list 0.0 0.0 520.0 725.0]
 
 
 
@@ -117,13 +118,14 @@ set ::env(FP_PDN_HWIDTH) 5
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) {1}
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) {1}
 
-set ::env(GLB_RT_ADJUSTMENT) {0.25}
+#set ::env(GLB_RT_ADJUSTMENT) {0.25}
+set ::env(GLB_RT_LAYER_ADJUSTMENTS) {0.25,0,0,0,0,0}
 set ::env(CELL_PAD) {2}
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"

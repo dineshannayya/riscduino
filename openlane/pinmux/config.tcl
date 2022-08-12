@@ -41,24 +41,24 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-     $script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
-     $script_dir/../../verilog/rtl/pinmux/src/pinmux.sv     \
-     $script_dir/../../verilog/rtl/pinmux/src/pinmux_reg.sv \
-     $script_dir/../../verilog/rtl/pinmux/src/gpio_intr.sv  \
-     $script_dir/../../verilog/rtl/pinmux/src/pwm.sv        \
-     $script_dir/../../verilog/rtl/pinmux/src/timer.sv        \
-     $script_dir/../../verilog/rtl/lib/pulse_gen_type1.sv   \
-     $script_dir/../../verilog/rtl/lib/pulse_gen_type2.sv   \
-     $script_dir/../../verilog/rtl/lib/registers.v          \
-     $script_dir/../../verilog/rtl/lib/ctech_cells.sv     \
-     $script_dir/../../verilog/rtl/lib/reset_sync.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_reg.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/gpio_intr.sv  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pwm.sv        \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer.sv        \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/pulse_gen_type1.sv   \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/pulse_gen_type2.sv   \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v          \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv     \
      "
 
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
-set ::env(SDC_FILE) "$script_dir/base.sdc"
-set ::env(BASE_SDC_FILE) "$script_dir/base.sdc"
+set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -72,7 +72,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 550 450"
+set ::env(DIE_AREA) "0 0 500 400"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -82,8 +82,11 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.30"
+set ::env(PL_TARGET_DENSITY) "0.38"
 set ::env(CELL_PAD) "4"
+
+set ::env(FP_IO_VEXTEND) {6}
+set ::env(FP_IO_HEXTEND) {6}
 
 
 # helps in anteena fix
@@ -99,7 +102,7 @@ set ::env(FP_PDN_HWIDTH) 5
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
-set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 10
 
 set ::env(DIODE_INSERTION_STRATEGY) 4
 

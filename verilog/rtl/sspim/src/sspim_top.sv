@@ -46,6 +46,9 @@
 ////            out is big endian, i.e bit[7],[6] ..[0]           ////
 ////    0.3 - April 6, 2022, Dinesh A                             ////
 ////            Four chip select are driven out                   ////
+////    0.4 - Aug 5, 2022, Dinesh A                               ////
+////          A. SPI Mode 0 to 3 support added,                   ////
+////          B. SPI Duplex mode TX-RX Mode added                 ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -125,54 +128,81 @@ logic  [7:0]         cfg_cs_byte                   ; // cs bit information
 logic  [31:0]        cfg_datain                    ; // data for transfer
 logic  [31:0]        cfg_dataout                   ; // data for received
 logic                hware_op_done                 ; // operation done
-
+logic                cfg_bit_order                 ; // Bit order 1 -> LSBFIRST or  0 -> MSBFIRST
+logic                cfg_cpol                      ; // spi clock idle phase
+logic                cfg_cpha                      ; // spi data sample and lanch phase
 
 sspim_if  u_spi_if
           (
           . clk                         (clk                          ), 
           . reset_n                     (reset_n                      ),
 
-           // towards ctrl i/f
-          . sck_pe                      (sck_pe                       ),
+          // cfg
+          . cfg_bit_order               (cfg_bit_order                ),
+          . cfg_tgt_sel                 (cfg_tgt_sel                  ),
+
+          // clkgen
+          . shift                       (shift                        ),
+          . sample                      (sample                       ),   
           . sck_int                     (sck_int                      ),
+
+           // towards ctrl i/f
+          . sck_active                  (sck_active                   ),
           . cs_int_n                    (cs_int_n                     ),
           . byte_in                     (byte_in                      ),
           . load_byte                   (load_byte                    ),
           . byte_out                    (byte_out                     ),
-          . shift_out                   (shift_out                    ),
-          . shift_in                    (shift_in                     ),
 
-          . cfg_tgt_sel                 (cfg_tgt_sel                  ),
-
+          // External I/F
           . sck                         (sck                          ),
           . so                          (so                           ),
           . si                          (si                           ),
           . cs_n                        (ssn                          )
            );
 
+sspim_clkgen u_clkgen
+       ( 
+          . clk                         (clk                          ), 
+          . reset_n                     (reset_n                      ),
+
+          // cfg
+          . cfg_cpol                    (cfg_cpol                     ),    
+          . cfg_cpha                    (cfg_cpha                     ),    
+          . cfg_sck_period              (cfg_sck_period               ),
+          . cfg_op_req                  (cfg_op_req                   ),
+
+          // ctrl
+          . sck_active                  (sck_active                   ),
+
+          . sck_int                     (sck_int                      ),  
+          . shift                       (shift                        ),    
+          . sample                      (sample                       ),   
+          . sck_ne                      (),   
+          . sck_pe                      ()
+         
+         );
 
 sspim_ctl  u_spi_ctrl
        ( 
           . clk                         (clk                          ),
           . reset_n                     (reset_n                      ),
 
+          // cfg
+          . cfg_cpol                    (cfg_cpol                     ),    
           . cfg_op_req                  (cfg_op_req                   ),
           . cfg_endian                  (cfg_endian                   ),
           . cfg_op_type                 (cfg_op_type                  ),
           . cfg_transfer_size           (cfg_transfer_size            ),
-          . cfg_sck_period              (cfg_sck_period               ),
           . cfg_sck_cs_period           (cfg_sck_cs_period            ),
           . cfg_cs_byte                 (cfg_cs_byte                  ),
           . cfg_datain                  (cfg_datain                   ),
           . cfg_dataout                 (cfg_dataout                  ),
           . op_done                     (hware_op_done                ),
 
-          . sck_int                     (sck_int                      ),
+          . sck_active                  (sck_active                   ),
           . cs_int_n                    (cs_int_n                     ),
-          . sck_pe                      (sck_pe                       ),
-          . sck_ne                      (sck_ne                       ),
-          . shift_out                   (shift_out                    ),
-          . shift_in                    (shift_in                     ),
+          . shift                       (shift                        ),
+          . sample                      (sample                       ),
           . load_byte                   (load_byte                    ),
           . byte_out                    (byte_out                     ),
           . byte_in                     (byte_in                      )
@@ -200,6 +230,9 @@ sspim_cfg u_cfg (
 
 
            // configuration signal
+          . cfg_cpol                    (cfg_cpol                     ),
+          . cfg_cpha                    (cfg_cpha                     ),
+          . cfg_bit_order               (cfg_bit_order                ),
           . cfg_tgt_sel                 (cfg_tgt_sel                  ),
           . cfg_op_req                  (cfg_op_req                   ), // SPI operation request
           . cfg_endian                  (cfg_endian                   ),
