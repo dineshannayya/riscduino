@@ -4,7 +4,7 @@
 create_clock -name core_clk -period 10.0000 [get_ports {clk}]
 
 set_clock_transition 0.1500 [all_clocks]
-set_clock_uncertainty -setup 0.2500 [all_clocks]
+set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold  0.2500 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05

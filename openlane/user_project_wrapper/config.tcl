@@ -16,7 +16,6 @@
 # Base Configurations. Don't Touch
 # section begin
 
-set ::env(PDK) "sky130A"
 set ::env(STD_CELL_LIBRARY) "sky130_fd_sc_hd"
 
 # YOU ARE NOT ALLOWED TO CHANGE ANY VARIABLES DEFINED IN THE FIXED WRAPPER CFGS 
@@ -78,7 +77,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_iconnect.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/digital_pll.v \
 	    $::env(DESIGN_DIR)/../../verilog/rtl/sar_adc_10b/sar_adc_10b.v \
-	    $::env(PDK_ROOT)/sky130A/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
+	    $::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	    "
 
 set ::env(EXTRA_LEFS) "\
@@ -91,7 +90,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/ycr_core_top.lef \
 	$lef_root/ycr_iconnect.lef \
 	$lef_root/digital_pll.lef \
-	$::env(PDK_ROOT)/sky130A/libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
+	$::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
@@ -104,7 +103,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/ycr_core_top.gds \
 	$gds_root/ycr_iconnect.gds \
 	$gds_root/digital_pll.gds \
-	$::env(PDK_ROOT)/sky130A/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
+	$::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -181,9 +180,22 @@ set ::env(QUIT_ON_MAGIC_DRC) "0"
 set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
-set ::env(FP_PDN_IRDROP) "0"
+
+set ::env(FP_PDN_IRDROP) "1"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
 set ::env(FP_PDN_VERTICAL_HALO) "10"
+
+#
+
+set ::env(FP_PDN_CORE_RING_HOFFSET) {12.45}
+set ::env(FP_PDN_CORE_RING_HSPACING) {1.7}
+set ::env(FP_PDN_CORE_RING_HWIDTH) {3.1}
+
+set ::env(FP_PDN_CORE_RING_VOFFSET) {12.45}
+set ::env(FP_PDN_CORE_RING_VSPACING) {1.7}
+set ::env(FP_PDN_CORE_RING_VWIDTH) {3.1}
+
+
 set ::env(FP_PDN_VOFFSET) "5"
 set ::env(FP_PDN_VPITCH) "80"
 set ::env(FP_PDN_VSPACING) "15.5"
