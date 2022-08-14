@@ -19,11 +19,11 @@
 set ::env(STD_CELL_LIBRARY) "sky130_fd_sc_hd"
 
 # YOU ARE NOT ALLOWED TO CHANGE ANY VARIABLES DEFINED IN THE FIXED WRAPPER CFGS 
-source $::env(CARAVEL_ROOT)/openlane/user_project_wrapper/fixed_wrapper_cfgs.tcl
+source $::env(DESIGN_DIR)/fixed_dont_change/fixed_wrapper_cfgs.tcl
 
 
 # YOU CAN CHANGE ANY VARIABLES DEFINED IN THE DEFAULT WRAPPER CFGS BY OVERRIDING THEM IN THIS CONFIG.TCL
-source $::env(CARAVEL_ROOT)/openlane/user_project_wrapper/default_wrapper_cfgs.tcl
+source $::env(DESIGN_DIR)/fixed_dont_change/default_wrapper_cfgs.tcl
 
 
 set script_dir [file dirname [file normalize [info script]]]
@@ -38,7 +38,6 @@ set gds_root $::env(DESIGN_DIR)/../../gds/
 # User Configurations
 #
 set ::env(DESIGN_IS_CORE) 1
-set ::env(FP_PDN_CORE_RING) 1
 
 
 ## Source Verilog Files
@@ -55,10 +54,9 @@ set ::env(CLOCK_PERIOD) "10"
 
 ## Internal Macros
 ### Macro Placement
-set ::env(FP_SIZING) "absolute"
 set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro.cfg
 
-set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn_cfg.tcl
+#set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn_cfg.tcl
 
 set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
@@ -121,10 +119,8 @@ set ::env(FP_PDN_CHECK_NODES) 0
 set ::env(FP_PDN_ENABLE_MACROS_GRID) "1"
 #set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 
-set ::env(VDD_NETS) {vccd1 vccd2 vdda1 vdda2}
 set ::env(VDD_NET) {vccd1}
 set ::env(VDD_PIN) {vccd1}
-set ::env(GND_NETS) {vssd1 vssd2 vssa1 vssa2}
 set ::env(GND_NET) {vssd1}
 set ::env(GND_PIN) {vssd1}
 
@@ -187,20 +183,8 @@ set ::env(FP_PDN_VERTICAL_HALO) "10"
 
 #
 
-set ::env(FP_PDN_CORE_RING_HOFFSET) {12.45}
-set ::env(FP_PDN_CORE_RING_HSPACING) {1.7}
-set ::env(FP_PDN_CORE_RING_HWIDTH) {3.1}
-
-set ::env(FP_PDN_CORE_RING_VOFFSET) {12.45}
-set ::env(FP_PDN_CORE_RING_VSPACING) {1.7}
-set ::env(FP_PDN_CORE_RING_VWIDTH) {3.1}
-
-
 set ::env(FP_PDN_VOFFSET) "5"
 set ::env(FP_PDN_VPITCH) "80"
-set ::env(FP_PDN_VSPACING) "15.5"
-set ::env(FP_PDN_VWIDTH) "3.1"
 set ::env(FP_PDN_HOFFSET) "10"
 set ::env(FP_PDN_HPITCH) "90"
-set ::env(FP_PDN_HSPACING) "10"
-set ::env(FP_PDN_HWIDTH) "3.1"
+
