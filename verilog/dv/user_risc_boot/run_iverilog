@@ -16,13 +16,17 @@
 # // SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>
 # // //////////////////////////////////////////////////////////////////////////
 
-/home/dinesha/.arduino15/packages/riscduino/tools/riscv32-unknown-elf-gcc/3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f/bin/riscv32-unknown-elf-g++ -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -fno-common -fno-builtin-printf -DTCM=0 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../../verilog/dv/firmware  user_risc_boot.c -o user_risc_boot.o
-/home/dinesha/.arduino15/packages/riscduino/tools/riscv32-unknown-elf-gcc/3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f/bin/riscv32-unknown-elf-g++ -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -fno-common -fno-builtin-printf -DTCM=0 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I../../../verilog/dv/firmware  ../../../verilog/dv/firmware/crt.S -o crt.o
-/home/dinesha/.arduino15/packages/riscduino/tools/riscv32-unknown-elf-gcc/3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f/bin/riscv32-unknown-elf-g++ -o user_risc_boot.elf -T ../../../verilog/dv/firmware/link.ld user_risc_boot.o crt.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
-/home/dinesha/.arduino15/packages/riscduino/tools/riscv32-unknown-elf-gcc/3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f/bin/riscv32-unknown-elf-objcopy -O verilog user_risc_boot.elf user_risc_boot.hex
-/home/dinesha/.arduino15/packages/riscduino/tools/riscv32-unknown-elf-gcc/3f7b3696217548bc31aeccf9a0c89bdfa4e16a8f/bin/riscv32-unknown-elf-objcopy -D user_risc_boot.elf > user_risc_boot.dump
-rm crt.o user_risc_boot.o
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common  user_risc_boot.c -o user_risc_boot.o
 
+riscv64-unknown-elf-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=1 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I../../rtl/syntacore/scr1/sim/tests/common/  ../../rtl/syntacore/scr1/sim/tests/common/crt_tcm.S -o crt_tcm.o
+
+riscv64-unknown-elf-gcc -o user_risc_boot.elf -T ../../rtl/syntacore/scr1/sim/tests/common/link_tcm.ld user_risc_boot.o crt_tcm.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32
+
+riscv64-unknown-elf-objcopy -O verilog user_risc_boot.elf user_risc_boot.hex
+
+riscv64-unknown-elf-objdump -D user_risc_boot.elf > user_risc_boot.dump
+
+rm crt_tcm.o user_risc_boot.o
 
 #iverilog with waveform dump
 iverilog -g2005-sv -DWFDUMP -DFUNCTIONAL -DSIM -I $PDK_PATH -I  ../../../caravel/verilog/rtl  -I ../ -I ../../../verilog/rtl -I ../ -I ../../../verilog -I ../../../verilog/rtl/syntacore/scr1/src/includes   -I ../../../verilog/rtl/sdram_ctrl/src/defs -I $CARAVEL_ROOT/verilog/dv/caravel -I ../model -I ../agents user_risc_boot_tb.v -o user_risc_boot_tb.vvp

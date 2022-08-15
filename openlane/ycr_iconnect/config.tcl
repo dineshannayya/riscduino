@@ -62,8 +62,6 @@ set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 380 1100"
 
-#set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn_cfg.tcl
-#set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro_placement.cfg
 set ::env(PL_TARGET_DENSITY) 0.20
 set ::env(CELL_PAD) 2
 set ::env(GRT_ADJUSTMENT) {0.2}

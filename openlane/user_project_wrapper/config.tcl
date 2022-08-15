@@ -129,15 +129,17 @@ set ::env(GRT_OBS) "                              \
 	                li1   150 130  833.1  546.54,\
 	                met1  150 130  833.1  546.54,\
 	                met2  150 130  833.1  546.54,\
-                    met3  150 130  833.1  546.54,\
+                        met3  150 130  833.1  546.54,\
+
 	                li1   950 130  1633.1 546.54,\
 	                met1  950 130  1633.1 546.54,\
 	                met2  950 130  1633.1 546.54,\
-                    met3  950 130  1633.1 546.54,\
-                    li1   150  750 833.1  1166.54,\
-                    met1  150  750 833.1  1166.54,\
-                    met2  150  750 833.1  1166.54,\
-                    met3  150  750 833.1  1166.54,\
+                        met3  950 130  1633.1 546.54,\
+
+                        li1   150  750 833.1  1166.54,\
+                        met1  150  750 833.1  1166.54,\
+                        met2  150  750 833.1  1166.54,\
+                        met3  150  750 833.1  1166.54,\
 	                met5  0 0 2920 3520"
 
 #set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 1, vdda2 vssa2 1"
@@ -184,7 +186,7 @@ set ::env(FP_PDN_VERTICAL_HALO) "10"
 #
 
 set ::env(FP_PDN_VOFFSET) "5"
-set ::env(FP_PDN_VPITCH) "80"
-set ::env(FP_PDN_HOFFSET) "10"
-set ::env(FP_PDN_HPITCH) "90"
+set ::env(FP_PDN_VPITCH) "180"
+set ::env(FP_PDN_HOFFSET) "5"
+set ::env(FP_PDN_HPITCH) "180"
 
