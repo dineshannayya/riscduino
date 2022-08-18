@@ -43,7 +43,7 @@ endif
 	@sleep 1
 
 	@if [ -f ./$*/interactive.tcl ]; then\
-		docker run --rm -v $(OPENLANE_ROOT):/openlane \
+		docker run --rm \
 		-v $(PDK_ROOT):$(PDK_ROOT) \
 		-v $(PWD)/..:$(PWD)/.. \
 		-v $(MCW_ROOT):$(MCW_ROOT) \
@@ -57,7 +57,7 @@ endif
 		-u $(shell id -u $(USER)):$(shell id -g $(USER)) \
 		$(OPENLANE_IMAGE_NAME) sh -c $(OPENLANE_INTERACTIVE_COMMAND);\
 	else\
-		docker run --rm -v $(OPENLANE_ROOT):/openlane \
+		docker run --rm \
 		-v $(PDK_ROOT):$(PDK_ROOT) \
 		-v $(PWD)/..:$(PWD)/.. \
 		-v $(CARAVEL_ROOT):$(CARAVEL_ROOT) \
