@@ -337,34 +337,16 @@ Following Design changes are done on the basic version of syntacore RISC core
     <td  align="center"> SSPI</td>
   </tr>
   <tr>
+    <td  align="center"> 0x1001_01C0 to 0x1001_013F</td> 
+    <td  align="center"> 0x1001_01C0 to 0x1001_013F</td>
+    <td  align="center"> 0x1001_01C0 to 0x1001_013F</td>
+    <td  align="center"> SSPI</td>
+  </tr>
+  <tr>
     <td  align="center"> 0x1002_0080 to 0x1002_00FF</td> 
     <td  align="center"> 0x1002_0080 to 0x1002_00FF</td>
     <td  align="center"> 0x1002_0080 to 0x1002_00FF</td>
     <td  align="center"> PINMUX</td>
-  </tr>
-  <tr>
-    <td  align="center"> 0x1003_0080 to 0x1003_07FF</td> 
-    <td  align="center"> 0x1003_0080 to 0x1003_07FF</td>
-    <td  align="center"> 0x1003_0080 to 0x1003_07FF</td>
-    <td  align="center"> SRAM-0 (2KB)</td>
-  </tr>
-  <tr>
-    <td  align="center"> 0x1003_0800 to 0x1003_0FFF</td> 
-    <td  align="center"> 0x1003_0800 to 0x1003_0FFF</td>
-    <td  align="center"> 0x1003_0800 to 0x1003_0FFF</td>
-    <td  align="center"> SRAM-1 (2KB)</td>
-  </tr>
-  <tr>
-    <td  align="center"> 0x1003_1000 to 0x1003_17FF</td> 
-    <td  align="center"> 0x1003_1000 to 0x1003_17FF</td>
-    <td  align="center"> 0x1003_1000 to 0x1003_17FF</td>
-    <td  align="center"> SRAM-2 (2KB)</td>
-  </tr>
-  <tr>
-    <td  align="center"> 0x1003_1800 to 0x1003_1FFF</td> 
-    <td  align="center"> 0x1003_1800 to 0x1003_1FFF</td>
-    <td  align="center"> 0x1003_1800 to 0x1003_1FFF</td>
-    <td  align="center"> SRAM-3 (2KB)</td>
   </tr>
   <tr>
     <td  align="center"> -</td> 
@@ -565,42 +547,6 @@ Following Design changes are done on the basic version of syntacore RISC core
 
 
 
-# Repository contents
-
-```
-|verilog
-|   ├─  rtl
-|   |     |-  syntacore
-|   |     |     |─  scr1
-|   |     |     |    ├─ **docs**                           | **SCR1 documentation**
-|   |     |     |    |      ├─ scr1_eas.pdf                | SCR1 External Architecture Specification
-|   |     |     |    |      └─ scr1_um.pdf                 | SCR1 User Manual
-|   |     |     |    |─  **src**                           | **SCR1 RTL source and testbench files**
-|   |     |     |    |   ├─ includes                       | Header files
-|   |     |     |    |   ├─ core                           | Core top source files
-|   |     |     |    |   ├─ top                            | Cluster source files
-|   |     |     |    |─  **synth**                         | **SCR1 RTL Synthesis files **
-|   |     |- Qspi_master
-|   |     |     |- src                                     | Qard SPI Master Source files
-|   |     |-wb_interconnect
-|   |     |     |- src                                     | 3x4 Wishbone Interconnect
-|   |     |- digital_core
-|   |     |     |- src                                     | Digital core Source files
-|   |     |- lib                                           | common library source files
-|   |- dv
-|   |   |- la_test1                                        | carevel LA test
-|   |   |- risc_boot                                       | user core risc boot test
-|   |   |- wb_port                                         | user wishbone test
-|   |   |- user_risc_boot                                  | user standalone test without carevel soc
-|   |- gl                                                  | ** GLS Source files **
-|
-|- openlane
-    |- spi_master                                          | spi_master openlane scripts   
-    |- syntacore                                           | Risc Core openlane scripts   
-    |- user_project_wrapper                                | carvel user project wrapper 
-
-```
-
 
 # Prerequisites
    - Docker (ensure docker daemon is running) -- tested with version 19.03.12, but any recent version should suffice.
@@ -719,6 +665,13 @@ Examples:
     make verify-riscv_regress                  - standalone riscv compliance test suite
     make verify-arduino_risc_boot              - standalone riscv core-0 boot using arduino tool set
     make verify-arduino_hello_world            - standalone riscv core-0 hello world test using arduino tool set
+    make verify-arduino_digital_port_control   - standalone riscv core-0 digital port control using arduino tool set
+    make verify-arduino_ascii_table            - standalone riscv core-0 ascii table using arduino tool set
+    make verify-arduino_character_analysis     - standalone riscv core-0 character analysis using arduino tool set
+    make verify-arduino_multi_serial           - standalone riscv core-0 multi uart test using arduino tool set
+    make verify-arduino_switchCase2            - standalone riscv core-0 switch case using arduino tool set
+    make verify-arduino_risc_boot              - standalone riscv core-0 boot test using arduino tool set
+    make verify-arduino_string                 - standalone riscv core-0 string usage test using arduino tool set
 
    
     make verify-user_uart SIM=RTL DUMP=OFF     - Standalone user uart-0 test using user risc core with waveform dump off

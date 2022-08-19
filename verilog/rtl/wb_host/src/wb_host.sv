@@ -411,11 +411,11 @@ end
 // Locally there register are define to control the reset and clock for user
 // area
 //-----------------------------------------------------------------------
-// caravel user space is 0x3000_0000 to 0x3007_FFFF
+// caravel user space is 0x3000_0000 to 0x300F_FFFF
 // So we have allocated 
 // 0x3008_0000 - 0x3008_00FF - Assigned to WB Host Address Space
 // Since We need more than 16MB Address space to access SDRAM/SPI we have
-// added indirect MSB 8 bit address select option
+// added indirect MSB 13 bit address select option
 // So Address will be {Bank_Sel[15:3], wbm_adr_i[18:0]}
 // ---------------------------------------------------------------------
 assign reg_sel       = wb_req & (wb_adr_i[19] == 1'b1);

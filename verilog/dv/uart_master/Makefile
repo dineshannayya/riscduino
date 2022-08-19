@@ -51,15 +51,12 @@ export VERILOG_PATH = $(CORE_VERILOG_PATH)
 ## Compiler Information 
 #######################################################################
 
-export GCC_PATH?=      $(TOOLS)/bin
-export GCC_PREFIX?=    riscv32-unknown-linux-gnu
+export TOOLS     ?=  /opt/riscv32i 
+export GCC_PATH  ?=  $(TOOLS)/bin
+GCC_PREFIX?=riscv32-unknown-elf
 
 
-############## USER SPECIFIC DEFINE ##################
 
-YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
-
-######################################################
 
 
 
@@ -153,28 +150,30 @@ hex:  ${BLOCKS:=.hex}
 ##############################################################################
 
 %.vvp: %_tb.v %.hex
+
+## RTL
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
     else  
-	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
    endif
-endif 
+endif
 
-## GL
+##GL
 ifeq ($(SIM),GL)
-    ifeq ($(CONFIG),caravel_user_project)
-		iverilog -Ttyp -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+   ifeq ($(DUMP),OFF)
+	iverilog -Ttyp -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.gl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) -o $@ $<
     else
-		iverilog -Ttyp -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
-        -f$(VERILOG_PATH)/includes/includes.gl.$(CONFIG) \
-		-f$(CARAVEL_PATH)/gl/__user_project_wrapper.v -o $@ $<
+	iverilog -Ttyp -DWFDUMP -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+        -f$(VERILOG_PATH)/includes/includes.gl.caravel \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) -o $@ $<
     endif
 endif 
 
@@ -223,3 +222,9 @@ clean:
 	\rm  -f *.elf *.hex *.bin *.vvp *.log *.vcd *.lst *.hexe
 
 .PHONY: clean hex all
+
+
+
+
+
+

@@ -51,8 +51,8 @@ set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[1]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[2]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[3]}]
 
-set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
-set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
+set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
+set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
 set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
 

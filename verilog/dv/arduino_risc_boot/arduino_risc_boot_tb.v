@@ -137,10 +137,10 @@ module arduino_risc_boot_tb;
 		// Remove all the reset
 		if(d_risc_id == 0) begin
 		     $display("STATUS: Working with Risc core 0");
-                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
+                     wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
 		end else if(d_risc_id == 1) begin
 		     $display("STATUS: Working with Risc core 1");
-                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h21F);
+                     wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
 		end
 
 
@@ -162,12 +162,12 @@ module arduino_risc_boot_tb;
                 // 0x3000002C = 0x66778899; 
 
                 test_fail = 0;
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,read_data,32'h11223344);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,read_data,32'h22334455);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,read_data,32'h33445566);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,read_data,32'h44556677);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,read_data,32'h55667788);
-		wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,read_data,32'h66778899);
+		wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,32'h11223344);
+		wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,32'h22334455);
+		wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,32'h33445566);
+		wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_3,read_data,32'h44556677);
+		wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_4,read_data,32'h55667788);
+		wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_5,read_data,32'h66778899);
 
 
 	   
@@ -231,6 +231,9 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

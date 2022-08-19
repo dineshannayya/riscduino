@@ -98,31 +98,32 @@ void main()
     reg_mprj_wbhost_reg0 = 0x1;
 
     // Remove Reset
-    reg_pinmux_gbl_cfg0 = 0x01f;
+    reg_glbl_cfg0 = 0x01f;
 
-    if (reg_pinmux_chip_id != 0x82681301) bFail = 1;
+    if (reg_pinmux_chip_id != 0x82681501) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB610000;
 
     // write software write & read Register
-    reg_pinmux_soft_reg_1  = 0x11223344; 
-    reg_pinmux_soft_reg_2  = 0x22334455; 
-    reg_pinmux_soft_reg_3  = 0x33445566; 
-    reg_pinmux_soft_reg_4  = 0x44556677; 
-    reg_pinmux_soft_reg_5  = 0x55667788; 
-    reg_pinmux_soft_reg_6  = 0x66778899; 
+    reg_glbl_soft_reg_0  = 0x11223344; 
+    reg_glbl_soft_reg_1  = 0x22334455; 
+    reg_glbl_soft_reg_2  = 0x33445566; 
+    reg_glbl_soft_reg_3  = 0x44556677; 
+    reg_glbl_soft_reg_4  = 0x55667788; 
+    reg_glbl_soft_reg_5  = 0x66778899; 
 
 
-    if (reg_pinmux_soft_reg_1  != 0x11223344) bFail = 1;
-    if (bFail == 1) reg_mprj_datal = 0xAB610000;
-    if (reg_pinmux_soft_reg_2  != 0x22334455) bFail = 1;
+    if (reg_glbl_soft_reg_0  != 0x11223344) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB620000;
-    if (reg_pinmux_soft_reg_3  != 0x33445566) bFail = 1;
+    if (reg_glbl_soft_reg_1  != 0x22334455) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB630000;
-    if (reg_pinmux_soft_reg_4  != 0x44556677) bFail = 1;
+    if (reg_glbl_soft_reg_2  != 0x33445566) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB640000;
-    if (reg_pinmux_soft_reg_5 != 0x55667788) bFail = 1;
+    if (reg_glbl_soft_reg_3  != 0x44556677) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB650000;
-    if (reg_pinmux_soft_reg_6 != 0x66778899) bFail = 1;
+    if (reg_glbl_soft_reg_4 != 0x55667788) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB660000;
+    if (reg_glbl_soft_reg_5 != 0x66778899) bFail = 1;
+    if (bFail == 1) reg_mprj_datal = 0xAB670000;
 
     if(bFail == 0) {
         reg_mprj_datal = 0xAB6A0000;

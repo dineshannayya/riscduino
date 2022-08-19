@@ -35,6 +35,7 @@
 ////      8. 2KB icache and 2KB dcache                            ////
 ////      8. 6 Channel ADC                                        ////
 ////      9. Pinmux with GPIO and 6 PWM                           ////
+////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -225,6 +226,16 @@
 ////         changes in sspim                                     ////
 ////           A. SPI Mode 0 to 3 support added,                  ////
 ////           B. SPI Duplex mode TX-RX Mode added                ////
+////    5.0  Aug 15 2022, Dinesh A                                ////
+////          A. 15 Hardware Semahore added                       ////
+////          B. Pinmux Address Space are Split as                ////
+////             `define ADDR_SPACE_PINMUX  32'h1002_0000         ////
+////             `define ADDR_SPACE_GLBL    32'h1002_0000         ////
+////             `define ADDR_SPACE_GPIO    32'h1002_0040         ////
+////             `define ADDR_SPACE_PWM     32'h1002_0080         ////
+////             `define ADDR_SPACE_TIMER   32'h1002_00C0         ////
+////             `define ADDR_SPACE_SEMA    32'h1002_0100         ////
+////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -252,6 +263,32 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
+/*********************************************************************
+    Memory Map:                                               ////
+                                                              ////
+       SOC Memory Map                                         ////
+       0x0000_0000 to 0x0FFF_FFFF  - QSPIM MEMORY             ////
+       0x1000_0000 to 0x1000_00FF  - QSPIM REG
+       0x1001_0000 to 0x1001_003F  - UART0
+       0x1001_0040 to 0x1001_007F  - I2
+       0x1001_0080 to 0x1001_00BF  - USB
+       0x1001_00C0 to 0x1001_00FF  - SSPIM
+       0x1001_0100 to 0x1001_013F  - UART1
+       0x1002_0000 to 0x1002_00FF  - PINMUX
+
+       Caravel Memory Map:
+-----------------------------------------------------------------------
+      caravel user space is 0x3000_0000 to 0x300F_FFFF
+      So we have allocated 
+      0x3008_0000 - 0x3008_00FF - Assigned to WB Host Address Space
+      Since We need more than 16MB Address space to access SDRAM/SPI we have
+      added indirect MSB 13 bit address select option
+      So Address will be {Bank_Sel[15:3], wbm_adr_i[18:0]}
+ ---------------------------------------------------------------------
+       0x3080_0000 to 0x3080_00FF  - WB HOST 
+       0x3000_0000 to 0x307F_FFFF  - Indirect Address
+                                     {Bank_Sel[15:3],WB ADDR[18:0]}
+***********************************************************************/
 
 module user_project_wrapper (
 `ifdef USE_POWER_PINS
@@ -427,7 +464,7 @@ wire                           wbd_adc_ack_i                          ;
 //    Global Register Wishbone Interface
 //---------------------------------------------------------------------
 wire                           wbd_glbl_stb_o                         ; // strobe/request
-wire   [7:0]                   wbd_glbl_adr_o                         ; // address
+wire   [8:0]                   wbd_glbl_adr_o                         ; // address
 wire                           wbd_glbl_we_o                          ; // write
 wire   [WB_WIDTH-1:0]          wbd_glbl_dat_o                         ; // data output
 wire   [3:0]                   wbd_glbl_sel_o                         ; // byte enable
@@ -1222,7 +1259,7 @@ uart_i2c_usb_spi_top   u_uart_i2c_usb_spi (
 
      );
 
-pinmux u_pinmux(
+pinmux_top u_pinmux(
 `ifdef USE_POWER_PINS
           .vccd1                   (vccd1                   ),// User area 1 1.8V supply
           .vssd1                   (vssd1                   ),// User area 1 digital ground

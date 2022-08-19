@@ -146,13 +146,13 @@ module user_timer_tb;
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// config 1us based on system clock - 1000/25ns = 40 
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG1,39);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
 
 		// Enable Timer Interrupt
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'h700);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'h700);
 
 		test_fail = 0;
 	        repeat (200) @(posedge clock);
@@ -160,25 +160,25 @@ module user_timer_tb;
 
 	        $display("Step-1, Timer-0: 1us * 100 = 100us; Timer-1: 200us; Timer-2: 300us");
 	        test_step = 1;
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER0,'h0001_0063);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER1,'h0001_00C7);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER2,'h0001_012B);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0001_0063);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0001_00C7);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0001_012B);
 	        timer_monitor(OneUsPeriod*100,OneUsPeriod*200,OneUsPeriod*300);
 
 		$display("Checking the Timer Interrupt generation and clearing");
 
 		// Disable the Timer - To avoid multiple interrupt generation
 		// during status check and interrupt clearing
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER0,'h0000_0063);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER1,'h0000_00C7);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER2,'h0000_012B);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0000_0063);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0000_00C7);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0000_012B);
 
-                wb_user_core_read(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data);
+                wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
 		if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b111)) begin
 		    $display("STATUS: Timer Interrupt detected ");
 		    // Clearing the Timer Interrupt
-                    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h700);
-                    wb_user_core_read(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data);
+                    wb_user_core_write(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_CLR,'h700);
+                    wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
 		    if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b000)) begin
 		       $display("ERROR: Timer Interrupt not cleared ");
 		       test_fail = 1;
@@ -192,25 +192,25 @@ module user_timer_tb;
 
 	        $display("Step-2, Timer-0: 1us * 200 = 200us; Timer-1: 300us; Timer-2: 400us");
 	        test_step = 2;
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER0,'h0001_00C7);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER1,'h0001_012B);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER2,'h0001_018F);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0001_00C7);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0001_012B);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0001_018F);
 	        timer_monitor(OneUsPeriod*200,OneUsPeriod*300,OneUsPeriod*400);
 
 		$display("Checking the Timer Interrupt generation and clearing");
 
 		// Disable the Timer - To avoid multiple interrupt generation
 		// during status check and interrupt clearing
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER0,'h0000_0063);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER1,'h0000_00C7);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_TIMER2,'h0000_012B);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0000_0063);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0000_00C7);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0000_012B);
 
-                wb_user_core_read(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data);
+                wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
 		if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b111)) begin
 		    $display("STATUS: Timer Interrupt detected ");
 		    // Clearing the Timer Interrupt
-                    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h700);
-                    wb_user_core_read(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data);
+                    wb_user_core_write(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_CLR,'h700);
+                    wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
 		    if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b000)) begin
 		       $display("ERROR: Timer Interrupt not cleared ");
 		       test_fail = 1;
@@ -335,6 +335,9 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

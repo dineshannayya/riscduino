@@ -17,13 +17,13 @@
 //
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Pinmux                                                     ////
+////  Pinmux                                                      ////
 ////                                                              ////
 ////  This file is part of the riscduino cores project            ////
 ////  https://github.com/dineshannayya/riscduino.git              ////
 ////                                                              ////
 ////  Description                                                 ////
-////      PinMux Manages all the pin multiplexing                 ////
+////      Manages all the pin multiplexing                        ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -32,482 +32,9 @@
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
 ////  Revision :                                                  ////
-////    0.1 - 16th Feb 2021, Dinesh A                             ////
-////          initial version                                     ////
-////    0.2 - 6 April 2021, Dinesh A                              ////
-////          1. SSPI CS# increased from 1 to 4                   ////
-//            2. UART I/F increase from 1 to 2                    ////
-////    0.3 - 8 July 2022, Dinesh A                               ////
-////          In ardunio, SPI chip select are control through     ////
-////          GPIO, So we have moved the Auto generated SPI CS    ////
-////          different config bit. I2C config position moved from////
-////          bit[14] to bit [15]                                 ////
-////    0.4 - 20 July 2022, Dinesh A                              ////
-////         On Power On, If RESET* = 0, then system will enter   ////
-////         in to SPIS slave mode to support boot                ////
+////    0.1 - 16th Aug 2022, Dinesh A                             ////
+////          Seperated the pinmux from pinmux_top module         ////
 //////////////////////////////////////////////////////////////////////
-
-module pinmux (
-                    `ifdef USE_POWER_PINS
-                       input logic         vccd1,// User area 1 1.8V supply
-                       input logic         vssd1,// User area 1 digital ground
-                    `endif
-                        // clock skew adjust
-                       input logic [3:0]        cfg_cska_pinmux,
-                       input logic	        wbd_clk_int,
-                       output logic	        wbd_clk_pinmux,
-                       // System Signals
-                       // Inputs
-		       input logic             mclk,
-                       input logic             h_reset_n,
-
-                       // Global Reset control
-                       output logic  [1:0]     cpu_core_rst_n   ,
-                       output logic            cpu_intf_rst_n   ,
-                       output logic            qspim_rst_n      ,
-                       output logic            sspim_rst_n      ,
-                       output logic [1:0]      uart_rst_n       ,
-                       output logic            i2cm_rst_n       ,
-                       output logic            usb_rst_n        ,
-
-		       output logic [15:0]     cfg_riscv_ctrl,
-
-		       // Reg Bus Interface Signal
-                       input logic             reg_cs,
-                       input logic             reg_wr,
-                       input logic [7:0]       reg_addr,
-                       input logic [31:0]      reg_wdata,
-                       input logic [3:0]       reg_be,
-
-                       // Outputs
-                       output logic [31:0]     reg_rdata,
-                       output logic            reg_ack,
-
-		      // Risc configuration
-                       output logic [15:0]     irq_lines,
-                       output logic            soft_irq,
-                       output logic [2:0]      user_irq,
-		       input  logic            usb_intr,
-		       input  logic            i2cm_intr,
-
-                       // Digital IO
-                       output logic [37:0]     digital_io_out,
-                       output logic [37:0]     digital_io_oen,
-                       input  logic [37:0]     digital_io_in,
-
-		       // SFLASH I/F
-		       input  logic            sflash_sck,
-		       input  logic [3:0]      sflash_ss,
-		       input  logic [3:0]      sflash_oen,
-		       input  logic [3:0]      sflash_do,
-		       output logic [3:0]      sflash_di,
-
-		       // SSRAM I/F - Temp Masked
-		       //input  logic            ssram_sck,
-		       //input  logic            ssram_ss,
-		       //input  logic [3:0]      ssram_oen,
-		       //input  logic [3:0]      ssram_do,
-		       //output logic [3:0]      ssram_di,
-
-		       // USB I/F
-		       input   logic           usb_dp_o,
-		       input   logic           usb_dn_o,
-		       input   logic           usb_oen,
-		       output   logic          usb_dp_i,
-		       output   logic          usb_dn_i,
-
-		       // UART I/F
-		       input   logic  [1:0]    uart_txd,
-		       output  logic  [1:0]    uart_rxd,
-
-		       // I2CM I/F
-		       input   logic           i2cm_clk_o,
-		       output  logic           i2cm_clk_i,
-		       input   logic           i2cm_clk_oen,
-		       input   logic           i2cm_data_oen,
-		       input   logic           i2cm_data_o,
-		       output  logic           i2cm_data_i,
-
-		       // SPI MASTER
-		       input   logic           spim_sck,
-		       input   logic [3:0]     spim_ssn,
-		       input   logic           spim_miso,
-		       output  logic           spim_mosi,
-		       
-		       // SPI SLAVE
-		       output   logic           spis_sck,
-		       output   logic           spis_ssn,
-		       input    logic           spis_miso,
-		       output   logic           spis_mosi,
-
-                       // UART MASTER I/F
-                       output  logic            uartm_rxd ,
-                       input logic              uartm_txd  ,       
-
-		       output  logic           pulse1m_mclk,
-	               output  logic [31:0]    pinmux_debug,
-
-		       input   logic           dbg_clk_mon
-
-   ); 
-
-
-
-logic sreset_n;  // Sync Reset
-   
-/* clock pulse */
-//********************************************************
-logic           pulse_1us               ; // 1 UsSecond Pulse for waveform Generator
-logic           pulse_1ms               ; // 1 UsSecond Pulse for waveform Generator
-logic           pulse_1s                ; // 1Second Pulse for waveform Generator
-logic [9:0]     cfg_pulse_1us           ; // 1us pulse generation config
-
-
-//---------------------------------------------------------
-// Timer Register                          
-// -------------------------------------------------------
-logic [2:0]    cfg_timer_update        ; // CPU write to timer register
-logic [31:0]   cfg_timer0              ; // Timer-0 register
-logic [31:0]   cfg_timer1              ; // Timer-1 register
-logic [31:0]   cfg_timer2              ; // Timer-2 register
-logic [2:0]    timer_intr              ;
-
-//---------------------------------------------------
-// 6 PWM variabled
-//---------------------------------------------------
-
-logic [5:0]     pwm_wfm                 ;
-logic [5:0]     cfg_pwm_enb             ;
-logic [15:0]    cfg_pwm0_high           ;
-logic [15:0]    cfg_pwm0_low            ;
-logic [15:0]    cfg_pwm1_high           ;
-logic [15:0]    cfg_pwm1_low            ;
-logic [15:0]    cfg_pwm2_high           ;
-logic [15:0]    cfg_pwm2_low            ;
-logic [15:0]    cfg_pwm3_high           ;
-logic [15:0]    cfg_pwm3_low            ;
-logic [15:0]    cfg_pwm4_high           ;
-logic [15:0]    cfg_pwm4_low            ;
-logic [15:0]    cfg_pwm5_high           ;
-logic [15:0]    cfg_pwm5_low            ;
-
-
-wire  [31:0]  gpio_prev_indata         ;// previously captured GPIO I/P pins data
-wire  [31:0]  cfg_gpio_out_data        ;// GPIO statuc O/P data from config reg
-wire  [31:0]  cfg_gpio_dir_sel         ;// decides on GPIO pin is I/P or O/P at pad level, 0 -> Input, 1 -> Output
-wire  [31:0]  cfg_gpio_out_type        ;// GPIO Type, Unused
-wire  [31:0]  cfg_multi_func_sel       ;// GPIO Multi function type
-wire  [31:0]  cfg_gpio_posedge_int_sel ;// select posedge interrupt
-wire  [31:0]  cfg_gpio_negedge_int_sel ;// select negedge interrupt
-wire  [31:00] cfg_gpio_data_in         ;
-
-
-reg [7:0]     port_a_in;      // PORT A Data In
-reg [7:0]     port_b_in;      // PORT B Data In
-reg [7:0]     port_c_in;      // PORT C Data In
-reg [7:0]     port_d_in;      // PORT D Data In
-
-wire [7:0]    port_a_out;     // PORT A Data Out
-wire [7:0]    port_b_out;     // PORT B Data Out
-wire [7:0]    port_c_out;     // PORT C Data Out
-wire [7:0]    port_d_out;     // PORT D Data Out
-wire [31:0]   pad_gpio_in;    // GPIO data input from PAD
-wire [31:0]   pad_gpio_out;   // GPIO Data out towards PAD
-wire [31:0]   gpio_int_event; // GPIO Interrupt indication
-reg [1:0]     ext_intr_in;    // External PAD level interrupt
-
-// GPIO to PORT Mapping
-assign      pad_gpio_in[7:0]     = port_a_in;
-assign      pad_gpio_in[15:8]    = port_b_in;
-assign      pad_gpio_in[23:16]   = port_c_in;
-assign      pad_gpio_in[31:24]   = port_d_in;
-
-assign      port_a_out           = pad_gpio_out[7:0];
-assign      port_b_out           = pad_gpio_out[15:8];
-assign      port_c_out           = pad_gpio_out[23:16];
-assign      port_d_out           = pad_gpio_out[31:24];
-
-assign      pinmux_debug = '0; // Todo: Need to fix
-
-// SSRAM I/F - Temp masked
-//input  logic            ssram_sck,
-//input  logic            ssram_ss,
-//input  logic [3:0]      ssram_oen,
-//input  logic [3:0]      ssram_do,
-//output logic [3:0]      ssram_di,
-
-// pinmux clock skew control
-clk_skew_adjust u_skew_pinmux
-       (
-`ifdef USE_POWER_PINS
-               .vccd1      (vccd1                      ),// User area 1 1.8V supply
-               .vssd1      (vssd1                      ),// User area 1 digital ground
-`endif
-	       .clk_in     (wbd_clk_int                 ), 
-	       .sel        (cfg_cska_pinmux             ), 
-	       .clk_out    (wbd_clk_pinmux              ) 
-       );
-
-reset_sync  u_rst_sync (
-	      .scan_mode  (1'b0        ),
-              .dclk       (mclk        ), // Destination clock domain
-	      .arst_n     (h_reset_n   ), // active low async reset
-              .srst_n     (sreset_n    )
-          );
-
-gpio_intr_gen u_gpio_intr (
-   // System Signals
-   // Inputs
-          .mclk                    (mclk                    ),
-          .h_reset_n               (sreset_n                ),
-
-   // GPIO cfg input pins
-          .gpio_prev_indata        (gpio_prev_indata        ),
-          .cfg_gpio_data_in        (cfg_gpio_data_in        ),
-          .cfg_gpio_dir_sel        (cfg_gpio_dir_sel        ),
-          .cfg_gpio_out_data       (cfg_gpio_out_data       ),
-          .cfg_gpio_posedge_int_sel(cfg_gpio_posedge_int_sel),
-          .cfg_gpio_negedge_int_sel(cfg_gpio_negedge_int_sel),
-
-
-   // GPIO output pins
-          .pad_gpio_out            (pad_gpio_out            ),
-          .gpio_int_event          (gpio_int_event          )  
-  );
-
-
-// 1us pulse
-pulse_gen_type2  #(.WD(10)) u_pulse_1us (
-
-	.clk_pulse_o               (pulse_1us        ),
-	.clk                       (mclk             ),
-        .reset_n                   (sreset_n         ),
-	.cfg_max_cnt               (cfg_pulse_1us    )
-
-     );
-
-// 1millisecond pulse
-pulse_gen_type1 u_pulse_1ms (
-
-	.clk_pulse_o               (pulse_1ms       ),
-	.clk                       (mclk            ),
-        .reset_n                   (sreset_n        ),
-	.trigger                   (pulse_1us       )
-
-      );
-
-// 1 second pulse
-pulse_gen_type1 u_pulse_1s (
-
-	.clk_pulse_o               (pulse_1s    ),
-	.clk                       (mclk        ),
-        .reset_n                   (sreset_n    ),
-	.trigger                   (pulse_1ms   )
-
-       );
-
-
-// Timer
-
-wire       cfg_timer0_enb    = cfg_timer0[16];
-wire [1:0] cfg_timer0_clksel = cfg_timer0[18:17];
-wire [15:0] cfg_timer0_compare = cfg_timer0[15:0];
-
-timer  u_timer_0
-  (
-     .reset_n                      (sreset_n             ),// system syn reset
-     .mclk                         (mclk                 ),// master clock
-     .pulse_1us                    (pulse_1us            ),
-     .pulse_1ms                    (pulse_1ms            ),
-     .pulse_1s                     (pulse_1s             ),
-
-     .cfg_timer_update             (cfg_timer_update[0]  ), 
-     .cfg_timer_enb                (cfg_timer0_enb       ),     
-     .cfg_timer_compare            (cfg_timer0_compare   ),
-     .cfg_timer_clksel             (cfg_timer0_clksel    ),// to select the timer 1us/1ms reference clock
-
-     .timer_intr                   (timer_intr[0]         )
-   );
-
-// Timer
-wire       cfg_timer1_enb      = cfg_timer1[16];
-wire [1:0] cfg_timer1_clksel   = cfg_timer1[18:17];
-wire [15:0] cfg_timer1_compare = cfg_timer1[15:0];
-timer  u_timer_1
-  (
-     .reset_n                      (sreset_n             ),// system syn reset
-     .mclk                         (mclk                 ),// master clock
-     .pulse_1us                    (pulse_1us            ),
-     .pulse_1ms                    (pulse_1ms            ),
-     .pulse_1s                     (pulse_1s             ),
-
-     .cfg_timer_update             (cfg_timer_update[1]  ), 
-     .cfg_timer_enb                (cfg_timer1_enb       ),     
-     .cfg_timer_compare            (cfg_timer1_compare   ),
-     .cfg_timer_clksel             (cfg_timer1_clksel    ),// to select the timer 1us/1ms reference clock
-
-     .timer_intr                   (timer_intr[1]         )
-   );
-
-// Timer
-wire       cfg_timer2_enb    = cfg_timer2[16];
-wire [1:0] cfg_timer2_clksel = cfg_timer2[18:17];
-wire [15:0] cfg_timer2_compare = cfg_timer2[15:0];
-timer  u_timer_2
-  (
-     .reset_n                      (sreset_n             ),// system syn reset
-     .mclk                         (mclk                 ),// master clock
-     .pulse_1us                    (pulse_1us            ),
-     .pulse_1ms                    (pulse_1ms            ),
-     .pulse_1s                     (pulse_1s             ),
-
-     .cfg_timer_update             (cfg_timer_update[2]  ), 
-     .cfg_timer_enb                (cfg_timer2_enb       ),     
-     .cfg_timer_compare            (cfg_timer2_compare   ),
-     .cfg_timer_clksel             (cfg_timer2_clksel    ),// to select the timer 1us/1ms reference clock
-
-     .timer_intr                   (timer_intr[2]        )
-   );
-
-
-pinmux_reg u_pinmux_reg(
-      // System Signals
-      // Inputs
-          .mclk                         (mclk                    ),
-          .h_reset_n                    (sreset_n                ),
-
-          .cpu_core_rst_n               (cpu_core_rst_n          ),
-          .cpu_intf_rst_n               (cpu_intf_rst_n          ),
-          .qspim_rst_n                  (qspim_rst_n             ),
-          .sspim_rst_n                  (sspim_rst_n             ),
-          .uart_rst_n                   (uart_rst_n              ),
-          .i2cm_rst_n                   (i2cm_rst_n              ),
-          .usb_rst_n                    (usb_rst_n               ),
-
-	  .cfg_riscv_ctrl               (cfg_riscv_ctrl          ),
-
-
-      // Reg read/write Interface Inputs
-          .reg_cs                       (reg_cs                  ),
-          .reg_wr                       (reg_wr                  ),
-          .reg_addr                     (reg_addr                ),
-          .reg_wdata                    (reg_wdata               ),
-          .reg_be                       (reg_be                  ),
-
-          .reg_rdata                    (reg_rdata               ),
-          .reg_ack                      (reg_ack                 ),
-
-	  .ext_intr_in                  (ext_intr_in             ),
-
-	  .irq_lines                    (irq_lines               ),
-	  .soft_irq                     (soft_irq                ),
-	  .user_irq                     (user_irq                ),
-          .usb_intr                     (usb_intr                ),
-          .i2cm_intr                    (i2cm_intr               ),
-
-	  .cfg_pulse_1us                (cfg_pulse_1us           ),
-
-
-          .cfg_pwm0_high                (cfg_pwm0_high           ),
-          .cfg_pwm0_low                 (cfg_pwm0_low            ),
-          .cfg_pwm1_high                (cfg_pwm1_high           ),
-          .cfg_pwm1_low                 (cfg_pwm1_low            ),
-          .cfg_pwm2_high                (cfg_pwm2_high           ),
-          .cfg_pwm2_low                 (cfg_pwm2_low            ),
-          .cfg_pwm3_high                (cfg_pwm3_high           ),
-          .cfg_pwm3_low                 (cfg_pwm3_low            ),
-          .cfg_pwm4_high                (cfg_pwm4_high           ),
-          .cfg_pwm4_low                 (cfg_pwm4_low            ),
-          .cfg_pwm5_high                (cfg_pwm5_high           ),
-          .cfg_pwm5_low                 (cfg_pwm5_low            ),
-
-      // GPIO input pins
-          .gpio_in_data                 (pad_gpio_in             ),
-          .gpio_int_event               (gpio_int_event          ),
-
-      // GPIO config pins
-          .cfg_gpio_out_data            (cfg_gpio_out_data       ),
-          .cfg_gpio_dir_sel             (cfg_gpio_dir_sel        ),
-          .cfg_gpio_out_type            (cfg_gpio_out_type       ),
-          .cfg_gpio_posedge_int_sel     (cfg_gpio_posedge_int_sel),
-          .cfg_gpio_negedge_int_sel     (cfg_gpio_negedge_int_sel),
-          .cfg_multi_func_sel           (cfg_multi_func_sel      ),
-	  .cfg_gpio_data_in             (cfg_gpio_data_in        ),
-
-
-       // Outputs
-          .gpio_prev_indata             (gpio_prev_indata        ) ,
-
-
-          .timer_intr                   (timer_intr             ),
-          .cfg_timer_update             (cfg_timer_update       ),
-          .cfg_timer0                   (cfg_timer0             ),
-          .cfg_timer1                   (cfg_timer1             ),
-          .cfg_timer2                   (cfg_timer2             )
-
-
-   ); 
-
-
-// 6 PWM Waveform Generator
-pwm  u_pwm_0 (
-	  .waveform                    (pwm_wfm[0]         ), 
-	  .h_reset_n                   (sreset_n           ),
-	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse_1ms          ),
-	  .cfg_pwm_enb                 (cfg_pwm_enb[0]     ),
-	  .cfg_pwm_high                (cfg_pwm0_high      ),
-	  .cfg_pwm_low                 (cfg_pwm0_low       )
-     );
-
-pwm  u_pwm_1 (
-	  .waveform                    (pwm_wfm[1]         ), 
-	  .h_reset_n                   (sreset_n           ),
-	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse_1ms          ),
-	  .cfg_pwm_enb                 (cfg_pwm_enb[1]     ),
-	  .cfg_pwm_high                (cfg_pwm1_high      ),
-	  .cfg_pwm_low                 (cfg_pwm1_low       )
-     );
-   
-pwm  u_pwm_2 (
-	  .waveform                    (pwm_wfm[2]         ), 
-	  .h_reset_n                   (sreset_n           ),
-	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse_1ms          ),
-	  .cfg_pwm_enb                 (cfg_pwm_enb[2]     ),
-	  .cfg_pwm_high                (cfg_pwm2_high      ),
-	  .cfg_pwm_low                 (cfg_pwm2_low       )
-     );
-
-pwm  u_pwm_3 (
-	  .waveform                    (pwm_wfm[3]         ), 
-	  .h_reset_n                   (sreset_n           ),
-	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse_1ms          ),
-	  .cfg_pwm_enb                 (cfg_pwm_enb[3]     ),
-	  .cfg_pwm_high                (cfg_pwm3_high      ),
-	  .cfg_pwm_low                 (cfg_pwm3_low       )
-     );
-pwm  u_pwm_4 (
-	  .waveform                    (pwm_wfm[4]         ), 
-	  .h_reset_n                   (sreset_n           ),
-	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse_1ms          ),
-	  .cfg_pwm_enb                 (cfg_pwm_enb[4]     ),
-	  .cfg_pwm_high                (cfg_pwm4_high      ),
-	  .cfg_pwm_low                 (cfg_pwm4_low       )
-     );
-pwm  u_pwm_5 (
-	  .waveform                    (pwm_wfm[5]         ), 
-	  .h_reset_n                   (sreset_n           ),
-	  .mclk                        (mclk               ),
-	  .pulse1m_mclk                (pulse_1ms          ),
-	  .cfg_pwm_enb                 (cfg_pwm_enb[5]     ),
-	  .cfg_pwm_high                (cfg_pwm5_high      ),
-	  .cfg_pwm_low                 (cfg_pwm5_low       )
-     );
-
 /************************************************
 * Pin Mapping    ATMGE CONFIG
 *   ATMEGA328                        caravel Pin Mapping
@@ -558,6 +85,99 @@ pwm  u_pwm_5 (
 ****************************************************************
 * Pin-1 RESET is not supported as there is no suppport for fuse config
 **************/
+
+module pinmux (
+               // Digital IO
+               output logic [37:0]     digital_io_out          ,
+               output logic [37:0]     digital_io_oen          ,
+               input  logic [37:0]     digital_io_in           ,
+
+               // Config
+               input logic  [31:0]    cfg_gpio_dir_sel         ,
+               input logic  [31:0]    cfg_multi_func_sel       ,
+
+               output logic[5:0]       cfg_pwm_enb             ,
+               input logic [5:0]       pwm_wfm                 ,
+               output logic [1:0]      ext_intr_in             ,  // External PAD level interrupt
+               output  logic [31:0]    pad_gpio_in             ,  // GPIO data input from PAD
+               input  logic [31:0]     pad_gpio_out            ,  // GPIO Data out towards PAD
+
+		       // SFLASH I/F
+		       input  logic            sflash_sck              ,
+		       input  logic [3:0]      sflash_ss               ,
+		       input  logic [3:0]      sflash_oen              ,
+		       input  logic [3:0]      sflash_do               ,
+		       output logic [3:0]      sflash_di               ,
+
+		       // SSRAM I/F - Temp Masked
+		       //input  logic            ssram_sck,
+		       //input  logic            ssram_ss,
+		       //input  logic [3:0]      ssram_oen,
+		       //input  logic [3:0]      ssram_do,
+		       //output logic [3:0]      ssram_di,
+
+		       // USB I/F
+		       input   logic           usb_dp_o,
+		       input   logic           usb_dn_o,
+		       input   logic           usb_oen,
+		       output   logic          usb_dp_i,
+		       output   logic          usb_dn_i,
+
+		       // UART I/F
+		       input   logic  [1:0]    uart_txd,
+		       output  logic  [1:0]    uart_rxd,
+
+		       // I2CM I/F
+		       input   logic           i2cm_clk_o,
+		       output  logic           i2cm_clk_i,
+		       input   logic           i2cm_clk_oen,
+		       input   logic           i2cm_data_oen,
+		       input   logic           i2cm_data_o,
+		       output  logic           i2cm_data_i,
+
+		       // SPI MASTER
+		       input   logic           spim_sck,
+		       input   logic [3:0]     spim_ssn,
+		       input   logic           spim_miso,
+		       output  logic           spim_mosi,
+		       
+		       // SPI SLAVE
+		       output   logic           spis_sck,
+		       output   logic           spis_ssn,
+		       input    logic           spis_miso,
+		       output   logic           spis_mosi,
+
+               // UART MASTER I/F
+               output  logic            uartm_rxd ,
+               input logic              uartm_txd ,       
+
+		       input   logic           dbg_clk_mon
+
+   ); 
+
+
+
+reg [7:0]     port_a_in;      // PORT A Data In
+reg [7:0]     port_b_in;      // PORT B Data In
+reg [7:0]     port_c_in;      // PORT C Data In
+reg [7:0]     port_d_in;      // PORT D Data In
+
+wire [7:0]    port_a_out;     // PORT A Data Out
+wire [7:0]    port_b_out;     // PORT B Data Out
+wire [7:0]    port_c_out;     // PORT C Data Out
+wire [7:0]    port_d_out;     // PORT D Data Out
+
+// GPIO to PORT Mapping
+assign      pad_gpio_in[7:0]     = port_a_in;
+assign      pad_gpio_in[15:8]    = port_b_in;
+assign      pad_gpio_in[23:16]   = port_c_in;
+assign      pad_gpio_in[31:24]   = port_d_in;
+
+assign      port_a_out           = pad_gpio_out[7:0];
+assign      port_b_out           = pad_gpio_out[15:8];
+assign      port_c_out           = pad_gpio_out[23:16];
+assign      port_d_out           = pad_gpio_out[31:24];
+
 
 assign      cfg_pwm_enb          = cfg_multi_func_sel[5:0];
 wire [1:0]  cfg_int_enb          = cfg_multi_func_sel[7:6];

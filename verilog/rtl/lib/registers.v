@@ -288,6 +288,45 @@ endgenerate
 endmodule
 
 /*********************************************************************
+ module: generic 16b register
+***********************************************************************/
+module  gen_16b_reg	(
+	      //List of Inputs
+	      cs,
+	      we,		 
+	      data_in,
+	      reset_n,
+	      clk,
+	      
+	      //List of Outs
+	      data_out
+	      );
+
+  parameter   RESET_DEFAULT    = 16'h0;  
+  input [1:0]      we;	
+  input            cs;
+  input [15:0]     data_in;	
+  input            reset_n;
+  input		       clk;
+  output [15:0]    data_out;
+
+
+  reg [15:0]    data_out;
+
+always @ (posedge clk or negedge reset_n) begin 
+  if (reset_n == 1'b0) begin
+    data_out  <= RESET_DEFAULT ;
+  end
+  else begin
+    if(cs && we[0]) data_out[7:0]   <= data_in[7:0];
+    if(cs && we[1]) data_out[15:8]  <= data_in[15:8];
+  end
+end
+
+
+endmodule
+
+/*********************************************************************
  module: generic 32b register
 ***********************************************************************/
 module  gen_32b_reg	(

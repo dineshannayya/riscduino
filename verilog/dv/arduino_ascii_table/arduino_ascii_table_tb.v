@@ -181,14 +181,14 @@ module arduino_ascii_table_tb;
        
 
 	initial begin
-               uart_data_bit           = 2'b11;
-               uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
-               uart_stick_parity       = 0; // 1: force even parity
-               uart_parity_en          = 0; // parity enable
-               uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
-	       tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
-               uart_timeout            = 2000;// wait time limit
-               uart_fifo_enable        = 0;	// fifo mode disable
+        uart_data_bit           = 2'b11;
+        uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
+        uart_stick_parity       = 0; // 1: force even parity
+        uart_parity_en          = 0; // parity enable
+        uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
+	    tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
+        uart_timeout            = 2000;// wait time limit
+        uart_fifo_enable        = 0;	// fifo mode disable
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
 
@@ -201,61 +201,59 @@ module arduino_ascii_table_tb;
 
 	        repeat (2) @(posedge clock);
 		#1;
-                // Remove all the reset
-                if(d_risc_id == 0) begin
-                     $display("STATUS: Working with Risc core 0");
-                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h11F);
-                end else if(d_risc_id == 1) begin
-                     $display("STATUS: Working with Risc core 1");
-                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h21F);
-                end else if(d_risc_id == 2) begin
-                     $display("STATUS: Working with Risc core 2");
-                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h41F);
-                end else if(d_risc_id == 3) begin
-                     $display("STATUS: Working with Risc core 3");
-                     wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h81F);
-                end
+        // Remove all the reset
+        if(d_risc_id == 0) begin
+             $display("STATUS: Working with Risc core 0");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+        end else if(d_risc_id == 1) begin
+             $display("STATUS: Working with Risc core 1");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
+        end else if(d_risc_id == 2) begin
+             $display("STATUS: Working with Risc core 2");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h41F);
+        end else if(d_risc_id == 3) begin
+             $display("STATUS: Working with Risc core 3");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h81F);
+        end
 
-                repeat (100) @(posedge clock);  // wait for Processor Get Ready
+        repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
-	        tb_uart.debug_mode = 0; // disable debug display
-                tb_uart.uart_init;
-                tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
-                                               uart_stick_parity, uart_timeout, uart_divisor);
+	    tb_uart.debug_mode = 0; // disable debug display
+        tb_uart.uart_init;
+        tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, uart_stick_parity, uart_timeout, uart_divisor);
 
-                repeat (45000) @(posedge clock);  // wait for Processor Get Ready
-	        flag  = 0;
+        repeat (45000) @(posedge clock);  // wait for Processor Get Ready
+	    flag  = 0;
 		check_sum = 0;
-                
-                
-                fork
-                   begin
-                      while(flag == 0)
-                      begin
-                         tb_uart.read_char(read_data,flag);
-			 if(flag == 0)  begin
-			    $write ("%c",read_data);
-			    check_sum = check_sum+read_data;
+            
+        fork
+           begin
+              while(flag == 0)
+              begin
+                 tb_uart.read_char(read_data,flag);
+		         if(flag == 0)  begin
+		            $write ("%c",read_data);
+		            check_sum = check_sum+read_data;
 		         end
-                      end
-                   end
-                   begin
-                      repeat (3000000) @(posedge clock);  // wait for Processor Get Ready
-                   end
-                   join_any
-                
-                   #100
-                   tb_uart.report_status(uart_rx_nu, uart_tx_nu);
-                
-                   test_fail = 0;
+              end
+           end
+           begin
+              repeat (3000000) @(posedge clock);  // wait for Processor Get Ready
+           end
+           join_any
+            
+           #100
+           tb_uart.report_status(uart_rx_nu, uart_tx_nu);
+            
 
+           test_fail = 0;
 		   $display("Total Rx Char: %d Check Sum : %x ",uart_rx_nu, check_sum);
-                   // Check 
-                   // if all the 4224 byte received
-                   // if no error 
-                   if(uart_rx_nu != 4224) test_fail = 1;
-                   if(check_sum != 32'h3f01b) test_fail = 1;
-                   if(tb_uart.err_cnt != 0) test_fail = 1;
+             // Check 
+             // if all the 4224 byte received
+             // if no error 
+             if(uart_rx_nu != 4224) test_fail = 1;
+             if(check_sum != 32'h3f01b) test_fail = 1;
+             if(tb_uart.err_cnt != 0) test_fail = 1;
 
 	   
 	    	$display("###################################################");
@@ -318,6 +316,9 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

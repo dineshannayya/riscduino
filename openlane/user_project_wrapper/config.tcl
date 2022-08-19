@@ -67,20 +67,19 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(VERILOG_FILES_BLACKBOX) "\
         $::env(DESIGN_DIR)/../../verilog/gl/qspim_top.v \
         $::env(DESIGN_DIR)/../../verilog/gl/wb_interconnect.v \
-        $::env(DESIGN_DIR)/../../verilog/gl/pinmux.v     \
+        $::env(DESIGN_DIR)/../../verilog/gl/pinmux_top.v     \
         $::env(DESIGN_DIR)/../../verilog/gl/uart_i2c_usb_spi_top.v     \
 	    $::env(DESIGN_DIR)/../../verilog/gl/wb_host.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_intf.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_core_top.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_iconnect.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/digital_pll.v \
-	    $::env(DESIGN_DIR)/../../verilog/rtl/sar_adc_10b/sar_adc_10b.v \
 	    $::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	    "
 
 set ::env(EXTRA_LEFS) "\
 	$lef_root/qspim_top.lef \
-	$lef_root/pinmux.lef \
+	$lef_root/pinmux_top.lef \
 	$lef_root/wb_interconnect.lef \
 	$lef_root/uart_i2c_usb_spi_top.lef \
 	$lef_root/wb_host.lef \
@@ -93,7 +92,7 @@ set ::env(EXTRA_LEFS) "\
 
 set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/qspim_top.gds \
-	$gds_root/pinmux.gds \
+	$gds_root/pinmux_top.gds \
 	$gds_root/wb_interconnect.gds \
 	$gds_root/uart_i2c_usb_spi_top.gds \
 	$gds_root/wb_host.gds \

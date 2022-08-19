@@ -138,19 +138,19 @@ reg            test_fail     ;
            $display("Monitor: Writing  expected value");
            
            test_fail = 0;
-           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,32'h11223344);
-           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,32'h22334455);
-           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,32'h33445566);
-           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,32'h44556677);
-           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,32'h55667788);
-           uartm_reg_write(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,32'h66778899);
+           uartm_reg_write(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,32'h11223344);
+           uartm_reg_write(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,32'h22334455);
+           uartm_reg_write(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,32'h33445566);
+           uartm_reg_write(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_3,32'h44556677);
+           uartm_reg_write(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_4,32'h55667788);
+           uartm_reg_write(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_5,32'h66778899);
 
-           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,32'h11223344);
-           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,32'h22334455);
-           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,32'h33445566);
-           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,32'h44556677);
-           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,32'h55667788);
-           uartm_reg_read_check(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,32'h66778899);
+           uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,32'h11223344);
+           uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,32'h22334455);
+           uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,32'h33445566);
+           uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_3,32'h44556677);
+           uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_4,32'h55667788);
+           uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_5,32'h66778899);
 
            $display("###################################################");
            if(test_fail == 0) begin

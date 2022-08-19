@@ -203,7 +203,7 @@ parameter P_QDDR   = 2'b11;
 	        repeat (2) @(posedge clock);
 		#1;
 		// Remove only WB and SPI Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h2);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h2);
 
                 wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h0000); // Change the Bank Sel 0000
 
@@ -1194,6 +1194,10 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

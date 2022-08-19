@@ -144,17 +144,17 @@ module user_pwm_tb;
 		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
                 // Enable PWM Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h03F);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h03F);
 
 	        repeat (2) @(posedge clock);
 		#1;
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// config 1us based on system clock - 1000/25ns = 40 
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG1,39);
+                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
 
 		test_fail = 0;
 	        repeat (200) @(posedge clock);
@@ -162,12 +162,12 @@ module user_pwm_tb;
 
 	        $display("Step-1, PWM-0: 1ms/2 = 500Hz; PWM-1: 1ms/3; PWM-2: 1ms/4, PWM-3: 1ms/5, PWM-4: 1ms/6, PWM-5: 1ms/7");
 	        test_step = 1;
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM0,'h0000_0000);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM1,'h0000_0001);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM2,'h0001_0001);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM3,'h0001_0002);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM4,'h0002_0002);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_CFG_PWM5,'h0002_0003);
+                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_0,'h0000_0000);
+                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_1,'h0000_0001);
+                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_2,'h0001_0001);
+                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_3,'h0001_0002);
+                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_4,'h0002_0002);
+                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_5,'h0002_0003);
 	        pwm_monitor(OneMsPeriod*2,OneMsPeriod*3,OneMsPeriod*4,OneMsPeriod*5,OneMsPeriod*6,OneMsPeriod*7);
 
 		repeat (100) @(posedge clock);
@@ -300,6 +300,9 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

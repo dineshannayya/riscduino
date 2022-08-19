@@ -40,36 +40,20 @@ static int test_encrypt_ecb(void);
 static int test_decrypt_ecb(void);
 static void test_encrypt_ecb_verbose(void);
 
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x10020000)
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x10020004)
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x10020008)
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x1002000C)
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x10020010)
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x10020014)
-#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x10020018)
-#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x1002001C)
-#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x10020020)
-#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x10020024)
-#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x10020028)
-#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x1002002C)
-#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x10020030)
-#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x10020034)
-#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x10020038)
-#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x1002003C)
-#define reg_mprj_globl_reg16 (*(volatile uint32_t*)0x10020040)
-#define reg_mprj_globl_reg17 (*(volatile uint32_t*)0x10020044)
-#define reg_mprj_globl_reg18 (*(volatile uint32_t*)0x10020048)
-#define reg_mprj_globl_reg19 (*(volatile uint32_t*)0x1002004C)
-#define reg_mprj_globl_reg20 (*(volatile uint32_t*)0x10020050)
-#define reg_mprj_globl_reg21 (*(volatile uint32_t*)0x10020054)
-#define reg_mprj_globl_reg22 (*(volatile uint32_t*)0x10020058)
-#define reg_mprj_globl_reg23 (*(volatile uint32_t*)0x1002005C)
-#define reg_mprj_globl_reg24 (*(volatile uint32_t*)0x10020060)
-#define reg_mprj_globl_reg25 (*(volatile uint32_t*)0x10020064)
-#define reg_mprj_globl_reg26 (*(volatile uint32_t*)0x10020068)
-#define reg_mprj_globl_reg27 (*(volatile uint32_t*)0x1002006C)
+#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x10020000) // Chip ID
+#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x10020004) // Global Config-0
+#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x10020008) // Global Config-1
+#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x1002000C) // Global Interrupt Mask
+#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x10020010) // Global Interrupt
+#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x10020014) // Multi functional sel
+#define reg_mprj_globl_soft0  (*(volatile uint32_t*)0x10020018) // Sof Register-0
+#define reg_mprj_globl_soft1  (*(volatile uint32_t*)0x1002001C) // Sof Register-1
+#define reg_mprj_globl_soft2  (*(volatile uint32_t*)0x10020020) // Sof Register-2
+#define reg_mprj_globl_soft3  (*(volatile uint32_t*)0x10020024) // Sof Register-3
+#define reg_mprj_globl_soft4 (*(volatile uint32_t*)0x10020028) // Sof Register-4
+#define reg_mprj_globl_soft5 (*(volatile uint32_t*)0x1002002C) // Sof Register-5
 
-#define reg_mprg_pinmux_gpio_odata (*(volatile uint32_t*)0x10020018)
+#define reg_mprg_gpio_odata (*(volatile uint32_t*)0x1002004C)
 
 int main(void)
 {
@@ -86,34 +70,34 @@ int main(void)
     return 0;
 #endif
 
-    reg_mprg_pinmux_gpio_odata  = 0x00000100; 
-    reg_mprj_globl_reg23  = 0x00000000; 
+    reg_mprg_gpio_odata  = 0x00000100; 
+    reg_mprj_globl_soft0  = 0x00000000; 
     exit = test_encrypt_cbc();
-    reg_mprg_pinmux_gpio_odata  = 0x00000200; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000200; 
+    reg_mprj_globl_soft0  = exit;
     exit += test_decrypt_cbc();
-    reg_mprg_pinmux_gpio_odata  = 0x00000300; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000300; 
+    reg_mprj_globl_soft0  = exit;
     exit += test_encrypt_ctr();
-    reg_mprg_pinmux_gpio_odata  = 0x00000400; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000400; 
+    reg_mprj_globl_soft0  = exit;
     exit += test_decrypt_ctr();
-    reg_mprg_pinmux_gpio_odata  = 0x00000500; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000500; 
+    reg_mprj_globl_soft0  = exit;
     exit += test_decrypt_ecb();
-    reg_mprg_pinmux_gpio_odata  = 0x00000600; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000600; 
+    reg_mprj_globl_soft0  = exit;
     exit += test_encrypt_ecb();
-    reg_mprg_pinmux_gpio_odata  = 0x00000700; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000700; 
+    reg_mprj_globl_soft0  = exit;
     test_encrypt_ecb_verbose();
-    reg_mprg_pinmux_gpio_odata  = 0x00000800; 
-    reg_mprj_globl_reg23  = exit;
+    reg_mprg_gpio_odata  = 0x00000800; 
+    reg_mprj_globl_soft0  = exit;
 
     if(exit == 0) {
-        reg_mprg_pinmux_gpio_odata  = 0x00001800; 
+        reg_mprg_gpio_odata  = 0x00001800; 
     } else {
-        reg_mprg_pinmux_gpio_odata  = 0x0000A800; 
+        reg_mprg_gpio_odata  = 0x0000A800; 
     }
 
     return exit;

@@ -160,11 +160,11 @@ void main()
 
 
     // Remove All Reset
-    reg_pinmux_gbl_cfg0 = 0x11F;
+    reg_glbl_cfg0 = 0x11F;
 
     // Enable UART Multi Functional Ports
 
-    reg_pinmux_gpio_multi_func = 0x100;
+    reg_glbl_multi_func = 0x100;
 
     // configure the user uart
     reg_mprj_uart_reg0  = 0x7;

@@ -7,11 +7,19 @@
 +incdir+$(USER_PROJECT_VERILOG)/dv/model
 +incdir+$(USER_PROJECT_VERILOG)/dv/agents
 $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux.sv
--v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_reg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/glbl_reg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/gpio_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/gpio_intr.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/gpio_reg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pwm_top.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pwm_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pwm.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/timer_top.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/timer_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/timer.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/semaphore_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type1.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type2.sv
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_top.sv

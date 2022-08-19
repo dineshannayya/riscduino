@@ -78,7 +78,7 @@
 .macro _run_timer
     li          TMP, MEM_MTIME_CTRL
     lw          TMP2, 0(TMP)
-    li          TMP3, (1 << YCR1_MTIME_CTRL_EN)
+    li          TMP3, (1 << YCR_MTIME_CTRL_EN)
     or          TMP2, TMP2, TMP3
     sw          TMP2, 0(TMP)
 .endm
@@ -86,7 +86,7 @@
 .macro _stop_timer
     li          TMP, MEM_MTIME_CTRL
     lw          TMP2, 0(TMP)
-    li          TMP3, (1 << YCR1_MTIME_CTRL_EN)
+    li          TMP3, (1 << YCR_MTIME_CTRL_EN)
     not         TMP3, TMP3
     and         TMP2, TMP2, TMP3
     sw          TMP2, 0(TMP)

@@ -154,19 +154,19 @@ begin
    $display("Monitor: Writing  expected value");
    
    test_fail = 0;
-   u_spim.reg_wr_dword(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,32'h11223344);
-   u_spim.reg_wr_dword(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,32'h22334455);
-   u_spim.reg_wr_dword(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,32'h33445566);
-   u_spim.reg_wr_dword(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,32'h44556677);
-   u_spim.reg_wr_dword(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,32'h55667788);
-   u_spim.reg_wr_dword(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,32'h66778899);
+   u_spim.reg_wr_dword(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,32'h11223344);
+   u_spim.reg_wr_dword(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,32'h22334455);
+   u_spim.reg_wr_dword(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,32'h33445566);
+   u_spim.reg_wr_dword(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_3,32'h44556677);
+   u_spim.reg_wr_dword(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_4,32'h55667788);
+   u_spim.reg_wr_dword(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_5,32'h66778899);
 
-   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_1,32'h11223344);
-   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_2,32'h22334455);
-   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_3,32'h33445566);
-   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_4,32'h44556677);
-   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_5,32'h55667788);
-   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_PINMUX+`PINMUX_SOFT_REG_6,32'h66778899);
+   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,32'h11223344);
+   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,32'h22334455);
+   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,32'h33445566);
+   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_3,32'h44556677);
+   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_4,32'h55667788);
+   u_spim.reg_rd_dword_cmp(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_5,32'h66778899);
    
    
    
@@ -229,6 +229,9 @@ user_project_wrapper u_top(
 
 );
 
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin

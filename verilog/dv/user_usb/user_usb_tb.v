@@ -176,7 +176,7 @@ parameter  USER2_HPER = 2.7777; // 180Mhz Half cycle
                 wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
                 // Enable SPI Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h400);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h400);
 
 	        repeat (2) @(posedge clock);
 		#1;
@@ -188,7 +188,7 @@ parameter  USER2_HPER = 2.7777; // 180Mhz Half cycle
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h03F);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h03F);
 
 
 		test_fail = 0;
@@ -257,6 +257,11 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
+
+
     usb_agent u_usb_agent();
     test_control test_control();
 

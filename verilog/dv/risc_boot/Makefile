@@ -53,7 +53,7 @@ export VERILOG_PATH = $(CORE_VERILOG_PATH)
 
 export TOOLS     ?=  /opt/riscv32i 
 export GCC_PATH  ?=  $(TOOLS)/bin
-export GCC_PREFIX?=    riscv32-unknown-linux-gnu
+GCC_PREFIX?=riscv32-unknown-elf
 
 
 ############## USER SPECIFIC DEFINE ##################

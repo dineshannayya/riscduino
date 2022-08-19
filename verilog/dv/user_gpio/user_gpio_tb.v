@@ -217,7 +217,7 @@ module user_gpio_tb;
 
 	/*****************************/
 
-	wire [15:0] irq_lines = u_top.u_pinmux.u_pinmux_reg.irq_lines;
+	wire [15:0] irq_lines = u_top.u_pinmux.u_glbl_reg.irq_lines;
 
 	initial begin
 		clock = 0;
@@ -252,34 +252,34 @@ module user_gpio_tb;
                 wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
                 // Disable Multi func
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h000);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h000);
 
 		/************* GPIO As Output ******************/
 		$display("#####################################");
 		$display("Step-1: Testing GPIO As Output ");
 		// Set the Direction as Output
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_DSEL,'hFFFFFFFF);
 		// Set the GPIO Output data: 0x55555555
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'h55555555);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'h55555555);
 		cmp_gpio_output(8'h55,8'h55,8'h55,8'h55);
 
 		// Set the GPIO Output data: 0xAAAAAAAA
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'hAAAAAAAA);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'hAAAAAAAA);
 		cmp_gpio_output(8'hAA,8'hAA,8'hAA,8'hAA);
 
 		// Set the GPIO Output data: 0x5A5A5A5A5A5A
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'h5A5A5A5A);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'h5A5A5A5A);
 		cmp_gpio_output(8'h5A,8'h5A,8'h5A,8'h5A);
 		
 		// Set the GPIO Output data: 0xA5A5A5A5A5A5
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_ODATA,'hA5A5A5A5);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'hA5A5A5A5);
 		cmp_gpio_output(8'hA5,8'hA5,8'hA5,8'hA5);
 
 		/************* GPIO As Input ******************/
 		$display("#####################################");
 		$display("Step-2: Testing GPIO As Input ");
 		// Set the Direction as Input
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_DSEL,'h00000000);
 
 		cmp_gpio_input(8'h55,8'h55,8'h55,8'h55);
 		cmp_gpio_input(8'hAA,8'hAA,8'hAA,8'hAA);
@@ -290,12 +290,12 @@ module user_gpio_tb;
 		$display("#####################################");
 		$display("Step-3: Testing GPIO As Posedge Interrupt ");
 		// Set the Direction as Input
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_DSEL,'h00000000);
 		// Set GPIO for posedge Interrupt
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_MASK,'hFFFFFFFF);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_POS_INTR,'hFFFFFFFF);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_NEG_INTR,'h00000000);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'hFFFF);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_MASK,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_POS_INTR_SEL,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_NEG_INTR_SEL,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'hFFFF);
 		
 		// Drive GPIO with 0x55
 		cmp_gpio_pos_intr(8'h55,8'h55,8'h55,8'h55);
@@ -314,12 +314,12 @@ module user_gpio_tb;
 		$display("#####################################");
 		$display("Step-3: Testing GPIO As Negedge Interrupt ");
 		// Set the Direction as Input
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_DSEL,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_DSEL,'h00000000);
 		// Set GPIO for negedge Interrupt
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_MASK,'hFFFFFFFF);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_POS_INTR,'h00000000);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_NEG_INTR,'hFFFFFFFF);
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR_MSK,'hFFFF);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_MASK,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_POS_INTR_SEL,'h00000000);
+                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_NEG_INTR_SEL,'hFFFFFFFF);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'hFFFF);
 		
 		// Drive GPIO with 0x55
 		cmp_gpio_neg_intr(8'h55,8'h55,8'h55,8'h55);
@@ -399,6 +399,9 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -506,7 +509,7 @@ begin
     port_c_out  = port_c;
     port_d_out  = port_d;
 
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,8'h0});
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,8'h0});
 end
 endtask
 
@@ -523,12 +526,12 @@ begin
     cmp_gpio_input(8'h00,8'h00,8'h00,8'h00);
 
     // Clear Global Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h00008000);
+    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h00008000);
 
    // Clear all the Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,'hFFFFFFFF);
+    wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_CLR,'hFFFFFFFF);
 
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_STAT,read_data,32'h0);
 
     // Drive Ports
     cmp_gpio_input(port_d,port_c,port_b,port_a);
@@ -544,10 +547,10 @@ begin
     repeat (20) @(posedge clock); 
 
     // Check the GPIO Interrupt
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,{port_d,port_c & 8'h7F,port_b,8'h0});
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_STAT,read_data,{port_d,port_c & 8'h7F,port_b,8'h0});
     
     // Check The Global Interrupt
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h8000);
+    wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,32'h8000);
     
     if(irq_lines[15] != 1'b1) begin
 	$display("ERROR: Global GPIO Interrupt not detected");
@@ -555,15 +558,15 @@ begin
     end
 
     // Clear The GPIO Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,32'hFFFFFFFF);
+    wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_CLR,32'hFFFFFFFF);
 
     // Clear GPIO Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h8000);
+    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h8000);
 
 
     // Check Interrupt are cleared
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h0);
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_STAT,read_data,32'h0);
     if(irq_lines[15] != 1'b0) begin
 	$display("ERROR: Global GPIO Interrupt is not cleared");
        `TB_GLBL.test_fail = 1;
@@ -584,11 +587,11 @@ begin
     cmp_gpio_input(8'hFF,8'hFF,8'hFF,8'hFF);
 
     // Clear Global Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h00008000);
+    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h00008000);
 
    // Clear all the Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,'hFFFFFFFF);
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+    wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_CLR,'hFFFFFFFF);
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_STAT,read_data,32'h0);
 
     // Drive Ports
     cmp_gpio_input(port_d,port_c,port_b,port_a);
@@ -603,10 +606,10 @@ begin
     repeat (20) @(posedge clock); 
 
     // Neg edge interrupt is will compliment  of input value
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,{port_d ^ 8'hFF,(port_c ^ 8'hFF) & 8'h7F,port_b ^ 8'hFF,8'h0});
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_STAT,read_data,{port_d ^ 8'hFF,(port_c ^ 8'hFF) & 8'h7F,port_b ^ 8'hFF,8'h0});
     
     // Check The Global Interrupt
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h8000);
+    wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,32'h8000);
 
     if(irq_lines[15] != 1'b1) begin
 	$display("ERROR: Global GPIO Interrupt not detected");
@@ -614,14 +617,14 @@ begin
     end
 
     // Clear The GPIO Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_CLR,32'hFFFFFFFF);
+    wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_CLR,32'hFFFFFFFF);
 
     // Clear GPIO Interrupt
-    wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,'h8000);
+    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h8000);
 
     // Check Interrupt are cleared
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GBL_INTR,read_data,32'h0);
-    wb_user_core_read_check(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_INTR_STAT,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,32'h0);
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_INTR_STAT,read_data,32'h0);
 
     if(irq_lines[15] != 1'b0) begin
 	$display("ERROR: Global GPIO Interrupt is not cleared");

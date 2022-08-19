@@ -20,7 +20,7 @@
 set script_dir [file dirname [file normalize [info script]]]
 # Name
 
-set ::env(DESIGN_NAME) pinmux
+set ::env(DESIGN_NAME) pinmux_top
 
 set ::env(DESIGN_IS_CORE) "0"
 set ::env(FP_PDN_CORE_RING) "0"
@@ -42,11 +42,19 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
-     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_reg.sv \
-     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/gpio_intr.sv  \
-     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pwm.sv        \
-     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer.sv        \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/glbl_reg.sv  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/gpio_top.sv  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/gpio_reg.sv  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/gpio_intr.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pwm_top.sv   \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pwm_reg.sv   \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pwm.sv       \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer_top.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer_reg.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/semaphore_reg.sv  \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/pulse_gen_type1.sv   \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/pulse_gen_type2.sv   \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v          \
@@ -82,7 +90,7 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.38"
+set ::env(PL_TARGET_DENSITY) "0.40"
 set ::env(CELL_PAD) "4"
 
 set ::env(FP_IO_VEXTEND) {6}

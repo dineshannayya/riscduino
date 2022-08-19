@@ -142,14 +142,14 @@ module user_sspi_tb;
                 // Enable SPI Multi Functional Ports
                 // wire        cfg_spim_enb         = cfg_multi_func_sel[10];
                 // wire [3:0]  cfg_spim_cs_enb      = cfg_multi_func_sel[14:11];
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GPIO_MULTI_FUNC,'h7C00);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h7C00);
 
 	        repeat (2) @(posedge clock);
 		#1;
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_PINMUX+`PINMUX_GBL_CFG0,'h01F);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 
 		test_fail = 0;
@@ -447,6 +447,11 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+
+// SSPI Slave I/F
+assign io_in[0]  = 1'b1; // RESET
+assign io_in[16] = 1'b0 ; // SPIS SCK 
+
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

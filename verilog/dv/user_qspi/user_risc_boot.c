@@ -18,34 +18,18 @@
 #define SC_SIM_OUTPORT (0xf0000000)
 #define uint32_t  long
 
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30030000)
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30030004)
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30030008)
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x3003000C)
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x30030010)
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x30030014)
-#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x30030018)
-#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x3003001C)
-#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x30030020)
-#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x30030024)
-#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x30030028)
-#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x3003002C)
-#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x30030030)
-#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x30030034)
-#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30030038)
-#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3003003C)
-#define reg_mprj_globl_reg16 (*(volatile uint32_t*)0x30030040)
-#define reg_mprj_globl_reg17 (*(volatile uint32_t*)0x30030044)
-#define reg_mprj_globl_reg18 (*(volatile uint32_t*)0x30030048)
-#define reg_mprj_globl_reg19 (*(volatile uint32_t*)0x3003004C)
-#define reg_mprj_globl_reg20 (*(volatile uint32_t*)0x30030050)
-#define reg_mprj_globl_reg21 (*(volatile uint32_t*)0x30030054)
-#define reg_mprj_globl_reg22 (*(volatile uint32_t*)0x30030058)
-#define reg_mprj_globl_reg23 (*(volatile uint32_t*)0x3003005C)
-#define reg_mprj_globl_reg24 (*(volatile uint32_t*)0x30030060)
-#define reg_mprj_globl_reg25 (*(volatile uint32_t*)0x30030064)
-#define reg_mprj_globl_reg26 (*(volatile uint32_t*)0x30030068)
-#define reg_mprj_globl_reg27 (*(volatile uint32_t*)0x3003006C)
+#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x10020000) // Chip ID
+#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x10020004) // Global Config-0
+#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x10020008) // Global Config-1
+#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x1002000C) // Global Interrupt Mask
+#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x10020010) // Global Interrupt
+#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x10020014) // Multi functional sel
+#define reg_mprj_globl_soft0  (*(volatile uint32_t*)0x10020018) // Sof Register-0
+#define reg_mprj_globl_soft1  (*(volatile uint32_t*)0x1002001C) // Sof Register-1
+#define reg_mprj_globl_soft2  (*(volatile uint32_t*)0x10020020) // Sof Register-2
+#define reg_mprj_globl_soft3  (*(volatile uint32_t*)0x10020024) // Sof Register-3
+#define reg_mprj_globl_soft4 (*(volatile uint32_t*)0x10020028) // Sof Register-4
+#define reg_mprj_globl_soft5 (*(volatile uint32_t*)0x1002002C) // Sof Register-5
 
 int main()
 {
@@ -57,12 +41,12 @@ int main()
     //*out_ptr = 0xDDEEFF00;
 
     // Write software Write & Read Register
-    reg_mprj_globl_reg22  = 0x11223344; 
-    reg_mprj_globl_reg23  = 0x22334455; 
-    reg_mprj_globl_reg24  = 0x33445566; 
-    reg_mprj_globl_reg25  = 0x44556677; 
-    reg_mprj_globl_reg26 = 0x55667788; 
-    reg_mprj_globl_reg27 = 0x66778899; 
+    reg_mprj_globl_soft0  = 0x11223344; 
+    reg_mprj_globl_soft1  = 0x22334455; 
+    reg_mprj_globl_soft2  = 0x33445566; 
+    reg_mprj_globl_soft3  = 0x44556677; 
+    reg_mprj_globl_soft4 = 0x55667788; 
+    reg_mprj_globl_soft5 = 0x66778899; 
 
     while(1) {}
     return 0;
