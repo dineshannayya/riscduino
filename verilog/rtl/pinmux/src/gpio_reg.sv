@@ -64,7 +64,7 @@ module gpio_reg  (
                        output logic  [31:0]  cfg_gpio_negedge_int_sel ,// select negedge interrupt
                        output logic  [31:00] cfg_gpio_data_in         ,
 
-                       output logic          gpio_intr          
+                       output logic  [31:0]  gpio_intr          
 
 
                 ); 
@@ -253,7 +253,7 @@ assign reg_5 = reg_4;
 //-----------------------------------------------------------------------
 wire [31:0]  cfg_gpio_int_mask = reg_6[31:0]; // to be used for read
 
-assign gpio_intr  = ( | (reg_4 & reg_6) ); // interrupt pin to the RISC
+assign gpio_intr  = reg_4 & reg_6; // interrupt pin to the RISC
 
 
 //  Register-11

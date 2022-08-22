@@ -235,6 +235,10 @@
 ////             `define ADDR_SPACE_PWM     32'h1002_0080         ////
 ////             `define ADDR_SPACE_TIMER   32'h1002_00C0         ////
 ////             `define ADDR_SPACE_SEMA    32'h1002_0100         ////
+////    5.1  Aug 21 2022, Dinesh A                                ////
+////          A. GPIO interrupt generation changed from 1 to 32   ////
+////          B. Total interrupt to Riscv changed from 16 to 32   ////
+////          C. uart_master disable option added at pinmux       ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -509,7 +513,7 @@ wire                           wbd_clk_pinmux                         ;
 wire                           wbd_int_rst_n                          ;
 wire                           wbd_pll_rst_n                          ;
 
-wire [15:0]                    irq_lines                              ;
+wire [31:0]                    irq_lines                              ;
 wire                           soft_irq                               ;
 
 
@@ -531,7 +535,7 @@ wire [3:0]                     cfg_cska_qspi_rp                       ; // clock
 wire [3:0]                     cfg_cska_pinmux_rp                     ; // clock skew adjust for pinmux
 wire [3:0]                     cfg_cska_qspi_co_rp                    ; // clock skew adjust for global reg
 
-wire [15:0]                    irq_lines_rp                           ; // Repeater
+wire [31:0]                    irq_lines_rp                           ; // Repeater
 wire                           soft_irq_rp                            ; // Repeater
 
 wire                           wbd_clk_risc_rp                        ;
@@ -1060,8 +1064,8 @@ qspim_top
 
 wb_interconnect  #(
 	`ifndef SYNTHESIS
-          .CH_CLK_WD               (4                       ),
-	  .CH_DATA_WD              (37                      )
+          .CH_CLK_WD           (4                       ),
+	      .CH_DATA_WD          (53                      )
         `endif
 	) u_intercon (
 `ifdef USE_POWER_PINS
@@ -1081,24 +1085,24 @@ wb_interconnect  #(
 	  .ch_data_in              ({
 			 
 	                              soft_irq,
-			              irq_lines[15:0],
+			                      irq_lines[31:0],
 
-			              cfg_cska_qspi_co[3:0],
-		                      cfg_cska_pinmux[3:0],
-			              cfg_cska_uart[3:0],
-		                      cfg_cska_qspi[3:0],
-                                      cfg_cska_riscv[3:0]
+			                      cfg_cska_qspi_co[3:0],
+		                          cfg_cska_pinmux[3:0],
+			                      cfg_cska_uart[3:0],
+		                          cfg_cska_qspi[3:0],
+                                  cfg_cska_riscv[3:0]
 			             }                             ),
 	  .ch_data_out             ({
 
 	                              soft_irq_rp,
-			              irq_lines_rp[15:0],
+			                      irq_lines_rp[31:0],
 
-			              cfg_cska_qspi_co_rp[3:0],
-		                      cfg_cska_pinmux_rp[3:0],
-			              cfg_cska_uart_rp[3:0],
-		                      cfg_cska_qspi_rp[3:0],
-                                      cfg_cska_riscv_rp[3:0]
+			                      cfg_cska_qspi_co_rp[3:0],
+		                          cfg_cska_pinmux_rp[3:0],
+			                      cfg_cska_uart_rp[3:0],
+		                          cfg_cska_qspi_rp[3:0],
+                                  cfg_cska_riscv_rp[3:0]
                                     }                              ),
      // Clock Skew adjust
 	  .wbd_clk_int             (wbd_clk_int             ), 

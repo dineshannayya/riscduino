@@ -56,8 +56,7 @@ module timer_reg  (
                        output logic [2:0]    cfg_timer_update   , // CPU write to timer register
                        output logic [18:0]   cfg_timer0         , // Timer-0 register
                        output logic [18:0]   cfg_timer1         , // Timer-1 register
-                       output logic [18:0]   cfg_timer2         , // Timer-2 register
-                       output logic [2:0]    timer_intr         
+                       output logic [18:0]   cfg_timer2           // Timer-2 register
 
                 ); 
 

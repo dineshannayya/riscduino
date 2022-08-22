@@ -34,6 +34,8 @@
 ////  Revision :                                                  ////
 ////    0.1 - 16th Aug 2022, Dinesh A                             ////
 ////          Seperated the pinmux from pinmux_top module         ////
+////    0.2 - 21th Aug 2022, Dinesh A                             ////
+////          uart_master disable option added                    ////
 //////////////////////////////////////////////////////////////////////
 /************************************************
 * Pin Mapping    ATMGE CONFIG
@@ -185,6 +187,7 @@ wire [1:0]  cfg_uart_enb         = cfg_multi_func_sel[9:8];
 wire        cfg_spim_enb         = cfg_multi_func_sel[10];
 wire [3:0]  cfg_spim_cs_enb      = cfg_multi_func_sel[14:11];
 wire        cfg_i2cm_enb         = cfg_multi_func_sel[15];
+wire        cfg_muart_dis        = cfg_multi_func_sel[31:8]; // 0 - uart master enable, 1 - disable
 
 wire [7:0]  cfg_port_a_dir_sel   = cfg_gpio_dir_sel[7:0];
 wire [7:0]  cfg_port_b_dir_sel   = cfg_gpio_dir_sel[15:8];
@@ -298,7 +301,7 @@ always_comb begin
      sflash_di[3] = digital_io_in[32];
 
      // UAR MASTER I/F
-     uartm_rxd    = digital_io_in[34];
+     uartm_rxd    = (cfg_muart_dis) ? 1'b0 : digital_io_in[34];
 
      usb_dp_i    = digital_io_in[36];
      usb_dn_i    = digital_io_in[37];
@@ -530,7 +533,7 @@ always_comb begin
      digital_io_oen[33] = 1'b0  ;
      // UART MASTER
      digital_io_oen[34] = 1'b1; // RXD
-     digital_io_oen[35] = 1'b0; // TXD
+     digital_io_oen[35] = cfg_muart_dis; // TXD
                   
      // USB 1.1     
      digital_io_oen[36] = usb_oen;

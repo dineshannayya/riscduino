@@ -157,6 +157,7 @@ module user_risc_regress_tb;
 
 	logic  [7:0]           tem_mem[0:4095];
 	logic  [31:0]          mem_data;
+	integer    d_risc_id;
 
 
 parameter P_FSM_C      = 4'b0000; // Command Phase Only
@@ -220,6 +221,8 @@ parameter P_QDDR   = 2'b11;
                 wbd_ext_we_i  ='h0;  // write
                 wbd_ext_dat_i ='h0;  // data output
                 wbd_ext_sel_i ='h0;  // byte enable
+   
+		$value$plusargs("risc_core_id=%d", d_risc_id);
 	end
 
 	`ifdef WFDUMP
@@ -228,6 +231,7 @@ parameter P_QDDR   = 2'b11;
 	   	$dumpvars(1, user_risc_regress_tb);
 	   	$dumpvars(1, user_risc_regress_tb.u_top);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_riscv_top);
+	   	$dumpvars(0, user_risc_regress_tb.u_top.u_qspi_master);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_intercon);
 	   	$dumpvars(0, user_risc_regress_tb.u_top.u_pinmux);
 	   end

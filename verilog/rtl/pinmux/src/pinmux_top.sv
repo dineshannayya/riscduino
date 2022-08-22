@@ -45,6 +45,8 @@
 ////    0.4 - 20 July 2022, Dinesh A                              ////
 ////         On Power On, If RESET* = 0, then system will enter   ////
 ////         in to SPIS slave mode to support boot                ////
+////    0.5 - 21 Aug 2022, Dinesh A                              ////
+////          uart_master disable option added                    ////
 //////////////////////////////////////////////////////////////////////
 
 module pinmux_top (
@@ -84,7 +86,7 @@ module pinmux_top (
                        output logic            reg_ack,
 
 		      // Risc configuration
-                       output logic [15:0]     irq_lines,
+                       output logic [31:0]     irq_lines,
                        output logic            soft_irq,
                        output logic [2:0]      user_irq,
 		       input  logic            usb_intr,
@@ -173,6 +175,7 @@ logic [2:0]    timer_intr              ;
 logic [5:0]     pwm_wfm                 ;
 
 
+logic [31:0]  gpio_intr                ;
 wire  [31:0]  cfg_gpio_dir_sel         ;// decides on GPIO pin is I/P or O/P at pad level, 0 -> Input, 1 -> Output
 wire  [31:0]  cfg_gpio_out_type        ;// GPIO Type, Unused
 wire  [31:0]  cfg_multi_func_sel       ;// GPIO Multi function type

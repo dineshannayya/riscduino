@@ -57,7 +57,7 @@ module gpio_top  (
                        input   logic [31:0]  pad_gpio_in,
                        output  logic [31:0]  pad_gpio_out,
 
-                       output  logic         gpio_intr
+                       output  logic [31:0]  gpio_intr
 
                 ); 
 

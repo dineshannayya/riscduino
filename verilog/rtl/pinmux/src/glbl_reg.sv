@@ -65,7 +65,7 @@ module glbl_reg (
 		               input  logic [1:0]      ext_intr_in            ,
 
 		      // Risc configuration
-                       output logic [15:0]     irq_lines              ,
+                       output logic [31:0]     irq_lines              ,
                        output logic            soft_irq               ,
                        output logic [2:0]      user_irq               ,
 		               input  logic            usb_intr               ,
@@ -76,7 +76,7 @@ module glbl_reg (
                         
 
 		               input   logic [2:0]      timer_intr            ,
-		               input   logic            gpio_intr             
+		               input   logic [31:0]     gpio_intr             
    ); 
 
 
@@ -228,7 +228,9 @@ gen_32b_reg  #(32'h0) u_reg_2	(
 	      .data_out   (reg_2         )
 	      );
 
-assign cfg_riscv_ctrl      = reg_2[31:16];
+assign  soft_irq      = reg_2[3]; 
+assign  user_irq      = reg_2[2:0]; 
+assign cfg_riscv_ctrl = reg_2[31:16];
 
 //-----------------------------------------------------------------------
 //   reg-3 : Global Interrupt Mask
@@ -249,53 +251,29 @@ gen_32b_reg  #(32'h0) u_reg_3	(
 //-----------------------------------------------------------------------
 //   reg-4 : Global Interrupt Status
 //-----------------------------------------------------------------
-assign  irq_lines     = reg_3[15:0] & reg_4[15:0]; 
-assign  soft_irq      = reg_3[16]   & reg_4[16]; 
-assign  user_irq      = reg_3[19:17]& reg_4[19:17]; 
+assign  irq_lines     = reg_3[31:0] & reg_4[31:0]; 
 
+// In Arduino GPIO[7:0] is corresponds to PORT-A which is not available for user access
+wire [31:0] hware_intr_req = {gpio_intr[31:8], 3'b0,usb_intr, i2cm_intr,timer_intr[2:0]};
 
-generic_register #(8,0  ) u_reg4_be0 (
-	      .we            ({8{sw_wr_en_4 & 
-                                 wr_be[0]   }}   ),		 
-	      .data_in       (sw_reg_wdata[7:0]  ),
-	      .reset_n       (h_reset_n          ),
-	      .clk           (mclk               ),
-	      
-	      //List of Outs
-	      .data_out      (reg_4[7:0]         )
-          );
-
-
-wire [7:0] hware_intr_req = {gpio_intr, ext_intr_in[1:0], usb_intr, i2cm_intr,timer_intr[2:0]};
-
-generic_intr_stat_reg #(.WD(8),
+generic_intr_stat_reg #(.WD(32),
 	                .RESET_DEFAULT(0)) u_reg4_be1 (
 		 //inputs
 		 .clk         (mclk              ),
 		 .reset_n     (h_reset_n         ),
-	         .reg_we      ({8{sw_wr_en_4 & reg_ack & 
-                                 wr_be[1]   }}  ),		 
-		 .reg_din    (sw_reg_wdata[15:8] ),
+	     .reg_we      ({{8{sw_wr_en_4 & reg_ack & wr_be[3]}},
+                        {8{sw_wr_en_4 & reg_ack & wr_be[2]}},
+                        {8{sw_wr_en_4 & reg_ack & wr_be[1]}},
+                        {8{sw_wr_en_4 & reg_ack & wr_be[0]}}}),		 
+		 .reg_din    (sw_reg_wdata[31:0] ),
 		 .hware_req  (hware_intr_req     ),
 		 
 		 //outputs
-		 .data_out    (reg_4[15:8]       )
+		 .data_out    (reg_4[31:0]       )
 	      );
 
 
 
-generic_register #(4,0  ) u_reg4_be2 (
-	      .we            ({4{sw_wr_en_4 & 
-                                 wr_be[2]   }}  ),		 
-	      .data_in       (sw_reg_wdata[19:16]),
-	      .reset_n       (h_reset_n           ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_4[19:16]        )
-          );
-
-assign reg_4[31:20] = '0;
 
 
 //-----------------------------------------------------------------------
