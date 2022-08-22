@@ -144,8 +144,8 @@ reg 	[7:0] data;
 reg	parity;
 
 begin
-	data <= 8'h0;
-	parity <= 1;
+	data = 8'h0;
+	parity = 1;
 	timeout_count = 0;
 
 fork	
@@ -162,15 +162,15 @@ fork
 // start cycle
 	@(negedge rxd) 
 	 disable loop_1;
-	 read <= 1;
+	 read = 1;
 
 // data cycle
 	@(posedge uart_rx_clk);
 	 for (i = 0; i < data_bit_number; i = i + 1)
 	  begin
 	    @(posedge uart_rx_clk)
-	    data[i] <=  rxd;
-	    parity <= parity ^ rxd;
+	    data[i] =  rxd;
+	    parity = parity ^ rxd;
 	  end		
 
 // parity cycle
@@ -207,7 +207,7 @@ fork
 		  end
 	end
 
-	read <= 0;
+	read = 0;
 	-> uart_read_done;
 
 	if (expected_data != data)
@@ -239,8 +239,8 @@ reg 	[7:0] data;
 reg	parity;
 
 begin
-	data <= 8'h0;
-	parity <= 1;
+	data = 8'h0;
+	parity = 1;
 	timeout_count = 0;
 	timeout = 0;
 
@@ -256,15 +256,15 @@ begin
 
 // start cycle
 	@(negedge rxd) 
-	 read <= 1;
+	 read = 1;
 
 // data cycle
 	@(posedge uart_rx_clk );
 	 for (i = 0; i < data_bit_number; i = i + 1)
 	  begin
 	    @(posedge uart_rx_clk)
-	    data[i] <=  rxd;
-	    parity <= parity ^ rxd;
+	    data[i] =  rxd;
+	    parity = parity ^ rxd;
 	  end		
 
 // parity cycle
@@ -301,7 +301,7 @@ begin
 		  end
 	end
 
-	read <= 0;
+	read = 0;
 	-> uart_read_done;
 
 //      $display ("(%m) Received Data  %c", data);
@@ -331,8 +331,8 @@ reg 	[7:0] data;
 reg	parity;
 
 begin
-	data <= 8'h0;
-	parity <= 1;
+	data = 8'h0;
+	parity = 1;
 	timeout_count = 0;
 	timeout = 0;
 
@@ -352,15 +352,15 @@ fork
 // start cycle
 	@(negedge rxd) 
 	 disable loop_1;
-	 read <= 1;
+	 read = 1;
 
 // data cycle
 	@(posedge uart_rx_clk);
 	 for (i = 0; i < data_bit_number; i = i + 1)
 	  begin
 	    @(posedge uart_rx_clk)
-	    data[i] <=  rxd;
-	    parity <= parity ^ rxd;
+	    data[i] =  rxd;
+	    parity = parity ^ rxd;
 	  end		
 
 // parity cycle
@@ -397,7 +397,7 @@ fork
 		  end
 	end
 
-	read <= 0;
+	read = 0;
 	-> uart_read_done;
 
 	rxd_data = data;
@@ -424,8 +424,8 @@ reg 	[7:0] data;
 reg	parity;
 
 begin
-	data <= 8'h0;
-	parity <= 1;
+	data = 8'h0;
+	parity = 1;
 
 
 fork	
@@ -433,15 +433,15 @@ fork
 
 // start cycle
 	@(negedge rxd) 
-	 read <= 1;
+	 read = 1;
 
 // data cycle
 	@(posedge uart_rx_clk);
 	 for (i = 0; i < data_bit_number; i = i + 1)
 	  begin
 	    @(posedge uart_rx_clk)
-	    data[i] <=  rxd;
-	    parity <= parity ^ rxd;
+	    data[i] =  rxd;
+	    parity = parity ^ rxd;
 	  end		
 
 // parity cycle
@@ -478,7 +478,7 @@ fork
 		  end
 	end
 
-	read <= 0;
+	read = 0;
 	-> uart_read_done;
 
 	rxd_data = data;
@@ -497,13 +497,13 @@ integer i;
 reg parity;	// 0: odd parity, 1: even parity
 
 begin
-	parity <=  #1 1;
+	parity =  #1 1;
 
 // start cycle
 	@(posedge uart_clk)
 	 begin
-		txd <= #1 0;
-		write <= #1 1;
+		txd = #1 0;
+		write = #1 1;
 	 end
 
 // data cycle
@@ -511,8 +511,8 @@ begin
 	   for (i = 0; i < data_bit_number; i = i + 1)
 	   begin
 		@(posedge uart_clk)
-		    txd <= #1 data[i];
-		parity <= parity ^ data[i];
+		    txd = #1 data[i];
+		parity = parity ^ data[i];
 	   end
 	end
 
@@ -520,24 +520,24 @@ begin
 	if (control_setup.parity_en)
 	begin
 		@(posedge uart_clk)
-			txd <= #1 
+			txd = #1 
 //				control_setup.stick_parity ? ~control_setup.even_odd_parity : 
 				control_setup.even_odd_parity ? !parity : parity;
 	end
 
 // stop cycle 1
 	@(posedge uart_clk)
-		txd <= #1 stop_err_check ? 0 : 1;
+		txd = #1 stop_err_check ? 0 : 1;
 
 // stop cycle 2
 	@(posedge uart_clk);
-		txd <= #1 1;
+		txd = #1 1;
 	if (data_bit_number == 5)
 		@(negedge uart_clk);
 	else if (control_setup.stop_bit_number)
 		@(posedge uart_clk);
 
-	write <= #1 0;
+	write = #1 0;
 	if(debug_mode)
 	   $display ("%m:... Write data %h to UART done cnt : %d ...\n", data,tx_count+1);
         else

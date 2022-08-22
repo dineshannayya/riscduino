@@ -239,6 +239,7 @@
 ////          A. GPIO interrupt generation changed from 1 to 32   ////
 ////          B. Total interrupt to Riscv changed from 16 to 32   ////
 ////          C. uart_master disable option added at pinmux       ////
+////          D. Timer interrupt related clean-up                 ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////

@@ -132,7 +132,7 @@ wire [15:0] cfg_timer0_compare = cfg_timer0[15:0];
 
 timer  u_timer_0
   (
-     .reset_n                      (sreset_n             ),// system syn reset
+     .reset_n                      (h_reset_n            ),// system syn reset
      .mclk                         (mclk                 ),// master clock
      .pulse_1us                    (pulse_1us            ),
      .pulse_1ms                    (pulse_1ms            ),
@@ -152,7 +152,7 @@ wire       cfg_timer1_enb      = cfg_timer1[16];
 wire [15:0] cfg_timer1_compare = cfg_timer1[15:0];
 timer  u_timer_1
   (
-     .reset_n                      (sreset_n             ),// system syn reset
+     .reset_n                      (h_reset_n            ),// system syn reset
      .mclk                         (mclk                 ),// master clock
      .pulse_1us                    (pulse_1us            ),
      .pulse_1ms                    (pulse_1ms            ),
@@ -173,7 +173,7 @@ wire [15:0] cfg_timer2_compare = cfg_timer2[15:0];
 
 timer  u_timer_2
   (
-     .reset_n                      (sreset_n             ),// system syn reset
+     .reset_n                      (h_reset_n            ),// system syn reset
      .mclk                         (mclk                 ),// master clock
      .pulse_1us                    (pulse_1us            ),
      .pulse_1ms                    (pulse_1ms            ),

@@ -60,7 +60,7 @@ module pinmux_top (
                        output logic	        wbd_clk_pinmux,
                        // System Signals
                        // Inputs
-		       input logic             mclk,
+		               input logic             mclk,
                        input logic             h_reset_n,
 
                        // Global Reset control
@@ -72,7 +72,7 @@ module pinmux_top (
                        output logic            i2cm_rst_n       ,
                        output logic            usb_rst_n        ,
 
-		       output logic [15:0]     cfg_riscv_ctrl,
+		               output logic [15:0]     cfg_riscv_ctrl,
 
 		       // Reg Bus Interface Signal
                        input logic             reg_cs,
@@ -89,8 +89,8 @@ module pinmux_top (
                        output logic [31:0]     irq_lines,
                        output logic            soft_irq,
                        output logic [2:0]      user_irq,
-		       input  logic            usb_intr,
-		       input  logic            i2cm_intr,
+		               input  logic            usb_intr,
+		               input  logic            i2cm_intr,
 
                        // Digital IO
                        output logic [37:0]     digital_io_out,
@@ -98,11 +98,11 @@ module pinmux_top (
                        input  logic [37:0]     digital_io_in,
 
 		       // SFLASH I/F
-		       input  logic            sflash_sck,
-		       input  logic [3:0]      sflash_ss,
-		       input  logic [3:0]      sflash_oen,
-		       input  logic [3:0]      sflash_do,
-		       output logic [3:0]      sflash_di,
+		               input  logic            sflash_sck,
+		               input  logic [3:0]      sflash_ss,
+		               input  logic [3:0]      sflash_oen,
+		               input  logic [3:0]      sflash_do,
+		               output logic [3:0]      sflash_di,
 
 		       // SSRAM I/F - Temp Masked
 		       //input  logic            ssram_sck,
