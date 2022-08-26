@@ -71,7 +71,9 @@
 `include "uart_agent.v"
 `include "i2c_slave_model.v"
 
-module arduino_i2c_scaner_tb;
+`define TB_HEX "arduino_i2c_wr_rd.ino.hex"
+`define TB_TOP arduino_i2c_wr_rd_tb
+module `TB_TOP;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -145,13 +147,13 @@ module arduino_i2c_scaner_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_i2c_scaner_tb);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.i_core_top_0);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.u_connect);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_uart_i2c_usb_spi.u_i2cm);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_pinmux);
+	   	$dumpvars(3, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_uart0_core);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_i2cm);
+	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
 	   end
        `endif
 
@@ -192,7 +194,7 @@ module arduino_i2c_scaner_tb;
         uart_parity_en          = 0; // parity enable
         uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
 	    tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
-        uart_timeout            = 2000;// wait time limit
+        uart_timeout            = 20000;// wait time limit
         uart_fifo_enable        = 0;	// fifo mode disable
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
@@ -228,11 +230,8 @@ module arduino_i2c_scaner_tb;
         tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                        uart_stick_parity, uart_timeout, uart_divisor);
 
-         u_i2c_slave_0.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_1.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_2.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_3.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_4.debug = 0; // disable i2c bfm debug message
+         u_i2c_slave_0.debug = 1; // disable i2c bfm debug message
+         u_i2c_slave_1.debug = 1; // disable i2c bfm debug message
 
         repeat (45000) @(posedge clock);  // wait for Processor Get Ready
 	    flag  = 0;
@@ -251,7 +250,7 @@ module arduino_i2c_scaner_tb;
               end
            end
            begin
-              repeat (800000) @(posedge clock);  // wait for Processor Get Ready
+              repeat (250000) @(posedge clock);  // wait for Processor Get Ready
            end
            join_any
         
@@ -264,8 +263,8 @@ module arduino_i2c_scaner_tb;
            // Check 
            // if all the byte received
            // if no error 
-           if(uart_rx_nu != 1181) test_fail = 1;
-           if(check_sum != 32'h000170c9) test_fail = 1;
+           if(uart_rx_nu != 138) test_fail = 1;
+           if(check_sum != 32'h00001e9d) test_fail = 1;
 
 	   
 	    	$display("###################################################");
@@ -351,22 +350,7 @@ i2c_slave_model  #(.I2C_ADR(7'h4)) u_i2c_slave_0 (
 	.sda   (sda)
        );
 
-i2c_slave_model  #(.I2C_ADR(7'h8)) u_i2c_slave_1 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h10)) u_i2c_slave_2 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h11)) u_i2c_slave_3 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h13)) u_i2c_slave_4 (
+i2c_slave_model  #(.I2C_ADR(7'h10)) u_i2c_slave_1 (
 	.scl   (scl), 
 	.sda   (sda)
        );
@@ -401,7 +385,7 @@ i2c_slave_model  #(.I2C_ADR(7'h13)) u_i2c_slave_4 (
    assign io_in[32] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_i2c_scaner.ino.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	             .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (

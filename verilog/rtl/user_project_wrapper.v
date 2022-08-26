@@ -25,17 +25,21 @@
 ////  Description                                                 ////
 ////      This is digital core and integrate all the main block   ////
 ////      here.  Following block are integrated here              ////
-////      1. Risc V Core                                          ////
-////      2. Quad SPI Master                                      ////
-////      3. Wishbone Cross Bar                                   ////
-////      4. UART                                                 ////
-////      5, USB 1.1                                              ////
-////      6. SPI Master (Single)                                  ////
-////      7. TCM SRAM 2KB                                         ////
-////      8. 2KB icache and 2KB dcache                            ////
-////      8. 6 Channel ADC                                        ////
-////      9. Pinmux with GPIO and 6 PWM                           ////
-////
+////      1.  32 bit Risc V Core                                  ////
+////      2.  Quad SPI Master(SPI Flash/SRAM)                     ////
+////      3.  Wishbone Cross Bar                                  ////
+////      4.  2 x UART                                            ////
+////      5,  USB 1.1 Host                                        ////
+////      6.  SPI Master (Single)                                 ////
+////      7.  TCM SRAM 2KB                                        ////
+////      8.  2KB icache and 2KB dcache                           ////
+////      9.  6 Channel ADC (Pending)                             ////
+////      10. Pinmux with GPIO and 6 PWM                          ////
+////      11. 15 x hardware Semaphore                             ////
+////      12. 4 x ws281x driver                                   //// 
+////      13. 3 x Hardware Timer                                  ////
+////      14. UART Master                                         ////
+////      15. SPI Slave (As Arduino ISP)                          ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -183,7 +187,7 @@
 ////       wishbone slave clock generation config increase from   ////
 ////       3 to 4 bit support clock source selection              ////
 ////       B.  Changed Module: qspim                              ////
-//////      1. Bug fix in spi rise and fall pulse relation w.r.t  ////
+////        1. Bug fix in spi rise and fall pulse relation w.r.t  ////
 ////           spi_clk. Note: Previous version work only with     ////
 ////           spi clock config = 0x2                             ////
 ////        2. spi_oen generation fix for different spi mode      ////
@@ -235,11 +239,14 @@
 ////             `define ADDR_SPACE_PWM     32'h1002_0080         ////
 ////             `define ADDR_SPACE_TIMER   32'h1002_00C0         ////
 ////             `define ADDR_SPACE_SEMA    32'h1002_0100         ////
-////    5.1  Aug 21 2022, Dinesh A                                ////
+////    5.1  Aug 24 2022, Dinesh A                                ////
 ////          A. GPIO interrupt generation changed from 1 to 32   ////
 ////          B. Total interrupt to Riscv changed from 16 to 32   ////
 ////          C. uart_master disable option added at pinmux       ////
 ////          D. Timer interrupt related clean-up                 ////
+////          E. 4x ws281x driver logic added                     ////
+////          F. 4x ws281x driver are mux with 16x gpio           ////
+////          G. gpio type select the normal gpio vs ws281x       ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -294,6 +301,50 @@
        0x3000_0000 to 0x307F_FFFF  - Indirect Address
                                      {Bank_Sel[15:3],WB ADDR[18:0]}
 ***********************************************************************/
+/***********************************************************************
+ * Caravel I/O mapping 
+ *
+ * mprj_io[37]  io_in/out/oeb/in_3v3[26]  ---                    ---
+ * mprj_io[36]  io_in/out/oeb/in_3v3[25]  ---                    ---
+ * mprj_io[35]  io_in/out/oeb/in_3v3[24]  gpio_analog/noesd[17]  ---
+ * mprj_io[34]  io_in/out/oeb/in_3v3[23]  gpio_analog/noesd[16]  ---
+ * mprj_io[33]  io_in/out/oeb/in_3v3[22]  gpio_analog/noesd[15]  ---
+ * mprj_io[32]  io_in/out/oeb/in_3v3[21]  gpio_analog/noesd[14]  ---
+ * mprj_io[31]  io_in/out/oeb/in_3v3[20]  gpio_analog/noesd[13]  ---
+ * mprj_io[30]  io_in/out/oeb/in_3v3[19]  gpio_analog/noesd[12]  ---
+ * mprj_io[29]  io_in/out/oeb/in_3v3[18]  gpio_analog/noesd[11]  ---
+ * mprj_io[28]  io_in/out/oeb/in_3v3[17]  gpio_analog/noesd[10]  ---
+ * mprj_io[27]  io_in/out/oeb/in_3v3[16]  gpio_analog/noesd[9]   ---
+ * mprj_io[26]  io_in/out/oeb/in_3v3[15]  gpio_analog/noesd[8]   ---
+ * mprj_io[25]  io_in/out/oeb/in_3v3[14]  gpio_analog/noesd[7]   ---
+ * mprj_io[24]  ---                       ---                    user_analog[10]
+ * mprj_io[23]  ---                       ---                    user_analog[9]
+ * mprj_io[22]  ---                       ---                    user_analog[8]
+ * mprj_io[21]  ---                       ---                    user_analog[7]
+ * mprj_io[20]  ---                       ---                    user_analog[6]  clamp[2]
+ * mprj_io[19]  ---                       ---                    user_analog[5]  clamp[1]
+ * mprj_io[18]  ---                       ---                    user_analog[4]  clamp[0]
+ * mprj_io[17]  ---                       ---                    user_analog[3]
+ * mprj_io[16]  ---                       ---                    user_analog[2]
+ * mprj_io[15]  ---                       ---                    user_analog[1]
+ * mprj_io[14]  ---                       ---                    user_analog[0]
+ * mprj_io[13]  io_in/out/oeb/in_3v3[13]  gpio_analog/noesd[6]   ---
+ * mprj_io[12]  io_in/out/oeb/in_3v3[12]  gpio_analog/noesd[5]   ---
+ * mprj_io[11]  io_in/out/oeb/in_3v3[11]  gpio_analog/noesd[4]   ---
+ * mprj_io[10]  io_in/out/oeb/in_3v3[10]  gpio_analog/noesd[3]   ---
+ * mprj_io[9]   io_in/out/oeb/in_3v3[9]   gpio_analog/noesd[2]   ---
+ * mprj_io[8]   io_in/out/oeb/in_3v3[8]   gpio_analog/noesd[1]   ---
+ * mprj_io[7]   io_in/out/oeb/in_3v3[7]   gpio_analog/noesd[0]   ---
+ * mprj_io[6]   io_in/out/oeb/in_3v3[6]   ---                    ---
+ * mprj_io[5]   io_in/out/oeb/in_3v3[5]   ---                    ---
+ * mprj_io[4]   io_in/out/oeb/in_3v3[4]   ---                    ---
+ * mprj_io[3]   io_in/out/oeb/in_3v3[3]   ---                    ---
+ * mprj_io[2]   io_in/out/oeb/in_3v3[2]   ---                    ---
+ * mprj_io[1]   io_in/out/oeb/in_3v3[1]   ---                    ---
+ * mprj_io[0]   io_in/out/oeb/in_3v3[0]   ---                    ---
+
+
+************************************************************************/
 
 module user_project_wrapper (
 `ifdef USE_POWER_PINS

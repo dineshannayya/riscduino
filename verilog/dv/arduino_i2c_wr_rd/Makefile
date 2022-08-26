@@ -44,7 +44,7 @@ export IVERILOG_DUMPER = fst
 
 .SUFFIXES:
 
-PATTERN = arduino_i2c_scaner
+PATTERN = arduino_i2c_wr_rd
 
 all:  ${PATTERN:=.vcd}
 

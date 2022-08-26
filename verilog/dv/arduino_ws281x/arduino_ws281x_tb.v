@@ -24,8 +24,7 @@
 ////  Description                                                 ////
 ////   This is a standalone test bench to validate the            ////
 ////   Digital core.                                              ////
-////   This test bench to valid Arduino example:                  ////
-////     <example><Wire><i2c_scanner>                             ////
+////   This test bench to validate ws281x driver                  ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -69,9 +68,12 @@
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "uart_agent.v"
-`include "i2c_slave_model.v"
+`include "bfm_ws281x.sv"
 
-module arduino_i2c_scaner_tb;
+`define TB_HEX "arduino_ws281x.ino.hex"
+`define TB_TOP arduino_ws281x_tb
+
+module `TB_TOP;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -98,32 +100,27 @@ module arduino_i2c_scaner_tb;
 	wire [7:0] mprj_io_0;
 	reg         test_fail;
 	reg [31:0] read_data;
-    //----------------------------------
-    // Uart Configuration
-    // ---------------------------------
-    reg [1:0]      uart_data_bit        ;
-    reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
-    reg	       uart_stick_parity    ; // 1: force even parity
-    reg	       uart_parity_en       ; // parity enable
-    reg	       uart_even_odd_parity ; // 0: odd parity; 1: even parity
-    
-    reg [7:0]      uart_data            ;
-    reg [15:0]     uart_divisor         ;	// divided by n * 16
-    reg [15:0]     uart_timeout         ;// wait time limit
-    
-    reg [15:0]     uart_rx_nu           ;
-    reg [15:0]     uart_tx_nu           ;
-    reg [7:0]      uart_write_data [0:39];
-    reg 	       uart_fifo_enable     ;	// fifo mode disable
 	reg            flag                 ;
     reg            compare_start        ; // User Need to make sure that compare start match with RiscV core completing initial booting
 
+	reg [31:0]     rx_wcnt              ;
 	reg [31:0]     check_sum            ;
         
 	integer    d_risc_id;
 
          integer i,j;
 
+//-----------------------------------------------
+// WS281X BFM integration
+//----------------------------------------------
+parameter WS2811_LS  = 0;
+parameter WS2811_HS  = 1;
+parameter WS2812_HS  = 2;
+parameter WS2812S_HS = 3;
+parameter WS2812B_HS = 4;
+
+wire [3:0] ws281x_port ;
+reg        ws281x_enb ;
 
 
 
@@ -145,55 +142,54 @@ module arduino_i2c_scaner_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_i2c_scaner_tb);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.i_core_top_0);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.u_connect);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_uart_i2c_usb_spi.u_i2cm);
-	   	$dumpvars(0, arduino_i2c_scaner_tb.u_top.u_pinmux);
+	   	$dumpvars(3, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top);
+	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi);
 	   end
        `endif
 
-       /*************************************************************************
-       * This is Baud Rate to clock divider conversion for Test Bench
-       * Note: DUT uses 16x baud clock, where are test bench uses directly
-       * baud clock, Due to 16x Baud clock requirement at RTL, there will be
-       * some resolution loss, we expect at lower baud rate this resolution
-       * loss will be less. For Quick simulation perpose higher baud rate used
-       * *************************************************************************/
-       task tb_set_uart_baud;
-       input [31:0] ref_clk;
-       input [31:0] baud_rate;
-       output [31:0] baud_div;
-       reg   [31:0] baud_div;
-       begin
-	  // for 230400 Baud = (50Mhz/230400) = 216.7
-	  baud_div = ref_clk/baud_rate; // Get the Bit Baud rate
-	  // Baud 16x = 216/16 = 13
-          baud_div = baud_div/16; // To find the RTL baud 16x div value to find similar resolution loss in test bench
-	  // Test bench baud clock , 16x of above value
-	  // 13 * 16 = 208,  
-	  // (Note if you see original value was 216, now it's 208 )
-          baud_div = baud_div * 16;
-	  // Test bench half cycle counter to toggle it 
-	  // 208/2 = 104
-           baud_div = baud_div/2;
-	  //As counter run's from 0 , substract from 1
-	   baud_div = baud_div-1;
-       end
-       endtask
-       
+
+
+
+/**********************************************************************
+    Arduino Digital PinMapping
+* Pin Mapping    Arduino              ATMGE CONFIG
+*   ATMEGA328     Port                                        caravel Pin Mapping
+*   Pin-1         22            PC6/WS[0]/RESET*                digital_io[0]
+*   Pin-2         0             PD0/WS[0]/RXD[0]                digital_io[1]
+*   Pin-3         1             PD1/WS[0]/TXD[0]                digital_io[2]
+*   Pin-4         2             PD2/WS[0]/RXD[1]/INT0           digital_io[3]
+*   Pin-5         3             PD3/WS[1]INT1/OC2B(PWM0)        digital_io[4]
+*   Pin-6         4             PD4/WS[1]TXD[1]                 digital_io[5]
+*   Pin-7                       VCC                  -
+*   Pin-8                       GND                  -
+*   Pin-9         20            PB6/WS[1]/XTAL1/TOSC1           digital_io[6]
+*   Pin-10        21            PB7/WS[1]/XTAL2/TOSC2           digital_io[7]
+*   Pin-11        5             PD5/WS[2]/SS[3]/OC0B(PWM1)/T1   digital_io[8]
+*   Pin-12        6             PD6/WS[2]/SS[2]/OC0A(PWM2)/AIN0 digital_io[9]/analog_io[2]
+*   Pin-13        7             PD7/WS[2]/A1N1                  digital_io[10]/analog_io[3]
+*   Pin-14        8             PB0/WS[2]/CLKO/ICP1             digital_io[11]
+*   Pin-15        9             PB1/WS[3]/SS[1]OC1A(PWM3)       digital_io[12]
+*   Pin-16        10            PB2/WS[3]/SS[0]/OC1B(PWM4)      digital_io[13]
+*   Pin-17        11            PB3/WS[3]/MOSI/OC2A(PWM5)       digital_io[14]
+*   Pin-18        12            PB4/WS[3]/MISO                  digital_io[15]
+*   Pin-19        13            PB5/SCK                         digital_io[16]
+*   Pin-20                      AVCC                -
+*   Pin-21                      AREF                            analog_io[10]
+*   Pin-22                      GND                 -
+*   Pin-23        14            PC0/ADC0                        digital_io[18]/analog_io[11]
+*   Pin-24        15            PC1/ADC1                        digital_io[19]/analog_io[12]
+*   Pin-25        16            PC2/ADC2                        digital_io[20]/analog_io[13]
+*   Pin-26        17            PC3/ADC3                        digital_io[21]/analog_io[14]
+*   Pin-27        18            PC4/ADC4/SDA                    digital_io[22]/analog_io[15]
+*   Pin-28        19            PC5/ADC5/SCL                    digital_io[23]/analog_io[16]
+*****************************************************************************/
+
 
 	initial begin
-        uart_data_bit           = 2'b11;
-        uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
-        uart_stick_parity       = 0; // 1: force even parity
-        uart_parity_en          = 0; // parity enable
-        uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
-	    tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
-        uart_timeout            = 2000;// wait time limit
-        uart_fifo_enable        = 0;	// fifo mode disable
+
+        ws281x_enb              = 0;
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
 
@@ -223,63 +219,51 @@ module arduino_i2c_scaner_tb;
 
         repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
-	    tb_uart.debug_mode = 0; // disable debug display
-        tb_uart.uart_init;
-        tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
-                                       uart_stick_parity, uart_timeout, uart_divisor);
 
-         u_i2c_slave_0.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_1.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_2.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_3.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_4.debug = 0; // disable i2c bfm debug message
-
-        repeat (45000) @(posedge clock);  // wait for Processor Get Ready
+        repeat (40000) @(posedge clock);  // wait for Processor Get Ready
+        ws281x_enb = 1;
 	    flag  = 0;
 		check_sum = 0;
         compare_start = 1;
         
         fork
            begin
-              while(flag == 0)
-              begin
-                 tb_uart.read_char(read_data,flag);
-		         if(flag == 0)  begin
-		            $write ("%c",read_data);
-		            check_sum = check_sum+read_data;
-		         end
-              end
+              wait(u_ws281x_port0.rx_wcnt == 16);
+              wait(u_ws281x_port1.rx_wcnt == 16);
+              wait(u_ws281x_port2.rx_wcnt == 16);
+              wait(u_ws281x_port3.rx_wcnt == 16);
            end
            begin
-              repeat (800000) @(posedge clock);  // wait for Processor Get Ready
+              repeat (300000) @(posedge clock);  // wait for Processor Get Ready
            end
            join_any
         
-           #100
-           tb_uart.report_status(uart_rx_nu, uart_tx_nu);
+           #1000
         
            test_fail = 0;
+           rx_wcnt = u_ws281x_port0.rx_wcnt + u_ws281x_port1.rx_wcnt + u_ws281x_port2.rx_wcnt + u_ws281x_port3.rx_wcnt;
+           check_sum = u_ws281x_port0.check_sum + u_ws281x_port1.check_sum + u_ws281x_port2.check_sum + u_ws281x_port3.check_sum;
 
-		   $display("Total Rx Char: %d Check Sum : %x ",uart_rx_nu, check_sum);
+		   $display("Total Rx Cnt: %d Check Sum : %x ",rx_wcnt, check_sum);
            // Check 
-           // if all the byte received
+           // if all the 102 byte received
            // if no error 
-           if(uart_rx_nu != 1181) test_fail = 1;
-           if(check_sum != 32'h000170c9) test_fail = 1;
+           if(rx_wcnt != 64) test_fail = 1;
+           if(check_sum != 32'h2ffe8) test_fail = 1;
 
 	   
 	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: Standalone i2c scanner (GL) Passed");
+	    	       $display("Monitor: Standalone String (GL) Passed");
 		   `else
-		       $display("Monitor: Standalone i2c scanner (RTL) Passed");
+		       $display("Monitor: Standalone String (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: Standalone i2c scanner (GL) Failed");
+	    	        $display("Monitor: Standalone String (GL) Failed");
 		    `else
-		        $display("Monitor: Standalone i2c scanner (RTL) Failed");
+		        $display("Monitor: Standalone String (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");
@@ -330,46 +314,7 @@ user_project_wrapper u_top(
 );
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
-
-//---------------------------
-// I2C
-// --------------------------
-tri scl,sda;
-
-assign sda  =  (io_oeb[22] == 1'b0) ? io_out[22] : 1'bz;
-assign scl   = (io_oeb[23] == 1'b0) ? io_out[23]: 1'bz;
-assign io_in[22]  =  sda;
-assign io_in[23]  =  scl;
-
-pullup p1(scl); // pullup scl line
-pullup p2(sda); // pullup sda line
-
- 
-i2c_slave_model  #(.I2C_ADR(7'h4)) u_i2c_slave_0 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h8)) u_i2c_slave_1 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h10)) u_i2c_slave_2 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h11)) u_i2c_slave_3 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
-
-i2c_slave_model  #(.I2C_ADR(7'h13)) u_i2c_slave_4 (
-	.scl   (scl), 
-	.sda   (sda)
-       );
+//assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -401,7 +346,7 @@ i2c_slave_model  #(.I2C_ADR(7'h13)) u_i2c_slave_4 (
    assign io_in[32] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_i2c_scaner.ino.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	             .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
@@ -418,19 +363,65 @@ i2c_slave_model  #(.I2C_ADR(7'h13)) u_i2c_slave_4 (
        );
 
 
-//---------------------------
-//  UART Agent integration
-// --------------------------
-wire uart_txd,uart_rxd;
+//-----------------------------------------------
+// WS281X BFM integration
+//----------------------------------------------
+assign ws281x_port[0] = io_out[3];
 
-assign uart_txd   = io_out[2];
-assign io_in[1]  = uart_rxd ;
- 
-uart_agent tb_uart(
-	.mclk                (clock              ),
-	.txd                 (uart_rxd           ),
-	.rxd                 (uart_txd           )
-	);
+bfm_ws281x #(
+              .PORT_ID(0),
+              .MODE(WS2811_HS)) u_ws281x_port0(
+                  .reset_n   (!wb_rst_i     ),
+                  .clk       (clock         ),
+                  .enb       (ws281x_enb    ),
+                  .rxd       (ws281x_port[0])
+               );
+
+//-----------------------------------------------
+// WS281X BFM integration
+//----------------------------------------------
+assign ws281x_port[1] = io_out[4];
+
+bfm_ws281x #(
+              .PORT_ID(1),
+              .MODE(WS2811_HS)) u_ws281x_port1(
+                  .reset_n   (!wb_rst_i     ),
+                  .clk       (clock         ),
+                  .enb       (ws281x_enb    ),
+                  .rxd       (ws281x_port[1])
+               );
+
+//-----------------------------------------------
+// WS281X BFM integration
+//----------------------------------------------
+assign ws281x_port[2] = io_out[8];
+
+bfm_ws281x #(
+              .PORT_ID(2),
+              .MODE(WS2811_HS)) u_ws281x_port2(
+                  .reset_n   (!wb_rst_i     ),
+                  .clk       (clock         ),
+                  .enb       (ws281x_enb    ),
+                  .rxd       (ws281x_port[2])
+               );
+
+//-----------------------------------------------
+// WS281X BFM integration
+//----------------------------------------------
+assign ws281x_port[3] = io_out[12];
+
+bfm_ws281x #(
+              .PORT_ID(3),
+              .MODE(WS2811_HS)) u_ws281x_port3(
+                  .reset_n   (!wb_rst_i     ),
+                  .clk       (clock         ),
+                  .enb       (ws281x_enb    ),
+                  .rxd       (ws281x_port[3])
+               );
+//----------------------------
+// All the task are defined here
+//----------------------------
+
 
 
 task wb_user_core_write;

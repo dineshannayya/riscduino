@@ -55,11 +55,15 @@ set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer_reg.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/timer.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/semaphore_reg.sv  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/ws281x_top.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/ws281x_driver.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/ws281x_reg.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/pulse_gen_type1.sv   \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/pulse_gen_type2.sv   \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v          \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv     \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_fifo.sv     \
      "
 
 
@@ -80,7 +84,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 500 400"
+set ::env(DIE_AREA) "0 0 500 750"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
@@ -92,13 +96,15 @@ set ::env(RUN_CVC) 0
 set ::env(PL_TIME_DRIVEN) 1
 set ::env(PL_TARGET_DENSITY) "0.40"
 set ::env(CELL_PAD) "4"
+set ::env(GRT_ADJUSTMENT) {0.2}
+
 
 set ::env(FP_IO_VEXTEND) {6}
 set ::env(FP_IO_HEXTEND) {6}
 
 
 # helps in anteena fix
-set ::env(USE_ARC_ANTENNA_CHECK) "0"
+set ::env(USE_ARC_ANTENNA_CHECK) "1"
 
 set ::env(FP_IO_VEXTEND) 4
 set ::env(FP_IO_HEXTEND) 4

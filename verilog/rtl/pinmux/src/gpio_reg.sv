@@ -58,7 +58,7 @@ module gpio_reg  (
                        input  logic  [31:0]  gpio_int_event           ,
                        output logic  [31:0]  cfg_gpio_out_data        ,// GPIO statuc O/P data from config reg
                        output logic  [31:0]  cfg_gpio_dir_sel         ,// decides on GPIO pin is I/P or O/P at pad level, 0 -> Input, 1 -> Output
-                       output logic  [31:0]  cfg_gpio_out_type        ,// GPIO Type, Unused
+                       output logic  [31:0]  cfg_gpio_out_type        ,// GPIO Type, 1 - WS_281X port
                        output logic  [31:0]  cfg_multi_func_sel       ,// GPIO Multi function type
                        output logic  [31:0]  cfg_gpio_posedge_int_sel ,// select posedge interrupt
                        output logic  [31:0]  cfg_gpio_negedge_int_sel ,// select negedge interrupt
