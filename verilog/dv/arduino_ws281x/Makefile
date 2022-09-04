@@ -61,12 +61,8 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/abi.cpp -o abi.cpp.o
 	${GCC_PREFIX}-gcc -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -Wall -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/drivers/plic/plic_driver.c -o plic_driver.c.o
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/UARTClass.cpp -o UARTClass.cpp.o
-
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/TIMERClass.cpp -o TIMERClass.cpp.o
-
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard -I${RISCDUINO_BOARD}/libraries/WS281X/src ${RISCDUINO_BOARD}/libraries/WS281X/src/WS281X.cpp -o WS281X.cpp.o
-
-
 	${GCC_PREFIX}-gcc -c -march=rv32imac -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/entry.S -o entry.S.o
 	${GCC_PREFIX}-gcc -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -Wall -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/hooks.c -o hooks.c.o
 	${GCC_PREFIX}-gcc -c -march=rv32imac -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SCORE_DEVKIT -I${RISCDUINO_BOARD}/cores/arduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/arduino/init.S -o init.S.o
@@ -105,10 +101,10 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-ar rcs core.a wiring_digital.c.o
 	${GCC_PREFIX}-ar rcs core.a wiring_pulse.cpp.o
 	${GCC_PREFIX}-ar rcs core.a wiring_shift.c.o
-	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.ino.elf
-	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.ino.elf ${PATTERN}.ino.bin
-	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.ino.elf ${PATTERN}.ino.hex
-	${GCC_PREFIX}-objdump -D  ${PATTERN}.ino.elf >   ${PATTERN}.ino.dump
+	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.elf
+	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.elf ${PATTERN}.bin
+	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.elf ${PATTERN}.hex
+	${GCC_PREFIX}-objdump -D  ${PATTERN}.elf >   ${PATTERN}.dump
 	rm *.o *.a
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)

@@ -49,16 +49,16 @@ void loop() {
   // go through the six channels of the digital pot:
   for (int channel = 0; channel < 6; channel++) {
     // change the resistance on this channel from min to max:
-    for (int level = 0; level < 255; level++) {
+    for (int level = 0; level < 64; level++) {
       digitalPotWrite(channel, level);
-      delayMicroseconds(10);
+      delayMicroseconds(5);
     }
     // wait a second at the top:
-    delayMicroseconds(100);
+    delayMicroseconds(20);
     // change the resistance on this channel from max to min:
-    for (int level = 0; level < 255; level++) {
-      digitalPotWrite(channel, 255 - level);
-      delayMicroseconds(10);
+    for (int level = 0; level < 64; level++) {
+      digitalPotWrite(channel, 64 - level);
+      delayMicroseconds(5);
     }
   }
 

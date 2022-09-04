@@ -68,10 +68,11 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "is62wvs1288.v"
 `include "uart_agent.v"
 `include "i2c_slave_model.v"
 
-`define TB_HEX "arduino_i2c_wr_rd.ino.hex"
+`define TB_HEX "arduino_i2c_wr_rd.hex"
 `define TB_TOP arduino_i2c_wr_rd_tb
 module `TB_TOP;
 	reg clock;
@@ -328,18 +329,17 @@ user_project_wrapper u_top(
 
 );
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
 
 //---------------------------
 // I2C
 // --------------------------
 tri scl,sda;
 
-assign sda  =  (io_oeb[22] == 1'b0) ? io_out[22] : 1'bz;
-assign scl   = (io_oeb[23] == 1'b0) ? io_out[23]: 1'bz;
-assign io_in[22]  =  sda;
-assign io_in[23]  =  scl;
+assign sda  =  (io_oeb[26] == 1'b0) ? io_out[26] : 1'bz;
+assign scl   = (io_oeb[27] == 1'b0) ? io_out[27]: 1'bz;
+assign io_in[26]  =  sda;
+assign io_in[27]  =  scl;
 
 pullup p1(scl); // pullup scl line
 pullup p2(sda); // pullup sda line
@@ -367,26 +367,26 @@ i2c_slave_model  #(.I2C_ADR(7'h10)) u_i2c_slave_1 (
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
      s25fl256s #(.mem_file_name(`TB_HEX),
-	             .otp_file_name("none"),
+	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
@@ -401,14 +401,28 @@ i2c_slave_model  #(.I2C_ADR(7'h10)) u_i2c_slave_1 (
 
        );
 
+   wire spiram_csb = io_out[31];
 
+   is62wvs1288 #(.mem_file_name("none"))
+	u_sram (
+         // Data Inputs/Outputs
+           .io0     (flash_io0),
+           .io1     (flash_io1),
+           // Controls
+           .clk    (flash_clk),
+           .csb    (spiram_csb),
+           .io2    (flash_io2),
+           .io3    (flash_io3)
+    );
+
+//-------------------------------------
 //---------------------------
 //  UART Agent integration
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[2];
-assign io_in[1]  = uart_rxd ;
+assign uart_txd   = io_out[7];
+assign io_in[6]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),

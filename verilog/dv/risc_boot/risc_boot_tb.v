@@ -72,6 +72,7 @@
 `timescale 1 ns / 1 ps
 
 `include "uart_agent.v"
+`include "user_params.svh"
 
 module risc_boot_tb;
 	reg clock;
@@ -103,6 +104,7 @@ module risc_boot_tb;
         reg [7:0]      uart_write_data [0:39];
         reg 	       uart_fifo_enable     ;	// fifo mode disable
 	reg            test_fail            ;
+	integer    d_risc_id;
         
         integer i,j;
 	//---------------------------------
@@ -130,9 +132,9 @@ pullup(mprj_io[3]);
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
            //$dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
-           //$dumpvars(2,risc_boot_tb.uut);
-           $dumpvars(1,risc_boot_tb.uut.mprj);
-           $dumpvars(0,risc_boot_tb.uut.mprj.u_wb_host);
+           //$dumpvars(2,risc_boot_tb.u_top);
+           $dumpvars(1,risc_boot_tb.u_top.mprj);
+           $dumpvars(0,risc_boot_tb.u_top.mprj.u_wb_host);
            //$dumpvars(0,risc_boot_tb.tb_uart);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");
@@ -160,6 +162,11 @@ pullup(mprj_io[3]);
 
         initial
         begin
+
+ $value$plusargs("risc_core_id=%d", d_risc_id);
+
+   init();
+
            uart_data_bit           = 2'b11;
            uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
            uart_stick_parity       = 0; // 1: force even parity
@@ -172,14 +179,15 @@ pullup(mprj_io[3]);
            #200; // Wait for reset removal
 
 		// Wait for Managment core to boot up 
-		wait(checkbits == 16'h AB60);
-		$display("Monitor: Test User Risc Boot Started");
 
 		// Wait for user risc core to boot up 
-		repeat (50000) @(posedge clock);  
 		tb_uart.uart_init;
 		tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
 					     uart_stick_parity, uart_timeout, uart_divisor);
+
+
+                wait_riscv_boot();
+		repeat (50000) @(posedge clock);  
 
 		for (i=0; i<40; i=i+1)
 		uart_write_data[i] = $random;
@@ -238,10 +246,8 @@ pullup(mprj_io[3]);
 
 
 	initial begin
-		RSTB <= 1'b0;
 		CSB  <= 1'b1;		// Force CSB high
 		#2000;
-		RSTB <= 1'b1;	    	// Release reset
 		#170000;
 		CSB = 1'b0;		// CSB can be released
 	end
@@ -276,7 +282,7 @@ pullup(mprj_io[3]);
 	wire USER_VDD1V8 = power4;
 	wire VSS = 1'b0;
 
-	caravel uut (
+	caravel u_top (
 		.vddio	  (VDD3V3),
 		.vssio	  (VSS),
 		.vdda	  (VDD3V3),
@@ -316,8 +322,8 @@ pullup(mprj_io[3]);
 // Connect Quad Flash to for usr Risc Core
 //-----------------------------------------
 
-   wire user_flash_clk = mprj_io[24];
-   wire user_flash_csb = mprj_io[25];
+   wire user_flash_clk = mprj_io[28];
+   wire user_flash_csb = mprj_io[29];
    //tri  user_flash_io0 = mprj_io[26];
    //tri  user_flash_io1 = mprj_io[27];
    //tri  user_flash_io2 = mprj_io[28];
@@ -330,13 +336,13 @@ pullup(mprj_io[3]);
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
-       .SI      (mprj_io[29]),
-       .SO      (mprj_io[30]),
+       .SI      (mprj_io[33]),
+       .SO      (mprj_io[34]),
        // Controls
        .SCK     (user_flash_clk),
        .CSNeg   (user_flash_csb),
-       .WPNeg   (mprj_io[31]),
-       .HOLDNeg (mprj_io[32]),
+       .WPNeg   (mprj_io[35]),
+       .HOLDNeg (mprj_io[36]),
        .RSTNeg  (RSTB)
 
        );
@@ -346,8 +352,8 @@ pullup(mprj_io[3]);
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = mprj_io[2];
-assign mprj_io[1]  = uart_rxd ;
+assign uart_txd   = mprj_io[7];
+assign mprj_io[6]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),
@@ -361,6 +367,7 @@ uart_agent tb_uart(
 initial begin
 end
 `endif    
+`include "caravel_task.sv"
 endmodule
 // SSFLASH has 1ps/1ps time scale
 `include "s25fl256s.sv"

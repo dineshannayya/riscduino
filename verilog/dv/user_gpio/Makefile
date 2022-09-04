@@ -78,7 +78,7 @@ else
 endif
 
 %.vcd: %.vvp
-	vvp $<
+	vvp $< +risc_core_id=$(RISC_CORE)
 
 
 # ---- Clean ----

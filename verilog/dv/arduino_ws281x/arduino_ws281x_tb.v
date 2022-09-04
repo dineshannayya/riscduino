@@ -67,10 +67,11 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "is62wvs1288.v"
 `include "uart_agent.v"
 `include "bfm_ws281x.sv"
 
-`define TB_HEX "arduino_ws281x.ino.hex"
+`define TB_HEX "arduino_ws281x.hex"
 `define TB_TOP arduino_ws281x_tb
 
 module `TB_TOP;
@@ -156,34 +157,34 @@ reg        ws281x_enb ;
     Arduino Digital PinMapping
 * Pin Mapping    Arduino              ATMGE CONFIG
 *   ATMEGA328     Port                                        caravel Pin Mapping
-*   Pin-1         22            PC6/WS[0]/RESET*                digital_io[0]
-*   Pin-2         0             PD0/WS[0]/RXD[0]                digital_io[1]
-*   Pin-3         1             PD1/WS[0]/TXD[0]                digital_io[2]
-*   Pin-4         2             PD2/WS[0]/RXD[1]/INT0           digital_io[3]
-*   Pin-5         3             PD3/WS[1]INT1/OC2B(PWM0)        digital_io[4]
-*   Pin-6         4             PD4/WS[1]TXD[1]                 digital_io[5]
+*   Pin-1         22            PC6/WS[0]/RESET*                digital_io[5]
+*   Pin-2         0             PD0/WS[0]/RXD[0]                digital_io[6]
+*   Pin-3         1             PD1/WS[0]/TXD[0]                digital_io[7]
+*   Pin-4         2             PD2/WS[0]/RXD[1]/INT0           digital_io[8]
+*   Pin-5         3             PD3/WS[1]INT1/OC2B(PWM0)        digital_io[9]
+*   Pin-6         4             PD4/WS[1]TXD[1]                 digital_io[10]
 *   Pin-7                       VCC                  -
 *   Pin-8                       GND                  -
-*   Pin-9         20            PB6/WS[1]/XTAL1/TOSC1           digital_io[6]
-*   Pin-10        21            PB7/WS[1]/XTAL2/TOSC2           digital_io[7]
-*   Pin-11        5             PD5/WS[2]/SS[3]/OC0B(PWM1)/T1   digital_io[8]
-*   Pin-12        6             PD6/WS[2]/SS[2]/OC0A(PWM2)/AIN0 digital_io[9]/analog_io[2]
-*   Pin-13        7             PD7/WS[2]/A1N1                  digital_io[10]/analog_io[3]
-*   Pin-14        8             PB0/WS[2]/CLKO/ICP1             digital_io[11]
-*   Pin-15        9             PB1/WS[3]/SS[1]OC1A(PWM3)       digital_io[12]
-*   Pin-16        10            PB2/WS[3]/SS[0]/OC1B(PWM4)      digital_io[13]
-*   Pin-17        11            PB3/WS[3]/MOSI/OC2A(PWM5)       digital_io[14]
-*   Pin-18        12            PB4/WS[3]/MISO                  digital_io[15]
-*   Pin-19        13            PB5/SCK                         digital_io[16]
+*   Pin-9         20            PB6/WS[1]/XTAL1/TOSC1           digital_io[11]
+*   Pin-10        21            PB7/WS[1]/XTAL2/TOSC2           digital_io[12]
+*   Pin-11        5             PD5/WS[2]/SS[3]/OC0B(PWM1)/T1   digital_io[13]
+*   Pin-12        6             PD6/WS[2]/SS[2]/OC0A(PWM2)/AIN0 digital_io[14]/analog_io[2]
+*   Pin-13        7             PD7/WS[2]/A1N1                  digital_io[15]/analog_io[3]
+*   Pin-14        8             PB0/WS[2]/CLKO/ICP1             digital_io[16]
+*   Pin-15        9             PB1/WS[3]/SS[1]OC1A(PWM3)       digital_io[17]
+*   Pin-16        10            PB2/WS[3]/SS[0]/OC1B(PWM4)      digital_io[18]
+*   Pin-17        11            PB3/WS[3]/MOSI/OC2A(PWM5)       digital_io[19]
+*   Pin-18        12            PB4/WS[3]/MISO                  digital_io[20]
+*   Pin-19        13            PB5/SCK                         digital_io[21]
 *   Pin-20                      AVCC                -
 *   Pin-21                      AREF                            analog_io[10]
 *   Pin-22                      GND                 -
-*   Pin-23        14            PC0/ADC0                        digital_io[18]/analog_io[11]
-*   Pin-24        15            PC1/ADC1                        digital_io[19]/analog_io[12]
-*   Pin-25        16            PC2/ADC2                        digital_io[20]/analog_io[13]
-*   Pin-26        17            PC3/ADC3                        digital_io[21]/analog_io[14]
-*   Pin-27        18            PC4/ADC4/SDA                    digital_io[22]/analog_io[15]
-*   Pin-28        19            PC5/ADC5/SCL                    digital_io[23]/analog_io[16]
+*   Pin-23        14            PC0/ADC0                        digital_io[22]/analog_io[11]
+*   Pin-24        15            PC1/ADC1                        digital_io[23]/analog_io[12]
+*   Pin-25        16            PC2/ADC2                        digital_io[24]/analog_io[13]
+*   Pin-26        17            PC3/ADC3                        digital_io[25]/analog_io[14]
+*   Pin-27        18            PC4/ADC4/SDA                    digital_io[26]/analog_io[15]
+*   Pin-28        19            PC5/ADC5/SCL                    digital_io[27]/analog_io[16]
 *****************************************************************************/
 
 
@@ -328,26 +329,26 @@ assign io_in[0]  = 1'b1; // RESET
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
      s25fl256s #(.mem_file_name(`TB_HEX),
-	             .otp_file_name("none"),
+	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
@@ -362,11 +363,24 @@ assign io_in[0]  = 1'b1; // RESET
 
        );
 
+   wire spiram_csb = io_out[31];
+
+   is62wvs1288 #(.mem_file_name("none"))
+	u_sram (
+         // Data Inputs/Outputs
+           .io0     (flash_io0),
+           .io1     (flash_io1),
+           // Controls
+           .clk    (flash_clk),
+           .csb    (spiram_csb),
+           .io2    (flash_io2),
+           .io3    (flash_io3)
+    );
 
 //-----------------------------------------------
 // WS281X BFM integration
 //----------------------------------------------
-assign ws281x_port[0] = io_out[3];
+assign ws281x_port[0] = io_out[8];
 
 bfm_ws281x #(
               .PORT_ID(0),
@@ -380,7 +394,7 @@ bfm_ws281x #(
 //-----------------------------------------------
 // WS281X BFM integration
 //----------------------------------------------
-assign ws281x_port[1] = io_out[4];
+assign ws281x_port[1] = io_out[9];
 
 bfm_ws281x #(
               .PORT_ID(1),
@@ -394,7 +408,7 @@ bfm_ws281x #(
 //-----------------------------------------------
 // WS281X BFM integration
 //----------------------------------------------
-assign ws281x_port[2] = io_out[8];
+assign ws281x_port[2] = io_out[13];
 
 bfm_ws281x #(
               .PORT_ID(2),
@@ -408,7 +422,7 @@ bfm_ws281x #(
 //-----------------------------------------------
 // WS281X BFM integration
 //----------------------------------------------
-assign ws281x_port[3] = io_out[12];
+assign ws281x_port[3] = io_out[17];
 
 bfm_ws281x #(
               .PORT_ID(3),

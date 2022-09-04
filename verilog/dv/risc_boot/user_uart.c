@@ -16,42 +16,33 @@
 // SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>
 // //////////////////////////////////////////////////////////////////////////
 #define SC_SIM_OUTPORT (0xf0000000)
-#define uint32_t  long
+#include "../c_func/inc/int_reg_map.h"
+#include "common_misc.h"
+#include "common_bthread.h"
 
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x30000000)
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x30000004)
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x30000008)
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x3000000C)
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x30000010)
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x30000014)
-#define reg_mprj_globl_reg6  (*(volatile uint32_t*)0x30000018)
-#define reg_mprj_globl_reg7  (*(volatile uint32_t*)0x3000001C)
-#define reg_mprj_globl_reg8  (*(volatile uint32_t*)0x30000020)
-#define reg_mprj_globl_reg9  (*(volatile uint32_t*)0x30000024)
-#define reg_mprj_globl_reg10 (*(volatile uint32_t*)0x30000028)
-#define reg_mprj_globl_reg11 (*(volatile uint32_t*)0x3000002C)
-#define reg_mprj_globl_reg12 (*(volatile uint32_t*)0x30000030)
-#define reg_mprj_globl_reg13 (*(volatile uint32_t*)0x30000034)
-#define reg_mprj_globl_reg14 (*(volatile uint32_t*)0x30000038)
-#define reg_mprj_globl_reg15 (*(volatile uint32_t*)0x3000003C)
 
-#define reg_mprj_uart_reg0 (*(volatile uint32_t*)0x10010000)
-#define reg_mprj_uart_reg1 (*(volatile uint32_t*)0x10010004)
-#define reg_mprj_uart_reg2 (*(volatile uint32_t*)0x10010008)
-#define reg_mprj_uart_reg3 (*(volatile uint32_t*)0x1001000C)
-#define reg_mprj_uart_reg4 (*(volatile uint32_t*)0x10010010)
-#define reg_mprj_uart_reg5 (*(volatile uint32_t*)0x10010014)
-#define reg_mprj_uart_reg6 (*(volatile uint32_t*)0x10010018)
-#define reg_mprj_uart_reg7 (*(volatile uint32_t*)0x1001001C)
-#define reg_mprj_uart_reg8 (*(volatile uint32_t*)0x10010020)
 
 int main()
 {
 
+   reg_glbl_cfg0 |= 0x1F;       // Remove Reset for UART
+   reg_glbl_multi_func &=0x7FFFFFFF; // Disable UART Master Bit[31] = 0
+   reg_glbl_multi_func |=0x100; // Enable UART Multi func
+   reg_uart0_ctrl = 0x07;       // Enable Uart Access {3'h0,2'b00,1'b1,1'b1,1'b1}
+
+   // GLBL_CFG_MAIL_BOX used as mail box, each core update boot up handshake at 8 bit
+   // bit[7:0]   - core-0
+   // bit[15:8]  - core-1
+   // bit[23:16] - core-2
+   // bit[31:24] - core-3
+
+   reg_glbl_mail_box = 0x1 << (bthread_get_core_id() * 8); // Start of Main 
+
     while(1) {
        // Check UART RX fifo has data, if available loop back the data
-       if(reg_mprj_uart_reg8 != 0) { 
-	   reg_mprj_uart_reg5 = reg_mprj_uart_reg6;
+       // Also check txfifo is not full
+       if((reg_uart0_rxfifo_stat != 0) && ((reg_uart0_status & 0x1) != 0x1)) { 
+	   reg_uart0_txdata = reg_uart0_rxdata;
        }
     }
 

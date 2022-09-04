@@ -71,6 +71,8 @@
 `include "is62wvs1288.v"
 `include "bfm_ad5205.sv"
 
+`define TB_HEX "arduino_digital_port_control.hex"
+`define TB_TOP  arduino_digital_port_control_tb
 module arduino_digital_port_control_tb;
 	reg clock;
 	reg wb_rst_i;
@@ -152,43 +154,46 @@ parameter P_QDDR   = 2'b11;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_digital_port_control_tb);
-	   	//$dumpvars(0, arduino_digital_port_control_tb.u_top.u_riscv_top.i_core_top_0);
-	   	//$dumpvars(0, arduino_digital_port_control_tb.u_top.u_riscv_top.u_connect);
-	   	//$dumpvars(0, arduino_digital_port_control_tb.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_digital_port_control_tb.u_top.u_pinmux);
-	   	$dumpvars(0, arduino_digital_port_control_tb.u_top.u_uart_i2c_usb_spi);
+	   	$dumpvars(3, `TB_TOP);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi);
 	   end
        `endif
 
        
 
 	initial begin
+		$value$plusargs("risc_core_id=%d", d_risc_id);
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
+   
+       init();
+       wait_riscv_boot();
 
-		$value$plusargs("risc_core_id=%d", d_risc_id);
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	    repeat (2) @(posedge clock);
 		#1;
 
         // Remove WB and SPI Reset and CORE under Reset
-        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
+        //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// QSPI SRAM:CS#2 Switch to QSPI Mode
-        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
+        //wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+		//wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
+		//wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
+		//wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
 
         // Remove all the reset
         if(d_risc_id == 0) begin
              $display("STATUS: Working with Risc core 0");
-             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+             //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
         end else if(d_risc_id == 1) begin
              $display("STATUS: Working with Risc core 1");
              wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
@@ -203,27 +208,27 @@ parameter P_QDDR   = 2'b11;
         repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
 
-        repeat (20000) @(posedge clock);  // wait for Processor Get Ready
+        repeat (1000) @(posedge clock);  // wait for Processor Get Ready
         flag = 1;
 
       fork
       begin
-          for (channel = 0; channel < 1; channel = channel+1) begin
+          for (channel = 0; channel < 6; channel = channel+1) begin
             // change the resistance on this channel from min to max:
-            for (level = 0; level < 255; level = level+1) begin
+            for (level = 0; level < 64; level = level+1) begin
                 wait(u_ad5205.channel == channel && u_ad5205.position ==  level);
                 $display("Channel: %x and Position: %x",u_ad5205.channel,u_ad5205.position);
             end
             // change the resistance on this channel from min to max:
-            for (level = 0; level < 255; level = level+1) begin
-                wait((u_ad5205.channel == channel) && (u_ad5205.position ==  (255 -level)));
+            for (level = 0; level < 64; level = level+1) begin
+                wait((u_ad5205.channel == channel) && (u_ad5205.position ==  (64 -level)));
                 $display("Channel: %x and Position: %x",u_ad5205.channel,u_ad5205.position);
             end
           end
           test_fail = 0;
       end
       begin
-         repeat (6000000) @(posedge clock);  // wait for Processor Get Ready
+         repeat (1000000) @(posedge clock);  // wait for Processor Get Ready
          test_fail = 1;
       end
       join_any
@@ -249,11 +254,6 @@ parameter P_QDDR   = 2'b11;
 	    $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -292,16 +292,15 @@ user_project_wrapper u_top(
 
 );
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
 
 //-------------------------------------------------------------------------------------
 //  Integrate the Serial SPI to ad5204/5206 (4-/6-Channel Digital Potentiometers)
 //  https://www.analog.com/media/en/technical-documentation/data-sheets/ad5204_5206.pdf
 //  -----------------------------------------------------------------------------------
-   wire sspi_sck = io_out[16];
-   wire sspi_sdi = io_out[15];
-   wire sspi_ssn = io_out[13];
+   wire sspi_sck = io_out[21];
+   wire sspi_sdi = io_out[20];
+   wire sspi_ssn = io_out[18];
 
    wire [2:0]      p_channel; // potentiometer channel
    wire [7:0]      p_position; // potentiometer position
@@ -327,25 +326,25 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_digital_port_control.ino.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
@@ -361,7 +360,7 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 
        );
 
-   wire spiram_csb = io_out[27];
+   wire spiram_csb = io_out[31];
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (
@@ -508,6 +507,7 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

@@ -37,7 +37,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-module ws281x_reg  #(   parameter NP = 4,     // Number of PORT
+module ws281x_reg  #(   parameter NP = 2,     // Number of PORT
                         parameter DW = 32,    // DATA WIDTH
                         parameter AW = 4,     // ADDRESS WIDTH
                         parameter BW = 4      // BYTE WIDTH
@@ -64,28 +64,28 @@ module ws281x_reg  #(   parameter NP = 4,     // Number of PORT
                        output logic [9:0]    cfg_th1_period        ,   // bit-1 drive low period
 
                        // wd281x port-0 data
-                       input  logic          port0_enb            ,
+                       output  logic          port0_enb            ,
                        input  logic          port0_rd             ,
                        output logic [23:0]   port0_data           ,
                        output logic          port0_dval           ,
 
                        // wd281x port-1 data
-                       input  logic          port1_enb            ,
+                       output  logic          port1_enb            ,
                        input  logic          port1_rd             ,
                        output logic [23:0]   port1_data           ,
-                       output logic          port1_dval           ,
+                       output logic          port1_dval           
 
-                       // wd281x port-2 data
-                       input  logic          port2_enb            ,
-                       input  logic          port2_rd             ,
-                       output logic [23:0]   port2_data           ,
-                       output logic          port2_dval           ,
+                       //// wd281x port-2 data
+                       //output  logic          port2_enb            ,
+                       //input  logic          port2_rd             ,
+                       //output logic [23:0]   port2_data           ,
+                       //output logic          port2_dval           ,
 
-                       // wd281x port-3 data
-                       input  logic          port3_enb            ,
-                       input  logic          port3_rd             ,    
-                       output logic [23:0]   port3_data           ,
-                       output logic          port3_dval             
+                       //// wd281x port-3 data
+                       //output  logic         port3_enb            ,
+                       //input  logic          port3_rd             ,    
+                       //output logic [23:0]   port3_data           ,
+                       //output logic          port3_dval             
 
 
                 ); 
@@ -158,12 +158,12 @@ end
 
 assign port0_enb    = reg_0[0];
 assign port1_enb    = reg_0[1];
-assign port2_enb    = reg_0[2];
-assign port3_enb    = reg_0[3];
+//assign port2_enb    = reg_0[2];
+//assign port3_enb    = reg_0[3];
 
  generic_register	#(.WD(4)) u_reg_0(
 	      //List of Inputs
-	      .we         ({8{sw_wr_en_0 & 
+	      .we         ({4{sw_wr_en_0 & 
                           sw_be[0]   }}),
 	      .data_in    (sw_reg_wdata[3:0]),
 	      .reset_n    (h_reset_n        ),
@@ -209,13 +209,11 @@ gen_32b_reg  #(32'h0) u_reg_2	(
 
 assign port0_dval =!fifo_empty[0];
 assign port1_dval =!fifo_empty[1];
-assign port2_dval =!fifo_empty[2];
-assign port3_dval =!fifo_empty[3];
+//assign port2_dval =!fifo_empty[2];
+//assign port3_dval =!fifo_empty[3];
 
-assign reg_3 = {2'b00,fifo_empty[3],fifo_full[3],
-                2'b00,fifo_empty[2],fifo_full[2],
-                2'b00,fifo_empty[1],fifo_full[1],
-                2'b00,fifo_empty[0],fifo_full[0]};
+assign reg_3 = { 2'b00,fifo_empty[1],fifo_full[1],
+                 2'b00,fifo_empty[0],fifo_full[0]};
 
 
 //----------------------------------------------------
@@ -224,18 +222,18 @@ assign reg_3 = {2'b00,fifo_empty[3],fifo_full[3],
 
 assign fifo_wr[0] = sw_wr_en_4 & reg_ack;
 assign fifo_wr[1] = sw_wr_en_5 & reg_ack;
-assign fifo_wr[2] = sw_wr_en_6 & reg_ack;
-assign fifo_wr[3] = sw_wr_en_7 & reg_ack;
+//assign fifo_wr[2] = sw_wr_en_6 & reg_ack;
+//assign fifo_wr[3] = sw_wr_en_7 & reg_ack;
 
 assign fifo_rd[0] = port0_rd;
 assign fifo_rd[1] = port1_rd;
-assign fifo_rd[2] = port2_rd;
-assign fifo_rd[3] = port3_rd;
+//assign fifo_rd[2] = port2_rd;
+//assign fifo_rd[3] = port3_rd;
 
 assign port0_data = fifo_rdata[0];
 assign port1_data = fifo_rdata[1];
-assign port2_data = fifo_rdata[2];
-assign port3_data = fifo_rdata[3];
+//assign port2_data = fifo_rdata[2];
+//assign port3_data = fifo_rdata[3];
 
 genvar port;
 generate
@@ -272,8 +270,8 @@ begin
     4'b0011    : reg_out [31:0] = reg_3 [31:0];    
     4'b0100    : reg_out [31:0] = port0_data;
     4'b0101    : reg_out [31:0] = port1_data;
-    4'b0110    : reg_out [31:0] = port2_data;
-    4'b0111    : reg_out [31:0] = port3_data;
+//    4'b0110    : reg_out [31:0] = port2_data;
+//    4'b0111    : reg_out [31:0] = port3_data;
     default    : reg_out [31:0] = 32'h0;
   endcase
 end

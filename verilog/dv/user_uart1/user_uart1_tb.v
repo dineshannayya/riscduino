@@ -78,7 +78,9 @@
 `include "uart_agent.v"
 
 
-module user_uart1_tb;
+`define TB_HEX "user_uart1.hex"
+`define TB_TOP  user_uart1_tb
+module `TB_TOP;
 
 reg            clock         ;
 reg            wb_rst_i      ;
@@ -146,17 +148,19 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(0, user_uart1_tb);
+	   	$dumpvars(1, `TB_TOP);
+	   	$dumpvars(1, `TB_TOP.u_top);
+	   	$dumpvars(1, `TB_TOP.u_top.u_wb_host);
+	   	$dumpvars(1, `TB_TOP.u_top.u_pinmux);
+	   	$dumpvars(1, `TB_TOP.u_top.u_uart_i2c_usb_spi);
 	   end
        `endif
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 initial
 begin
+
+   init();
+
    uart_data_bit           = 2'b11;
    uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
    uart_stick_parity       = 0; // 1: force even parity
@@ -173,17 +177,17 @@ begin
    $display("Monitor: Standalone User Uart Test Started");
    
    // Remove Wb Reset
-   wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+   //wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
    // Enable UART Multi Functional Ports
-   wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h200);
+   //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h200);
    
    repeat (2) @(posedge clock);
    #1;
    // Remove all the reset
    if(d_risc_id == 0) begin
 	$display("STATUS: Working with Risc core 0");
-	wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h143);
+	//wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h143);
    end else if(d_risc_id == 1) begin
 	$display("STATUS: Working with Risc core 1");
 	wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h243);
@@ -198,11 +202,12 @@ begin
    repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
    tb_uart.uart_init;
-   wb_user_core_write(`ADDR_SPACE_UART1+8'h0,{3'h0,2'b00,1'b1,1'b1,1'b1});  
+   //wb_user_core_write(`ADDR_SPACE_UART1+`UART_CTRL,{3'h0,2'b00,1'b1,1'b1,1'b1});  
    tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
 	                          uart_stick_parity, uart_timeout, uart_divisor);
 
-   repeat (30000) @(posedge clock);  // wait for Processor Get Ready
+
+    wait_riscv_boot();
    
    
    for (i=0; i<40; i=i+1)
@@ -300,8 +305,8 @@ user_project_wrapper u_top(
 );
 
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0; // CLOCK
 
 
 `ifndef GL // Drive Power for Hold Fix Buf
@@ -316,26 +321,26 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
 
    // Quard flash
-     s25fl256s #(.mem_file_name("user_uart.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	         .otp_file_name("none"), 
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb
@@ -358,8 +363,8 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[5];
-assign io_in[3]  = uart_rxd ;
+assign uart_txd   = io_out[10];
+assign io_in[8]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),
@@ -423,6 +428,40 @@ begin
 end
 endtask
 
+task  wb_user_core_read_check;
+input [31:0] address;
+output [31:0] data;
+input [31:0] cmp_data;
+reg    [31:0] data;
+begin
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_adr_i =address;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='0;  // data output
+  wbd_ext_sel_i ='hF;  // byte enable
+  wbd_ext_cyc_i ='h1;  // strobe/request
+  wbd_ext_stb_i ='h1;  // strobe/request
+  wait(wbd_ext_ack_o == 1);
+  repeat (1) @(negedge clock);
+  data  = wbd_ext_dat_o;  
+  repeat (1) @(posedge clock);
+  #1;
+  wbd_ext_cyc_i ='h0;  // strobe/request
+  wbd_ext_stb_i ='h0;  // strobe/request
+  wbd_ext_adr_i ='h0;  // address
+  wbd_ext_we_i  ='h0;  // write
+  wbd_ext_dat_i ='h0;  // data output
+  wbd_ext_sel_i ='h0;  // byte enable
+  if(data !== cmp_data) begin
+     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
+     `TB_TOP.test_fail = 1;
+  end else begin
+     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
+  end
+  repeat (2) @(posedge clock);
+end
+endtask
 `ifdef GL
 
 wire        wbd_spi_stb_i   = u_top.u_qspi_master.wbd_stb_i;
@@ -462,6 +501,7 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

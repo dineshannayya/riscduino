@@ -192,9 +192,10 @@ parameter P_QDDR   = 2'b11;
 
 	initial begin
 		$dumpon;
+        init();
 
 		#200; // Wait for reset removal
-	        repeat (10) @(posedge clock);
+	    repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
@@ -202,15 +203,23 @@ parameter P_QDDR   = 2'b11;
 
 	        repeat (2) @(posedge clock);
 		#1;
-		// Remove only WB and SPI Reset
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h2);
+		// Enable SPI Reset
+        wb_user_core_read(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,read_data);
+        read_data = read_data | 8'h02;
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,read_data);
 
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h0000); // Change the Bank Sel 0000
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h0000); // Change the Bank Sel 0000
 
 
 		test_fail = 0;
-	        repeat (200) @(posedge clock);
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+	    repeat (200) @(posedge clock);
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+
+        if(u_top.strap_qspi_sram) begin // if the SRAM STRAP in QUAD Mode, then send reset command to switch to SINGLE PHASE
+		   wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_QUAD,P_QUAD,4'b0100});
+		   wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'hFF});
+		   wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
+        end
 		// CS#2 SSPI Indirect RAM READ ACCESS-
 		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
 		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h4,2'b00,2'b10,P_FSM_CADR,8'h00,8'h03});
@@ -1152,11 +1161,6 @@ parameter P_QDDR   = 2'b11;
 	        $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -1197,7 +1201,6 @@ user_project_wrapper u_top(
 
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -1211,22 +1214,22 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
 
    // Quad flash
@@ -1246,7 +1249,7 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 
        );
 
-   wire spiram_csb = io_out[27];
+   wire spiram_csb = io_out[31];
 
    is62wvs1288 #(.mem_file_name("flash1.hex"))
 	u_sfram (
@@ -1391,6 +1394,7 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

@@ -51,32 +51,32 @@ all:  ${PATTERN:=.vcd}
 vvp:  ${PATTERN:=.vvp}
 
 %.vvp: %_tb.v
-	${GCC_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=0 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  user_risc_boot.c -o user_risc_boot.o
+	${GCC_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=0 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -c -I./ -I$(YIFIVE_FIRMWARE_PATH) ${PATTERN}.c -o ${PATTERN}.o
 	${GCC_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=0 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  $(YIFIVE_FIRMWARE_PATH)/crt.S -o crt.o
-	${GCC_PREFIX}-gcc -o user_risc_boot.elf -T $(YIFIVE_FIRMWARE_PATH)/link.ld user_risc_boot.o crt.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
-	${GCC_PREFIX}-objcopy -O verilog user_risc_boot.elf user_risc_boot.hex
-	${GCC_PREFIX}-objdump -D user_risc_boot.elf > user_risc_boot.dump
-	rm crt.o user_risc_boot.o
+	${GCC_PREFIX}-gcc -o ${PATTERN}.elf -T $(YIFIVE_FIRMWARE_PATH)/link.ld ${PATTERN}.o crt.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
+	${GCC_PREFIX}-objcopy -O verilog ${PATTERN}.elf ${PATTERN}.hex
+	${GCC_PREFIX}-objdump -D ${PATTERN}.elf > ${PATTERN}.dump
+	rm crt.o ${PATTERN}.o
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -DRISC_BOOT -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
     else  
-	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DRISC_BOOT -DSIM -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
    endif
 else  
    ifeq ($(DUMP),OFF)
-	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DRISC_BOOT -DGL -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 
     else  
-	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DRISC_BOOT -DGL -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 

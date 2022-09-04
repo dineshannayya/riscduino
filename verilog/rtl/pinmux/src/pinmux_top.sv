@@ -17,7 +17,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  Pinmux                                                     ////
+////  Pinmux                                                      ////
 ////                                                              ////
 ////  This file is part of the riscduino cores project            ////
 ////  https://github.com/dineshannayya/riscduino.git              ////
@@ -58,21 +58,50 @@
 ////          D. 4x ws281x driver logic added                     ////
 ////          E. 4x ws281x driver are mux with 16x gpio           ////
 ////          F. gpio type select the normal gpio vs ws281x       ////
+////    0.7 - 26th Aug 2022, Dinesh A                             ////
+////          As digitial-io[0-4] reserved at power up.           ////
+////          A. to keep at least one uart access,                ////
+////              we have moved UART_RXD[1] from io[3] to io[6]   ////
+////          B. SPI Slave SSN move from io[0] to [7]             ////
+////          C. Additional Mail Box Register added at addr 0xF   ////
+////          D. Due to power on digitalio[0-4] access issue,we   ////
+////             have moved arduino pin mapping from io 5 onward  ////
+////    0.8 - 1 Sept 2022, Dinesh A                               ////
+////          A. System strap implementation                      ////
+////          B. glbl address space increased from 16 to 32       ////
+////          C. software register address moved, 4 register will ////
+////             reset under power-on reset, 4 register will reset////
+////             system reset                                     ////
 //////////////////////////////////////////////////////////////////////
-
+`include "user_params.svh"
 module pinmux_top (
                     `ifdef USE_POWER_PINS
-                       input logic         vccd1,// User area 1 1.8V supply
-                       input logic         vssd1,// User area 1 digital ground
+                       input logic             vccd1,// User area 1 1.8V supply
+                       input logic             vssd1,// User area 1 digital ground
                     `endif
                         // clock skew adjust
-                       input logic [3:0]        cfg_cska_pinmux,
-                       input logic	        wbd_clk_int,
-                       output logic	        wbd_clk_pinmux,
+                       input logic [3:0]       cfg_cska_pinmux,
+                       input logic	           wbd_clk_int,
+                       output logic	           wbd_clk_pinmux,
                        // System Signals
                        // Inputs
 		               input logic             mclk,
-                       input logic             h_reset_n,
+	                   input logic             e_reset_n              ,  // external reset
+	                   input logic             p_reset_n              ,  // power-on reset
+                       input logic             s_reset_n              ,  // soft reset
+
+                       // to/from Global Reset FSM
+                        input  logic           cfg_strap_pad_ctrl     ,
+	                    input  logic [31:0]    system_strap           ,
+	                    output logic [31:0]    strap_sticky           ,
+
+                        input logic            user_clock1            ,
+                        input logic            user_clock2            ,
+                        input logic            int_pll_clock          ,
+                        output logic           xtal_clk               ,
+
+                        output logic           usb_clk                ,
+                        output logic           rtc_clk                ,
 
                        // Global Reset control
                        output logic  [1:0]     cpu_core_rst_n   ,
@@ -88,7 +117,7 @@ module pinmux_top (
 		       // Reg Bus Interface Signal
                        input logic             reg_cs,
                        input logic             reg_wr,
-                       input logic [8:0]       reg_addr,
+                       input logic [9:0]       reg_addr,
                        input logic [31:0]      reg_wdata,
                        input logic [3:0]       reg_be,
 
@@ -157,16 +186,18 @@ module pinmux_top (
                        output  logic            uartm_rxd ,
                        input logic              uartm_txd  ,       
 
-		       output  logic           pulse1m_mclk,
-	               output  logic [31:0]    pinmux_debug,
+		               output  logic           pulse1m_mclk,
+	                   output  logic [31:0]    pinmux_debug,
 
-		       input   logic           dbg_clk_mon
+		               input   logic           dbg_clk_mon
 
    ); 
 
 
 
-logic sreset_n;  // Sync Reset
+logic         s_reset_ssn;  // Sync Reset
+logic         p_reset_ssn;  // Sync Reset
+logic [15:0]  pad_strap_in;
    
 /* clock pulse */
 //********************************************************
@@ -242,26 +273,26 @@ logic         reg_sema_ack;
 logic [31:0]  reg_ws_rdata;
 logic         reg_ws_ack;
 
-assign reg_rdata = (reg_addr[8:6] == `SEL_GLBL)  ? {reg_glbl_rdata} : 
-	               (reg_addr[8:6] == `SEL_GPIO)  ? {reg_gpio_rdata} :
-	               (reg_addr[8:6] == `SEL_PWM)   ? {reg_pwm_rdata}  :
-	               (reg_addr[8:6] == `SEL_TIMER) ? reg_timer_rdata  : 
-	               (reg_addr[8:6] == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
-	               (reg_addr[8:6] == `SEL_WS)    ? reg_ws_rdata     : 'h0;
+assign reg_rdata = (reg_addr[9:7] == `SEL_GLBL)  ? {reg_glbl_rdata} : 
+	               (reg_addr[9:7] == `SEL_GPIO)  ? {reg_gpio_rdata} :
+	               (reg_addr[9:7] == `SEL_PWM)   ? {reg_pwm_rdata}  :
+	               (reg_addr[9:7] == `SEL_TIMER) ? reg_timer_rdata  : 
+	               (reg_addr[9:7] == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
+	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_rdata     : 'h0;
 
-assign reg_ack   = (reg_addr[8:6] == `SEL_GLBL)  ? reg_glbl_ack   : 
-	               (reg_addr[8:6] == `SEL_GPIO)  ? reg_gpio_ack   : 
-	               (reg_addr[8:6] == `SEL_PWM)   ? reg_pwm_ack    : 
-	               (reg_addr[8:6] == `SEL_TIMER) ? reg_timer_ack  : 
-	               (reg_addr[8:6] == `SEL_SEMA)  ? reg_sema_ack   : 
-	               (reg_addr[8:6] == `SEL_WS)    ? reg_ws_ack     : 1'b0;
+assign reg_ack   = (reg_addr[9:7] == `SEL_GLBL)  ? reg_glbl_ack   : 
+	               (reg_addr[9:7] == `SEL_GPIO)  ? reg_gpio_ack   : 
+	               (reg_addr[9:7] == `SEL_PWM)   ? reg_pwm_ack    : 
+	               (reg_addr[9:7] == `SEL_TIMER) ? reg_timer_ack  : 
+	               (reg_addr[9:7] == `SEL_SEMA)  ? reg_sema_ack   : 
+	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_ack     : 1'b0;
 
-wire reg_glbl_cs  = (reg_addr[8:6] == `SEL_GLBL) ? reg_cs : 1'b0;
-wire reg_gpio_cs  = (reg_addr[8:6] == `SEL_GPIO) ? reg_cs : 1'b0;
-wire reg_pwm_cs   = (reg_addr[8:6] == `SEL_PWM)  ? reg_cs : 1'b0;
-wire reg_timer_cs = (reg_addr[8:6] == `SEL_TIMER)? reg_cs : 1'b0;
-wire reg_sema_cs  = (reg_addr[8:6] == `SEL_SEMA) ? reg_cs : 1'b0;
-wire reg_ws_cs    = (reg_addr[8:6] == `SEL_WS) ? reg_cs : 1'b0;
+wire reg_glbl_cs  = (reg_addr[9:7] == `SEL_GLBL) ? reg_cs : 1'b0;
+wire reg_gpio_cs  = (reg_addr[9:7] == `SEL_GPIO) ? reg_cs : 1'b0;
+wire reg_pwm_cs   = (reg_addr[9:7] == `SEL_PWM)  ? reg_cs : 1'b0;
+wire reg_timer_cs = (reg_addr[9:7] == `SEL_TIMER)? reg_cs : 1'b0;
+wire reg_sema_cs  = (reg_addr[9:7] == `SEL_SEMA) ? reg_cs : 1'b0;
+wire reg_ws_cs    = (reg_addr[9:7] == `SEL_WS) ? reg_cs : 1'b0;
 
 //---------------------------------------------------------------------
 
@@ -285,11 +316,19 @@ clk_skew_adjust u_skew_pinmux
        );
 
 reset_sync  u_rst_sync (
-	      .scan_mode  (1'b0        ),
-          .dclk       (mclk        ), // Destination clock domain
-	      .arst_n     (h_reset_n   ), // active low async reset
-          .srst_n     (sreset_n    )
+	      .scan_mode  (1'b0           ),
+          .dclk       (mclk           ), // Destination clock domain
+	      .arst_n     (s_reset_n      ), // active low async reset
+          .srst_n     (s_reset_ssn    )
           );
+
+reset_sync  u_prst_sync (
+	      .scan_mode  (1'b0           ),
+          .dclk       (mclk           ), // Destination clock domain
+	      .arst_n     (p_reset_n      ), // active low async reset
+          .srst_n     (p_reset_ssn    )
+          );
+
 
 //------------------------------------------------------------------
 // Global Register
@@ -298,7 +337,22 @@ glbl_reg u_glbl_reg(
       // System Signals
       // Inputs
           .mclk                         (mclk                    ),
-          .h_reset_n                    (sreset_n                ),
+	      .e_reset_n                    (e_reset_n               ),  // external reset
+	      .p_reset_n                    (p_reset_ssn             ),  // power-on reset
+          .s_reset_n                    (s_reset_ssn             ),
+
+          .pad_strap_in                 (pad_strap_in            ),
+          .system_strap                 (system_strap            ),
+          .strap_sticky                 (strap_sticky            ),
+
+          .user_clock1                  (user_clock1             ),
+          .user_clock2                  (user_clock2             ),
+          .int_pll_clock                (int_pll_clock           ),
+          .xtal_clk                     (xtal_clk                ),
+
+          .usb_clk                      (usb_clk                 ),
+          .rtc_clk                      (rtc_clk                 ),
+
 
           .cpu_core_rst_n               (cpu_core_rst_n          ),
           .cpu_intf_rst_n               (cpu_intf_rst_n          ),
@@ -315,7 +369,7 @@ glbl_reg u_glbl_reg(
       // Reg read/write Interface Inputs
           .reg_cs                       (reg_glbl_cs             ),
           .reg_wr                       (reg_wr                  ),
-          .reg_addr                     (reg_addr[5:2]           ),
+          .reg_addr                     (reg_addr[6:2]           ),
           .reg_wdata                    (reg_wdata               ),
           .reg_be                       (reg_be                  ),
 
@@ -345,7 +399,7 @@ gpio_top  u_gpio(
               // System Signals
               // Inputs
 		      .mclk                     ( mclk                      ),
-              .h_reset_n                (h_reset_n                  ),
+              .h_reset_n                (s_reset_ssn                ),
 
 		      // Reg Bus Interface Signal
               .reg_cs                   (reg_gpio_cs                ),
@@ -376,7 +430,7 @@ pwm_top  u_pwm(
               // System Signals
               // Inputs
 		      .mclk                     ( mclk                      ),
-              .h_reset_n                (h_reset_n                  ),
+              .h_reset_n                (s_reset_ssn                ),
 
 		      // Reg Bus Interface Signal
               .reg_cs                   (reg_pwm_cs                 ),
@@ -400,8 +454,8 @@ pwm_top  u_pwm(
 timer_top  u_timer(
               // System Signals
               // Inputs
-		      .mclk                     ( mclk                      ),
-              .h_reset_n                (h_reset_n                  ),
+		      .mclk                     (mclk                     ),
+              .h_reset_n                (s_reset_ssn              ),
 
 		      // Reg Bus Interface Signal
               .reg_cs                   (reg_timer_cs               ),
@@ -425,7 +479,7 @@ semaphore_reg  u_semaphore(
               // System Signals
               // Inputs
 		      .mclk                     ( mclk                      ),
-              .h_reset_n                (h_reset_n                  ),
+              .h_reset_n                (s_reset_ssn                ),
 
 		      // Reg Bus Interface Signal
               .reg_cs                   (reg_sema_cs                ),
@@ -445,7 +499,7 @@ semaphore_reg  u_semaphore(
 
 ws281x_top  u_ws281x(
 		                .mclk           (mclk             ),
-                        .h_reset_n      (h_reset_n        ),
+                        .h_reset_n      (s_reset_ssn      ),
                                                           
                         .reg_cs         (reg_ws_cs        ),
                         .reg_wr         (reg_wr           ),
@@ -467,10 +521,14 @@ ws281x_top  u_ws281x(
 //----------------------------------------------------------------------
 
 pinmux u_pinmux (
+               .cfg_strap_pad_ctrl      (cfg_strap_pad_ctrl  ),
+               .pad_strap_in            (pad_strap_in        ),
                // Digital IO
                .digital_io_out          (digital_io_out      ),
                .digital_io_oen          (digital_io_oen      ),
                .digital_io_in           (digital_io_in       ),
+
+               .xtal_clk                (xtal_clk            ),
 
                // Config
                .cfg_gpio_out_type       (cfg_gpio_out_type   ),
@@ -528,6 +586,7 @@ pinmux u_pinmux (
                .ws_txd                  (ws_txd              ),       
                                                    
 		       .dbg_clk_mon             (dbg_clk_mon         )
+
 
    ); 
 

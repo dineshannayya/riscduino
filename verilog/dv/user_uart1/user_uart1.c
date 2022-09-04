@@ -21,8 +21,13 @@
 #include "common_bthread.h"
 
 
+
 int main()
 {
+
+   reg_glbl_cfg0 |= 0x43;       // Remove Reset for UART
+   reg_glbl_multi_func |=0x200; // Enable UART Multi func
+   reg_uart1_ctrl = 0x07;       // Enable Uart Access {3'h0,2'b00,1'b1,1'b1,1'b1}
 
    // GLBL_CFG_MAIL_BOX used as mail box, each core update boot up handshake at 8 bit
    // bit[7:0]   - core-0
@@ -32,18 +37,13 @@ int main()
 
    reg_glbl_mail_box = 0x1 << (bthread_get_core_id() * 8); // Start of Main 
 
-    // Write software Write & Read Register
-    reg_glbl_soft_reg_0  = 0x11223344; 
-    reg_glbl_soft_reg_1  = 0x22334455; 
-    reg_glbl_soft_reg_2  = 0x33445566; 
-    reg_glbl_soft_reg_3  = 0x44556677; 
-    reg_glbl_soft_reg_4 = 0x55667788; 
-    reg_glbl_soft_reg_5 = 0x66778899; 
-    //reg_mprj_globl_reg12 = 0x778899AA; 
-    //reg_mprj_globl_reg13 = 0x8899AABB; 
-    //reg_mprj_globl_reg14 = 0x99AABBCC; 
-    //reg_mprj_globl_reg15 = 0xAABBCCDD; 
+    while(1) {
+       // Check UART RX fifo has data, if available loop back the data
+       // Also check txfifo is not full
+       if((reg_uart1_rxfifo_stat != 0) && ((reg_uart1_status & 0x1) != 0x1)) { 
+	   reg_uart1_txdata = reg_uart1_rxdata;
+       }
+    }
 
-    while(1) {}
     return 0;
 }

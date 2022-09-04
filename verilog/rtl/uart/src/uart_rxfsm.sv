@@ -36,6 +36,8 @@
 ////        1. initial version picked from                        ////
 ////          http://www.opencores.org/cores/oms8051mini          ////
 ////                                                              ////
+////    0.2 - 1st Sept 2022, Dinesh A                             ////
+////        1. Moved the Fifo Write to last stop phase            //// 
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -140,6 +142,7 @@ always @(negedge reset_n or posedge baud_clk_16x) begin
       offset     <= offset + 1;
       case(rxstate)
        idle_st   : begin
+            fifo_wr <= 0;
             if(!si) begin // Start indication
                if(fifo_aval && cfg_rx_enable) begin
                  rxstate   <=   xfr_start;
@@ -171,7 +174,6 @@ always @(negedge reset_n or posedge baud_clk_16x) begin
                 fifo_data[cnt] <= si;
                 cnt            <= cnt+1;
                 if(cnt == 7) begin
-                   fifo_wr <= 1;
                    if(cfg_pri_mod == 2'b00)  // No Priority
                        rxstate <=   xfr_stop_st1;
                    else rxstate <= xfr_pri_st;  
@@ -179,7 +181,6 @@ always @(negedge reset_n or posedge baud_clk_16x) begin
              end
           end
        xfr_pri_st   : begin
-            fifo_wr <= 0;
             if(rxpos == offset) begin
                if(cfg_pri_mod == 2'b10)  // even priority
                   if( si != ^fifo_data) error_ind <= 2'b10;
@@ -189,21 +190,24 @@ always @(negedge reset_n or posedge baud_clk_16x) begin
             end
          end
        xfr_stop_st1  : begin
-          fifo_wr <= 0;
           if(rxpos == offset) begin
              if(si) begin
                if(cfg_stop_bit) // Two Stop bit
                   rxstate <=   xfr_stop_st2;
-               else   
+               else  begin  
+                  fifo_wr <= 1;
                   rxstate <=   idle_st;
+               end
              end else begin // Framing error
                 error_ind <= 2'b01;
+                fifo_wr <= 1;
                 rxstate   <=   idle_st;
              end
           end
        end
        xfr_stop_st2  : begin
           if(rxpos == offset) begin
+          fifo_wr <= 1;
              if(si) begin
                 rxstate <=   idle_st;
              end else begin // Framing error

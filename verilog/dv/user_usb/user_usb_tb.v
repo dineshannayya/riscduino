@@ -166,34 +166,30 @@ parameter  USER2_HPER = 2.7777; // 180Mhz Half cycle
 
 	initial begin
 		$dumpon;
-
+                        init();
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
          
-		// Remove Wb/PinMux Reset
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
-                // Enable SPI Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h400);
+         // Enable USB Multi Functional Ports
+         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h10000);
 
 	        repeat (2) @(posedge clock);
 		#1;
          
-                // Remove Wb/PinMux Reset
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
-	        // Set USB clock : 180/3 = 60Mhz	
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h0,8'h61,8'h0,8'h0});
+	     // Set USB clock : 180/3 = 60Mhz	
+         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CLK_CTRL,{16'h0,8'h61,8'h0});
 
-                // Remove the reset
+         // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h03F);
+         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h03F);
 
 
 		test_fail = 0;
-	        repeat (200) @(posedge clock);
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 10
+	    repeat (200) @(posedge clock);
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 10
 
 
 		//usb_test1;
@@ -259,7 +255,7 @@ user_project_wrapper u_top(
 );
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+
 
 
     usb_agent u_usb_agent();
@@ -274,11 +270,11 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 
 // Drive USB Pads
 //
-tri usbd_txdp = (io_oeb[36] == 1'b0) ? io_out[36] : 1'bz;
-tri usbd_txdn = (io_oeb[37] == 1'b0) ? io_out[37] : 1'bz;
+tri usbd_txdp = (io_oeb[24] == 1'b0) ? io_out[24] : 1'bz;
+tri usbd_txdn = (io_oeb[25] == 1'b0) ? io_out[25] : 1'bz;
 
-assign io_in[36] = usbd_txdp;
-assign io_in[37] = usbd_txdn;
+assign io_in[24] = usbd_txdp;
+assign io_in[25] = usbd_txdn;
 
 // Full Speed Device Indication
 
@@ -556,6 +552,6 @@ end
 **/
 `include "tests/usb_test1.v"
 `include "tests/usb_test2.v"
-
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

@@ -18,7 +18,7 @@
 // This include is relative to $CARAVEL_PATH (see Makefile)
 #include <defs.h>
 #include <stub.c>
-#include "../c_func/inc/user_reg_map.h"
+#include "../c_func/inc/ext_reg_map.h"
 
 // User Project Slaves (0x3000_0000)
 
@@ -40,7 +40,7 @@ int uart_cfg = 0;
 void main()
 {
 
-	int bFail = 0;
+	//int bFail = 0;
 	/* 
 	IO Control Registers
 	| DM     | VTRIP | SLOW  | AN_POL | AN_SEL | AN_EN | MOD_SEL | INP_DIS | HOLDH | OEB_N | MGMT_EN |
@@ -62,8 +62,8 @@ void main()
 	/* Set up the housekeeping SPI to be connected internally so	*/
 	/* that external pin changes don't affect it.			*/
 
-    reg_spi_enable = 1;
-    reg_wb_enable = 1;
+    //reg_spi_enable = 1;
+    //reg_wb_enable = 1;
 	// reg_spimaster_config = 0xa002;	// Enable, prescaler = 2,
                                         // connect to housekeeping SPI
 
@@ -71,26 +71,26 @@ void main()
 	// so that the CSB line is not left floating.  This allows
 	// all of the GPIO pins to be used for user functions.
 
-    reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
+    //reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
 
-     /* Apply configuration */
-    reg_mprj_xfer = 1;
-    while (reg_mprj_xfer == 1);
+    // /* Apply configuration */
+    //reg_mprj_xfer = 1;
+    //while (reg_mprj_xfer == 1);
 
     reg_la0_oenb = reg_la0_iena = 0xFFFFFFFF;    // [31:0]
 
@@ -99,50 +99,53 @@ void main()
 
     //-----------------------------------------------------
     // Start of User Functionality and take over the GPIO Pins
-    // ------------------------------------------------------
+    // --------------------------------------------------------------------
     // User block decide on the GPIO function
-    reg_mprj_io_37 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_36 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_35 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_34 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_33 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_32 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_31 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_30 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_29 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_28 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_27 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_26 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_25 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_24 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_23 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_22 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_21 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_20 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_19 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_18 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_17 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_16 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_15 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_14 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_13 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_12 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_11 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_10 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_9  = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_8  = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_7  = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_6 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_5 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_4 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_3 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_2 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_1 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
-    reg_mprj_io_0 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    // io[6] to 37 are set to default bio-direction using user_define.h file
+    //---------------------------------------------------------------------
 
-     /* Apply configuration */
-    reg_mprj_xfer = 1;
-    while (reg_mprj_xfer == 1);
+    //reg_mprj_io_37 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_36 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_35 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_34 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_33 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_32 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_31 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_30 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_29 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_28 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_27 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_26 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_25 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_24 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_23 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_22 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_21 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_20 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_19 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_18 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_17 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_16 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_15 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_14 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_13 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_12 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_11 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_10 = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_9  = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_8  = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_7  = GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_6 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_5 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_4 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_3 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_2 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_1 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+    //reg_mprj_io_0 =  GPIO_MODE_USER_STD_BIDIRECTIONAL_PULLUP;
+
+    // /* Apply configuration */
+    //reg_mprj_xfer = 1;
+    //while (reg_mprj_xfer == 1);
 
     reg_la0_data = 0x000;
     //reg_la0_data = 0x000;

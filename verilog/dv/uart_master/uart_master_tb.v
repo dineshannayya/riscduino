@@ -18,7 +18,9 @@
 `timescale 1 ns / 1 ps
 `include "uart_agent.v"
 
-module uart_master_tb;
+`define TB_HEX "uart_master.hex"
+`define TB_TOP  uart_master_tb
+module `TB_TOP;
 	reg clock;
 	reg RSTB;
 	reg CSB;
@@ -70,13 +72,11 @@ reg            test_fail     ;
 	`ifdef WFDUMP
 	initial begin
 		$dumpfile("simx.vcd");
-		$dumpvars(1, uart_master_tb);
-		$dumpvars(1, uart_master_tb.uut);
-		$dumpvars(1, uart_master_tb.uut.mprj);
-		$dumpvars(1, uart_master_tb.uut.mprj.u_wb_host);
-		$dumpvars(1, uart_master_tb.uut.mprj.u_wb_host.u_uart2wb);
-		$dumpvars(1, uart_master_tb.tb_master_uart);
-		//$dumpvars(2, uart_master_tb.uut.mprj.u_pinmux);
+		$dumpvars(2, `TB_TOP);
+		$dumpvars(0, `TB_TOP.tb_master_uart);
+		$dumpvars(0, `TB_TOP.uut.mprj.u_wb_host.u_uart2wb);
+		$dumpvars(1, `TB_TOP.tb_master_uart);
+		$dumpvars(0, `TB_TOP.uut.mprj.u_pinmux);
 	end
        `endif
 
@@ -84,7 +84,7 @@ reg            test_fail     ;
 
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (400) begin
-			repeat (1000) @(posedge clock);
+			repeat (10000) @(posedge clock);
 			// $display("+1000 cycles");
 		end
 		$display("%c[1;31m",27);
@@ -101,25 +101,26 @@ reg            test_fail     ;
 
 	initial begin
             uart_data_bit           = 2'b11;
-            uart_stop_bits          = 1; // 0: 1 stop bit; 1: 2 stop bit;
+            uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
             uart_stick_parity       = 0; // 1: force even parity
             uart_parity_en          = 0; // parity enable
             uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
             uart_divisor            = 15;// divided by n * 16
-            uart_timeout            = 600;// wait time limit
+            uart_timeout            = 200;// wait time limit
             uart_fifo_enable        = 0;	// fifo mode disable
             tb_master_uart.debug_mode = 0; // disable debug display
 
             #200; // Wait for reset removal
 
- 	    wait(checkbits == 16'h AB60);
-		$display("Monitor: UART Master Test Started");
+ 	//    wait(checkbits == 16'h AB60);
+	//	$display("Monitor: UART Master Test Started");
 
-	   repeat (50000) @(posedge clock);  
+	   repeat (10000) @(posedge clock);  
             tb_master_uart.uart_init;
             tb_master_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
         	                          uart_stick_parity, uart_timeout, uart_divisor);
            //$write ("\n(%t)Response:\n",$time);
+           // Wait for Initial Command Format from the uart master
            flag = 0;
            while(flag == 0)
            begin
@@ -174,11 +175,11 @@ reg            test_fail     ;
 
 	initial begin
 		RSTB <= 1'b0;
-		CSB  <= 1'b1;		// Force CSB high
+		//CSB  <= 1'b1;		// Force CSB high
 		#2000;
 		RSTB <= 1'b1;	    	// Release reset
 		#170000;
-		CSB = 1'b0;		// CSB can be released
+		//CSB = 1'b0;		// CSB can be released
 	end
 
 	initial begin		// Power-up sequence
@@ -262,8 +263,8 @@ reg            test_fail     ;
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = mprj_io[35];
-assign mprj_io[34]  = uart_rxd ;
+assign uart_txd   = mprj_io[23];
+assign mprj_io[22]  = uart_rxd ;
  
 uart_agent tb_master_uart(
 	.mclk                (clock              ),
@@ -276,6 +277,4 @@ uart_agent tb_master_uart(
 
 endmodule
 
-// SSFLASH has 1ps/1ps time scale
-`include "s25fl256s.sv"
 `default_nettype wire

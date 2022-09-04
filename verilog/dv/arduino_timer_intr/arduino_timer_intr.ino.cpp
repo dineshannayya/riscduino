@@ -10,8 +10,8 @@ Testing the Timer Interrupt
 
 
 
-int Timer_us =0;
-int Timer_ms =0;
+uint8_t Timer_us =0;
+uint8_t Timer_ms =0;
 void setup();
 void loop();
 void timer_us_intr();

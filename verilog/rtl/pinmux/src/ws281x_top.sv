@@ -56,15 +56,18 @@ module ws281x_top  (
 
                 ); 
 
+assign txd[2] = txd[0];
+assign txd[3] = txd[1];
+
 logic[15:0]    cfg_reset_period     ;   // Reset period interm of clk
 logic [9:0]    cfg_clk_period       ;   // Total bit clock period
-logic [9:0]    cfg_th0_period        ;   // bit-0 drive low period
-logic [9:0]    cfg_th1_period        ;   // bit-1 drive low period
+logic [9:0]    cfg_th0_period       ;   // bit-0 drive low period
+logic [9:0]    cfg_th1_period       ;   // bit-1 drive low period
 
 logic [23:0]   port0_data           ;
 logic [23:0]   port1_data           ;
-logic [23:0]   port2_data           ;
-logic [23:0]   port3_data           ;
+//logic [23:0]   port2_data         ;
+//logic [23:0]   port3_data         ;
 
 ws281x_reg  u_reg (
                 .mclk                ( mclk                 ),
@@ -92,17 +95,17 @@ ws281x_reg  u_reg (
                 .port1_enb           ( port1_enb            ),
                 .port1_rd            ( port1_rd             ),
                 .port1_data          ( port1_data           ),
-                .port1_dval          ( port1_dval           ),
+                .port1_dval          ( port1_dval           )
 
-                .port2_enb           ( port2_enb            ),
-                .port2_rd            ( port2_rd             ),
-                .port2_data          ( port2_data           ),
-                .port2_dval          ( port2_dval           ),
+                //.port2_enb           ( port2_enb            ),
+                //.port2_rd            ( port2_rd             ),
+                //.port2_data          ( port2_data           ),
+                //.port2_dval          ( port2_dval           ),
 
-                .port3_enb           ( port3_enb            ),
-                .port3_rd            ( port3_rd             ),    
-                .port3_data          ( port3_data           ),
-                .port3_dval          ( port3_dval           )  
+                //.port3_enb           ( port3_enb            ),
+                //.port3_rd            ( port3_rd             ),    
+                //.port3_data          ( port3_data           ),
+                //.port3_dval          ( port3_dval           )  
 
                 ); 
 
@@ -147,6 +150,7 @@ ws281x_driver u_txd_1(
     .txd                 (txd[1]           )  // Signal to send to WS2811 chain.
     );
 
+/***
 //wx281x port-2
 ws281x_driver u_txd_2(
     .clk                 (mclk             ), // Clock input.
@@ -186,4 +190,5 @@ ws281x_driver u_txd_3(
 
     .txd                 (txd[3]           )  // Signal to send to WS2811 chain.
     );
+***/
 endmodule

@@ -366,3 +366,45 @@ end
 
 
 endmodule
+
+/*********************************************************************
+ module: generic 32b register
+***********************************************************************/
+module  gen_32b_reg2	(
+	      //List of Inputs
+          rst_in,
+	      cs,
+	      we,		 
+	      data_in,
+	      reset_n,
+	      clk,
+	      
+	      //List of Outs
+	      data_out
+	      );
+
+  input [31:0]     rst_in;
+  input [3:0]      we;	
+  input            cs;
+  input [31:0]     data_in;	
+  input            reset_n;
+  input		       clk;
+  output [31:0]    data_out;
+
+
+  reg [31:0]    data_out;
+
+always @ (posedge clk) begin 
+  if (reset_n == 1'b0) begin
+    data_out  <= rst_in ;
+  end
+  else begin
+    if(cs && we[0]) data_out[7:0]   <= data_in[7:0];
+    if(cs && we[1]) data_out[15:8]  <= data_in[15:8];
+    if(cs && we[2]) data_out[23:16] <= data_in[23:16];
+    if(cs && we[3]) data_out[31:24] <= data_in[31:24];
+  end
+end
+
+
+endmodule

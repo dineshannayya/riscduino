@@ -68,6 +68,7 @@
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "uart_agent.v"
+`include "user_params.svh"
 
 module user_uart_master_tb;
 
@@ -100,10 +101,10 @@ reg [31:0]     read_data     ;
 // Uart Configuration
 // ---------------------------------
 reg [1:0]      uart_data_bit        ;
-reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
-reg	       uart_stick_parity    ; // 1: force even parity
-reg	       uart_parity_en       ; // parity enable
-reg	       uart_even_odd_parity ; // 0: odd parity; 1: even parity
+reg	           uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
+reg	           uart_stick_parity    ; // 1: force even parity
+reg	           uart_parity_en       ; // parity enable
+reg	           uart_even_odd_parity ; // 0: odd parity; 1: even parity
 
 reg [7:0]      uart_data            ;
 reg [15:0]     uart_divisor         ;	// divided by n * 16
@@ -115,7 +116,8 @@ reg [7:0]      uart_write_data [0:39];
 reg 	       uart_fifo_enable     ;	// fifo mode disable
 
 reg  [127:0]   la_data_in;
-reg       flag;
+reg            flag;
+reg  [15:0]    strap_in;
 
 
 integer i,j;
@@ -149,7 +151,10 @@ integer i,j;
 	end
 initial
 begin
-   wb_rst_i <= 1'b1;
+   strap_in = 0;
+   strap_in[`PSTRAP_UARTM_CFG] = 0; // uart master config control - load from LA
+   apply_strap(strap_in);
+
    uart_data_bit           = 2'b11;
    uart_stop_bits          = 1; // 0: 1 stop bit; 1: 2 stop bit;
    uart_stick_parity       = 0; // 1: force even parity
@@ -167,7 +172,6 @@ begin
    la_data_in[17:16] = 2'b00; //  priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 
    #100;
-   wb_rst_i <= 1'b0;	    	// Release reset
 
    $display("Monitor: Standalone User Uart master Test Started");
 
@@ -270,8 +274,8 @@ user_project_wrapper u_top(
 
 );
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0; // CLOCK
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -285,8 +289,8 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[35];
-assign io_in[34]  = uart_rxd ;
+assign uart_txd   = io_out[7];
+assign io_in[6]  = uart_rxd ;
  
 uart_agent tb_master_uart(
 	.mclk                (clock              ),
@@ -297,5 +301,6 @@ uart_agent tb_master_uart(
 
 
 `include "uart_master_tasks.sv"
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

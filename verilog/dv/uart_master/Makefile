@@ -155,12 +155,14 @@ hex:  ${BLOCKS:=.hex}
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
 	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
-        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
+        -o $@ $<
     else  
 	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
-        -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
+        -o $@ $<
    endif
 endif
 

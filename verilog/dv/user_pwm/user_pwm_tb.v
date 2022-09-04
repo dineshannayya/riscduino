@@ -135,40 +135,41 @@ module user_pwm_tb;
 
 	initial begin
 		$dumpon;
+        init();
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
-                // Enable PWM Multi Functional Ports
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h03F);
+        // Enable PWM Multi Functional Ports
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h03F);
 
-	        repeat (2) @(posedge clock);
+	    repeat (2) @(posedge clock);
 		#1;
 
-                // Remove the reset
+        // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
+        //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// config 1us based on system clock - 1000/25ns = 40 
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
 
 		test_fail = 0;
-	        repeat (200) @(posedge clock);
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+	    repeat (200) @(posedge clock);
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
 
-	        $display("Step-1, PWM-0: 1ms/2 = 500Hz; PWM-1: 1ms/3; PWM-2: 1ms/4, PWM-3: 1ms/5, PWM-4: 1ms/6, PWM-5: 1ms/7");
-	        test_step = 1;
-                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_0,'h0000_0000);
-                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_1,'h0000_0001);
-                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_2,'h0001_0001);
-                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_3,'h0001_0002);
-                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_4,'h0002_0002);
-                wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_5,'h0002_0003);
-	        pwm_monitor(OneMsPeriod*2,OneMsPeriod*3,OneMsPeriod*4,OneMsPeriod*5,OneMsPeriod*6,OneMsPeriod*7);
+	    $display("Step-1, PWM-0: 1ms/2 = 500Hz; PWM-1: 1ms/3; PWM-2: 1ms/4, PWM-3: 1ms/5, PWM-4: 1ms/6, PWM-5: 1ms/7");
+	    test_step = 1;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_0,'h0000_0000);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_1,'h0000_0001);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_2,'h0001_0001);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_3,'h0001_0002);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_4,'h0002_0002);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_5,'h0002_0003);
+	    pwm_monitor(OneMsPeriod*2,OneMsPeriod*3,OneMsPeriod*4,OneMsPeriod*5,OneMsPeriod*6,OneMsPeriod*7);
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
@@ -190,20 +191,15 @@ module user_pwm_tb;
 	        $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
-wire pwm0 = io_out[4];
-wire pwm1 = io_out[8];
-wire pwm2 = io_out[9];
-wire pwm3 = io_out[12];
-wire pwm4 = io_out[13];
-wire pwm5 = io_out[14];
+wire pwm0 = io_out[9];
+wire pwm1 = io_out[13];
+wire pwm2 = io_out[14];
+wire pwm3 = io_out[17];
+wire pwm4 = io_out[18];
+wire pwm5 = io_out[19];
 
 
 task pwm_monitor;
@@ -302,7 +298,6 @@ user_project_wrapper u_top(
 );
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -453,5 +448,6 @@ end
 `endif
 **/
 
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

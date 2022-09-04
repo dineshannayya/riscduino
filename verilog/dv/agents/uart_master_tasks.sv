@@ -5,8 +5,6 @@ input [31:0] data;
 reg [7:0] read_data;
 reg flag;
 begin
-   fork
-   begin : loop_1
        tb_master_uart.write_char("w");
        tb_master_uart.write_char("m");
        tb_master_uart.write_char(" ");
@@ -28,17 +26,13 @@ begin
        tb_master_uart.write_char(hex2char(data[7:4]));
        tb_master_uart.write_char(hex2char(data[3:0]));
        tb_master_uart.write_char("\n");
-   end
-   begin : loop_2
        // Wait for sucess command
        flag = 0;
        while(flag == 0)
        begin
           tb_master_uart.read_char2(read_data,flag);
-          //$write ("%c",read_data);
+             //$write ("%c",read_data);
        end
-   end
-   join
 end
 endtask
 
@@ -49,28 +43,24 @@ reg [7:0] read_data;
 reg flag;
 integer i;
 begin
-   fork
-   begin : loop_1
-      tb_master_uart.write_char("r");
-      tb_master_uart.write_char("m");
-      tb_master_uart.write_char(" ");
-      tb_master_uart.write_char(hex2char(addr[31:28]));
-      tb_master_uart.write_char(hex2char(addr[27:24]));
-      tb_master_uart.write_char(hex2char(addr[23:20]));
-      tb_master_uart.write_char(hex2char(addr[19:16]));
-      tb_master_uart.write_char(hex2char(addr[15:12]));
-      tb_master_uart.write_char(hex2char(addr[11:8]));
-      tb_master_uart.write_char(hex2char(addr[7:4]));
-      tb_master_uart.write_char(hex2char(addr[3:0]));
-      tb_master_uart.write_char("\n");
-   end
-   begin : loop_2
-      // Wait for sucess command
-      flag = 0;
-      i = 0;
-      while(flag == 0)
-      begin
-         tb_master_uart.read_char2(read_data,flag);
+   tb_master_uart.write_char("r");
+   tb_master_uart.write_char("m");
+   tb_master_uart.write_char(" ");
+   tb_master_uart.write_char(hex2char(addr[31:28]));
+   tb_master_uart.write_char(hex2char(addr[27:24]));
+   tb_master_uart.write_char(hex2char(addr[23:20]));
+   tb_master_uart.write_char(hex2char(addr[19:16]));
+   tb_master_uart.write_char(hex2char(addr[15:12]));
+   tb_master_uart.write_char(hex2char(addr[11:8]));
+   tb_master_uart.write_char(hex2char(addr[7:4]));
+   tb_master_uart.write_char(hex2char(addr[3:0]));
+   tb_master_uart.write_char("\n");
+   // Wait for sucess command
+   flag = 0;
+   i = 0;
+   while(flag == 0)
+   begin
+      tb_master_uart.read_char2(read_data,flag);
          //$write ("%d:%c",i,read_data);
            case (i)
            8'd10 : data[31:28] = char2hex(read_data);
@@ -81,12 +71,10 @@ begin
            8'd15 : data[11:8]  = char2hex(read_data);
            8'd16 : data[7:4]   = char2hex(read_data);
            8'd17 : data[3:0]   = char2hex(read_data);
-           endcase
-	   i = i+1;
-      end
-   end
-   join
+      endcase
+	  i = i+1;
    $display("received Data: %x",data);
+   end
 
 end
 endtask
@@ -99,43 +87,37 @@ reg [7:0] read_data;
 reg flag;
 integer i;
 begin
-   fork
-   begin : loop_1
-      tb_master_uart.write_char("r");
-      tb_master_uart.write_char("m");
-      tb_master_uart.write_char(" ");
-      tb_master_uart.write_char(hex2char(addr[31:28]));
-      tb_master_uart.write_char(hex2char(addr[27:24]));
-      tb_master_uart.write_char(hex2char(addr[23:20]));
-      tb_master_uart.write_char(hex2char(addr[19:16]));
-      tb_master_uart.write_char(hex2char(addr[15:12]));
-      tb_master_uart.write_char(hex2char(addr[11:8]));
-      tb_master_uart.write_char(hex2char(addr[7:4]));
-      tb_master_uart.write_char(hex2char(addr[3:0]));
-      tb_master_uart.write_char("\n");
+   tb_master_uart.write_char("r");
+   tb_master_uart.write_char("m");
+   tb_master_uart.write_char(" ");
+   tb_master_uart.write_char(hex2char(addr[31:28]));
+   tb_master_uart.write_char(hex2char(addr[27:24]));
+   tb_master_uart.write_char(hex2char(addr[23:20]));
+   tb_master_uart.write_char(hex2char(addr[19:16]));
+   tb_master_uart.write_char(hex2char(addr[15:12]));
+   tb_master_uart.write_char(hex2char(addr[11:8]));
+   tb_master_uart.write_char(hex2char(addr[7:4]));
+   tb_master_uart.write_char(hex2char(addr[3:0]));
+   tb_master_uart.write_char("\n");
+   // Wait for sucess command
+   flag = 0;
+   i = 0;
+   while(flag == 0)
+   begin
+      tb_master_uart.read_char2(read_data,flag);
+      //$write ("%d:%c",i,read_data);
+        case (i)
+        8'd10 : rxd_data[31:28] = char2hex(read_data);
+        8'd11 : rxd_data[27:24] = char2hex(read_data);
+        8'd12 : rxd_data[23:20] = char2hex(read_data);
+        8'd13 : rxd_data[19:16] = char2hex(read_data);
+        8'd14 : rxd_data[15:12] = char2hex(read_data);
+        8'd15 : rxd_data[11:8]  = char2hex(read_data);
+        8'd16 : rxd_data[7:4]   = char2hex(read_data);
+        8'd17 : rxd_data[3:0]   = char2hex(read_data);
+        endcase
+    i = i+1;
    end
-   begin : loop_2
-      // Wait for sucess command
-      flag = 0;
-      i = 0;
-      while(flag == 0)
-      begin
-         tb_master_uart.read_char2(read_data,flag);
-         //$write ("%d:%c",i,read_data);
-           case (i)
-           8'd10 : rxd_data[31:28] = char2hex(read_data);
-           8'd11 : rxd_data[27:24] = char2hex(read_data);
-           8'd12 : rxd_data[23:20] = char2hex(read_data);
-           8'd13 : rxd_data[19:16] = char2hex(read_data);
-           8'd14 : rxd_data[15:12] = char2hex(read_data);
-           8'd15 : rxd_data[11:8]  = char2hex(read_data);
-           8'd16 : rxd_data[7:4]   = char2hex(read_data);
-           8'd17 : rxd_data[3:0]   = char2hex(read_data);
-           endcase
-	   i = i+1;
-      end
-   end
-   join
    if(rxd_data == exp_data) begin
       // $display("STATUS: ADDRESS: %x RXD: %x", addr,rxd_data);
    end else begin

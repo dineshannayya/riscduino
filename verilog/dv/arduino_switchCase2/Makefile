@@ -97,10 +97,10 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-ar rcs core.a wiring_digital.c.o
 	${GCC_PREFIX}-ar rcs core.a wiring_pulse.cpp.o
 	${GCC_PREFIX}-ar rcs core.a wiring_shift.c.o
-	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.ino.elf
-	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.ino.elf ${PATTERN}.ino.bin
-	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.ino.elf ${PATTERN}.ino.hex
-	${GCC_PREFIX}-objdump -D  ${PATTERN}.ino.elf >   ${PATTERN}.ino.dump
+	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.elf
+	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.elf ${PATTERN}.bin
+	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.elf ${PATTERN}.hex
+	${GCC_PREFIX}-objdump -D  ${PATTERN}.elf >   ${PATTERN}.dump
 	rm *.o *.a
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)

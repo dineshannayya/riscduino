@@ -131,38 +131,39 @@ module user_sspi_tb;
 
 	initial begin
 		$dumpon;
+        init();
 
 		#200; // Wait for reset removal
-	        repeat (10) @(posedge clock);
+	    repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
-                // Enable SPI Multi Functional Ports
-                // wire        cfg_spim_enb         = cfg_multi_func_sel[10];
-                // wire [3:0]  cfg_spim_cs_enb      = cfg_multi_func_sel[14:11];
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h7C00);
+        // Enable SPI Multi Functional Ports
+        // wire        cfg_spim_enb         = cfg_multi_func_sel[10];
+        // wire [3:0]  cfg_spim_cs_enb      = cfg_multi_func_sel[14:11];
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h7C00);
 
-	        repeat (2) @(posedge clock);
+	    repeat (2) @(posedge clock);
 		#1;
 
-                // Remove the reset
+        // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 
 		test_fail = 0;
 		sspi_init();
-	        repeat (200) @(posedge clock);
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
-                $display("############################################");
-                $display("   Testing IS62/65WVS1288GALL SSRAM[0] Read/Write Access       ");
-                $display("############################################");
+	    repeat (200) @(posedge clock);
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+        $display("############################################");
+        $display("   Testing IS62/65WVS1288GALL SSRAM[0] Read/Write Access       ");
+        $display("############################################");
 		// SSPI Indirect RAM READ ACCESS-
 		// Byte Read Option
 		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
-                spi_chip_no = 2'b00; // Select the Chip Select to zero
+        spi_chip_no = 2'b00; // Select the Chip Select to zero
 		sspi_dw_read_check(8'h03,24'h0000,32'h03020100);
 		sspi_dw_read_check(8'h03,24'h0004,32'h07060504);
 		sspi_dw_read_check(8'h03,24'h0008,32'h0b0a0908);
@@ -209,13 +210,13 @@ module user_sspi_tb;
 		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
 		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
 
-                $display("############################################");
-                $display("   Testing IS62/65WVS1288GALL SSRAM[1] Read/Write Access       ");
-                $display("############################################");
+        $display("############################################");
+        $display("   Testing IS62/65WVS1288GALL SSRAM[1] Read/Write Access       ");
+        $display("############################################");
 		// SSPI Indirect RAM READ ACCESS-
 		// Byte Read Option
 		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
-                spi_chip_no = 2'b01; // Select the Chip Select to zero
+        spi_chip_no = 2'b01; // Select the Chip Select to zero
 		sspi_dw_read_check(8'h03,24'h0000,32'h13121110);
 		sspi_dw_read_check(8'h03,24'h0004,32'h17161514);
 		sspi_dw_read_check(8'h03,24'h0008,32'h1B1A1918);
@@ -268,13 +269,13 @@ module user_sspi_tb;
 		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
 		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
 
-                $display("############################################");
-                $display("   Testing IS62/65WVS1288GALL SSRAM[2] Read/Write Access       ");
-                $display("############################################");
+        $display("############################################");
+        $display("   Testing IS62/65WVS1288GALL SSRAM[2] Read/Write Access       ");
+        $display("############################################");
 		// SSPI Indirect RAM READ ACCESS-
 		// Byte Read Option
 		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
-                spi_chip_no = 2'b10; // Select the Chip Select to zero
+        spi_chip_no = 2'b10; // Select the Chip Select to zero
 		sspi_dw_read_check(8'h03,24'h0000,32'h23222120);
 		sspi_dw_read_check(8'h03,24'h0004,32'h27262524);
 		sspi_dw_read_check(8'h03,24'h0008,32'h2b2a2928);
@@ -332,13 +333,13 @@ module user_sspi_tb;
 		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
 		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
 
-                $display("############################################");
-                $display("   Testing IS62/65WVS1288GALL SSRAM[3] Read/Write Access       ");
-                $display("############################################");
+        $display("############################################");
+        $display("   Testing IS62/65WVS1288GALL SSRAM[3] Read/Write Access       ");
+        $display("############################################");
 		// SSPI Indirect RAM READ ACCESS-
 		// Byte Read Option
 		// <Instr:0x3> <Addr:24Bit Address> <Read Data Out>
-                spi_chip_no = 2'b11; // Select the Chip Select to zero
+        spi_chip_no = 2'b11; // Select the Chip Select to zero
 		sspi_dw_read_check(8'h03,24'h0000,32'h33323130);
 		sspi_dw_read_check(8'h03,24'h0004,32'h37363534);
 		sspi_dw_read_check(8'h03,24'h0008,32'h3b3a3938);
@@ -386,14 +387,14 @@ module user_sspi_tb;
 		sspi_dw_read_check(8'h03,24'h0208,32'h99AABBCC);
 		sspi_dw_read_check(8'h03,24'h020C,32'hDDEEFF00);
 		repeat (100) @(posedge clock);
-			// $display("+1000 cycles");
+		// $display("+1000 cycles");
 
-          	if(test_fail == 0) begin
-		   `ifdef GL
-	    	       $display("Monitor: SPI Master Mode (GL) Passed");
-		   `else
-		       $display("Monitor: SPI Master Mode (RTL) Passed");
-		   `endif
+        if(test_fail == 0) begin
+		`ifdef GL
+	    	$display("Monitor: SPI Master Mode (GL) Passed");
+		`else
+		    $display("Monitor: SPI Master Mode (RTL) Passed");
+		`endif
 	        end else begin
 		    `ifdef GL
 	    	        $display("Monitor: SPI Master Mode (GL) Failed");
@@ -405,11 +406,6 @@ module user_sspi_tb;
 	        $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -450,7 +446,6 @@ user_project_wrapper u_top(
 
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 
 `ifndef GL // Drive Power for Hold Fix Buf
@@ -465,15 +460,15 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
    wire flash_io1;
-   wire flash_clk = io_out[16];
-   tri  #1 flash_io0 = io_out[15];
-   assign io_in[14] = flash_io1;
+   wire flash_clk = io_out[21];
+   tri  #1 flash_io0 = io_out[20];
+   assign io_in[19] = flash_io1;
 
    tri  #1 flash_io2 = 1'b1;
    tri  #1 flash_io3 = 1'b1;
 
 
-   wire spiram_csb0 = io_out[13];
+   wire spiram_csb0 = io_out[18];
    is62wvs1288 #(.mem_file_name("flash0.hex"))
 	u_sfram_0 (
          // Data Inputs/Outputs
@@ -486,7 +481,7 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
            .io3    (flash_io3)
     );
 
-   wire spiram_csb1 = io_out[12];
+   wire spiram_csb1 = io_out[17];
    is62wvs1288 #(.mem_file_name("flash1.hex"))
 	u_sfram_1 (
          // Data Inputs/Outputs
@@ -499,7 +494,7 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
            .io3    (flash_io3)
     );
 
-   wire spiram_csb2 = io_out[9];
+   wire spiram_csb2 = io_out[14];
 is62wvs1288 #(.mem_file_name("flash2.hex"))
      u_sfram_2 (
       // Data Inputs/Outputs
@@ -512,7 +507,7 @@ is62wvs1288 #(.mem_file_name("flash2.hex"))
 	.io3    (flash_io3)
  );
 
-   wire spiram_csb3 = io_out[8];
+   wire spiram_csb3 = io_out[13];
 is62wvs1288 #(.mem_file_name("flash3.hex"))
      u_sfram_3 (
       // Data Inputs/Outputs
@@ -665,6 +660,6 @@ end
 `endif
 **/
 `include "sspi_task.v"
-
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

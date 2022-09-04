@@ -67,9 +67,11 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "is62wvs1288.v"
+`include "user_params.svh"
 `include "uart_agent.v"
 
-`define TB_HEX "arduino_gpio_intr.ino.hex"
+`define TB_HEX "arduino_gpio_intr.hex"
 `define TB_TOP arduino_gpio_intr_tb
 
 module `TB_TOP;
@@ -159,14 +161,14 @@ module `TB_TOP;
 /**********************************************************************
     Arduino Digital PinMapping
               ATMGA328 Pin No 	Functionality 	      Arduino Pin 	       Carvel Pin Mapping
-              Pin-2 	        PD0/RXD[0] 	                0 	           digital_io[1]
-              Pin-3 	        PD1/TXD[0] 	                1 	           digital_io[2]
-              Pin-4 	        PD2/RXD[1]/INT0 	        2 	           digital_io[3]
-              Pin-5 	        PD3/INT1/OC2B(PWM0)         3 	           digital_io[4] 
-              Pin-6 	        PD4/TXD[1] 	                4 	           digital_io[5] 
-              Pin-11 	        PD5/SS[3]/OC0B(PWM1)/T1 	5 	           digital_io[8]
-              Pin-12 	        PD6/SS[2]/OC0A(PWM2)/AIN0 	6 	           digital_io[9] /analog_io[2]
-              Pin-13 	        PD7/A1N1 	                7 	           digital_io[10]/analog_io[3]
+              Pin-2 	        PD0/RXD[0] 	                0 	           digital_io[6]
+              Pin-3 	        PD1/TXD[0] 	                1 	           digital_io[7]
+              Pin-4 	        PD2/RXD[1]/INT0 	        2 	           digital_io[8]
+              Pin-5 	        PD3/INT1/OC2B(PWM0)         3 	           digital_io[9] 
+              Pin-6 	        PD4/TXD[1] 	                4 	           digital_io[10] 
+              Pin-11 	        PD5/SS[3]/OC0B(PWM1)/T1 	5 	           digital_io[13]
+              Pin-12 	        PD6/SS[2]/OC0A(PWM2)/AIN0 	6 	           digital_io[14]/analog_io[2]
+              Pin-13 	        PD7/A1N1 	                7 	           digital_io[15]/analog_io[3]
               Pin-14 	        PB0/CLKO/ICP1 	            8 	           digital_io[11]
               Pin-15 	        PB1/SS[1]OC1A(PWM3) 	    9 	           digital_io[12]
               Pin-16 	        PB2/SS[0]/OC1B(PWM4) 	    10 	           digital_io[13]
@@ -174,45 +176,45 @@ module `TB_TOP;
               Pin-18 	        PB4/MISO 	                12 	           digital_io[15]
               Pin-19 	        PB5/SCK 	                13 	           digital_io[16] 
 
-              Pin-23 	        ADC0 	                    14 	           digital_io[18] 
-              Pin-24 	        ADC1 	                    15 	           digital_io[19] 
-              Pin-25 	        ADC2 	                    16 	           digital_io[20] 
-              Pin-26 	        ADC3 	                    17 	           digital_io[21] 
-              Pin-27 	        SDA 	                    18 	           digital_io[22] 
-              Pin-28 	        SCL 	                    19 	           digital_io[23] 
+              Pin-23 	        ADC0 	                    14 	           digital_io[22] 
+              Pin-24 	        ADC1 	                    15 	           digital_io[23] 
+              Pin-25 	        ADC2 	                    16 	           digital_io[24] 
+              Pin-26 	        ADC3 	                    17 	           digital_io[25] 
+              Pin-27 	        SDA 	                    18 	           digital_io[26] 
+              Pin-28 	        SCL 	                    19 	           digital_io[27] 
 
-              Pin-9             XTAL1                       20             digital_io[6]
-              Pin-10            XTAL2                       21             digital_io[7]
-              Pin-1             RESET                       22             digital_io[0] 
+              Pin-9             XTAL1                       20             digital_io[11]
+              Pin-10            XTAL2                       21             digital_io[12]
+              Pin-1             RESET                       22             digital_io[5] 
 *****************************************************************************/
 
 // Exclude UART TXD/RXD and RESET
 reg [21:2] arduino_din;
 assign  {  
            //io_in[0], - Exclude RESET
-           io_in[7],
-           io_in[6],
+           io_in[12],
+           io_in[11],
+           io_in[27],
+           io_in[26],
+           io_in[25],
+           io_in[24],
            io_in[23],
            io_in[22],
            io_in[21],
            io_in[20],
            io_in[19],
            io_in[18],
+           io_in[17],
            io_in[16],
            io_in[15],
            io_in[14],
            io_in[13],
-           io_in[12],
-           io_in[11],
            io_in[10],
            io_in[9],
-           io_in[8],
-           io_in[5],
-           io_in[4],
-           io_in[3]
+           io_in[8]
            // Uart pins io_in[2], io_in[1] are excluded
-          } = arduino_din;
-
+          } = (u_top.p_reset_n == 0) ? 23'hZZ_ZZZZ: arduino_din; // Tri-state untill Strap pull completed
+                    
        /*************************************************************************
        * This is Baud Rate to clock divider conversion for Test Bench
        * Note: DUT uses 16x baud clock, where are test bench uses directly
@@ -247,29 +249,29 @@ assign  {
 
 	initial begin
         arduino_din[22:2]  = 23'b010_1010_1010_1010_1010_10; // Initialise based on test case edge
-        pinmap[0]  = 24;
-	    pinmap[1]  = 25;
-	    pinmap[2]  = 26;
-	    pinmap[3]  = 27;
-	    pinmap[4]  = 28;
-	    pinmap[5]  = 29;
-	    pinmap[6]  = 30;
-	    pinmap[7]  = 31;
-	    pinmap[8]  = 8;
-	    pinmap[9]  = 9;
-	    pinmap[10]  = 10;
-	    pinmap[11]  = 11;
-	    pinmap[12]  = 12;
-	    pinmap[13]  = 13;
-	    pinmap[14]  = 16;
-	    pinmap[15]  = 17;
-	    pinmap[16]  = 18;
-	    pinmap[17]  = 19;
-	    pinmap[18]  = 20;
-	    pinmap[19]  = 21;
-	    pinmap[20]  = 14;
-	    pinmap[21]  = 15;
-	    pinmap[22]  = 22;
+        pinmap[0]   = 24;    // PD0 - GPIO-24 
+	    pinmap[1]   = 25;    // PD1 - GPIO-25
+	    pinmap[2]   = 26;    // PD2 - GPIO-26
+	    pinmap[3]   = 27;    // PD3 - GPIO-27
+	    pinmap[4]   = 28;    // PD4 - GPIO-28
+	    pinmap[5]   = 29;    // PD5 - GPIO-29
+	    pinmap[6]   = 30;    // PD6 - GPIO-30
+	    pinmap[7]   = 31;    // PD7 - GPIO-31
+	    pinmap[8]   = 8;     // PB0 - GPIO-8
+	    pinmap[9]   = 9;     // PB1 - GPIO-9
+	    pinmap[10]  = 10;    // PB2 - GPIO-10
+	    pinmap[11]  = 11;    // PB3 - GPIO-11
+	    pinmap[12]  = 12;    // PB4 - GPIO-12
+	    pinmap[13]  = 13;    // PB5 - GPIO-13
+	    pinmap[14]  = 16;    // PC0 - GPIO-16
+	    pinmap[15]  = 17;    // PC1 - GPIO-17
+	    pinmap[16]  = 18;    // PC2 - GPIO-18
+	    pinmap[17]  = 19;    // PC3 - GPIO-19
+	    pinmap[18]  = 20;    // PC4 - GPIO-20
+	    pinmap[19]  = 21;    // PC5 - GPIO-21
+	    pinmap[20]  = 14;    // PB6 - GPIO-14
+	    pinmap[21]  = 15;    // PB7 - GPIO-15
+	    pinmap[22]  = 22;    // PC6 - GPIO-22
 
 
         uart_data_bit           = 2'b11;
@@ -278,24 +280,27 @@ assign  {
         uart_parity_en          = 0; // parity enable
         uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
 	    tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
-        uart_timeout            = 20000;// wait time limit
+        uart_timeout            = 1000;// wait time limit
         uart_fifo_enable        = 0;	// fifo mode disable
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
+ 
+	    init();
+       	wait_riscv_boot();
 
 		#200; // Wait for reset removal
 	    repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	    repeat (2) @(posedge clock);
 		#1;
         // Remove all the reset
         if(d_risc_id == 0) begin
              $display("STATUS: Working with Risc core 0");
-             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+             //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
         end else if(d_risc_id == 1) begin
              $display("STATUS: Working with Risc core 1");
              wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
@@ -314,7 +319,7 @@ assign  {
         tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                        uart_stick_parity, uart_timeout, uart_divisor);
 
-        repeat (80000) @(posedge clock);  // wait for Processor Get Ready
+        repeat (40000) @(posedge clock);  // wait for Processor Get Ready
 	    flag  = 0;
 		check_sum = 0;
         compare_start = 1;
@@ -361,7 +366,7 @@ assign  {
               end
            end
            begin
-              repeat (700000) @(posedge clock);  // wait for Processor Get Ready
+              repeat (900000) @(posedge clock);  // wait for Processor Get Ready
            end
            join_any
         
@@ -397,11 +402,6 @@ assign  {
 	    $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -440,8 +440,8 @@ user_project_wrapper u_top(
 
 );
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-//assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+//assign io_in[21] = 1'b0; // CLOCK
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -455,26 +455,26 @@ assign io_in[0]  = 1'b1; // RESET
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
      s25fl256s #(.mem_file_name(`TB_HEX),
-	             .otp_file_name("none"),
+	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
            // Data Inputs/Outputs
@@ -489,14 +489,27 @@ assign io_in[0]  = 1'b1; // RESET
 
        );
 
+   wire spiram_csb = io_out[31];
+
+   is62wvs1288 #(.mem_file_name("none"))
+	u_sram (
+         // Data Inputs/Outputs
+           .io0     (flash_io0),
+           .io1     (flash_io1),
+           // Controls
+           .clk    (flash_clk),
+           .csb    (spiram_csb),
+           .io2    (flash_io2),
+           .io3    (flash_io3)
+    );
 
 //---------------------------
 //  UART Agent integration
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[2];
-assign io_in[1]  = uart_rxd ;
+assign uart_txd   = io_out[7];
+assign io_in[6]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),
@@ -640,6 +653,7 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

@@ -18,12 +18,9 @@
 // This include is relative to $CARAVEL_PATH (see Makefile)
 #include <defs.h>
 #include <stub.c>
-#include "../c_func/inc/user_reg_map.h"
+#include "../c_func/inc/ext_reg_map.h"
 
-// User Project Slaves (0x3000_0000)
-#define reg_mprj_slave (*(volatile uint32_t*)0x30000000)
 
-#define reg_mprj_wbhost_reg0 (*(volatile uint32_t*)0x30080000)
 
 
 
@@ -95,12 +92,12 @@ void main()
 	reg_mprj_datal = 0xAB600000;
 
     // Remove Wishbone Reset
-    reg_mprj_wbhost_reg0 = 0x1;
+    reg_mprj_wbhost_ctrl = 0x1;
 
     // Remove Reset
     reg_glbl_cfg0 = 0x01f;
 
-    if (reg_pinmux_chip_id != 0x82681501) bFail = 1;
+    if (reg_glbl_chip_id != 0x82681501) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB610000;
 
     // write software write & read Register

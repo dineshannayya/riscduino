@@ -10,10 +10,10 @@
 `define ADDR_SPACE_UART1   32'h3001_0100
 `define ADDR_SPACE_PINMUX  32'h3002_0000
 `define ADDR_SPACE_GLBL    32'h3002_0000
-`define ADDR_SPACE_GPIO    32'h3002_0040
-`define ADDR_SPACE_PWM     32'h3002_0080
-`define ADDR_SPACE_TIMER   32'h3002_00C0
-`define ADDR_SPACE_SEMA    32'h3002_0100
+`define ADDR_SPACE_GPIO    32'h3002_0080
+`define ADDR_SPACE_PWM     32'h3002_0100
+`define ADDR_SPACE_TIMER   32'h3002_0180
+`define ADDR_SPACE_SEMA    32'h3002_0200
 `define ADDR_SPACE_WBHOST  32'h3008_0000
 
 //--------------------------------------------------
@@ -34,12 +34,19 @@
 `define GLBL_CFG_INTR_MSK      8'h0C  // reg_3  - Global Interrupt Mask
 `define GLBL_CFG_INTR_STAT     8'h10  // reg_4  - Global Interrupt
 `define GLBL_CFG_MUTI_FUNC     8'h14  // reg_5  - Multi functional sel
-`define GLBL_CFG_SOFT_REG_0    8'h18  // reg_6 - Sof Register
-`define GLBL_CFG_SOFT_REG_1    8'h1C  // reg_7 - Sof Register
-`define GLBL_CFG_SOFT_REG_2    8'h20  // reg_8 - Sof Register
-`define GLBL_CFG_SOFT_REG_3    8'h24  // reg_9 - Sof Register
-`define GLBL_CFG_SOFT_REG_4    8'h28  // reg_10 - Sof Register
-`define GLBL_CFG_SOFT_REG_5    8'h2C  // reg_11 - Sof Register
+`define GLBL_CFG_CLK_CTRL      8'h18  // reg_6  - RTC/USB CLK CTRL
+`define GLBL_CFG_PAD_STRAP     8'h30  // Strap as seen in Pad
+`define GLBL_CFG_STRAP_STICKY  8'h34  // Sticky Strap used in next soft boot
+`define GLBL_CFG_SYSTEM_STRAP  8'h38  // Current System Strap
+`define GLBL_CFG_MAIL_BOX      8'h3C  // reg_15 - Mail Box
+`define GLBL_CFG_SOFT_REG_0    8'h40  // reg_16 - Sof Register
+`define GLBL_CFG_SOFT_REG_1    8'h44  // reg_17 - Sof Register
+`define GLBL_CFG_SOFT_REG_2    8'h48  // reg_18 - Sof Register
+`define GLBL_CFG_SOFT_REG_3    8'h4C  // reg_19 - Sof Register
+`define GLBL_CFG_SOFT_REG_4    8'h50  // reg_20 - Sof Register
+`define GLBL_CFG_SOFT_REG_5    8'h54  // reg_21 - Sof Register
+`define GLBL_CFG_SOFT_REG_6    8'h58  // reg_22 - Sof Register
+`define GLBL_CFG_SOFT_REG_7    8'h5C  // reg_23 - Sof Register
 
 //--------------------------------------------------
 // GPIO Register

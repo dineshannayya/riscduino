@@ -97,31 +97,31 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-ar rcs core.a wiring_digital.c.o
 	${GCC_PREFIX}-ar rcs core.a wiring_pulse.cpp.o
 	${GCC_PREFIX}-ar rcs core.a wiring_shift.c.o
-	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.ino.elf
-	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.ino.elf ${PATTERN}.ino.bin
-	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.ino.elf ${PATTERN}.ino.hex
-	${GCC_PREFIX}-objdump -D  ${PATTERN}.ino.elf >   ${PATTERN}.ino.dump
+	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/riscduino_score/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.elf
+	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.elf ${PATTERN}.bin
+	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.elf ${PATTERN}.hex
+	${GCC_PREFIX}-objdump -D  ${PATTERN}.elf >   ${PATTERN}.dump
 	rm *.o *.a
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -DRISC_BOOT -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
     else  
-	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DRISC_BOOT -DSIM -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
    endif
 else  
    ifeq ($(DUMP),OFF)
-	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DRISC_BOOT -DGL -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 
     else  
-	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DRISC_BOOT -DGL -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 

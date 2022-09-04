@@ -23,8 +23,11 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/ws281x_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/ws281x_driver.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/ws281x_reg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/strap_ctrl.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/glbl_rst_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type1.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type2.sv
+-v $(USER_PROJECT_VERILOG)/rtl/lib/clk_div8.v
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_if.sv
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_fifo.sv
@@ -65,6 +68,7 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/lib/ser_shift.sv
 -v $(USER_PROJECT_VERILOG)/rtl/digital_core/src/glbl_cfg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_host/src/wb_host.sv
+-v $(USER_PROJECT_VERILOG)/rtl/wb_host/src/wb_reset_fsm.sv
 -v $(USER_PROJECT_VERILOG)/rtl/sspis/src/sspis_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/sspis/src/sspis_if.sv
 -v $(USER_PROJECT_VERILOG)/rtl/sspis/src/spi2wb.sv

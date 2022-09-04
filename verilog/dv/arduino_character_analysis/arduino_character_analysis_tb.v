@@ -70,8 +70,11 @@
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "uart_agent.v"
 `include "is62wvs1288.v"
+`include "user_params.svh"
 
-module arduino_character_analysis;
+`define TB_HEX "arduino_character_analysis.hex"
+`define TB_TOP  arduino_character_analysis_tb
+module `TB_TOP;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -115,11 +118,12 @@ module arduino_character_analysis;
         reg [15:0]     uart_tx_nu           ;
         reg [7:0]      uart_write_data [0:39];
         reg 	       uart_fifo_enable     ;	// fifo mode disable
-	reg            flag                 ;
+	    reg            flag                 ;
+        reg [7:0]      dCnt                 ; // DataCount
 
-	reg [31:0]     check_sum            ;
+	    reg [31:0]     check_sum            ;
         
-	integer    d_risc_id;
+	    integer    d_risc_id;
 
          integer i,j;
 
@@ -168,11 +172,11 @@ parameter P_QDDR   = 2'b11;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_character_analysis);
-	   	$dumpvars(0, arduino_character_analysis.u_top.u_riscv_top.i_core_top_0);
-	   	$dumpvars(0, arduino_character_analysis.u_top.u_riscv_top.u_connect);
-	   	$dumpvars(0, arduino_character_analysis.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_character_analysis.u_top.u_uart_i2c_usb_spi.u_uart0_core);
+	   	$dumpvars(2, `TB_TOP);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_uart0_core);
 	   end
        `endif
 
@@ -213,7 +217,7 @@ parameter P_QDDR   = 2'b11;
         uart_parity_en          = 0; // parity enable
         uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
 	    tb_set_uart_baud(50000000,1152000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 230400
-        uart_timeout            = 2000;// wait time limit
+        uart_timeout            = 750;// wait time limit
         uart_fifo_enable        = 0;	// fifo mode disable
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
@@ -221,24 +225,27 @@ parameter P_QDDR   = 2'b11;
 		#200; // Wait for reset removal
 	    repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
+   
+       init();
+       wait_riscv_boot();
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
         // Remove WB and SPI Reset and CORE under Reset
-        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
+        //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// QSPI SRAM:CS#2 Switch to QSPI Mode
-        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
+        //wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
+	//	wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
+	//	wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
+	//	wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
         // Remove all the reset
         if(d_risc_id == 0) begin
              $display("STATUS: Working with Risc core 0");
-             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+             //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
         end else if(d_risc_id == 1) begin
              $display("STATUS: Working with Risc core 1");
              wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
@@ -257,34 +264,36 @@ parameter P_QDDR   = 2'b11;
         tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                            uart_stick_parity, uart_timeout, uart_divisor);
 
-        repeat (40000) @(posedge clock);  // wait for Processor Get Ready
 	    flag  = 0;
 		check_sum = 0;
+        dCnt = 0;
         fork
         begin 
            fork
            begin
-               tb_uart.write_char ("A");
-               tb_uart.write_char (" ");
-               tb_uart.write_char ("\n");
-               tb_uart.write_char ("b");
-               tb_uart.write_char (";");
-               tb_uart.write_char ("F");
-           end
-           begin
-              while(flag == 0)
+              while(dCnt < 7 )
               begin
-                 tb_uart.read_char(read_data,flag);
-		         if(flag == 0)  begin
-		            $write ("%c",read_data);
-		            check_sum = check_sum+read_data;
-		         end
+	             flag  = 0;
+                 while(flag == 0) begin
+                    tb_uart.read_char(read_data,flag);
+		            if(flag == 0)  begin
+		               $write ("%c",read_data);
+		               check_sum = check_sum+read_data;
+		            end
+                 end
+                 if(dCnt == 0) tb_uart.write_char ("A");
+                 if(dCnt == 1) tb_uart.write_char (" ");
+                 if(dCnt == 2) tb_uart.write_char ("\n");
+                 if(dCnt == 3) tb_uart.write_char ("b");
+                 if(dCnt == 4) tb_uart.write_char (";");
+                 if(dCnt == 5) tb_uart.write_char ("F");
+                 dCnt = dCnt+1;
               end
            end
            join
         end
         begin
-           repeat (3000000) @(posedge clock);  // wait for Processor Get Ready
+           repeat (4000000) @(posedge clock);  // wait for Processor Get Ready
         end
         join_any
                 
@@ -362,8 +371,8 @@ user_project_wrapper u_top(
 
 );
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0; // CLOCK
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -377,25 +386,25 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_character_analysis.ino.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
@@ -411,7 +420,7 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 
        );
 
-   wire spiram_csb = io_out[27];
+   wire spiram_csb = io_out[31];
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (
@@ -430,8 +439,8 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[2];
-assign io_in[1]  = uart_rxd ;
+assign uart_txd   = io_out[7];
+assign io_in[6]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),
@@ -569,6 +578,7 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

@@ -118,3 +118,22 @@ module ctech_delay_clkbuf (
 `endif
 
 endmodule
+
+module ctech_clk_gate (
+	input  logic GATE  ,
+	input  logic CLK   ,
+	output logic GCLK
+     );
+
+`ifndef SYNTHESIS
+   assign GCLK = CLK & GATE;
+`else
+    sky130_fd_sc_hd__dlclkp_2 u_gate(
+                                   .GATE    (GATE     ), 
+                                   .CLK     (CLK      ), 
+                                   .GCLK    (GCLK     )
+                                  );
+`endif
+
+endmodule
+

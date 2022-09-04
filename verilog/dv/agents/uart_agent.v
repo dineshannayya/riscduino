@@ -41,6 +41,7 @@ reg [15:0] stop_err1_cnt;
 reg [15:0] stop_err2_cnt;
 reg [15:0] timeout_err_cnt;
 reg [15:0] err_cnt;
+reg        uart_rxenb; // uart rx enable
 
 reg 	   txd, read, write;
 wire	   uart_rx_clk;
@@ -56,6 +57,7 @@ reg      error_ind; // 1 indicate error
 
 initial 
 begin
+    uart_rxenb = 0;
 	debug_mode = 1; // Keep in debug mode and enable display
 	txd = 1'b1;
  	uart_clk = 0;
@@ -77,9 +79,16 @@ assign uart_rx_clk = uart_clk;
 
 always @(posedge mclk)
 begin
-	timeout_count = timeout_count + 1;
-	if (timeout_count == (control_setup.maxtime * 16))
-		-> abort;
+    if(uart_rxenb) begin
+      	timeout_count = timeout_count + 1;
+      	if (timeout_count >= (control_setup.maxtime * 16)) begin
+            timeout_count = 0;
+            uart_rxenb    = 0;
+      	    -> abort;
+        end
+    end else begin
+      	timeout_count = 0;
+    end
 end
 
 always @uart_read_done
@@ -118,6 +127,7 @@ end
 ////////////////////////////////////////////////////////////////////////////////
 task uart_init;
 begin
+  uart_rxenb = 0;
   read = 0;
   write = 0;
   tx_count = 0;
@@ -147,6 +157,7 @@ begin
 	data = 8'h0;
 	parity = 1;
 	timeout_count = 0;
+    uart_rxenb = 1;
 
 fork	
    begin : loop_1
@@ -224,6 +235,7 @@ fork
 	   $display ("%m:... Read Data from UART done cnt :%d...",rx_count +1);
    end
 join
+    uart_rxenb = 0;
 
 end
 
@@ -233,7 +245,7 @@ endtask
 task read_char2;
 output [7:0]	rxd_data;
 output          timeout; // 1-> timeout
-integer i;
+integer j;
 reg	[7:0] rxd_data;
 reg 	[7:0] data;
 reg	parity;
@@ -243,6 +255,7 @@ begin
 	parity = 1;
 	timeout_count = 0;
 	timeout = 0;
+    uart_rxenb = 1;
 
    fork	
    begin 
@@ -260,10 +273,10 @@ begin
 
 // data cycle
 	@(posedge uart_rx_clk );
-	 for (i = 0; i < data_bit_number; i = i + 1)
+	 for (j = 0; j < data_bit_number; j = j + 1)
 	  begin
 	    @(posedge uart_rx_clk)
-	    data[i] =  rxd;
+	    data[j] =  rxd;
 	    parity = parity ^ rxd;
 	  end		
 
@@ -312,6 +325,7 @@ begin
    join_any
    disable fork; //disable pending fork activity
 
+    uart_rxenb = 0;
 end
 
 endtask
@@ -335,6 +349,7 @@ begin
 	parity = 1;
 	timeout_count = 0;
 	timeout = 0;
+    uart_rxenb = 1;
 
 
 fork	
@@ -409,6 +424,7 @@ fork
         end
    end
 join
+    uart_rxenb = 0;
 
 end
 
@@ -426,6 +442,7 @@ reg	parity;
 begin
 	data = 8'h0;
 	parity = 1;
+    uart_rxenb = 1;
 
 
 fork	
@@ -484,6 +501,7 @@ fork
 	rxd_data = data;
    end
 join
+    uart_rxenb = 0;
 
 end
 

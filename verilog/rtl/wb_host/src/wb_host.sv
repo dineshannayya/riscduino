@@ -50,6 +50,9 @@
 ////              indirect Map {Bank_Sel[15:3], wbm_adr_i[18:0]}  ////
 ////          2.wbm_cyc_i need to qualified with wbm_stb_i        //// 
 ////                                                              ////
+////    0.5 - Aug 30 2022, Dinesh A                               ////
+////          A. System strap related changes, reset_fsm added    ////
+////          B. rtc and usb clock moved to pinmux                ////
 ////                                                              //// 
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -78,6 +81,8 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
+`include "user_params.svh"
+
 module wb_host (
 
 `ifdef USE_POWER_PINS
@@ -88,11 +93,22 @@ module wb_host (
        input logic                 user_clock2      ,
 
        output logic                cpu_clk          ,
-       output logic                rtc_clk          ,
-       output logic                usb_clk          ,
+
        // Global Reset control
        output logic                wbd_int_rst_n    ,
        output logic                wbd_pll_rst_n    ,
+
+
+       // to/from Pinmux
+        output  logic              int_pll_clock     ,
+        input   logic              xtal_clk          ,
+	    output  logic              e_reset_n         ,  // external reset
+	    output  logic              p_reset_n         ,  // power-on reset
+        output  logic              s_reset_n         ,  // soft reset
+        output  logic              cfg_strap_pad_ctrl,
+	    output  logic [31:0]       system_strap      ,
+	    input   logic [31:0]       strap_sticky      ,
+
 
     // Master Port
        input   logic               wbm_rst_i        ,  // Regular Reset signal
@@ -173,13 +189,11 @@ logic               sw_wr_en_2;
 logic               sw_wr_en_3;
 logic [15:0]        cfg_bank_sel;
 logic [31:0]        reg_0;  // Software_Reg_0
-logic [31:0]        cfg_clk_ctrl2;
+logic [8:0]         cfg_clk_ctrl2;
 
 logic  [31:0]       cfg_pll_ctrl; 
-logic  [7:0]        cfg_wb_clk_ctrl;
-logic  [7:0]        cfg_cpu_clk_ctrl;
-logic  [7:0]        cfg_rtc_clk_ctrl;
-logic  [7:0]        cfg_usb_clk_ctrl;
+logic  [3:0]        cfg_wb_clk_ctrl;
+logic  [3:0]        cfg_cpu_clk_ctrl;
 logic  [31:0]       cfg_glb_ctrl;
 
 
@@ -222,19 +236,25 @@ logic               wb_ack_int            ; // acknowlegement
 logic               wb_err_int            ; // error
 
 logic [3:0]         cfg_mon_sel           ;
-logic               int_pll_clock         ;
 logic               pll_clk_div16         ;
 logic               pll_clk_div16_buf     ;
 logic [2:0]         cfg_ref_pll_div       ;
+logic               arst_n                ;
+logic               soft_reboot           ;
+logic               clk_enb               ;
+
+assign	  e_reset_n              = wbm_rst_n ;  // sync external reset
+assign    cfg_strap_pad_ctrl     = !p_reset_n;
+
+wire      soft_boot_req     = strap_sticky[`STRAP_SOFT_REBOOT_REQ];
 
 
-assign cfg_pll_enb      = cfg_glb_ctrl[15];
-assign cfg_ref_pll_div  = cfg_glb_ctrl[14:12];
-assign cfg_mon_sel      = cfg_glb_ctrl[11:8];
-
-assign cfg_dco_mode     = cfg_pll_ctrl[31];
-assign cfg_pll_fed_div  = cfg_pll_ctrl[30:26];
-assign cfg_dc_trim      = cfg_pll_ctrl[25:0];
+//------------------------------------------
+// PLL Trim Value
+//-----------------------------------------
+assign    cfg_dco_mode     = cfg_pll_ctrl[31];
+assign    cfg_pll_fed_div  = cfg_pll_ctrl[30:26];
+assign    cfg_dc_trim      = cfg_pll_ctrl[25:0];
 
 //assign   int_pll_clock    = pll_clk_out[0];
 ctech_clk_buf u_clkbuf_pll     (.A (pll_clk_out[0]), . X(int_pll_clock));
@@ -243,48 +263,81 @@ ctech_clk_buf u_clkbuf_pll_div (.A (pll_clk_div16), . X(pll_clk_div16_buf));
 
 // Debug clock monitor optin
 assign dbg_clk_mon  = (cfg_mon_sel == 4'b000) ? pll_clk_div16_buf:
-	              (cfg_mon_sel == 4'b001) ? pll_ref_clk  :
-	              (cfg_mon_sel == 4'b010) ? wbs_clk_out  :
-	              (cfg_mon_sel == 4'b011) ? cpu_clk_int  :
-	              (cfg_mon_sel == 4'b100) ? rtc_clk_div  :
-	              (cfg_mon_sel == 4'b101) ? usb_clk_int  : 1'b0;
+	                  (cfg_mon_sel == 4'b001) ? pll_ref_clk  :
+	                  (cfg_mon_sel == 4'b010) ? wbs_clk_out  :
+	                  (cfg_mon_sel == 4'b011) ? cpu_clk_int  : 1'b0;
 
 
 
-// Reset control
-ctech_buf u_buf_wb_rst        (.A(cfg_glb_ctrl[0]),.X(wbd_int_rst_n));
-ctech_buf u_buf_pll_rst       (.A(cfg_glb_ctrl[1]),.X(wbd_pll_rst_n));
 
 //--------------------------------------------------------------------------------
 // Look like wishbone reset removed early than user Power up sequence
 // To control the reset phase, we have added additional control through la[0]
 // ------------------------------------------------------------------------------
-wire    arst_n = !wbm_rst_i & la_data_in[0];
+assign    arst_n = !wbm_rst_i;
 reset_sync  u_wbm_rst (
-	      .scan_mode  (1'b0           ),
+	          .scan_mode  (1'b0           ),
               .dclk       (wbm_clk_i      ), // Destination clock domain
-	      .arst_n     (arst_n         ), // active low async reset
+	          .arst_n     (arst_n         ), // active low async reset
               .srst_n     (wbm_rst_n      )
           );
 
 reset_sync  u_wbs_rst (
-	      .scan_mode  (1'b0           ),
+	          .scan_mode  (1'b0           ),
               .dclk       (wbs_clk_i      ), // Destination clock domain
-	      .arst_n     (arst_n         ), // active low async reset
+	          .arst_n     (s_reset_n      ), // active low async reset
               .srst_n     (wbs_rst_n      )
           );
 
+//------------------------------------------
+// Reset FSM
+//------------------------------------------
+// Keep WBS in Ref clock during initial boot to strap loading 
+logic force_refclk;
+wb_reset_fsm u_reset_fsm (
+	      .clk                 (wbm_clk_i   ),
+	      .e_reset_n           (e_reset_n   ),  // external reset
+          .cfg_fast_sim        (cfg_fast_sim),
+          .soft_boot_req       (soft_boot_req),
+
+	      .p_reset_n           (p_reset_n   ),  // power-on reset
+	      .s_reset_n           (s_reset_n   ),  // soft reset
+          .clk_enb             (clk_enb     ),
+          .soft_reboot         (soft_reboot ),
+          .force_refclk        (force_refclk)
+
+);
+
+
+//-------------------------------------------------
+// UART2WB HOST
+//    Uart Baud-16x computation
+//      Assumption is default wb clock is 40Mhz 
+//      For 9600 Baud
+//        40,000,000/(9600*16) = 260;
+//      Configured Value = 260-1 = 259
+//-------------------------------------------------
+
+wire strap_uart_cfg_mode = system_strap[`STRAP_UARTM_CFG];
+
+wire       cfg_uartm_tx_enable   = (strap_uart_cfg_mode==0) ? la_data_in[1]     : 1'b1;
+wire       cfg_uartm_rx_enable   = (strap_uart_cfg_mode==0) ? la_data_in[2]     : 1'b1;
+wire       cfg_uartm_stop_bit    = (strap_uart_cfg_mode==0) ? la_data_in[3]     : 1'b1;
+wire [11:0]cfg_uart_baud_16x     = (strap_uart_cfg_mode==0) ? la_data_in[15:4]  : 258;
+wire [1:0] cfg_uartm_cfg_pri_mod = (strap_uart_cfg_mode==0) ? la_data_in[17:16] : 2'b0;
+
+
 // UART Master
 uart2wb u_uart2wb (  
-        .arst_n          (wbm_rst_n         ), //  sync reset
-        .app_clk         (wbm_clk_i         ), //  sys clock    
+        .arst_n          (s_reset_n               ), //  sync reset
+        .app_clk         (wbm_clk_i               ), //  sys clock    
 
 	// configuration control
-       .cfg_tx_enable    (la_data_in[1]     ), // Enable Transmit Path
-       .cfg_rx_enable    (la_data_in[2]     ), // Enable Received Path
-       .cfg_stop_bit     (la_data_in[3]     ), // 0 -> 1 Start , 1 -> 2 Stop Bits
-       .cfg_baud_16x     (la_data_in[15:4]  ), // 16x Baud clock generation
-       .cfg_pri_mod      (la_data_in[17:16] ), // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
+       .cfg_tx_enable    (cfg_uartm_tx_enable     ), // Enable Transmit Path
+       .cfg_rx_enable    (cfg_uartm_rx_enable     ), // Enable Received Path
+       .cfg_stop_bit     (cfg_uartm_stop_bit      ), // 0 -> 1 Start , 1 -> 2 Stop Bits
+       .cfg_baud_16x     (cfg_uart_baud_16x       ), // 16x Baud clock generation
+       .cfg_pri_mod      (cfg_uartm_cfg_pri_mod   ), // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 
     // Master Port
        .wbm_cyc_o        (wbm_uart_cyc_i ),  // strobe/request
@@ -309,34 +362,40 @@ uart2wb u_uart2wb (
 
      );
 
+//----------------------------------------
+// SPI as ISP
+//----------------------------------------
+
 sspis_top u_spi2wb(
 
 	     .sys_clk         (wbm_clk_i       ),
-	     .rst_n           (wbm_rst_n       ),
+	     .rst_n           (e_reset_n       ),
 
-             .sclk            (sclk            ),
-             .ssn             (ssn             ),
-             .sdin            (sdin            ),
-             .sdout           (sdout           ),
-             .sdout_oen       (sdout_oen       ),
+         .sclk            (sclk            ),
+         .ssn             (ssn             ),
+         .sdin            (sdin            ),
+         .sdout           (sdout           ),
+         .sdout_oen       (sdout_oen       ),
 
           // WB Master Port
-             .wbm_cyc_o       (wbm_spi_cyc_i   ),  // strobe/request
-             .wbm_stb_o       (wbm_spi_stb_i   ),  // strobe/request
-             .wbm_adr_o       (wbm_spi_adr_i   ),  // address
-             .wbm_we_o        (wbm_spi_we_i    ),  // write
-             .wbm_dat_o       (wbm_spi_dat_i   ),  // data output
-             .wbm_sel_o       (wbm_spi_sel_i   ),  // byte enable
-             .wbm_dat_i       (wbm_spi_dat_o   ),  // data input
-             .wbm_ack_i       (wbm_spi_ack_o   ),  // acknowlegement
-             .wbm_err_i       (wbm_spi_err_o   )   // error
+         .wbm_cyc_o       (wbm_spi_cyc_i   ),  // strobe/request
+         .wbm_stb_o       (wbm_spi_stb_i   ),  // strobe/request
+         .wbm_adr_o       (wbm_spi_adr_i   ),  // address
+         .wbm_we_o        (wbm_spi_we_i    ),  // write
+         .wbm_dat_o       (wbm_spi_dat_i   ),  // data output
+         .wbm_sel_o       (wbm_spi_sel_i   ),  // byte enable
+         .wbm_dat_i       (wbm_spi_dat_o   ),  // data input
+         .wbm_ack_i       (wbm_spi_ack_o   ),  // acknowlegement
+         .wbm_err_i       (wbm_spi_err_o   )   // error
     );
 
-// Arbitor to select between external wb vs uart wb
+//--------------------------------------------------
+// Arbitor to select between external wb vs uart wb vs spi
+//---------------------------------------------------
 wire [1:0] grnt;
 wb_arb u_arb(
 	.clk      (wbm_clk_i), 
-	.rstn     (wbm_rst_n), 
+	.rstn     (s_reset_n), 
 	.req      ({1'b0,wbm_spi_stb_i,wbm_uart_stb_i,(wbm_stb_i & wbm_cyc_i)}), 
 	.gnt      (grnt)
         );
@@ -389,8 +448,8 @@ wire  wb_stb_d1,wb_stb_d2,wb_stb_d3;
 ctech_delay_buf u_delay1_stb0 (.X(wb_stb_d1),.A(wb_stb_i));
 ctech_delay_buf u_delay2_stb1 (.X(wb_stb_d2),.A(wb_stb_d1));
 ctech_delay_buf u_delay2_stb2 (.X(wb_stb_d3),.A(wb_stb_d2));
-always_ff @(negedge wbm_rst_n or posedge wbm_clk_i) begin
-    if ( wbm_rst_n == 1'b0 ) begin
+always_ff @(negedge s_reset_n or posedge wbm_clk_i) begin
+    if ( s_reset_n == 1'b0 ) begin
         wb_req    <= '0;
 	wb_dat_o <= '0;
 	wb_ack_o <= '0;
@@ -431,9 +490,9 @@ assign  sw_wr_en_3 = sw_wr_en && (sw_addr==3);
 assign  sw_wr_en_4 = sw_wr_en && (sw_addr==4);
 assign  sw_wr_en_5 = sw_wr_en && (sw_addr==5);
 
-always @ (posedge wbm_clk_i or negedge wbm_rst_n)
+always @ (posedge wbm_clk_i or negedge s_reset_n)
 begin : preg_out_Seq
-   if (wbm_rst_n == 1'b0)
+   if (s_reset_n == 1'b0)
    begin
       reg_rdata  <= 'h0;
       reg_ack    <= 1'b0;
@@ -455,11 +514,22 @@ end
 //-------------------------------------
 // Global + Clock Control
 // -------------------------------------
-assign cfg_glb_ctrl         = reg_0[31:0];
-assign cfg_wb_clk_ctrl      = cfg_clk_ctrl2[7:0];
-assign cfg_rtc_clk_ctrl     = cfg_clk_ctrl2[15:8];
-assign cfg_usb_clk_ctrl     = cfg_clk_ctrl2[23:16];
-assign cfg_cpu_clk_ctrl     = cfg_clk_ctrl2[31:24];
+assign cfg_glb_ctrl     = reg_0[31:0];
+// Reset control
+// On Power-up wb & pll power default enabled
+ctech_buf u_buf_wb_rst        (.A(cfg_glb_ctrl[0] & s_reset_n),.X(wbd_int_rst_n));
+ctech_buf u_buf_pll_rst       (.A(cfg_glb_ctrl[1] & s_reset_n),.X(wbd_pll_rst_n));
+
+//assign cfg_fast_sim        = cfg_glb_ctrl[8]; 
+ctech_clk_buf u_fastsim_buf (.A (cfg_glb_ctrl[8]), . X(cfg_fast_sim)); // To Bypass Reset FSM initial wait time
+
+assign cfg_pll_enb         = cfg_glb_ctrl[15];
+assign cfg_ref_pll_div     = cfg_glb_ctrl[14:12];
+assign cfg_mon_sel         = cfg_glb_ctrl[11:8];
+
+
+assign cfg_wb_clk_ctrl      = cfg_clk_ctrl2[3:0];
+assign cfg_cpu_clk_ctrl     = cfg_clk_ctrl2[7:4];
 
 
 always @( *)
@@ -470,18 +540,19 @@ begin
     3'b000 :   reg_out [31:0] = reg_0;
     3'b001 :   reg_out [31:0] = {16'h0,cfg_bank_sel [15:0]};     
     3'b010 :   reg_out [31:0] = cfg_clk_ctrl1 [31:0];    
-    3'b011 :   reg_out [31:0] = cfg_clk_ctrl2 [31:0];    
+    3'b011 :   reg_out [31:0] = {24'h0,cfg_clk_ctrl2 [7:0]};    
     3'b100 :   reg_out [31:0] = cfg_pll_ctrl [31:0];     
+    3'b101 :   reg_out [31:0] = system_strap [31:0];     
     default : reg_out [31:0] = 'h0;
   endcase
 end
 
 
 
-generic_register #(32,0  ) u_glb_ctrl (
+generic_register #(32,32'h8003  ) u_glb_ctrl (
 	      .we            ({32{sw_wr_en_0}}   ),		 
 	      .data_in       (wb_dat_i[31:0]    ),
-	      .reset_n       (wbm_rst_n         ),
+	      .reset_n       (e_reset_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
@@ -491,42 +562,115 @@ generic_register #(32,0  ) u_glb_ctrl (
 generic_register #(16,16'h1000 ) u_bank_sel (
 	      .we            ({16{sw_wr_en_1}}   ),		 
 	      .data_in       (wb_dat_i[15:0]    ),
-	      .reset_n       (wbm_rst_n         ),
+	      .reset_n       (e_reset_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
 	      .data_out      (cfg_bank_sel[15:0] )
           );
 
+//-----------------------------------------------
+// clock control-1
+//----------------------------------------------
 
-generic_register #(32,0  ) u_clk_ctrl1 (
-	      .we            ({32{sw_wr_en_2}}   ),		 
-	      .data_in       (wb_dat_i[31:0]    ),
-	      .reset_n       (wbm_rst_n          ),
-	      .clk           (wbm_clk_i          ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_clk_ctrl1[31:0])
-          );
+wire [31:0] rst_clk_ctrl1;
 
-generic_register #(32,0  ) u_clk_ctrl2 (
-	      .we            ({32{sw_wr_en_3}}  ),		 
-	      .data_in       (wb_dat_i[31:0]   ),
-	      .reset_n       (wbm_rst_n         ),
-	      .clk           (wbm_clk_i         ),
-	      
-	      //List of Outs
-	      .data_out      (cfg_clk_ctrl2[31:0])
-          );
-generic_register #(32,0  ) u_pll_ctrl (
+assign rst_clk_ctrl1[3:0]   = (strap_sticky[`STRAP_CLK_SKEW_WI] == 2'b00) ?  SKEW_RESET_VAL[3:0] :
+                              (strap_sticky[`STRAP_CLK_SKEW_WI] == 2'b01) ?  SKEW_RESET_VAL[3:0] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_WI] == 2'b10) ?  SKEW_RESET_VAL[3:0] + 4 : SKEW_RESET_VAL[3:0]-4;
+
+assign rst_clk_ctrl1[7:4]   = (strap_sticky[`STRAP_CLK_SKEW_WH] == 2'b00) ?  SKEW_RESET_VAL[7:4]  :
+                              (strap_sticky[`STRAP_CLK_SKEW_WH] == 2'b01) ?  SKEW_RESET_VAL[7:4] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_WH] == 2'b10) ?  SKEW_RESET_VAL[7:4] + 4 : SKEW_RESET_VAL[7:4]-4;
+
+assign rst_clk_ctrl1[11:8]  = (strap_sticky[`STRAP_CLK_SKEW_RISCV] == 2'b00) ?  SKEW_RESET_VAL[11:8]  :
+                              (strap_sticky[`STRAP_CLK_SKEW_RISCV] == 2'b01) ?  SKEW_RESET_VAL[11:8] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_RISCV] == 2'b10) ?  SKEW_RESET_VAL[11:8] + 4 : SKEW_RESET_VAL[11:8]-4;
+
+assign rst_clk_ctrl1[15:12] = (strap_sticky[`STRAP_CLK_SKEW_QSPI] == 2'b00) ?  SKEW_RESET_VAL[15:12]  :
+                              (strap_sticky[`STRAP_CLK_SKEW_QSPI] == 2'b01) ?  SKEW_RESET_VAL[15:12] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_QSPI] == 2'b10) ?  SKEW_RESET_VAL[15:12] + 4 : SKEW_RESET_VAL[15:12]-4;
+
+assign rst_clk_ctrl1[19:16] = (strap_sticky[`STRAP_CLK_SKEW_UART] == 2'b00) ?  SKEW_RESET_VAL[19:16]  :
+                              (strap_sticky[`STRAP_CLK_SKEW_UART] == 2'b01) ?  SKEW_RESET_VAL[19:16] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_UART] == 2'b10) ?  SKEW_RESET_VAL[19:16] + 4 : SKEW_RESET_VAL[19:16]-4;
+
+assign rst_clk_ctrl1[23:20] = (strap_sticky[`STRAP_CLK_SKEW_PINMUX] == 2'b00) ?  SKEW_RESET_VAL[23:20]  :
+                              (strap_sticky[`STRAP_CLK_SKEW_PINMUX] == 2'b01) ?  SKEW_RESET_VAL[23:20] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_PINMUX] == 2'b10) ?  SKEW_RESET_VAL[23:20] + 4 : SKEW_RESET_VAL[23:20]-4;
+
+assign rst_clk_ctrl1[27:24] = (strap_sticky[`STRAP_CLK_SKEW_QSPI_CO] == 2'b00) ?  SKEW_RESET_VAL[27:24] :
+                              (strap_sticky[`STRAP_CLK_SKEW_QSPI_CO] == 2'b01) ?  SKEW_RESET_VAL[27:24] + 2 :
+                              (strap_sticky[`STRAP_CLK_SKEW_QSPI_CO] == 2'b10) ?  SKEW_RESET_VAL[27:24] + 4 : SKEW_RESET_VAL[27:24]-4;
+
+assign rst_clk_ctrl1[31:28] = 4'b0;
+
+
+always @ (posedge wbm_clk_i ) begin 
+  if (p_reset_n == 1'b0) begin
+     cfg_clk_ctrl1  <= rst_clk_ctrl1 ;
+  end
+  else begin 
+     if(sw_wr_en_2 ) 
+       cfg_clk_ctrl1   <= wb_dat_i[31:0];
+  end
+end
+
+//--------------------------------
+// clock control-2
+//--------------------------------
+always @ (posedge wbm_clk_i) begin 
+  if (p_reset_n == 1'b0) begin
+     cfg_clk_ctrl2  <= strap_sticky[7:0] ;
+  end
+  else begin 
+     if(sw_wr_en_3 ) 
+       cfg_clk_ctrl2   <= wb_dat_i[7:0];
+  end
+end
+//--------------------------------
+// Pll Control
+//--------------------------------
+// PLL clock : 199.680 Mhz Period: 5.008 & bcount: 7, period
+// cfg_dc_trim = 26'b0000000000000_1010101101001
+// cfg_pll_fed_div = 5'b00000
+// cfg_dco_mode    = 1'b1
+
+generic_register #(32,{1'b1,5'b00000,26'b0000000000000_1010101101001} ) u_pll_ctrl (
 	      .we            ({32{sw_wr_en_4}}  ),		 
 	      .data_in       (wb_dat_i[31:0]   ),
-	      .reset_n       (wbm_rst_n         ),
+	      .reset_n       (e_reset_n         ),
 	      .clk           (wbm_clk_i         ),
 	      
 	      //List of Outs
 	      .data_out      (cfg_pll_ctrl[31:0])
           );
+
+
+always @ (posedge wbm_clk_i ) begin 
+  if (p_reset_n == 1'b0) begin
+     cfg_clk_ctrl2  <= strap_sticky[7:0] ;
+  end
+  else begin 
+     if(sw_wr_en_3 ) 
+       cfg_clk_ctrl2   <= wb_dat_i[7:0];
+  end
+end
+//-------------------------------------------------------------
+// Note: system_strap reset (p_reset_n) will be released
+//     eariler than s_reset_n to take care of strap loading
+//--------------------------------------------------------------
+always @ (posedge wbm_clk_i) begin 
+  if (s_reset_n == 1'b0) begin
+     system_strap  <= {soft_reboot,strap_sticky[30:0]};
+  end
+  else if(sw_wr_en_5 ) begin
+       system_strap   <= wb_dat_i;
+  end
+end
+
+
+//--------------------- End of Register Bank  ------------------------
 
 
 assign wb_stb_int = wb_req & !reg_sel;
@@ -537,7 +681,7 @@ assign wb_adr_int = {cfg_bank_sel[15:3],wb_adr_i[18:0]};
 
 async_wb u_async_wb(
 // Master Port
-       .wbm_rst_n   (wbm_rst_n     ),  
+       .wbm_rst_n   (s_reset_n     ),  
        .wbm_clk_i   (wbm_clk_i     ),  
        .wbm_cyc_i   (wb_cyc_i      ),  
        .wbm_stb_i   (wb_stb_int    ),  
@@ -571,7 +715,7 @@ clk_ctl #(2) u_pll_ref_clk (
        .clk_o         (pll_ref_clk      ),
    // Inputs
        .mclk          (user_clock1      ),
-       .reset_n       (wbm_rst_n        ), 
+       .reset_n       (e_reset_n        ), 
        .clk_div_ratio (cfg_ref_pll_div  )
    );
 
@@ -582,39 +726,41 @@ clk_ctl #(3) u_pllclk (
        .clk_o         (pll_clk_div16    ),
    // Inputs
        .mclk          (int_pll_clock    ),
-       .reset_n       (wbm_rst_n        ), 
+       .reset_n       (e_reset_n        ), 
        .clk_div_ratio (4'hF )
    );
 
 //----------------------------------
 // Generate Internal WishBone Clock
 //----------------------------------
-logic       wb_clk_div;
-logic       wbs_ref_clk_int;
-logic       wbs_ref_clk;
+logic         wb_clk_div;
+logic         wbs_ref_clk_int;
+logic         wbs_ref_clk;
 
-wire  [1:0]   cfg_wb_clk_src_sel   =  cfg_wb_clk_ctrl[7:6];
-wire          cfg_wb_clk_div       =  cfg_wb_clk_ctrl[5];
-wire  [4:0]   cfg_wb_clk_ratio     =  cfg_wb_clk_ctrl[4:0];
+wire  [1:0]   cfg_wb_clk_src_sel   =  cfg_wb_clk_ctrl[1:0];
+wire  [1:0]   cfg_wb_clk_ratio     =  cfg_wb_clk_ctrl[3:2];
 
-
+ // Keep WBS in Ref clock during initial boot to strap loading 
 assign wbs_ref_clk_int = (cfg_wb_clk_src_sel ==2'b00) ? user_clock1 :
                          (cfg_wb_clk_src_sel ==2'b01) ? user_clock2 :	
-	                 int_pll_clock;
+                         (cfg_wb_clk_src_sel ==2'b10) ? int_pll_clock :	xtal_clk;
 
 ctech_clk_buf u_wbs_ref_clkbuf (.A (wbs_ref_clk_int), . X(wbs_ref_clk));
+ctech_clk_gate u_clkgate_wbs (.GATE (clk_enb), . CLK(wbs_clk_div), .GCLK(wbs_clk_out));
 
-//assign wbs_clk_out  = (cfg_wb_clk_div)  ? wb_clk_div : wbm_clk_i;
-ctech_mux2x1 u_wbs_clk_sel (.A0 (wbs_ref_clk), .A1 (wb_clk_div), .S  (cfg_wb_clk_div), .X  (wbs_clk_out));
+assign wbs_clk_div   =(force_refclk)             ? user_clock1 :
+                      (cfg_wb_clk_ratio == 2'b00) ? wbs_ref_clk :
+                      (cfg_wb_clk_ratio == 2'b01) ? wbs_ref_clk_div_2 :
+                      (cfg_wb_clk_ratio == 2'b10) ? wbs_ref_clk_div_4 : wbs_ref_clk_div_8;
 
-
-clk_ctl #(4) u_wbclk (
+clk_div8  u_wbclk (
    // Outputs
-       .clk_o         (wb_clk_div      ),
+       .clk_div_8     (wbs_ref_clk_div_8      ),
+       .clk_div_4     (wbs_ref_clk_div_4      ),
+       .clk_div_2     (wbs_ref_clk_div_2      ),
    // Inputs
-       .mclk          (wbs_ref_clk       ),
-       .reset_n       (wbm_rst_n        ), 
-       .clk_div_ratio (cfg_wb_clk_ratio )
+       .mclk          (wbs_ref_clk            ),
+       .reset_n       (p_reset_n              ) 
    );
 
 
@@ -626,78 +772,29 @@ wire   cpu_ref_clk_int;
 wire   cpu_ref_clk;
 wire   cpu_clk_int;
 
-wire [1:0] cfg_cpu_clk_src_sel   = cfg_cpu_clk_ctrl[7:6];
-wire       cfg_cpu_clk_div       = cfg_cpu_clk_ctrl[5];
-wire [4:0] cfg_cpu_clk_ratio     = cfg_cpu_clk_ctrl[4:0];
+wire [1:0] cfg_cpu_clk_src_sel   = cfg_cpu_clk_ctrl[1:0];
+wire [1:0] cfg_cpu_clk_ratio     = cfg_cpu_clk_ctrl[3:2];
 
 assign cpu_ref_clk_int = (cfg_cpu_clk_src_sel ==2'b00) ? user_clock1 :
                          (cfg_cpu_clk_src_sel ==2'b01) ? user_clock2 :	
-	                 int_pll_clock;
+                         (cfg_cpu_clk_src_sel ==2'b10) ? int_pll_clock : xtal_clk;	
 
 ctech_clk_buf u_cpu_ref_clkbuf (.A (cpu_ref_clk_int), . X(cpu_ref_clk));
 
-//assign cpu_clk_int = (cfg_cpu_clk_div)     ? cpu_clk_div : cpu_ref_clk;
-ctech_mux2x1 u_cpu_clk_sel (.A0 (cpu_ref_clk), .A1 (cpu_clk_div), .S  (cfg_cpu_clk_div),     .X  (cpu_clk_int));
+ctech_clk_gate u_clkgate_cpu (.GATE (clk_enb), . CLK(cpu_clk_div), .GCLK(cpu_clk));
 
-ctech_clk_buf u_clkbuf_cpu (.A (cpu_clk_int), . X(cpu_clk));
+assign cpu_clk_div   = (cfg_wb_clk_ratio == 2'b00) ? cpu_ref_clk :
+                       (cfg_wb_clk_ratio == 2'b01) ? cpu_ref_clk_div_2 :
+                       (cfg_wb_clk_ratio == 2'b10) ? cpu_ref_clk_div_4 : cpu_ref_clk_div_8;
 
-clk_ctl #(4) u_cpuclk (
+
+clk_div8 u_cpuclk (
    // Outputs
-       .clk_o         (cpu_clk_div      ),
+       .clk_div_8     (cpu_ref_clk_div_8      ),
+       .clk_div_4     (cpu_ref_clk_div_4      ),
+       .clk_div_2     (cpu_ref_clk_div_2      ),
    // Inputs
-       .mclk          (cpu_ref_clk      ),
-       .reset_n       (wbm_rst_n        ), 
-       .clk_div_ratio (cfg_cpu_clk_ratio)
+       .mclk          (cpu_ref_clk            ),
+       .reset_n       (p_reset_n              )
    );
-
-//----------------------------------
-// Generate RTC Clock Generation
-//----------------------------------
-wire   rtc_clk_div;
-wire [7:0] cfg_rtc_clk_ratio     = cfg_rtc_clk_ctrl[7:0];
-
-
-ctech_clk_buf u_clkbuf_rtc (.A (rtc_clk_div), . X(rtc_clk));
-
-clk_ctl #(7) u_rtcclk (
-   // Outputs
-       .clk_o         (rtc_clk_div      ),
-   // Inputs
-       .mclk          (user_clock2      ),
-       .reset_n       (wbm_rst_n        ), 
-       .clk_div_ratio (cfg_rtc_clk_ratio)
-   );
-
-
-//----------------------------------
-// Generate USB Clock Generation
-//----------------------------------
-wire   usb_clk_div;
-wire   usb_ref_clk_int;
-wire   usb_ref_clk;
-wire   usb_clk_int;
-
-wire [1:0] cfg_usb_clk_sel_sel   = cfg_usb_clk_ctrl[7:6];
-wire       cfg_usb_clk_div       = cfg_usb_clk_ctrl[5];
-wire [4:0] cfg_usb_clk_ratio     = cfg_usb_clk_ctrl[4:0];
-
-assign usb_ref_clk_int = (cfg_usb_clk_sel_sel ==2'b00) ? user_clock1 :
-                         (cfg_usb_clk_sel_sel ==2'b01) ? user_clock2 :	
-	                 int_pll_clock;
-ctech_clk_buf u_usb_ref_clkbuf (.A (usb_ref_clk_int), . X(usb_ref_clk));
-//assign usb_clk_int = (cfg_usb_clk_div)     ? usb_clk_div : usb_ref_clk;
-ctech_mux2x1 u_usb_clk_sel (.A0 (usb_ref_clk), .A1 (usb_clk_div), .S  (cfg_usb_clk_div), .X  (usb_clk_int));
-
-
-ctech_clk_buf u_clkbuf_usb (.A (usb_clk_int), . X(usb_clk));
-
-clk_ctl #(4) u_usbclk (
-   // Outputs
-       .clk_o         (usb_clk_div      ),
-   // Inputs
-       .mclk          (usb_ref_clk      ),
-       .reset_n       (wbm_rst_n        ), 
-       .clk_div_ratio (cfg_usb_clk_ratio)
-   );
-
 endmodule

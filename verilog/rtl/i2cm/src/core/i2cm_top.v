@@ -40,6 +40,8 @@
 //          1. Initail version picked from
 //              http://www.opencores.org/projects/i2c/
 //          2. renaming of reset signal to aresetn and sresetn
+//     v0.1 - Dinesh A, 28th Aug 2022
+//          Generated i2c_fsm_busy to identify fsm busy state 
 //
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -123,6 +125,7 @@ module i2cm_top(
 	reg  tip;         // transfer in progress
 	reg  irq_flag;    // interrupt pending flag
 	wire i2c_busy;    // bus busy (start signal detected)
+	wire i2c_fsm_busy;// i2C FSM Busy
 	wire i2c_al;      // i2c bus arbitration lost
 	reg  al;          // status register arbitration lost bit
 
@@ -212,28 +215,29 @@ module i2cm_top(
 
 	// hookup byte controller block
 	i2cm_byte_ctrl u_byte_ctrl (
-		.clk      ( wb_clk_i     ),
-		.sresetn  ( sresetn      ),
-		.aresetn  ( aresetn      ),
-		.ena      ( core_en      ),
-		.clk_cnt  ( prer         ),
-		.start    ( sta          ),
-		.stop     ( sto          ),
-		.read     ( rd           ),
-		.write    ( wr           ),
-		.ack_in   ( ack          ),
-		.din      ( txr          ),
-		.cmd_ack  ( done         ),
-		.ack_out  ( irxack       ),
-		.dout     ( rxr          ),
-		.i2c_busy ( i2c_busy     ),
-		.i2c_al   ( i2c_al       ),
-		.scl_i    ( scl_pad_i    ),
-		.scl_o    ( scl_pad_o    ),
-		.scl_oen  ( scl_padoen_o ),
-		.sda_i    ( sda_pad_i    ),
-		.sda_o    ( sda_pad_o    ),
-		.sda_oen  ( sda_padoen_o )
+		.clk          ( wb_clk_i     ),
+		.sresetn      ( sresetn      ),
+		.aresetn      ( aresetn      ),
+		.ena          ( core_en      ),
+		.clk_cnt      ( prer         ),
+		.start        ( sta          ),
+		.stop         ( sto          ),
+		.read         ( rd           ),
+		.write        ( wr           ),
+		.ack_in       ( ack          ),
+		.din          ( txr          ),
+		.cmd_ack      ( done         ),
+		.ack_out      ( irxack       ),
+		.dout         ( rxr          ),
+		.i2c_busy     ( i2c_busy     ),
+		.i2c_fsm_busy ( i2c_fsm_busy ),
+		.i2c_al       ( i2c_al       ),
+		.scl_i        ( scl_pad_i    ),
+		.scl_o        ( scl_pad_o    ),
+		.scl_oen      ( scl_padoen_o ),
+		.sda_i        ( sda_pad_i    ),
+		.sda_o        ( sda_pad_o    ),
+		.sda_oen      ( sda_padoen_o )
 	);
 
 	// status register block + interrupt request signal
@@ -273,7 +277,8 @@ module i2cm_top(
 	assign sr[7]   = rxack;
 	assign sr[6]   = i2c_busy;
 	assign sr[5]   = al;
-	assign sr[4:2] = 3'h0; // reserved
+	assign sr[4]   = i2c_fsm_busy; // I2C FSM Busy
+	assign sr[3:2] = 2'h0; // reserved
 	assign sr[1]   = tip;
 	assign sr[0]   = irq_flag;
 

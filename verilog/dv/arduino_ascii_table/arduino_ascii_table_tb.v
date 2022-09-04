@@ -68,9 +68,12 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "is62wvs1288.v"
 `include "uart_agent.v"
 
-module arduino_ascii_table_tb;
+`define TB_HEX "arduino_ascii_table.hex"
+`define TB_TOP  arduino_ascii_table_tb
+module `TB_TOP;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -142,11 +145,11 @@ module arduino_ascii_table_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_ascii_table_tb);
-	   	$dumpvars(0, arduino_ascii_table_tb.u_top.u_riscv_top.i_core_top_0);
-	   	$dumpvars(0, arduino_ascii_table_tb.u_top.u_riscv_top.u_connect);
-	   	$dumpvars(0, arduino_ascii_table_tb.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_ascii_table_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
+	   	$dumpvars(3, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_uart0_core);
 	   end
        `endif
 
@@ -332,25 +335,25 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_ascii_table.ino.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
@@ -366,14 +369,27 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 
        );
 
+   wire spiram_csb = io_out[31];
+
+   is62wvs1288 #(.mem_file_name("none"))
+	u_sram (
+         // Data Inputs/Outputs
+           .io0     (flash_io0),
+           .io1     (flash_io1),
+           // Controls
+           .clk    (flash_clk),
+           .csb    (spiram_csb),
+           .io2    (flash_io2),
+           .io3    (flash_io3)
+    );
 
 //---------------------------
 //  UART Agent integration
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[2];
-assign io_in[1]  = uart_rxd ;
+assign uart_txd   = io_out[7];
+assign io_in[6]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),

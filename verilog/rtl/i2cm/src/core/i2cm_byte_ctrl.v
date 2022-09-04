@@ -95,6 +95,7 @@ module i2cm_byte_ctrl (
 	output reg   cmd_ack,
 	output reg   ack_out,
 	output       i2c_busy,
+    output       i2c_fsm_busy,
 	output       i2c_al,
 	output [7:0] dout,
 
@@ -160,6 +161,9 @@ module i2cm_byte_ctrl (
 		.sda_o   ( sda_o    ),
 		.sda_oen ( sda_oen  )
 	);
+
+    // Generate I2C FSM Busy
+    assign i2c_fsm_busy = (c_state !=0);
 
 	// generate go-signal
 	assign go = (read | write | stop) & ~cmd_ack;

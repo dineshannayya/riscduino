@@ -133,26 +133,27 @@ module user_timer_tb;
 
 	initial begin
 		$dumpon;
+        init();
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
 
                 // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
+                //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// config 1us based on system clock - 1000/25ns = 40 
                 wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
 
 		// Enable Timer Interrupt
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'h700);
+                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'h007);
 
 		test_fail = 0;
 	        repeat (200) @(posedge clock);
@@ -174,12 +175,12 @@ module user_timer_tb;
                 wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0000_012B);
 
                 wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
-		if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b111)) begin
+		if((u_top.u_pinmux.irq_lines[2:0] == 3'b111) && (read_data[2:0] == 3'b111)) begin
 		    $display("STATUS: Timer Interrupt detected ");
 		    // Clearing the Timer Interrupt
-                    wb_user_core_write(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_CLR,'h700);
+                    wb_user_core_write(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_CLR,'h007);
                     wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
-		    if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b000)) begin
+		    if((u_top.u_pinmux.irq_lines[2:0] == 3'b111) && (read_data[2:0] == 3'b000)) begin
 		       $display("ERROR: Timer Interrupt not cleared ");
 		       test_fail = 1;
 		    end else begin
@@ -206,12 +207,12 @@ module user_timer_tb;
                 wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0000_012B);
 
                 wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
-		if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b111)) begin
+		if((u_top.u_pinmux.irq_lines[2:0] == 3'b111) && (read_data[2:0] == 3'b111)) begin
 		    $display("STATUS: Timer Interrupt detected ");
 		    // Clearing the Timer Interrupt
-                    wb_user_core_write(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_CLR,'h700);
+                    wb_user_core_write(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_CLR,'h007);
                     wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
-		    if((u_top.u_pinmux.irq_lines[10:8] == 3'b111) && (read_data[10:8] == 3'b000)) begin
+		    if((u_top.u_pinmux.irq_lines[2:0] == 3'b111) && (read_data[2:0] == 3'b000)) begin
 		       $display("ERROR: Timer Interrupt not cleared ");
 		       test_fail = 1;
 		    end else begin
@@ -242,11 +243,6 @@ module user_timer_tb;
 	        $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -337,7 +333,6 @@ user_project_wrapper u_top(
 );
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -488,5 +483,6 @@ end
 `endif
 **/
 
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

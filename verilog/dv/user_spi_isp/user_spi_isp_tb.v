@@ -137,16 +137,14 @@ integer i,j;
 	end
 initial
 begin
-   wb_rst_i <= 1'b1;
 
-   #100;
-   wb_rst_i <= 1'b0;	    	// Release reset
+   init();
 
    $display("Monitor: Standalone User SPI ISP Test Started");
 
 
    // Remove Wb Reset
-   u_spim.reg_wr_dword(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+   //u_spim.reg_wr_dword(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
    repeat (2) @(posedge clock);
    #1;
@@ -230,18 +228,16 @@ user_project_wrapper u_top(
 );
 
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
     initial begin
     end
 `endif    
 
-assign io_in[0]  = 1'b0;
-assign io_in[16] = sclk;
-assign io_in[15] = sdi;
-assign sdo       = io_out[14];
+assign io_in[5]  = 1'b0;
+assign io_in[21] = sclk;
+assign io_in[20] = sdi;
+assign sdo       = io_out[19];
 
 bfm_spim  u_spim (
           // SPI
@@ -253,5 +249,6 @@ bfm_spim  u_spim (
                 );
 
 
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

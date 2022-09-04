@@ -124,15 +124,11 @@ integer i,j;
 	   end
        `endif
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 initial
 begin
    test_fail = 0;
-
+           init();
+    
    #200; // Wait for reset removal
    repeat (10) @(posedge clock);
    $display("############################################");
@@ -339,7 +335,6 @@ user_project_wrapper u_top(
 );
 // SSPI Slave I/F
 assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -353,10 +348,10 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 // --------------------------
 tri scl,sda;
 
-assign sda  =  (io_oeb[22] == 1'b0) ? io_out[22] : 1'bz;
-assign scl   = (io_oeb[23] == 1'b0) ? io_out[23]: 1'bz;
-assign io_in[22]  =  sda;
-assign io_in[23]  =  scl;
+assign sda  =  (io_oeb[26] == 1'b0) ? io_out[26] : 1'bz;
+assign scl   = (io_oeb[27] == 1'b0) ? io_out[27]: 1'bz;
+assign io_in[26]  =  sda;
+assign io_in[27]  =  scl;
 
 pullup p1(scl); // pullup scl line
 pullup p2(sda); // pullup sda line
@@ -389,7 +384,7 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
+  $display("STATUS: WB USER ACCESS WRITE Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
@@ -418,7 +413,7 @@ begin
   wbd_ext_we_i  ='h0;  // write
   wbd_ext_dat_i ='h0;  // data output
   wbd_ext_sel_i ='h0;  // byte enable
-  //$display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
+  //$display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
   repeat (2) @(posedge clock);
 end
 endtask
@@ -496,5 +491,6 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

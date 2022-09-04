@@ -71,16 +71,20 @@
 
 `default_nettype wire
 
-`timescale 1 ns/10 ps
+`timescale 1 ns/1 ps
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "user_params.svh"
 
 module user_basic_tb;
 parameter CLK1_PERIOD = 10;
-parameter CLK2_PERIOD = 2;
+parameter CLK2_PERIOD = 2.5;
+parameter IPLL_PERIOD = 5.008;
+parameter XTAL_PERIOD = 6;
 
 reg            clock         ;
 reg            clock2        ;
+reg            xtal_clk      ;
 reg            wb_rst_i      ;
 reg            power1, power2;
 reg            power3, power4;
@@ -104,6 +108,7 @@ wire [37:0]    io_in         ;
 wire [37:0]    mprj_io       ;
 wire [7:0]     mprj_io_0     ;
 reg            test_fail     ;
+reg [31:0]     write_data     ;
 reg [31:0]     read_data     ;
 //----------------------------------
 // Uart Configuration
@@ -125,6 +130,81 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 
 wire           clock_mon;
 integer        test_step;
+reg  [15:0]    strap_in;
+wire [31:0]    strap_sticky;
+reg  [7:0]     test_id;
+
+assign io_in = {26'h0,xtal_clk,11'h0};
+
+wire [14:0] pstrap_select;
+
+assign pstrap_select = (strap_in[15] == 1'b1) ?  PSTRAP_DEFAULT_VALUE : strap_in[14:0];
+
+
+assign strap_sticky = {
+                   2'b0            , // bit[31:30]   - reserved
+                   pstrap_select[12:11] , // bit[29:28]   - cfg_cska_qspi_co Skew selection
+                   pstrap_select[12:11] , // bit[27:26]   - cfg_cska_pinmux Skew selection
+                   pstrap_select[12:11] , // bit[25:24]   - cfg_cska_uart  Skew selection
+                   pstrap_select[12:11] , // bit[23:22]   - cfg_cska_qspi  Skew selection
+                   pstrap_select[12:11] , // bit[21:20]   - cfg_cska_riscv Skew selection
+                   pstrap_select[12:11] , // bit[19:18]   - cfg_cska_wh Skew selection
+                   pstrap_select[12:11] , // bit[17:16]   - cfg_cska_wi Skew selection
+                   1'b0               , // bit[15]      - Soft Reboot Request - Need to double sync to local clock
+                   pstrap_select[10]    , // bit[14]      - Riscv SRAM clock edge selection
+                   pstrap_select[9]     , // bit[13]      - Riscv Cache Bypass
+                   pstrap_select[8]     , // bit[12]      - Riscv Reset control
+                   pstrap_select[7:6]   , // bit[11:10]   - QSPI FLASH Mode Selection CS#0
+                   pstrap_select[5]     , // bit[9]       - QSPI SRAM Mode Selection CS#2
+                   pstrap_select[4]     , // bit[8]       - uart master config control
+                   pstrap_select[3:2]   , // bit[7:6]     - riscv clock div
+                   pstrap_select[1:0]   , // bit[5:4]     - riscv clock source sel
+                   pstrap_select[3:2]   , // bit[3:2]     - wbs clock division
+                   pstrap_select[1:0]     // bit[1:0]     - wbs clock source sel
+                   };
+
+
+reg [1:0]  strap_skew;
+wire [31:0] skew_config;
+
+assign skew_config[3:0]   =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[3:0] :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[3:0] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[3:0] + 4 : SKEW_RESET_VAL[3:0]-4;
+
+assign skew_config[7:4]   =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[7:4]  :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[7:4] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[7:4] + 4 : SKEW_RESET_VAL[7:4]-4;
+
+assign skew_config[11:8]  =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[11:8]  :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[11:8] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[11:8] + 4 : SKEW_RESET_VAL[11:8]-4;
+
+assign skew_config[15:12] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[15:12]  :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[15:12] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[15:12] + 4 : SKEW_RESET_VAL[15:12]-4;
+
+assign skew_config[19:16] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[19:16]  :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[19:16] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[19:16] + 4 : SKEW_RESET_VAL[19:16]-4;
+
+assign skew_config[23:20] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[23:20]  :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[23:20] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[23:20] + 4 : SKEW_RESET_VAL[23:20]-4;
+
+assign skew_config[27:24] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[27:24] :
+                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[27:24] + 2 :
+                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[27:24] + 4 : SKEW_RESET_VAL[27:24]-4;
+
+assign skew_config[31:28] = 4'b0;
+
+//----------------------------------------------------------
+reg [3:0] cpu_clk_cfg,wbs_clk_cfg;
+wire [7:0] clk_ctrl2 = {cpu_clk_cfg,wbs_clk_cfg};
+
+
+
+//-----------------------------------------------------------
+
 
 integer i,j;
 
@@ -134,6 +214,7 @@ integer i,j;
 
 	always #(CLK1_PERIOD/2) clock  <= (clock === 1'b0);
 	always #(CLK2_PERIOD/2) clock2 <= (clock2 === 1'b0);
+	always #(XTAL_PERIOD/2) xtal_clk <= (xtal_clk === 1'b0);
 
 	initial begin
 		test_step = 0;
@@ -151,18 +232,20 @@ integer i,j;
 	   initial begin
 	   	$dumpfile("simx.vcd");
 	   	$dumpvars(1, user_basic_tb);
-	   	//$dumpvars(1, user_basic_tb.u_top);
+	   	$dumpvars(1, user_basic_tb.u_top);
 	   	//$dumpvars(0, user_basic_tb.u_top.u_pll);
 	   	$dumpvars(0, user_basic_tb.u_top.u_wb_host);
+	   	//$dumpvars(0, user_basic_tb.u_top.u_intercon);
 	   	//$dumpvars(1, user_basic_tb.u_top.u_intercon);
-	   	//$dumpvars(1, user_basic_tb.u_top.u_intercon);
-	   	//$dumpvars(1, user_basic_tb.u_top.u_pinmux);
+	   	$dumpvars(0, user_basic_tb.u_top.u_pinmux);
 	   end
        `endif
 
 	initial begin
+		wb_rst_i <= 1'b0;
+		#1000;
 		wb_rst_i <= 1'b1;
-		#100;
+		#1000;
 		wb_rst_i <= 1'b0;	    	// Release reset
 	end
 
@@ -177,118 +260,191 @@ begin
    repeat (2) @(posedge clock);
 
    test_fail=0;
+
    fork
-      begin
-	  // Default Value Check
-	  // cfg_wb_clk_ctrl      = cfg_clk_ctrl2[7:0];
-          // cfg_rtc_clk_ctrl     = cfg_clk_ctrl2[15:8];
-          // cfg_cpu_clk_ctrl     = cfg_clk_ctrl2[23:16];
-          // cfg_usb_clk_ctrl     = cfg_clk_ctrl2[31:24];
-
-
-	  $display("Step-1, CPU: CLOCK1, USB: CLOCK2,RTC: CLOCK2 *2, WBS:CLOCK1");
-	  test_step = 1;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h0,8'h0,8'h0,8'h0});
-	  clock_monitor(CLK1_PERIOD,CLK1_PERIOD,CLK2_PERIOD*2,CLK1_PERIOD);
-
-	  $display("Step-2, CPU: CLOCK2, USB: CLOCK2/2, RTC: CLOCK2/(2+1), WBS:CLOCK2");
-	  test_step = 2;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h40,8'h60,8'h1,8'h40});
-	  clock_monitor(CLK2_PERIOD,2*CLK2_PERIOD,(3)*CLK2_PERIOD,CLK2_PERIOD);
-
-	  $display("Step-3, CPU: CLOCK1/2,USB: CLOCK2/(2+1), RTC: CLOCK2/(2+2), WBS:CLOCK1/2");
-	  test_step = 3;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h20,8'h61,8'h2,8'h20});
-	  clock_monitor(2*CLK1_PERIOD,(3)*CLK2_PERIOD,4*CLK2_PERIOD,2*CLK1_PERIOD);
-
-	  $display("Step-4, CPU: CLOCK1/3, USB: CLOCK2/(2+2), RTC: CLOCK2/(2+3), WBS:CLOCK1/3");
-	  test_step = 4;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h21,8'h62,8'h3,8'h21});
-	  clock_monitor(3*CLK1_PERIOD,4*CLK2_PERIOD,5*CLK2_PERIOD,3*CLK1_PERIOD);
-
-	  $display("Step-5, CPU: CLOCK1/4, USB: CLOCK2/(2+3), RTC: CLOCK2/(2+4), WBS:CLOCK1/4");
-	  test_step = 5;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h22,8'h63,8'h4,8'h22});
-	  clock_monitor(4*CLK1_PERIOD,5*CLK2_PERIOD,6*CLK2_PERIOD,4*CLK1_PERIOD);
-
-	  $display("Step-6, CPU: CLOCK1/(2+3),USB: CLOCK2/(2+4), RTC: CLOCK2/(2+5), WBS:CLOCK1/(2+3)");
-	  test_step = 6;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h23,8'h64,8'h5,8'h23});
-	  clock_monitor(5*CLK1_PERIOD,6*CLK2_PERIOD,7*CLK2_PERIOD,5*CLK1_PERIOD);
-
-	  $display("Step-7, CPU: CLOCK2/(2), USB: CLOCK2/(2+5), RTC: CLOCK2/(2+6), WBS:CLOCK2/(2)");
-	  test_step = 7;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h60,8'h65,8'h6,8'h60});
-	  clock_monitor(2*CLK2_PERIOD,7*CLK2_PERIOD,8*CLK2_PERIOD,2*CLK2_PERIOD);
-
-	  $display("Step-8, CPU: CLOCK2/3, USB: CLOCK2/(2+6), RTC: CLOCK2/(2+7), WBS:CLOCK2/3");
-	  test_step = 8;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h61,8'h66,8'h7,8'h61});
-	  clock_monitor(3*CLK2_PERIOD,8*CLK2_PERIOD,9*CLK2_PERIOD,3*CLK2_PERIOD);
-
-	  $display("Step-9, CPU: CLOCK2/4,USB: CLOCK2/(2+7), RTC: CLOCK2/(2+8), WBS:CLOCK2/4");
-	  test_step = 9;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h62,8'h67,8'h8,8'h62});
-	  clock_monitor(4*CLK2_PERIOD,9*CLK2_PERIOD,10*CLK2_PERIOD,4*CLK2_PERIOD);
-
-	  $display("Step-10, CPU: CLOCK2/(2+3), USB: CLOCK2/(2+8), RTC: CLOCK2/(2+128), WBS:CLOCK1/(2+3)");
-	  test_step = 10;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h63,8'h68,8'h80,8'h63});
-	  clock_monitor(5*CLK2_PERIOD,10*CLK2_PERIOD,130*CLK2_PERIOD,5*CLK2_PERIOD);
-
-	  $display("Step-11, CPU: CLOCK2/(2+3), USB: CLOCK2/(2+9), RTC: CLOCK2/(2+255), WBS:CLOCK2/(2+4)");
-	  test_step = 10;
-          wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h63,8'h69,8'hFF,8'h64});
-	  clock_monitor(5*CLK2_PERIOD,11*CLK2_PERIOD,257*CLK2_PERIOD,6*CLK2_PERIOD);
+   begin
+       $display("##########################################################");
+       $display("Step-1, Checking the Strap Loading");
+       test_id = 1;
+       for(i = 0; i < 16; i = i+1) begin
+          strap_in = 0;
+          strap_in = 1 << i;
+          apply_strap(strap_in);
+     
+          //#7 - Check the strap reg value
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_PAD_STRAP,read_data,strap_in);
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_STRAP_STICKY,read_data,strap_sticky);
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SYSTEM_STRAP,read_data,strap_sticky);
+          test_step = 7;
+       end
  
-     `ifndef GL  
-     $display("###################################################");
-     $display("Monitor: Checking the PLL:");
-     $display("###################################################");
-	 test_step = 11;
-	 // Set PLL enable, no DCO mode ; Set PLL output divider to 0x03
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,{16'h0,1'b1,3'b100,4'b0000,8'h2});
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_PLL_CTRL,{1'b0,5'h3,26'h00000});
-     repeat (100) @(posedge clock);
-	 pll_clock_monitor(5);
+       
+       if(test_fail == 1) begin
+          $display("ERROR: Step-1, Checking the Strap Loading - FAILED");
+       end else begin
+          $display("STATUS: Step-1, Checking the Strap Loading - PASSED");
+       end
+       $display("##########################################################");
+       $display("Step-2, Checking the Clock Skew Configuration");
+       test_id = 2;
+       for(i = 0; i < 4; i = i+1) begin
+          strap_in = 0;
+          strap_in[12:11] = i;
+          strap_skew = i;
+          apply_strap(strap_in);
 
-	 test_step = 12;
-	 // Set PLL enable, DCO mode ; Set PLL output divider to 0x01
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,{16'h0,1'b1,3'b000,4'b0000,8'h2});
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_PLL_CTRL,{1'b1,5'h0,26'h0000});
-     repeat (100) @(posedge clock);
-	 pll_clock_monitor(4);
+          //#7 - Check the strap reg value
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_PAD_STRAP,read_data,strap_in);
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_STRAP_STICKY,read_data,strap_sticky);
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SYSTEM_STRAP,read_data,strap_sticky);
+          wb_user_core_read_check(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL1,read_data,skew_config);
+       end
+       if(test_fail == 1) begin
+          $display("ERROR: Step-2, Checking the Clock Skew Configuration - FAILED");
+       end else begin
+          $display("STATUS: Step-2, Checking the Clock Skew Configuration - PASSED");
+       end
+       $display("##########################################################");
+       $display("Step-3, Checking the riscv/wbs clock Selection though Strap");
+       test_id = 3;
+       for(i = 0; i < 4; i = i+1) begin
+          for(j = 0; j < 4; j = j+1) begin
+              strap_in = 0;
+              strap_in[1:0] = i;
+              cpu_clk_cfg[1:0]=i;
+              wbs_clk_cfg[1:0]=i;
+              strap_in[3:2] = j;
+              cpu_clk_cfg[3:2]=j;
+              wbs_clk_cfg[3:2]=j;
+              strap_in[3:2] = j;
+ 
+              apply_strap(strap_in);
 
-     $display("###################################################");
-     $display("Monitor: Monitor Clock output:");
-     $display("###################################################");
-	 $display("Monitor: CPU: CLOCK2/(2+3), USB: CLOCK2/(2+9), RTC: CLOCK2/(2+255), WBS:CLOCK2/(2+4)");
-	 test_step = 13;
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h63,8'h69,8'hFF,8'h64});
+              //#7 - Check the strap reg value
+              wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_PAD_STRAP,read_data,strap_in);
+              wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_STRAP_STICKY,read_data,strap_sticky);
+              wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SYSTEM_STRAP,read_data,strap_sticky);
+              wb_user_core_read_check(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,read_data,clk_ctrl2);
+              clock_monitor2(cpu_clk_cfg,wbs_clk_cfg);
+          end
+       end
+       if(test_fail == 1) begin
+          $display("ERROR: Step-3, Checking the riscv/wbs clock Selection though Strap - FAILED");
+       end else begin
+          $display("STATUS: Step-3, Checking the riscv/wbs clock Selection though Strap - PASSED");
+       end
+       $display("##########################################################");
 
-	 // Set PLL enable, DCO mode ; Set PLL output divider to 0x01
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,{16'h0,1'b1,3'b000,4'b0000,8'h2});
-     wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_PLL_CTRL,{1'b1,5'h0,26'h0000});
-	 dbg_clk_monitor(79,60,5*CLK2_PERIOD,11*CLK2_PERIOD,257*CLK2_PERIOD,6*CLK2_PERIOD);
-     `endif
-         
-	 $display("###################################################");
-         $display("Monitor: Checking the chip signature :");
-         $display("###################################################");
-	 test_step = 14;
-         // Remove Wb/PinMux Reset
-         wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+       $display("##########################################################");
+       $display("Step-4, Checking the soft reboot sequence");
+       test_id = 4;
+       for(i = 0; i < 31; i = i+1) begin
+         // #1 - Write Data to Sticky bit and Set Reboot Request
+          wait(u_top.s_reset_n == 1);          // Wait for system reset removal
+         write_data = (1<< i) ; // bit[31] = 1 in soft reboot request
+         write_data = write_data + (1 << `STRAP_SOFT_REBOOT_REQ); // bit[STRAP_SOFT_REBOOT_REQ] = 1 in soft reboot request
+         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_STRAP_STICKY,write_data);
 
-	 wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,32'h8273_8343);
-	 wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,32'h2408_2022);
-	 wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,32'h0005_1000);
 
+          // #3 - Wait for system reset removal
+          wait(u_top.s_reset_n == 1);          // Wait for system reset removal
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_STRAP_STICKY,read_data,{1'b0,write_data[30:0]});
+          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SYSTEM_STRAP,read_data,write_data);
+          repeat (10) @(posedge clock);
+
+       end
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-4, Checking the soft reboot sequence - FAILED");
+       end else begin
+          $display("STATUS: Step-4, Checking the soft reboot sequence - PASSED");
+       end
+       $display("##########################################################");
+       /****
+       $display("Step-5, Checking the uart Master baud-16x clock is 9600* 16");
+       test_id = 5;
+
+       apply_strap(16'h10); // [4] -  // uart master config control - constant value based on system clock selection
+
+       uartm_clock_monitor(6510); // 1/(9600*16) = 6510 ns
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-5,  Checking the uart Master baud-16x clock - FAILED");
+       end else begin
+          $display("STATUS: Step-5,  Checking the uart Master baud-16x clock - PASSED");
+       end
+       $display("##########################################################");
+       ***/
+       /*** 
+       `ifndef GL  
+       $display("###################################################");
+       $display("Step-5,Monitor: Checking the PLL:");
+       $display("###################################################");
+       test_id = 5;
+       // Set PLL enable, no DCO mode ; Set PLL output divider to 0x03
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,{16'h0,1'b1,3'b100,4'b0000,8'h2});
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_PLL_CTRL,{1'b0,5'h3,26'h00000});
+       repeat (100) @(posedge clock);
+       pll_clock_monitor(5.101);
+
+       test_step = 12;
+       // Set PLL enable, DCO mode ; Set PLL output divider to 0x01
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,{16'h0,1'b1,3'b000,4'b0000,8'h2});
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_PLL_CTRL,{1'b1,5'h0,26'h0000});
+       repeat (100) @(posedge clock);
+       pll_clock_monitor(4.080);
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-5, Checking the PLL - FAILED");
+       end else begin
+          $display("STATUS: Step-5, Checking the PLL - PASSED");
+       end
+       $display("##########################################################");
+
+       $display("###################################################");
+       $display("Step-6,Monitor: PLL Monitor Clock output:");
+       $display("###################################################");
+       $display("Monitor: CPU: CLOCK2/(2+3), USB: CLOCK2/(2+9), RTC: CLOCK2/(2+255), WBS:CLOCK2/(2+4)");
+       test_id = 6;
+       test_step = 13;
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,{8'h63,8'h69,8'hFF,8'h64});
+
+       // Set PLL enable, DCO mode ; Set PLL output divider to 0x01
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,{16'h0,1'b1,3'b000,4'b0000,8'h2});
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_PLL_CTRL,{1'b1,5'h0,26'h0000});
+       dbg_clk_monitor(79,60,5*CLK2_PERIOD,11*CLK2_PERIOD,257*CLK2_PERIOD,6*CLK2_PERIOD);
+       `endif
+          
+       if(test_fail == 1) begin
+          $display("ERROR: Step-6, PLL Monitor Clock output - FAILED");
+       end else begin
+          $display("STATUS: Step-6, PLL Monitor Clock output - PASSED");
+       end
+      ****/
+       $display("##########################################################");
+        $display("Step-7,Monitor: Checking the chip signature :");
+        $display("###################################################");
+       test_id = 7;
+        test_step = 14;
+        // Remove Wb/PinMux Reset
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+
+         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,32'h8273_8343);
+         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,32'h0309_2022);
+         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,32'h0005_3000);
+         if(test_fail == 1) begin
+            $display("ERROR: Step-7,Monitor: Checking the chip signature - FAILED");
+         end else begin
+            $display("STATUS: Step-7,Monitor: Checking the chip signature - PASSED");
+
+         $display("##########################################################");
+
+          end
       end
-   
       begin
-      repeat (30000) @(posedge clock);
-   		// $display("+1000 cycles");
-      test_fail = 1;
+         repeat (30000) @(posedge clock);
+   	       // $display("+1000 cycles");
+         test_fail = 1;
       end
       join_any
       disable fork; //disable pending fork activity
@@ -345,13 +501,14 @@ user_project_wrapper u_top(
  
 
     // IOs
-    .io_in          ('h0)  ,
+    .io_in          (io_in )  ,
     .io_out         (io_out) ,
     .io_oeb         (io_oeb) ,
 
     .user_irq       () 
 
 );
+
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work
@@ -361,6 +518,57 @@ user_project_wrapper u_top(
     end
 `endif    
 
+task clock_monitor2;
+input [3:0] cpu_cfg;
+input [3:0] wbs_cfg;
+real        exp_cpu_period; // ns
+real        exp_wbs_period; // ns
+begin
+   force clock_mon = u_top.u_wb_host.cpu_clk;
+   case(cpu_cfg)
+   4'b0000: exp_cpu_period = CLK1_PERIOD;
+   4'b0001: exp_cpu_period = CLK2_PERIOD;
+   4'b0010: exp_cpu_period = IPLL_PERIOD;
+   4'b0011: exp_cpu_period = XTAL_PERIOD;
+   4'b0100: exp_cpu_period = CLK1_PERIOD*2;
+   4'b0101: exp_cpu_period = CLK2_PERIOD*2;
+   4'b0110: exp_cpu_period = IPLL_PERIOD*2;
+   4'b0111: exp_cpu_period = XTAL_PERIOD*2;
+   4'b1000: exp_cpu_period = CLK1_PERIOD*4;
+   4'b1001: exp_cpu_period = CLK2_PERIOD*4;
+   4'b1010: exp_cpu_period = IPLL_PERIOD*4;
+   4'b1011: exp_cpu_period = XTAL_PERIOD*4;
+   4'b1100: exp_cpu_period = CLK1_PERIOD*8;
+   4'b1101: exp_cpu_period = CLK2_PERIOD*8;
+   4'b1110: exp_cpu_period = IPLL_PERIOD*8;
+   4'b1111: exp_cpu_period = XTAL_PERIOD*8;
+   endcase 
+   check_clock_period("CPU CLock",exp_cpu_period);
+   release clock_mon;
+
+   force clock_mon = u_top.u_wb_host.wbs_clk_out;
+   case(wbs_cfg)
+   4'b0000: exp_wbs_period = CLK1_PERIOD;
+   4'b0001: exp_wbs_period = CLK2_PERIOD;
+   4'b0010: exp_wbs_period = IPLL_PERIOD;
+   4'b0011: exp_wbs_period = XTAL_PERIOD;
+   4'b0100: exp_wbs_period = CLK1_PERIOD*2;
+   4'b0101: exp_wbs_period = CLK2_PERIOD*2;
+   4'b0110: exp_wbs_period = IPLL_PERIOD*2;
+   4'b0111: exp_wbs_period = XTAL_PERIOD*2;
+   4'b1000: exp_wbs_period = CLK1_PERIOD*4;
+   4'b1001: exp_wbs_period = CLK2_PERIOD*4;
+   4'b1010: exp_wbs_period = IPLL_PERIOD*4;
+   4'b1011: exp_wbs_period = XTAL_PERIOD*4;
+   4'b1100: exp_wbs_period = CLK1_PERIOD*8;
+   4'b1101: exp_wbs_period = CLK2_PERIOD*8;
+   4'b1110: exp_wbs_period = IPLL_PERIOD*8;
+   4'b1111: exp_wbs_period = XTAL_PERIOD*8;
+   endcase 
+   check_clock_period("WBS Clock",exp_wbs_period);
+   release clock_mon;
+end
+endtask
 
 task clock_monitor;
 input [15:0] exp_cpu_period;
@@ -372,11 +580,11 @@ begin
    check_clock_period("CPU CLock",exp_cpu_period);
    release clock_mon;
 
-   force clock_mon = u_top.u_wb_host.usb_clk;
+   force clock_mon = u_top.u_pinmux.usb_clk;
    check_clock_period("USB Clock",exp_usb_period);
    release clock_mon;
 
-   force clock_mon = u_top.u_wb_host.rtc_clk;
+   force clock_mon = u_top.u_pinmux.rtc_clk;
    check_clock_period("RTC Clock",exp_rtc_period);
    release clock_mon;
 
@@ -387,7 +595,7 @@ end
 endtask
 
 task pll_clock_monitor;
-input [15:0] exp_period;
+input real exp_period;
 begin
    //force clock_mon = u_top.u_wb_host.pll_clk_out[0];
    `ifdef GL
@@ -396,6 +604,15 @@ begin
       force clock_mon = u_top.u_wb_host.u_clkbuf_pll.X;
     `endif
    check_clock_period("PLL CLock",exp_period);
+   release clock_mon;
+end
+endtask
+
+task uartm_clock_monitor;
+input real exp_period;
+begin
+   force clock_mon = u_top.u_wb_host.u_uart2wb.u_core.line_clk_16x;
+   check_clock_period("UART CLock",exp_period);
    release clock_mon;
 end
 endtask
@@ -439,22 +656,32 @@ endtask
 //----------------------------------
 task check_clock_period;
 input [127:0] clk_name;
-input [15:0] clk_period; // in NS
-time prev_t, next_t, periodd;
+input real    period; 
+real edge2, edge1, clock_period;
+real tolerance,min_period,max_period;
 begin
-	$timeformat(-12,3,"ns",10);
+
+  tolerance = 0.01;
+
+   min_period = period * (1-tolerance);
+   max_period = period * (1+tolerance);
+
+   //$timeformat(-12,2,"ps",10);
    repeat(1) @(posedge clock_mon);
    repeat(1) @(posedge clock_mon);
-   prev_t  = $realtime;
+   edge1  = $realtime;
    repeat(100) @(posedge clock_mon);
-   next_t  = $realtime;
-   periodd = (next_t-prev_t)/100;
-   //periodd = (periodd)/1e9;
-   if(clk_period != periodd) begin
-       $display("STATUS: FAIL => %s Exp Period: %d Rxd: %d",clk_name,clk_period,periodd);
+   edge2  = $realtime;
+   clock_period = (edge2-edge1)/100;
+
+   if ( clock_period > max_period ) begin
+       $display("STATUS: FAIL => %s clock is too fast => Exp: %.3fns Rxd: %.3fns",clk_name,clock_period,max_period);
+       test_fail = 1;
+   end else if ( clock_period < min_period ) begin
+       $display("STATUS: FAIL => %s clock is too slow => Exp: %.3fns Rxd: %.3fns",clk_name,clock_period,min_period);
        test_fail = 1;
    end else begin
-       $display("STATUS: PASS => %s  Period: %d ",clk_name,clk_period);
+       $display("STATUS: PASS => %s  Period: %.3fns ",clk_name,period);
    end
 end
 endtask
@@ -593,5 +820,6 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `default_nettype wire

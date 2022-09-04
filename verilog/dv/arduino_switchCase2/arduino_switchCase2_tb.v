@@ -70,7 +70,9 @@
 `include "uart_agent.v"
 `include "is62wvs1288.v"
 
-module arduino_switchCase2_tb;
+`define TB_HEX "arduino_switchCase2.hex"
+`define TB_TOP  arduino_switchCase2_tb
+module `TB_TOP;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -167,11 +169,11 @@ parameter P_QDDR   = 2'b11;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, arduino_switchCase2_tb);
-	   	$dumpvars(0, arduino_switchCase2_tb.u_top.u_riscv_top.i_core_top_0);
-	   	$dumpvars(0, arduino_switchCase2_tb.u_top.u_riscv_top.u_connect);
-	   	$dumpvars(0, arduino_switchCase2_tb.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, arduino_switchCase2_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
+	   	$dumpvars(3, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_uart0_core);
 	   end
        `endif
 
@@ -207,24 +209,24 @@ parameter P_QDDR   = 2'b11;
 
      /************* Port-D Mapping **********************************
       *             Arduino-No
-      *   Pin-2        0         PD0/RXD[0]                digital_io[1]
-      *   Pin-3        1         PD1/TXD[0]                digital_io[2]
-      *   Pin-4        2         PD2/RXD[1]/INT0           digital_io[3]
-      *   Pin-5        3         PD3/INT1/OC2B(PWM0)       digital_io[4]
-      *   Pin-6        4         PD4/TXD[1]                digital_io[5]
-      *   Pin-11       5         PD5/SS[3]/OC0B(PWM1)/T1   digital_io[8]
-      *   Pin-12       6         PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[9]/analog_io[2]
-      *   Pin-13       7         PD7/A1N1                  digital_io[10]/analog_io[3]
+      *   Pin-2        0         PD0/RXD[0]                digital_io[6]
+      *   Pin-3        1         PD1/TXD[0]                digital_io[7]
+      *   Pin-4        2         PD2/RXD[1]/INT0           digital_io[8]
+      *   Pin-5        3         PD3/INT1/OC2B(PWM0)       digital_io[9]
+      *   Pin-6        4         PD4/TXD[1]                digital_io[10]
+      *   Pin-11       5         PD5/SS[3]/OC0B(PWM1)/T1   digital_io[13]
+      *   Pin-12       6         PD6/SS[2]/OC0A(PWM2)/AIN0 digital_io[14]/analog_io[2]
+      *   Pin-13       7         PD7/A1N1                  digital_io[15]/analog_io[3]
       *   ********************************************************/
 
-     wire [7:0]  port_d_in = {  io_out[10],
-		                        io_out[9],
-		                        io_out[8],
-		                        io_out[5],
-			                    io_out[4],
-			                    io_out[3],
-		                        io_out[2],
-		                        io_out[1]
+     wire [7:0]  port_d_in = {  io_out[15],
+		                        io_out[14],
+		                        io_out[13],
+		                        io_out[10],
+			                    io_out[9],
+			                    io_out[8],
+		                        io_out[7],
+		                        io_out[6]
 			                };
 	initial begin
                uart_data_bit           = 2'b11;
@@ -393,25 +395,25 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("arduino_switchCase2.ino.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (
@@ -427,8 +429,7 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 
        );
 
-
-   wire spiram_csb = io_out[27];
+   wire spiram_csb = io_out[31];
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (
@@ -446,8 +447,8 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[2];
-assign io_in[1]  = uart_rxd ;
+assign uart_txd   = io_out[7];
+assign io_in[6]  = uart_rxd ;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),

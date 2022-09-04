@@ -75,7 +75,10 @@
 `timescale 1 ns / 1 ns
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
-module user_risc_boot_tb;
+
+`define TB_HEX "user_risc_boot.hex"
+`define TB_TOP  user_risc_boot_tb
+module `TB_TOP;
 	reg clock;
 	reg wb_rst_i;
 	reg power1, power2;
@@ -125,39 +128,34 @@ module user_risc_boot_tb;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, user_risc_boot_tb);
+	   	$dumpvars(3, `TB_TOP);
 	   end
        `endif
 
 	initial begin
-
 		$value$plusargs("risc_core_id=%d", d_risc_id);
+        init();
+
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
 		// Remove all the reset
 		if(d_risc_id == 0) begin
 		     $display("STATUS: Working with Risc core 0");
-                     wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+             //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
 		end else begin
 		     $display("STATUS: Working with Risc core 1");
                      wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
 		end
 
-
-		// Repeat cycles of 1000 clock edges as needed to complete testbench
-		repeat (30) begin
-			repeat (1000) @(posedge clock);
-			// $display("+1000 cycles");
-		end
-
+        wait_riscv_boot();
 
 		$display("Monitor: Reading Back the expected value");
 		// User RISC core expect to write these value in global
@@ -197,11 +195,6 @@ module user_risc_boot_tb;
 	    $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
 wire USER_VDD1V8 = 1'b1;
 wire VSS = 1'b0;
 
@@ -241,8 +234,8 @@ user_project_wrapper u_top(
 );
 
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0; // CLOCK
 
 
 `ifndef GL // Drive Power for Hold Fix Buf
@@ -257,28 +250,30 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = io_out[28];
+   wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_29 = io_oeb[33];
+   wire #1 io_oeb_30 = io_oeb[34];
+   wire #1 io_oeb_31 = io_oeb[35];
+   wire #1 io_oeb_32 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = flash_io0;
+   assign io_in[34] = flash_io1;
+   assign io_in[35] = flash_io2;
+   assign io_in[36] = flash_io3;
+
 
    // Quard flash
-     s25fl256s #(.mem_file_name("user_risc_boot.hex"),
-	         .otp_file_name("none"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
+	         .otp_file_name("none"), 
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
-		 u_spi_flash_256mb (
+		 u_spi_flash_256mb
+       (
            // Data Inputs/Outputs
        .SI      (flash_io0),
        .SO      (flash_io1),
@@ -423,6 +418,7 @@ end
 
 `endif
 **/
+`include "user_tasks.sv"
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

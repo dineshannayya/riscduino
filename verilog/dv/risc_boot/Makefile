@@ -113,6 +113,7 @@ export IVERILOG_DUMPER = fst
 # RTL/GL/GL_SDF
 SIM?=RTL
 DUMP?=OFF
+RISC_CORE?=0
 
 
 .SUFFIXES:
@@ -164,11 +165,11 @@ hex:  ${BLOCKS:=.hex}
 ## RTL
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DRISC_BOOT -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
     else  
-	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DRISC_BOOT -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
    endif
@@ -177,11 +178,11 @@ endif
 ##GL
 ifeq ($(SIM),GL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DGL -DRISC_BOOT -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.gl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) -o $@ $<
     else
-	iverilog -g2005-sv -Ttyp -DWFDUMP -DFUNCTIONAL -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+	iverilog -g2005-sv -Ttyp -DWFDUMP -DFUNCTIONAL -DRISC_BOOT -DGL -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.gl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) -o $@ $<
     endif
@@ -205,7 +206,7 @@ ifeq ($(SIM),GL_SDF)
 endif
 
 %.vcd: %.vvp
-	vvp  $<
+	vvp  $< +risc_core_id=$(RISC_CORE)
 
 # twinwave: RTL-%.vcd GL-%.vcd
 #     twinwave RTL-$@ * + GL-$@ *
@@ -229,7 +230,7 @@ endif
 # ---- Clean ----
 
 clean:
-	\rm  -f *.elf *.hex *.bin *.vvp *.log *.vcd *.lst *.hexe
+	\rm  -f *.elf *.hex *.bin *.vvp *.log *.vcd *.lst *.hexe *.dump
 
 .PHONY: clean hex all
 
