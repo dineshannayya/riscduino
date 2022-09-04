@@ -56,7 +56,7 @@ set ::env(CLOCK_PERIOD) "10"
 ### Macro Placement
 set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro.cfg
 
-#set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn_cfg.tcl
+set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn_cfg.tcl
 
 set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
@@ -110,17 +110,30 @@ set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/yifiv
 #set ::env(GLB_RT_MAXLAYER) 6
 set ::env(RT_MAX_LAYER) {met5}
 
-set ::env(FP_PDN_CHECK_NODES) 0
-
-
 ## Internal Macros
 ### Macro PDN Connections
-set ::env(FP_PDN_ENABLE_MACROS_GRID) "1"
-#set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "1"
 
+set ::env(FP_PDN_ENABLE_MACROS_GRID) {1}
+set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "0"
+set ::env(FP_PDN_CHECK_NODES) 1
+set ::env(FP_PDN_ENABLE_RAILS) 0
+set ::env(FP_PDN_IRDROP) "1"
+set ::env(FP_PDN_HORIZONTAL_HALO) "10"
+set ::env(FP_PDN_VERTICAL_HALO) "10"
+set ::env(FP_PDN_VOFFSET) "5"
+set ::env(FP_PDN_VPITCH) "60"
+set ::env(FP_PDN_HOFFSET) "5"
+set ::env(FP_PDN_HPITCH) "60"
+set ::env(FP_PDN_HWIDTH) {6.2}
+set ::env(FP_PDN_VWIDTH) {6.2}
+set ::env(FP_PDN_HSPACING) {20}
+set ::env(FP_PDN_VSPACING) {20}
+
+set ::env(VDD_NETS) {vccd1 vccd2 vdda1 vdda2}
+set ::env(GND_NETS) {vssd1 vssd2 vssa1 vssa2}
 set ::env(VDD_NET) {vccd1}
-set ::env(VDD_PIN) {vccd1}
 set ::env(GND_NET) {vssd1}
+set ::env(VDD_PIN) {vccd1}
 set ::env(GND_PIN) {vssd1}
 
 
@@ -128,17 +141,15 @@ set ::env(GRT_OBS) "                              \
 	                li1   150 130  833.1  546.54,\
 	                met1  150 130  833.1  546.54,\
 	                met2  150 130  833.1  546.54,\
-                        met3  150 130  833.1  546.54,\
-
+                    met3  150 130  833.1  546.54,\
 	                li1   950 130  1633.1 546.54,\
 	                met1  950 130  1633.1 546.54,\
 	                met2  950 130  1633.1 546.54,\
-                        met3  950 130  1633.1 546.54,\
-
-                        li1   150  750 833.1  1166.54,\
-                        met1  150  750 833.1  1166.54,\
-                        met2  150  750 833.1  1166.54,\
-                        met3  150  750 833.1  1166.54,\
+                    met3  950 130  1633.1 546.54,\
+                    li1   150  750 833.1  1166.54,\
+                    met1  150  750 833.1  1166.54,\
+                    met2  150  750 833.1  1166.54,\
+                    met3  150  750 833.1  1166.54,\
 	                met5  0 0 2920 3520"
 
 #set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 1, vdda2 vssa2 1"
@@ -167,7 +178,6 @@ set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) 0
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) 0
-set ::env(FP_PDN_ENABLE_RAILS) 0
 set ::env(DIODE_INSERTION_STRATEGY) 0
 set ::env(FILL_INSERTION) 0
 set ::env(TAP_DECAP_INSERTION) 0
@@ -178,14 +188,4 @@ set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 
-set ::env(FP_PDN_IRDROP) "1"
-set ::env(FP_PDN_HORIZONTAL_HALO) "10"
-set ::env(FP_PDN_VERTICAL_HALO) "10"
-
-#
-
-set ::env(FP_PDN_VOFFSET) "5"
-set ::env(FP_PDN_VPITCH) "180"
-set ::env(FP_PDN_HOFFSET) "5"
-set ::env(FP_PDN_HPITCH) "180"
 

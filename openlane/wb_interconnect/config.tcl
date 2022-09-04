@@ -135,3 +135,7 @@ set ::env(PL_RESIZER_MAX_CAP_MARGIN) "5"
 ## FANOUT Reduced to take care of long routes
 set ::env(SYNTH_MAX_FANOUT) "2"
 
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2

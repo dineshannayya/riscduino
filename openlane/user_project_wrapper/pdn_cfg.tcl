@@ -92,7 +92,8 @@ if { $::env(DESIGN_IS_CORE) == 1 } {
         -width $::env(FP_PDN_VWIDTH) \
         -pitch $::env(FP_PDN_VPITCH) \
         -offset $::env(FP_PDN_VOFFSET) \
-	    -nets "$::env(VDD_NET) $::env(GND_NET)" \
+        -spacing $::env(FP_PDN_VSPACING) \
+	-nets "$::env(VDD_NET) $::env(GND_NET)" \
         -starts_with POWER -extend_to_core_ring
 
     add_pdn_stripe \
@@ -101,6 +102,7 @@ if { $::env(DESIGN_IS_CORE) == 1 } {
         -width $::env(FP_PDN_HWIDTH) \
         -pitch $::env(FP_PDN_HPITCH) \
         -offset $::env(FP_PDN_HOFFSET) \
+        -spacing $::env(FP_PDN_HSPACING) \
 	-nets "$::env(VDD_NET) $::env(GND_NET)" \
         -starts_with POWER -extend_to_core_ring
 

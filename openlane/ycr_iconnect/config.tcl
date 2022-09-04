@@ -79,20 +79,10 @@ set ::env(GLB_OPTIMIZE_MIRRORING) {1}
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) {1}
 
 ### PDN
-#set ::env(FP_PDN_CHECK_NODES) "0"
-#set ::env(FP_PDN_HORIZONTAL_HALO) "10"
-#set ::env(FP_PDN_VERTICAL_HALO) "10"
-#
-#set ::env(FP_PDN_VOFFSET) "5"
-#set ::env(FP_PDN_VPITCH) "80"
-#set ::env(FP_PDN_VSPACING) "15.5"
-#set ::env(FP_PDN_VWIDTH) "3.1"
-#
-#set ::env(FP_PDN_HOFFSET) "10"
-#set ::env(FP_PDN_HPITCH) "100"
-#set ::env(FP_PDN_HSPACING) "10"
-#set ::env(FP_PDN_HWIDTH) "3.1"
-
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}

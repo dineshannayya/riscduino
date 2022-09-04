@@ -74,10 +74,10 @@ set ::env(GND_PIN) [list {vssd1}]
 ## Floorplan
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 550 950 "
+set ::env(DIE_AREA) "0 0 540 950 "
 
-set ::env(PL_TARGET_DENSITY) 0.50
-set ::env(CELL_PAD) "4"
+set ::env(PL_TARGET_DENSITY) 0.45
+set ::env(CELL_PAD) "8"
 
 ## Routing
 set ::env(GRT_ADJUSTMENT) 0.2
@@ -96,3 +96,7 @@ set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 #Need to cross-check why global timing opimization creating setup vio with hugh hold fix
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
 
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2

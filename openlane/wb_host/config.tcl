@@ -42,6 +42,7 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_host.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_reset_fsm.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_fifo.sv      \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_wb.sv        \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v          \
@@ -52,6 +53,7 @@ set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_txfsm.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/uart/src/uart_rxfsm.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/double_sync_low.v  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_div8.v  \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2wb.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2_core.sv \
@@ -60,6 +62,7 @@ set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/sspis_if.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/spi2wb.sv \
      "
+set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/ ]
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -92,13 +95,13 @@ set ::env(PL_TARGET_DENSITY) "0.45"
 
 
 
-set ::env(FP_IO_VEXTEND) 4
-set ::env(FP_IO_HEXTEND) 4
+#set ::env(FP_IO_VEXTEND) 4
+#set ::env(FP_IO_HEXTEND) 4
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 5
-set ::env(FP_PDN_HWIDTH) 5
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}

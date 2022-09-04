@@ -69,8 +69,8 @@ set ::env(CELL_PAD) "6"
 
 set ::env(PL_TARGET_DENSITY) 0.37
 
-set ::env(FP_IO_VEXTEND) {6}
-set ::env(FP_IO_HEXTEND) {6}
+#set ::env(FP_IO_VEXTEND) {6}
+#set ::env(FP_IO_HEXTEND) {6}
 
 set ::env(RT_MAX_LAYER) {met4}
 #set ::env(GLB_RT_MAXLAYER) "5"
@@ -86,3 +86,8 @@ set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 #Need to cross-check why global timing opimization creating setup vio with hugh hold fix
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
 
+#PDN
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2

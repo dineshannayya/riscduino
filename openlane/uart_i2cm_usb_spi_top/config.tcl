@@ -92,7 +92,7 @@ set ::env(GND_PIN) [list {vssd1}]
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
-set ::env(DIE_AREA) [list 0.0 0.0 520.0 725.0]
+set ::env(DIE_AREA) [list 0.0 0.0 520.0 800.0]
 
 
 
@@ -103,18 +103,18 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.46"
+set ::env(PL_TARGET_DENSITY) "0.42"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
-set ::env(FP_IO_VEXTEND) 4
-set ::env(FP_IO_HEXTEND) 4
+#set ::env(FP_IO_VEXTEND) 4
+#set ::env(FP_IO_HEXTEND) 4
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 5
-set ::env(FP_PDN_HWIDTH) 5
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
@@ -125,8 +125,8 @@ set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) {1}
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) {1}
 
 #set ::env(GLB_RT_ADJUSTMENT) {0.25}
-set ::env(GLB_RT_LAYER_ADJUSTMENTS) {0.25,0,0,0,0,0}
-set ::env(CELL_PAD) {2}
+set ::env(GRT_LAYER_ADJUSTMENTS) {0.25,0,0,0,0,0}
+set ::env(CELL_PAD) {8}
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
