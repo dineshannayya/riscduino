@@ -99,6 +99,10 @@ set ::env(RT_MAX_LAYER) {met4}
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 
+#LVS Issue - DEF Base looks to having issue
+set ::env(MAGIC_EXT_USE_GDS) {1}
+
+
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_LVS_ERROR) "1"

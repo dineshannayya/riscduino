@@ -186,4 +186,92 @@
 	   echo "Wishbone Interface Timing for [get_full_name $pin]" >> wb.min.rpt
            report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> wb.min.rpt
         }
-        
+       
+	echo "SRAM Interface Timing.................." > sram.min.rpt
+	echo "SRAM Interface Timing.................." > sram.min.summary.rpt
+
+    ### Caravel SRAM Path ######################################
+    #set sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/din0[*]}]
+	#set sram_iport [concat $sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/addr0[*]}]]
+	#set sram_iport [concat $sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/addr1[*]}]]
+	#set sram_iport [concat $sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/csb0[*]}]]
+	#set sram_iport [concat $sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/csb1[*]}]]
+	#set sram_iport [concat $sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/web0[*]}]]
+	#set sram_iport [concat $sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/wmask0[*]}]]
+ 
+    #set sram_oport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/dout0[*]}]
+	#set sram_oport [concat $sram_oport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/dout1[*]}]]
+    ### Caravel SRAM Path ######################################
+   
+    #TCM SRAM 
+    set tsram_iport [get_pins {mprj/u_tsram0_2kb/din0[*]}]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/addr0[*]}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/addr1[*]}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/csb0[*]}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/csb1[*]}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/web0[*]}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/wmask0[*]}]]
+
+    set tsram_oport [get_pins {mprj/u_tsram0_2kb/dout0[*]}]
+	set tsram_oport [concat $tsram_oport [get_pins {mprj/u_tsram0_2kb/dout1[*]}]]
+
+	foreach pin $tsram_iport {
+	   echo "SRAM Interface Timing for : [get_full_name $pin]"  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin -format summary >> sram.min.summary.rpt
+        }
+
+	foreach pin $tsram_oport {
+	   echo "SRAM Interface Timing for : [get_full_name $pin]"  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin -format summary >> sram.min.summary.rpt
+        }
+
+    #ICACHE SRAM 
+    set isram_iport [                     get_pins {mprj/u_icahce_2kb/din0[*]}]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/addr0[*]}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/addr1[*]}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/csb0[*]}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/csb1[*]}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/web0[*]}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/wmask0[*]}]]
+
+    set isram_oport [                     get_pins {mprj/u_icache_2kb/dout0[*]}]
+	set isram_oport [concat $isram_oport [get_pins {mprj/u_icache_2kb/dout1[*]}]]
+
+	foreach pin $isram_iport {
+	   echo "ICAHCE SRAM Interface Timing for : [get_full_name $pin]"  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin -format summary >> sram.min.summary.rpt
+        }
+
+	foreach pin $isram_oport {
+	   echo "ICAHCE SRAM Interface Timing for : [get_full_name $pin]"  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin -format summary >> sram.min.summary.rpt
+        }
+
+    #DCACHE SRAM 
+    set dsram_iport [                     get_pins {mprj/u_dcahce_2kb/din0[*]}]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/addr0[*]}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/addr1[*]}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/csb0[*]}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/csb1[*]}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/web0[*]}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/wmask0[*]}]]
+
+    set dsram_oport [                     get_pins {mprj/u_dcache_2kb/dout0[*]}]
+	set dsram_oport [concat $isram_oport [get_pins {mprj/u_dcache_2kb/dout1[*]}]]
+
+	foreach pin $dsram_iport {
+	   echo "DCAHCE SRAM Interface Timing for : [get_full_name $pin]"  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin -format summary >> sram.min.summary.rpt
+        }
+
+	foreach pin $dsram_oport {
+	   echo "DCAHCE SRAM Interface Timing for : [get_full_name $pin]"  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> sram.min.rpt
+           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin -format summary >> sram.min.summary.rpt
+        }
+

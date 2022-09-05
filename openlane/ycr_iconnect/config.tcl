@@ -63,32 +63,21 @@ set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 380 1100"
 
 set ::env(PL_TARGET_DENSITY) 0.20
-set ::env(CELL_PAD) 2
-set ::env(GRT_ADJUSTMENT) {0.2}
+#set ::env(CELL_PAD) 2
+#set ::env(GRT_ADJUSTMENT) {0.2}
 
 #set ::env(GLB_RT_ADJUSTMENT) {0.2}
 
 #set ::env(PL_ROUTABILITY_DRIVEN) "1"
 set ::env(PL_TIME_DRIVEN) "1"
 
-set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) {1}
-set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) {1}
-set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) {1}
-set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) {1}
-set ::env(GLB_OPTIMIZE_MIRRORING) {1}
-set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) {1}
-
-### PDN
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 6.2
-set ::env(FP_PDN_HWIDTH) 6.2
-
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 20
 set ::env(DIODE_INSERTION_STRATEGY) 3
 
+#LVS Issue - DEF Base looks to having issue
+set ::env(MAGIC_EXT_USE_GDS) {1}
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
@@ -96,3 +85,7 @@ set ::env(QUIT_ON_LVS_ERROR) "1"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 
 
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2

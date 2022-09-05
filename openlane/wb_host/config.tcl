@@ -109,6 +109,10 @@ set ::env(RT_MAX_LAYER) {met4}
 
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
+
+#LVS Issue - DEF Base looks to having issue
+set ::env(MAGIC_EXT_USE_GDS) {1}
+
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"

@@ -107,14 +107,9 @@ set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
 set ::env(GRT_ADJUSTMENT) 0.1
 set ::env(DPL_CELL_PADDING) 1
 
-#set ::env(GLB_RT_ADJUSTMENT) 0
-#set ::env(GLB_RT_L2_ADJUSTMENT) 0.21
-#set ::env(GLB_RT_L3_ADJUSTMENT) 0.21
-#set ::env(GLB_RT_L4_ADJUSTMENT) 0.1
-#set ::env(GLB_RT_L5_ADJUSTMENT) 0.1
-#set ::env(GLB_RT_L6_ADJUSTMENT) 0.1
-#set ::env(GLB_RT_ALLOW_CONGESTION) 0
-#set ::env(GLB_RT_OVERFLOW_ITERS) 200
+
+#LVS Issue - DEF Base looks to having issue
+set ::env(MAGIC_EXT_USE_GDS) {1}
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
