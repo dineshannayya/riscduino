@@ -12,9 +12,11 @@
 #define reg_glbl_intr          (*(volatile uint32_t*)0x10020010)  // reg_4  - Global Interrupt
 #define reg_glbl_multi_func    (*(volatile uint32_t*)0x10020014)  // reg_5 -  GPIO Multi Function
 #define reg_glbl_clk_ctrl      (*(volatile uint32_t*)0x10020018)  // reg_6 -  RTC/USB Clock control
-#define reg_glbl_pad_strap     (*(volatile uint32_t*)0x10020030)  // reg_6 -  RTC/USB Clock control
-#define reg_glbl_strap_sticky  (*(volatile uint32_t*)0x10020034)  // reg_6 -  RTC/USB Clock control
-#define reg_glbl_system_strap  (*(volatile uint32_t*)0x10020038)  // reg_6 -  RTC/USB Clock control
+#define reg_glbl_pll_ctrl1     (*(volatile uint32_t*)0x1002001C)  // reg_7 -  PLL Control-1
+#define reg_glbl_pll_ctrl2     (*(volatile uint32_t*)0x10020020)  // reg_8 -  PLL Control-2
+#define reg_glbl_pad_strap     (*(volatile uint32_t*)0x10020030)  // reg_12 - Pad Strap
+#define reg_glbl_strap_sticky  (*(volatile uint32_t*)0x10020034)  // reg_13 - Strap Sticky
+#define reg_glbl_system_strap  (*(volatile uint32_t*)0x10020038)  // reg_14 - System Strap
 #define reg_glbl_mail_box      (*(volatile uint32_t*)0x1002003C)  // reg_15 - Mail Box
 #define reg_glbl_soft_reg_0    (*(volatile uint32_t*)0x10020040)  // reg_16 - Soft Register-0
 #define reg_glbl_soft_reg_1    (*(volatile uint32_t*)0x10020044)  // reg_17 - Soft Register-1

@@ -58,7 +58,7 @@ GCC_PREFIX?=riscv32-unknown-elf
 
 ############## USER SPECIFIC DEFINE ##################
 
-YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/common/firmware
 
 ######################################################
 

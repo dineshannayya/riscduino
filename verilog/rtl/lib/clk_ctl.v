@@ -135,7 +135,7 @@ begin // {
       end   // }
       else
       begin // {
-         high_count    <= clk_div_ratio[WD:1] + clk_div_ratio[0];
+         high_count    <= clk_div_ratio[WD:1] + {{WD-1{1'b0}},clk_div_ratio[0]};
          low_count     <= clk_div_ratio[WD:1] + 1;
          mclk_div      <= ~mclk_div;
       end   // }

@@ -98,6 +98,7 @@ module pinmux_top (
                         input logic            user_clock1            ,
                         input logic            user_clock2            ,
                         input logic            int_pll_clock          ,
+                        input logic            cpu_clk                ,
                         output logic           xtal_clk               ,
 
                         output logic           usb_clk                ,
@@ -182,14 +183,20 @@ module pinmux_top (
 		       input    logic           spis_miso,
 		       output   logic           spis_mosi,
 
-                       // UART MASTER I/F
-                       output  logic            uartm_rxd ,
-                       input logic              uartm_txd  ,       
+               // UART MASTER I/F
+               output  logic            uartm_rxd ,
+               input logic              uartm_txd  ,       
 
-		               output  logic           pulse1m_mclk,
-	                   output  logic [31:0]    pinmux_debug,
+		       output  logic           pulse1m_mclk,
+	           output  logic [31:0]    pinmux_debug,
 
-		               input   logic           dbg_clk_mon
+               // Digital PLL I/F
+               output logic            cfg_pll_enb        , // Enable PLL
+               output logic[4:0]       cfg_pll_fed_div    , // PLL feedback division ratio
+               output logic            cfg_dco_mode       , // Run PLL in DCO mode
+               output logic[25:0]      cfg_dc_trim        , // External trim for DCO mode
+               output logic            pll_ref_clk         // Input oscillator to match
+
 
    ); 
 
@@ -198,6 +205,7 @@ module pinmux_top (
 logic         s_reset_ssn;  // Sync Reset
 logic         p_reset_ssn;  // Sync Reset
 logic [15:0]  pad_strap_in;
+logic           dbg_clk_mon;
    
 /* clock pulse */
 //********************************************************
@@ -348,6 +356,7 @@ glbl_reg u_glbl_reg(
           .user_clock1                  (user_clock1             ),
           .user_clock2                  (user_clock2             ),
           .int_pll_clock                (int_pll_clock           ),
+          .cpu_clk                      (cpu_clk                 ),
           .xtal_clk                     (xtal_clk                ),
 
           .usb_clk                      (usb_clk                 ),
@@ -387,7 +396,17 @@ glbl_reg u_glbl_reg(
 
 
           .timer_intr                   (timer_intr             ),
-          .gpio_intr                    (gpio_intr              )
+          .gpio_intr                    (gpio_intr              ),
+
+         // Digital PLL I/F
+         .cfg_pll_enb                   (cfg_pll_enb            ), // Enable PLL
+         .cfg_pll_fed_div               (cfg_pll_fed_div        ), // PLL feedback division ratio
+         .cfg_dco_mode                  (cfg_dco_mode           ), // Run PLL in DCO mode
+         .cfg_dc_trim                   (cfg_dc_trim            ), // External trim for DCO mode
+         .pll_ref_clk                   (pll_ref_clk            ), // Input oscillator to match
+
+         .dbg_clk_mon                   (dbg_clk_mon            )
+
 
 
    ); 

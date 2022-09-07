@@ -18,7 +18,7 @@
 // This include is relative to $CARAVEL_PATH (see Makefile)
 #include <defs.h>
 #include <stub.c>
-#include "../c_func/inc/ext_reg_map.h"
+#include "ext_reg_map.h"
 
 
 

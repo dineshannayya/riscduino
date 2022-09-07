@@ -17,29 +17,18 @@
 
 
 #define SC_SIM_OUTPORT (0xf0000000)
-#define uint32_t  long
-#define uint16_t  int
+#include "int_reg_map.h"
+#include "common_misc.h"
+#include "common_bthread.h"
 
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x10020000) // Chip ID
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x10020004) // Global Config-0
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x10020008) // Global Config-1
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x1002000C) // Global Interrupt Mask
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x10020010) // Global Interrupt
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x10020014) // Multi functional sel
-#define reg_mprj_globl_soft0  (*(volatile uint32_t*)0x10020018) // Sof Register-0
-#define reg_mprj_globl_soft1  (*(volatile uint32_t*)0x1002001C) // Sof Register-1
-#define reg_mprj_globl_soft2  (*(volatile uint32_t*)0x10020020) // Sof Register-2
-#define reg_mprj_globl_soft3  (*(volatile uint32_t*)0x10020024) // Sof Register-3
-#define reg_mprj_globl_soft4 (*(volatile uint32_t*)0x10020028) // Sof Register-4
-#define reg_mprj_globl_soft5 (*(volatile uint32_t*)0x1002002C) // Sof Register-5
 // -------------------------------------------------------------------------
 // Test copying code into SRAM and running it from there.
 // -------------------------------------------------------------------------
 
 void test_function()
 {
-    reg_mprj_globl_soft2  = 0x33445566;  // Sig-2
-    reg_mprj_globl_soft3  = 0x44556677;  // Sig-3
+    reg_glbl_soft_reg_2  = 0x33445566;  // Sig-2
+    reg_glbl_soft_reg_3  = 0x44556677;  // Sig-3
 
     return;
 }
@@ -50,22 +39,29 @@ void main()
     uint16_t *src_ptr;
     uint16_t *dst_ptr;
 
+   // GLBL_CFG_MAIL_BOX used as mail box, each core update boot up handshake at 8 bit
+   // bit[7:0]   - core-0
+   // bit[15:8]  - core-1
+   // bit[23:16] - core-2
+   // bit[31:24] - core-3
+
+   reg_glbl_mail_box = 0x1 << (bthread_get_core_id() * 8); // Start of Main 
 
     src_ptr = &test_function;
     dst_ptr = func;
 
-    reg_mprj_globl_soft0  = 0x11223344;  // Sig-0
+    reg_glbl_soft_reg_0  = 0x11223344;  // Sig-0
     while (src_ptr < &main) {
 	*(dst_ptr++) = *(src_ptr++);
     }
 
     // Call the routine in SRAM
-    reg_mprj_globl_soft1  = 0x22334455;  // Sig-1
+    reg_glbl_soft_reg_1  = 0x22334455;  // Sig-1
     
     ((void(*)())func)();
 
-    reg_mprj_globl_soft4 = 0x55667788; // Sig-4
-    reg_mprj_globl_soft5 = 0x66778899; // Sig-5
+    reg_glbl_soft_reg_4 = 0x55667788; // Sig-4
+    reg_glbl_soft_reg_5 = 0x66778899; // Sig-5
 
     // Signal end of test
 }

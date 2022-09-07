@@ -100,8 +100,8 @@ wire rwait_phase   = (spi_if_st == rwait_st);
 // sclk pos and ned edge generation
 logic     sck_l0,sck_l1,sck_l2;
 
-assign sck_pdetect = (!sck_l2 && sck_l1) ? 1'b1: 1'b0;
-assign sck_ndetect = (sck_l2 && !sck_l1) ? 1'b1: 1'b0;
+wire sck_pdetect = (!sck_l2 && sck_l1) ? 1'b1: 1'b0;
+wire sck_ndetect = (sck_l2 && !sck_l1) ? 1'b1: 1'b0;
 
 always @ (posedge sys_clk or negedge rst_n) begin
 if (!rst_n) begin

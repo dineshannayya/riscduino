@@ -14,6 +14,7 @@
 `define ADDR_SPACE_PWM     32'h3002_0100
 `define ADDR_SPACE_TIMER   32'h3002_0180
 `define ADDR_SPACE_SEMA    32'h3002_0200
+`define ADDR_SPACE_WS281X  32'h3002_0280
 `define ADDR_SPACE_WBHOST  32'h3008_0000
 
 //--------------------------------------------------
@@ -23,7 +24,6 @@
 `define WBHOST_BANK_SEL           8'h04  // reg_1  - Bank Select
 `define WBHOST_CLK_CTRL1          8'h08  // reg_2  - Clock Control-1
 `define WBHOST_CLK_CTRL2          8'h0C  // reg_3  - Clock Control-2
-`define WBHOST_PLL_CTRL           8'h10  // reg_4  - PLL Control
 
 //--------------------------------------------------
 // GLOBAL Register
@@ -35,6 +35,8 @@
 `define GLBL_CFG_INTR_STAT     8'h10  // reg_4  - Global Interrupt
 `define GLBL_CFG_MUTI_FUNC     8'h14  // reg_5  - Multi functional sel
 `define GLBL_CFG_CLK_CTRL      8'h18  // reg_6  - RTC/USB CLK CTRL
+`define GLBL_CFG_PLL_CTRL1     8'h1C  // reg_7  - PLL Control-1
+`define GLBL_CFG_PLL_CTRL2     8'h20  // reg_8  - PLL Control-2
 `define GLBL_CFG_PAD_STRAP     8'h30  // Strap as seen in Pad
 `define GLBL_CFG_STRAP_STICKY  8'h34  // Sticky Strap used in next soft boot
 `define GLBL_CFG_SYSTEM_STRAP  8'h38  // Current System Strap

@@ -15,7 +15,7 @@ UPRJ_TESTS_PATH = $(root_dir)
 
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 ## YIFIVE FIRMWARE
-YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/common/firmware
 GCC_PREFIX?=riscv64-unknown-elf
 
 

@@ -264,6 +264,12 @@
 ////          D. reset fsm is implementation with soft reboot     ////
 ////             option                                           ////
 ////          E. strap based booting option added for qspi        ////
+////    5.4  Sept 7 2022, Dinesh A                                ////
+////          A. PLL configuration are moved from wb_host to      ////
+////          pinmux to help risc core to do pll config and reboot////
+////          B. PLL configuration are kept in p_reset_n to avoid ////
+////           initialized on soft reboot.                        ////
+////                                                              ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -777,6 +783,8 @@ assign cfg_cska_qspi_co     = cfg_clk_ctrl1[27:24];
 
 assign la_data_out[127:0]    = {pinmux_debug,spi_debug,riscv_debug};
 
+wire   int_pll_clock       = pll_clk_out[0];
+
 
 wb_host u_wb_host(
 `ifdef USE_POWER_PINS
@@ -785,7 +793,7 @@ wb_host u_wb_host(
 `endif
           .user_clock1             (wb_clk_i                ),
           .user_clock2             (user_clock2             ),
-          .int_pll_clock           (int_pll_clock             ),
+          .int_pll_clock           (int_pll_clock           ),
 
           .cpu_clk                 (cpu_clk                 ),
 
@@ -834,13 +842,6 @@ wb_host u_wb_host(
 
           .cfg_clk_ctrl1           (cfg_clk_ctrl1           ),
 
-          .cfg_pll_enb             (cfg_pll_enb             ), 
-          .cfg_pll_fed_div         (cfg_pll_fed_div         ), 
-          .cfg_dco_mode            (cfg_dco_mode            ), 
-          .cfg_dc_trim             (cfg_dc_trim             ),
-          .pll_ref_clk             (pll_ref_clk             ), 
-          .pll_clk_out             (pll_clk_out             ), 
-
           .la_data_in              (la_data_in[17:0]        ),
 
           .uartm_rxd               (uartm_rxd               ),
@@ -850,9 +851,8 @@ wb_host u_wb_host(
           .ssn                     (sspis_ssn               ),
           .sdin                    (sspis_si                ),
           .sdout                   (sspis_so                ),
-          .sdout_oen               (                        ),
+          .sdout_oen               (                        )
 
-	  .dbg_clk_mon             (dbg_clk_mon             )
 
 
     );
@@ -1383,6 +1383,7 @@ pinmux_top u_pinmux(
           .user_clock2             (user_clock2             ),
           .int_pll_clock           (int_pll_clock           ),
           .xtal_clk                (xtal_clk                ),
+          .cpu_clk                 (cpu_clk                 ),
 
 
           .rtc_clk                 (rtc_clk                 ),
@@ -1470,8 +1471,12 @@ pinmux_top u_pinmux(
 
 	  .pinmux_debug            (pinmux_debug            ),
 
-	  .dbg_clk_mon             (dbg_clk_mon             )
 
+       .cfg_pll_enb            (cfg_pll_enb             ), 
+       .cfg_pll_fed_div        (cfg_pll_fed_div         ), 
+       .cfg_dco_mode           (cfg_dco_mode            ), 
+       .cfg_dc_trim            (cfg_dc_trim             ),
+       .pll_ref_clk            (pll_ref_clk             )
 
 
    ); 

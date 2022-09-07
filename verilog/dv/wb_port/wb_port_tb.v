@@ -49,15 +49,15 @@ pullup(mprj_io[3]);
 	initial begin
 		$dumpfile("simx.vcd");
 		$dumpvars(1, wb_port_tb);
-		$dumpvars(1, wb_port_tb.uut);
-		$dumpvars(1, wb_port_tb.uut.mgmt_buffers);
-		$dumpvars(1, wb_port_tb.uut.housekeeping);
-		$dumpvars(1, wb_port_tb.uut.pll);
-		$dumpvars(1, wb_port_tb.uut.soc);
-		$dumpvars(1, wb_port_tb.uut.soc.core);
-		$dumpvars(1, wb_port_tb.uut.mprj);
-		$dumpvars(1, wb_port_tb.uut.mprj.u_wb_host);
-		//$dumpvars(2, wb_port_tb.uut.mprj.u_pinmux);
+		$dumpvars(1, wb_port_tb.u_top);
+		$dumpvars(1, wb_port_tb.u_top.mgmt_buffers);
+		$dumpvars(1, wb_port_tb.u_top.housekeeping);
+		$dumpvars(1, wb_port_tb.u_top.pll);
+		$dumpvars(1, wb_port_tb.u_top.soc);
+		$dumpvars(1, wb_port_tb.u_top.soc.core);
+		$dumpvars(1, wb_port_tb.u_top.mprj);
+		$dumpvars(1, wb_port_tb.u_top.mprj.u_wb_host);
+		//$dumpvars(2, wb_port_tb.u_top.mprj.u_pinmux);
 	end
        `endif
 
@@ -81,6 +81,7 @@ pullup(mprj_io[3]);
 	end
 
 	initial begin
+       init();
 	   wait(checkbits == 16'h AB60);
 		$display("Monitor: MPRJ-Logic WB Started");
 		wait(checkbits == 16'h AB6A);
@@ -95,10 +96,8 @@ pullup(mprj_io[3]);
 	end
 
 	initial begin
-		RSTB <= 1'b0;
 		CSB  <= 1'b1;		// Force CSB high
 		#2000;
-		RSTB <= 1'b1;	    	// Release reset
 		#170000;
 		CSB = 1'b0;		// CSB can be released
 	end
@@ -133,7 +132,7 @@ pullup(mprj_io[3]);
 	wire USER_VDD1V8 = power4;
 	wire VSS = 1'b0;
 
-	caravel uut (
+	caravel u_top (
 		.vddio	  (VDD3V3),
 		.vssio	  (VSS),
 		.vdda	  (VDD3V3),
@@ -174,5 +173,7 @@ pullup(mprj_io[3]);
     initial begin
     end
 `endif    
+
+`include "caravel_task.sv"
 endmodule
 `default_nettype wire

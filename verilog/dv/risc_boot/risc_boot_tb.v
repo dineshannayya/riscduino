@@ -132,7 +132,7 @@ pullup(mprj_io[3]);
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
            //$dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
-           //$dumpvars(2,risc_boot_tb.u_top);
+           $dumpvars(2,risc_boot_tb.u_top);
            $dumpvars(1,risc_boot_tb.u_top.mprj);
            $dumpvars(0,risc_boot_tb.u_top.mprj.u_wb_host);
            //$dumpvars(0,risc_boot_tb.tb_uart);

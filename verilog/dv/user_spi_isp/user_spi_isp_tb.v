@@ -70,33 +70,15 @@
 
 module user_spi_isp_tb;
 
-reg            clock         ;
-reg            wb_rst_i      ;
-reg            power1, power2;
-reg            power3, power4;
+parameter real CLK1_PERIOD  = 25;
+parameter real CLK2_PERIOD = 2.5;
+parameter real IPLL_PERIOD = 5.008;
+parameter real XTAL_PERIOD = 6;
 
-reg            wbd_ext_cyc_i;  // strobe/request
-reg            wbd_ext_stb_i;  // strobe/request
-reg [31:0]     wbd_ext_adr_i;  // address
-reg            wbd_ext_we_i;  // write
-reg [31:0]     wbd_ext_dat_i;  // data output
-reg [3:0]      wbd_ext_sel_i;  // byte enable
+`include "user_tasks.sv"
 
-wire [31:0]    wbd_ext_dat_o;  // data input
-wire           wbd_ext_ack_o;  // acknowlegement
-wire           wbd_ext_err_o;  // error
 
-// User I/O
-wire [37:0]    io_oeb        ;
-wire [37:0]    io_out        ;
-wire [37:0]    io_in         ;
 
-wire [37:0]    mprj_io       ;
-wire [7:0]     mprj_io_0     ;
-reg            test_fail     ;
-reg [31:0]     read_data     ;
-
-reg  [127:0]   la_data_in;
 reg       flag;
 
 // SCLK
@@ -108,16 +90,6 @@ wire     sd_oen;
 
 integer i,j;
 
-	// External clock is used by default.  Make this artificially fast for the
-	// simulation.  Normally this would be a slow clock and the digital PLL
-	// would be the fast clock.
-
-	always #12.5 clock <= (clock === 1'b0);
-
-	initial begin
-		clock = 0;
-		la_data_in = 1;
-	end
 
 	`ifdef WFDUMP
 	   initial begin
@@ -126,15 +98,6 @@ integer i,j;
 	   end
        `endif
 
-	initial begin
-		clock = 0;
-                wbd_ext_cyc_i ='h0;  // strobe/request
-                wbd_ext_stb_i ='h0;  // strobe/request
-                wbd_ext_adr_i ='h0;  // address
-                wbd_ext_we_i  ='h0;  // write
-                wbd_ext_dat_i ='h0;  // data output
-                wbd_ext_sel_i ='h0;  // byte enable
-	end
 initial
 begin
 
@@ -188,52 +151,6 @@ begin
 end
 
 
-wire USER_VDD1V8 = 1'b1;
-wire VSS = 1'b0;
-
-
-user_project_wrapper u_top(
-`ifdef USE_POWER_PINS
-    .vccd1(USER_VDD1V8),	// User area 1 1.8V supply
-    .vssd1(VSS),	// User area 1 digital ground
-`endif
-    .wb_clk_i        (clock),  // System clock
-    .user_clock2     (1'b1),  // Real-time clock
-    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
-
-    .wbs_cyc_i   (wbd_ext_cyc_i),  // strobe/request
-    .wbs_stb_i   (wbd_ext_stb_i),  // strobe/request
-    .wbs_adr_i   (wbd_ext_adr_i),  // address
-    .wbs_we_i    (wbd_ext_we_i),  // write
-    .wbs_dat_i   (wbd_ext_dat_i),  // data output
-    .wbs_sel_i   (wbd_ext_sel_i),  // byte enable
-
-    .wbs_dat_o   (wbd_ext_dat_o),  // data input
-    .wbs_ack_o   (wbd_ext_ack_o),  // acknowlegement
-
- 
-    // Logic Analyzer Signals
-    .la_data_in      (la_data_in) ,
-    .la_data_out     (),
-    .la_oenb         ('0),
- 
-
-    // IOs
-    .io_in          (io_in)  ,
-    .io_out         (io_out) ,
-    .io_oeb         (io_oeb) ,
-
-    .user_irq       () 
-
-);
-
-// SSPI Slave I/F
-`ifndef GL // Drive Power for Hold Fix Buf
-    // All standard cell need power hook-up for functionality work
-    initial begin
-    end
-`endif    
-
 assign io_in[5]  = 1'b0;
 assign io_in[21] = sclk;
 assign io_in[20] = sdi;
@@ -249,6 +166,5 @@ bfm_spim  u_spim (
                 );
 
 
-`include "user_tasks.sv"
 endmodule
 `default_nettype wire

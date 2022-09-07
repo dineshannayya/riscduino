@@ -53,6 +53,7 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 reg [31:0]     read_data     ;
 reg            flag;
 reg            test_fail     ;
+reg  [15:0]    strap_in;
 
 
 	assign checkbits = mprj_io[31:16];
@@ -74,9 +75,9 @@ reg            test_fail     ;
 		$dumpfile("simx.vcd");
 		$dumpvars(2, `TB_TOP);
 		$dumpvars(0, `TB_TOP.tb_master_uart);
-		$dumpvars(0, `TB_TOP.uut.mprj.u_wb_host.u_uart2wb);
+		$dumpvars(0, `TB_TOP.u_top.mprj.u_wb_host.u_uart2wb);
 		$dumpvars(1, `TB_TOP.tb_master_uart);
-		$dumpvars(0, `TB_TOP.uut.mprj.u_pinmux);
+		$dumpvars(0, `TB_TOP.u_top.mprj.u_pinmux);
 	end
        `endif
 
@@ -100,6 +101,11 @@ reg            test_fail     ;
 	end
 
 	initial begin
+
+            strap_in = 0;
+            strap_in[`PSTRAP_UARTM_CFG] = 0; // uart master config control - load from LA
+            apply_strap(strap_in);
+
             uart_data_bit           = 2'b11;
             uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
             uart_stick_parity       = 0; // 1: force even parity
@@ -212,7 +218,7 @@ reg            test_fail     ;
 	wire USER_VDD1V8 = power4;
 	wire VSS = 1'b0;
 
-	caravel uut (
+	caravel u_top (
 		.vddio	  (VDD3V3),
 		.vssio	  (VSS),
 		.vdda	  (VDD3V3),
@@ -263,8 +269,8 @@ reg            test_fail     ;
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = mprj_io[23];
-assign mprj_io[22]  = uart_rxd ;
+assign uart_txd   = mprj_io[7];
+assign mprj_io[6]  = uart_rxd ;
  
 uart_agent tb_master_uart(
 	.mclk                (clock              ),
@@ -273,6 +279,7 @@ uart_agent tb_master_uart(
 	);
 
 
+`include "caravel_task.sv"
 `include "uart_master_tasks.sv"
 
 endmodule

@@ -316,6 +316,11 @@ begin
               TxMsgSize     <= TxMsgSize -1;
            end
         end
+      default: begin
+           State         <= `IDLE;
+           NextState     <= `IDLE;
+      end
+
    endcase
    end
 end

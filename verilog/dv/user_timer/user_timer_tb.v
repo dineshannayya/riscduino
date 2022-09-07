@@ -72,55 +72,22 @@
 
 
 module user_timer_tb;
-	reg clock;
-	reg wb_rst_i;
-	reg power1, power2;
-	reg power3, power4;
+parameter real CLK1_PERIOD  = 25;
+parameter real CLK2_PERIOD = 2.5;
+parameter real IPLL_PERIOD = 5.008;
+parameter real XTAL_PERIOD = 6;
 
-        reg        wbd_ext_cyc_i;  // strobe/request
-        reg        wbd_ext_stb_i;  // strobe/request
-        reg [31:0] wbd_ext_adr_i;  // address
-        reg        wbd_ext_we_i;  // write
-        reg [31:0] wbd_ext_dat_i;  // data output
-        reg [3:0]  wbd_ext_sel_i;  // byte enable
-
-        wire [31:0] wbd_ext_dat_o;  // data input
-        wire        wbd_ext_ack_o;  // acknowlegement
-        wire        wbd_ext_err_o;  // error
-
-	// User I/O
-	wire [37:0] io_oeb;
-	wire [37:0] io_out;
-	wire [37:0] io_in;
+`include "user_tasks.sv"
 
 
-	reg [1:0] spi_chip_no;
-
-	wire gpio;
-	wire [37:0] mprj_io;
-	wire [7:0] mprj_io_0;
-	reg        test_fail;
-	reg [31:0] read_data;
 	reg [31:0] OneUsPeriod;
-        integer    test_step;
-        wire       clock_mon;
+    integer    test_step;
+    wire       clock_mon;
 
 
-	// External clock is used by default.  Make this artificially fast for the
-	// simulation.  Normally this would be a slow clock and the digital PLL
-	// would be the fast clock.
-
-	always #12.5 clock <= (clock === 1'b0);
 
 	initial begin
 		OneUsPeriod = 1;
-		clock = 0;
-                wbd_ext_cyc_i ='h0;  // strobe/request
-                wbd_ext_stb_i ='h0;  // strobe/request
-                wbd_ext_adr_i ='h0;  // address
-                wbd_ext_we_i  ='h0;  // write
-                wbd_ext_dat_i ='h0;  // data output
-                wbd_ext_sel_i ='h0;  // byte enable
 	end
 
 	`ifdef WFDUMP
@@ -145,36 +112,36 @@ module user_timer_tb;
 	        repeat (2) @(posedge clock);
 		#1;
 
-                // Remove the reset
+        // Remove the reset
 		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-                //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
+        //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
 
 		// config 1us based on system clock - 1000/25ns = 40 
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
 
 		// Enable Timer Interrupt
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'h007);
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_MSK,'h007);
 
 		test_fail = 0;
-	        repeat (200) @(posedge clock);
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 10
+	    repeat (200) @(posedge clock);
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 10
 
-	        $display("Step-1, Timer-0: 1us * 100 = 100us; Timer-1: 200us; Timer-2: 300us");
-	        test_step = 1;
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0001_0063);
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0001_00C7);
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0001_012B);
-	        timer_monitor(OneUsPeriod*100,OneUsPeriod*200,OneUsPeriod*300);
+	    $display("Step-1, Timer-0: 1us * 100 = 100us; Timer-1: 200us; Timer-2: 300us");
+	    test_step = 1;
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0001_0063);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0001_00C7);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0001_012B);
+	    timer_monitor(OneUsPeriod*100,OneUsPeriod*200,OneUsPeriod*300);
 
 		$display("Checking the Timer Interrupt generation and clearing");
 
 		// Disable the Timer - To avoid multiple interrupt generation
 		// during status check and interrupt clearing
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0000_0063);
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0000_00C7);
-                wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0000_012B);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_0,'h0000_0063);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_1,'h0000_00C7);
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_TIMER_2,'h0000_012B);
 
-                wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
+        wb_user_core_read(`ADDR_SPACE_GLBL+`GPIO_CFG_INTR_STAT,read_data);
 		if((u_top.u_pinmux.irq_lines[2:0] == 3'b111) && (read_data[2:0] == 3'b111)) begin
 		    $display("STATUS: Timer Interrupt detected ");
 		    // Clearing the Timer Interrupt
@@ -243,8 +210,6 @@ module user_timer_tb;
 	        $finish;
 	end
 
-wire USER_VDD1V8 = 1'b1;
-wire VSS = 1'b0;
 
 wire timer_intr0 = u_top.u_pinmux.timer_intr[0];
 wire timer_intr1 = u_top.u_pinmux.timer_intr[1];
@@ -297,49 +262,8 @@ begin
 end
 endtask
 
-user_project_wrapper u_top(
-`ifdef USE_POWER_PINS
-    .vccd1(USER_VDD1V8),	// User area 1 1.8V supply
-    .vssd1(VSS),	// User area 1 digital ground
-`endif
-    .wb_clk_i        (clock),  // System clock
-    .user_clock2     (1'b1),  // Real-time clock
-    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
-
-    .wbs_cyc_i   (wbd_ext_cyc_i),  // strobe/request
-    .wbs_stb_i   (wbd_ext_stb_i),  // strobe/request
-    .wbs_adr_i   (wbd_ext_adr_i),  // address
-    .wbs_we_i    (wbd_ext_we_i),  // write
-    .wbs_dat_i   (wbd_ext_dat_i),  // data output
-    .wbs_sel_i   (wbd_ext_sel_i),  // byte enable
-
-    .wbs_dat_o   (wbd_ext_dat_o),  // data input
-    .wbs_ack_o   (wbd_ext_ack_o),  // acknowlegement
-
- 
-    // Logic Analyzer Signals
-    .la_data_in      ('1) ,
-    .la_data_out     (),
-    .la_oenb         ('0),
- 
-
-    // IOs
-    .io_in          (io_in)  ,
-    .io_out         (io_out) ,
-    .io_oeb         (io_oeb) ,
-
-    .user_irq       () 
-
-);
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-
-`ifndef GL // Drive Power for Hold Fix Buf
-    // All standard cell need power hook-up for functionality work
-    initial begin
-
-    end
-`endif    
+assign io_in[5]  = 1'b1; // RESET
 
 
 
@@ -352,137 +276,5 @@ begin
 end
 endtask
 
-task wb_user_core_write;
-input [31:0] address;
-input [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h1;  // write
-  wbd_ext_dat_i =data;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  $display("STATUS: WB USER ACCESS WRITE Address : 0x%x, Data : 0x%x",address,data);
-  repeat (2) @(posedge clock);
-end
-endtask
-
-task  wb_user_core_read;
-input [31:0] address;
-output [31:0] data;
-reg    [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='0;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(negedge clock);
-  data  = wbd_ext_dat_o;  
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  //$display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
-  repeat (2) @(posedge clock);
-end
-endtask
-
-task  wb_user_core_read_check;
-input [31:0] address;
-output [31:0] data;
-input [31:0] cmp_data;
-reg    [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='0;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(negedge clock);
-  data  = wbd_ext_dat_o;  
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  if(data !== cmp_data) begin
-     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
-     `TB_GLBL.test_fail = 1;
-  end else begin
-     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
-  end
-  repeat (2) @(posedge clock);
-end
-endtask
-
-
-`ifdef GL
-
-wire        wbd_spi_stb_i   = u_top.u_qspi_master.wbd_stb_i;
-wire        wbd_spi_ack_o   = u_top.u_qspi_master.wbd_ack_o;
-wire        wbd_spi_we_i    = u_top.u_qspi_master.wbd_we_i;
-wire [31:0] wbd_spi_adr_i   = u_top.u_qspi_master.wbd_adr_i;
-wire [31:0] wbd_spi_dat_i   = u_top.u_qspi_master.wbd_dat_i;
-wire [31:0] wbd_spi_dat_o   = u_top.u_qspi_master.wbd_dat_o;
-wire [3:0]  wbd_spi_sel_i   = u_top.u_qspi_master.wbd_sel_i;
-
-wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb_spi.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb_spi.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb_spi.reg_wr;
-wire [8:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb_spi.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb_spi.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb_spi.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb_spi.reg_be;
-
-`endif
-
-/**
-`ifdef GL
-//-----------------------------------------------------------------------------
-// RISC IMEM amd DMEM Monitoring TASK
-//-----------------------------------------------------------------------------
-
-`define RISC_CORE  user_uart_tb.u_top.u_core.u_riscv_top
-
-always@(posedge `RISC_CORE.wb_clk) begin
-    if(`RISC_CORE.wbd_imem_ack_i)
-          $display("RISCV-DEBUG => IMEM ADDRESS: %x Read Data : %x", `RISC_CORE.wbd_imem_adr_o,`RISC_CORE.wbd_imem_dat_i);
-    if(`RISC_CORE.wbd_dmem_ack_i && `RISC_CORE.wbd_dmem_we_o)
-          $display("RISCV-DEBUG => DMEM ADDRESS: %x Write Data: %x Resonse: %x", `RISC_CORE.wbd_dmem_adr_o,`RISC_CORE.wbd_dmem_dat_o);
-    if(`RISC_CORE.wbd_dmem_ack_i && !`RISC_CORE.wbd_dmem_we_o)
-          $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", `RISC_CORE.wbd_dmem_adr_o,`RISC_CORE.wbd_dmem_dat_i);
-end
-
-`endif
-**/
-
-`include "user_tasks.sv"
 endmodule
 `default_nettype wire

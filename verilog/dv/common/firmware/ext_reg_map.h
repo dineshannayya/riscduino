@@ -16,6 +16,14 @@
 #define reg_glbl_strap_sticky  (*(volatile uint32_t*)0x30020034)  // reg_6 -  RTC/USB Clock control
 #define reg_glbl_system_strap  (*(volatile uint32_t*)0x30020038)  // reg_6 -  RTC/USB Clock control
 #define reg_glbl_mail_box      (*(volatile uint32_t*)0x3002003C)  // reg_15 - Mail Box
+#define reg_glbl_soft_reg_0    (*(volatile uint32_t*)0x30020040)  // reg_16 - Soft Register-0
+#define reg_glbl_soft_reg_1    (*(volatile uint32_t*)0x30020044)  // reg_17 - Soft Register-1
+#define reg_glbl_soft_reg_2    (*(volatile uint32_t*)0x30020048)  // reg_18 - Soft Register-2
+#define reg_glbl_soft_reg_3    (*(volatile uint32_t*)0x3002004C)  // reg_19 - Soft Register-3
+#define reg_glbl_soft_reg_4    (*(volatile uint32_t*)0x30020050)  // reg_20 - Soft Register-4
+#define reg_glbl_soft_reg_5    (*(volatile uint32_t*)0x30020054)  // reg_21 - Soft Register-5
+#define reg_glbl_soft_reg_6    (*(volatile uint32_t*)0x30020058)  // reg_22 - Soft Register-6
+#define reg_glbl_soft_reg_7    (*(volatile uint32_t*)0x3002005C)  // reg_23 - Soft Register-7
 
 #define reg_gpio_dsel         (*(volatile uint32_t*)0x30020080)  // reg_0  - GPIO Direction Select
 #define reg_gpio_type         (*(volatile uint32_t*)0x30020084)  // reg_1  - GPIO TYPE - Static/Waveform

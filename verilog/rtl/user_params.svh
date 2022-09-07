@@ -4,11 +4,11 @@
 // ASCI Representation of RISC = 32'h8273_8343
 parameter CHIP_SIGNATURE = 32'h8273_8343;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h0309_2022;
+parameter CHIP_RELEASE_DATE = 32'h0709_2022;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0005_3000;
+parameter CHIP_REVISION   = 32'h0005_4000;
 
-parameter SKEW_RESET_VAL = 32'b0000_1000_1000_0111_1001_1000_1001_1000;
+parameter SKEW_RESET_VAL = 32'b0000_0000_1000_0111_1001_1000_1001_1000;
 
 parameter PSTRAP_DEFAULT_VALUE = 15'b000_0111_1011_0000;
 

@@ -42,7 +42,8 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_host.sv \
-     $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_reset_fsm.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wbh_reset_fsm.sv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wbh_reg.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_fifo.sv      \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/async_wb.sv        \
      $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_ctl.v          \

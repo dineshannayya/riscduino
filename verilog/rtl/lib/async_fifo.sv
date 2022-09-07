@@ -58,7 +58,6 @@ later version.
 //-------------------------------------------
 // async FIFO
 //-----------------------------------------------
-`timescale  1ns/1ps
 
 module async_fifo (wr_clk,
                    wr_reset_n,
@@ -78,7 +77,7 @@ module async_fifo (wr_clk,
    parameter WR_FAST = 1'b1;
    parameter RD_FAST = 1'b1;
    parameter FULL_DP = DP;
-   parameter EMPTY_DP = 1'b0;
+   parameter EMPTY_DP = 'b0;
 
    parameter AW = (DP == 2)   ? 1 : 
 		  (DP == 4)   ? 2 :
@@ -154,7 +153,7 @@ module async_fifo (wr_clk,
     end
 
     wire [AW:0] grey_rd_ptr_dly ;
-    assign #1 grey_rd_ptr_dly = grey_rd_ptr;
+    assign grey_rd_ptr_dly = grey_rd_ptr;
 
     // read pointer synchronizer
     always @(posedge wr_clk or negedge wr_reset_n) begin
@@ -218,7 +217,7 @@ module async_fifo (wr_clk,
    assign rd_data  = (RD_FAST == 1) ? rd_data_c : rd_data_q;
 
     wire [AW:0] grey_wr_ptr_dly ;
-    assign #1 grey_wr_ptr_dly =  grey_wr_ptr;
+    assign grey_wr_ptr_dly =  grey_wr_ptr;
 
     // write pointer synchronizer
     always @(posedge rd_clk or negedge rd_reset_n) begin

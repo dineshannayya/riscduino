@@ -29,7 +29,7 @@ TOOLS?=/opt/riscv32i/
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
 export RISCDUINO_BOARD ?=  $(USER_PROJECT_VERILOG)/dv/common/riscduino_board/custom_board/riscduino
 ## YIFIVE FIRMWARE
-YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/firmware
+YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/common/firmware
 GCC_PREFIX?=riscv32-unknown-elf
 
 
@@ -104,24 +104,24 @@ vvp:  ${PATTERN:=.vvp}
 	rm *.o *.a
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2012 -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DSIM -DRISC_BOOT -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
     else  
-	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DSIM -I $(PDK_PATH) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DRISC_BOOT -DSIM -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.rtl.lib  \
 	$< -o $@ 
    endif
 else  
    ifeq ($(DUMP),OFF)
-	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	iverilog -g2012 -DFUNCTIONAL -DUSE_POWER_PINS -DRISC_BOOT -DGL -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 
     else  
-	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DGL -I $(PDK_PATH) \
+	iverilog -g2012 -DWFDUMP -DFUNCTIONAL -DUSE_POWER_PINS -DRISC_BOOT -DGL -I $(PDK_PATH) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.$(CONFIG) \
 	-f$(USER_PROJECT_VERILOG)/includes/includes.gl.lib \
 	$< -o $@ 

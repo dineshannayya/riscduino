@@ -27,6 +27,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOC.
 - [Repository contents](#repository-contents)
 - [Prerequisites](#prerequisites)
 - [Tests preparation](#tests-preparation)
+    - [Test Cases](#test-cases)
     - [Running Simuation](#running-simulation)
 - [Tool sets](#tool-sets)
 - [News](#news)
@@ -620,25 +621,47 @@ Following Design changes are done on the basic version of syntacore RISC core
 
 The simulation package includes the following tests:
 
-* **risc_boot**           - Complete caravel User Risc core boot 
-* **wb_port**             - Complete caravel User Wishbone validation
-* **uart_master**         - complete caravel user uart master test
-* **user_risc_boot**      - Standalone User Risc core boot
-* **user_sspi**           - Standalone SSPI test
-* **user_qspi**           - Standalone Quad SPI test
-* **user_spi**            - Standalone SPI test
-* **user_i2c**            - Standalone I2C test
-* **user_usb**            - Standalone USB Host test
-* **user_risc_boot**      - Standalone Risc Boot test
-* **user_uart**           - Standalone Risc with UART-0 Test
-* **user_uart1**          - Standalone Risc with UART-1 Test
-* **user_gpio**           - Standalone GPIO Test
-* **user_pwm**            - Standalone pwm Test
-* **user_timer**          - Standalone timer Test
-* **user_uart_master**    - Standalone uart master test
-* **riscv_regress**       - Standalone riscv compliance and regression test suite
+## Standalone Riscduino SOC Specific Test case 
+* **1.user_basic**          - Basic test case to validate strap and clocks
+* **2.user_uart**           - Standalone Risc with UART-0 Test
+* **3.user_uart1**          - Standalone Risc with UART-1 Test
+* **4.user_risc_boot**      - Standalone User Risc core boot
+* **4.risc_boot**           - Complete caravel User Risc core boot 
+* **5.user_qspi**           - Standalone Quad SPI test
+* **6.user_sspi**           - Standalone SSPI test
+* **7.user_i2c**            - Standalone I2C test
+* **8.user_usb**            - Standalone USB Host test
+* **9.user_gpio**           - Standalone GPIO Test
+* **10.user_aes**           - AES computation through Riscv core
+* **11.user_spi_isp**       - Device boot with SPI as ISP
+* **12.user_timer**         - Standalone timer Test
+* **13.user_uart_master**   - Standalone uart master test
+* **14.user_sram_exec**     - Riscv Boot with code running in SRAM
+* **15.user_cache_bypass**  - Riscv Boot without icache and dcache
+* **16.user_pwm**            -Standalone pwm Test
+* **17.user_sema**           -Standalone validation of hardware Semaphore function
+* **18.riscv_regress**       - Standalone riscv compliance and regression test suite
 
+## Caravel+RISCDUINO Integrated Specific Test case 
+* **1.wb_port**             - Complete caravel User Wishbone validation
+* **2.uart_master**         - complete caravel user uart master test
+* **3.risc_boot**           - Complete caravel User Risc core boot 
 
+## Arduino Based Test Case
+* **1.arduino_arrays**                - Validation of Arracy function
+* **2.arduino_digital_port_control**  - Validation for AD5206 digital potentiometer through SPI
+* **3.arduino_i2c_scaner**            - I2C port scanner        
+* **4.arduino_risc_boot**             - Riscv Basic Boot
+* **5.arduino_timer_intr**            - Timer Interrupt handling
+* **6.arduino_ascii_table**           - Ascii Table Display
+* **7.arduino_gpio_intr**             - GPIO Interrupt generation
+* **8.arduino_i2c_wr_rd**             - I2C Write and Read access
+* **9.arduino_string**                - Validation of String function
+* **10.arduino_ws281x**               - Validation of ws281x serial protocol 
+* **11.arduino_character_analysis**   - uart Input Character analysis
+* **12.arduino_hello_world**          - Basic hello world display
+* **13.arduino_multi_serial**         - Validation of Two Serail port
+* **14.arduino_switchCase2**          - Validation of switch case
 
 # Running Simulation
 

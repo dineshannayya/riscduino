@@ -75,32 +75,13 @@
 `define TB_HEX "arduino_multi_serial.hex"
 `define TB_TOP  arduino_multi_serial_tb
 module `TB_TOP;
-	reg clock;
-	reg wb_rst_i;
-	reg power1, power2;
-	reg power3, power4;
+parameter real CLK1_PERIOD  = 20; // 50Mhz
+parameter real CLK2_PERIOD = 2.5;
+parameter real IPLL_PERIOD = 5.008;
+parameter real XTAL_PERIOD = 6;
 
-        reg        wbd_ext_cyc_i;  // strobe/request
-        reg        wbd_ext_stb_i;  // strobe/request
-        reg [31:0] wbd_ext_adr_i;  // address
-        reg        wbd_ext_we_i;  // write
-        reg [31:0] wbd_ext_dat_i;  // data output
-        reg [3:0]  wbd_ext_sel_i;  // byte enable
+`include "user_tasks.sv"
 
-        wire [31:0] wbd_ext_dat_o;  // data input
-        wire        wbd_ext_ack_o;  // acknowlegement
-        wire        wbd_ext_err_o;  // error
-
-	// User I/O
-	wire [37:0] io_oeb;
-	wire [37:0] io_out;
-	wire [37:0] io_in;
-
-	wire gpio;
-	wire [37:0] mprj_io;
-	wire [7:0] mprj_io_0;
-	reg         test_fail;
-	reg [31:0] read_data;
         //----------------------------------
         // Uart Configuration
         // ---------------------------------
@@ -123,26 +104,10 @@ module `TB_TOP;
 
 	reg [31:0]     check_sum            ;
         
-	integer    d_risc_id;
 
          integer i,j,k,l;
 
 
-
-
-	// 50Mhz CLock
-	always #10 clock <= (clock === 1'b0);
-
-	initial begin
-		clock = 0;
-	        flag  = 0;
-                wbd_ext_cyc_i ='h0;  // strobe/request
-                wbd_ext_stb_i ='h0;  // strobe/request
-                wbd_ext_adr_i ='h0;  // address
-                wbd_ext_we_i  ='h0;  // write
-                wbd_ext_dat_i ='h0;  // data output
-                wbd_ext_sel_i ='h0;  // byte enable
-	end
 
 	`ifdef WFDUMP
 	   initial begin
@@ -197,20 +162,22 @@ module `TB_TOP;
                uart_fifo_enable        = 0;	// fifo mode disable
 
 		$value$plusargs("risc_core_id=%d", d_risc_id);
+        init();
+
 
 		#200; // Wait for reset removal
 	        repeat (10) @(posedge clock);
 		$display("Monitor: Standalone User Risc Boot Test Started");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
 	        repeat (2) @(posedge clock);
 		#1;
                 // Remove all the reset
                 if(d_risc_id == 0) begin
                      $display("STATUS: Working with Risc core 0");
-                     wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+                     //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
                 end else if(d_risc_id == 1) begin
                      $display("STATUS: Working with Risc core 1");
                      wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
@@ -222,26 +189,28 @@ module `TB_TOP;
                      wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h81F);
                 end
 
+                wait_riscv_boot();
+
                 repeat (100) @(posedge clock);  // wait for Processor Get Ready
 
-	        tb_uart0.debug_mode = 1; // enable debug display
+	            tb_uart0.debug_mode = 1; // enable debug display
                 tb_uart0.uart_init;
                 tb_uart0.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                                uart_stick_parity, uart_timeout, uart_divisor);
 	        
-		tb_uart1.debug_mode = 1; // enable debug display
+		        tb_uart1.debug_mode = 1; // enable debug display
                 tb_uart1.uart_init;
                 tb_uart1.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                                uart_stick_parity, uart_timeout, uart_divisor);
 
-                repeat (60000) @(posedge clock);  // wait for Processor Get Ready
-	        flag  = 0;
-		check_sum = 0;
+                repeat (1000) @(posedge clock);  // wait for Processor Get Ready
+	            flag  = 0;
+		        check_sum = 0;
                 
                 for (i=0; i<40; i=i+1)
                     uart0_write_data[i] = $random;
                 
-	       for (i=0; i<40; i=i+1)
+	            for (i=0; i<40; i=i+1)
                     uart1_write_data[i] = $random;
                 
                 fork
@@ -309,58 +278,10 @@ module `TB_TOP;
 	    $finish;
 	end
 
-	initial begin
-		wb_rst_i <= 1'b1;
-		#100;
-		wb_rst_i <= 1'b0;	    	// Release reset
-	end
-wire USER_VDD1V8 = 1'b1;
-wire VSS = 1'b0;
-
-user_project_wrapper u_top(
-`ifdef USE_POWER_PINS
-    .vccd1(USER_VDD1V8),	// User area 1 1.8V supply
-    .vssd1(VSS),	// User area 1 digital ground
-`endif
-    .wb_clk_i        (clock),  // System clock
-    .user_clock2     (1'b1),  // Real-time clock
-    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
-
-    .wbs_cyc_i   (wbd_ext_cyc_i),  // strobe/request
-    .wbs_stb_i   (wbd_ext_stb_i),  // strobe/request
-    .wbs_adr_i   (wbd_ext_adr_i),  // address
-    .wbs_we_i    (wbd_ext_we_i),  // write
-    .wbs_dat_i   (wbd_ext_dat_i),  // data output
-    .wbs_sel_i   (wbd_ext_sel_i),  // byte enable
-
-    .wbs_dat_o   (wbd_ext_dat_o),  // data input
-    .wbs_ack_o   (wbd_ext_ack_o),  // acknowlegement
-
- 
-    // Logic Analyzer Signals
-    .la_data_in      ('1) ,
-    .la_data_out     (),
-    .la_oenb         ('0),
- 
-
-    // IOs
-    .io_in          (io_in)  ,
-    .io_out         (io_out) ,
-    .io_oeb         (io_oeb) ,
-
-    .user_irq       () 
-
-);
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0 ; // SPIS SCK 
 
-`ifndef GL // Drive Power for Hold Fix Buf
-    // All standard cell need power hook-up for functionality work
-    initial begin
-
-    end
-`endif    
 
 //------------------------------------------------------
 //  Integrate the Serial flash with qurd support to
@@ -370,14 +291,14 @@ assign io_in[16] = 1'b0 ; // SPIS SCK
    wire flash_clk = io_out[28];
    wire flash_csb = io_out[29];
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[33];
-   wire #1 io_oeb_30 = io_oeb[34];
-   wire #1 io_oeb_31 = io_oeb[35];
-   wire #1 io_oeb_32 = io_oeb[36];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
+   wire #1 io_oeb_33 = io_oeb[33];
+   wire #1 io_oeb_34 = io_oeb[34];
+   wire #1 io_oeb_35 = io_oeb[35];
+   wire #1 io_oeb_36 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_33== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_34== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_36== 1'b0) ? io_out[36] : 1'bz;
 
    assign io_in[33] = flash_io0;
    assign io_in[34] = flash_io1;
@@ -442,135 +363,6 @@ uart_agent tb_uart1(
 	.rxd                 (uart1_txd          )
 	);
 
-task wb_user_core_write;
-input [31:0] address;
-input [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h1;  // write
-  wbd_ext_dat_i =data;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
-  repeat (2) @(posedge clock);
-end
-endtask
-
-task  wb_user_core_read;
-input [31:0] address;
-output [31:0] data;
-reg    [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='0;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(negedge clock);
-  data  = wbd_ext_dat_o;  
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
-  repeat (2) @(posedge clock);
-end
-endtask
-
-task  wb_user_core_read_check;
-input [31:0] address;
-output [31:0] data;
-input [31:0] cmp_data;
-reg    [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='0;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(negedge clock);
-  data  = wbd_ext_dat_o;  
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  if(data !== cmp_data) begin
-     $display("ERROR : WB USER ACCESS READ  Address : 0x%x, Exd: 0x%x Rxd: 0x%x ",address,cmp_data,data);
-     test_fail = 1;
-  end else begin
-     $display("STATUS: WB USER ACCESS READ  Address : 0x%x, Data : 0x%x",address,data);
-  end
-  repeat (2) @(posedge clock);
-end
-endtask
-
-`ifdef GL
-
-wire        wbd_spi_stb_i   = u_top.u_qspi_master.wbd_stb_i;
-wire        wbd_spi_ack_o   = u_top.u_qspi_master.wbd_ack_o;
-wire        wbd_spi_we_i    = u_top.u_qspi_master.wbd_we_i;
-wire [31:0] wbd_spi_adr_i   = u_top.u_qspi_master.wbd_adr_i;
-wire [31:0] wbd_spi_dat_i   = u_top.u_qspi_master.wbd_dat_i;
-wire [31:0] wbd_spi_dat_o   = u_top.u_qspi_master.wbd_dat_o;
-wire [3:0]  wbd_spi_sel_i   = u_top.u_qspi_master.wbd_sel_i;
-
-wire        wbd_uart_stb_i  = u_top.u_uart_i2c_usb_spi.reg_cs;
-wire        wbd_uart_ack_o  = u_top.u_uart_i2c_usb_spi.reg_ack;
-wire        wbd_uart_we_i   = u_top.u_uart_i2c_usb_spi.reg_wr;
-wire [8:0]  wbd_uart_adr_i  = u_top.u_uart_i2c_usb_spi.reg_addr;
-wire [7:0]  wbd_uart_dat_i  = u_top.u_uart_i2c_usb_spi.reg_wdata;
-wire [7:0]  wbd_uart_dat_o  = u_top.u_uart_i2c_usb_spi.reg_rdata;
-wire        wbd_uart_sel_i  = u_top.u_uart_i2c_usb_spi.reg_be;
-
-`endif
-
-/**
-`ifdef GL
-//-----------------------------------------------------------------------------
-// RISC IMEM amd DMEM Monitoring TASK
-//-----------------------------------------------------------------------------
-
-`define RISC_CORE  user_uart_tb.u_top.u_core.u_riscv_top
-
-always@(posedge `RISC_CORE.wb_clk) begin
-    if(`RISC_CORE.wbd_imem_ack_i)
-          $display("RISCV-DEBUG => IMEM ADDRESS: %x Read Data : %x", `RISC_CORE.wbd_imem_adr_o,`RISC_CORE.wbd_imem_dat_i);
-    if(`RISC_CORE.wbd_dmem_ack_i && `RISC_CORE.wbd_dmem_we_o)
-          $display("RISCV-DEBUG => DMEM ADDRESS: %x Write Data: %x Resonse: %x", `RISC_CORE.wbd_dmem_adr_o,`RISC_CORE.wbd_dmem_dat_o);
-    if(`RISC_CORE.wbd_dmem_ack_i && !`RISC_CORE.wbd_dmem_we_o)
-          $display("RISCV-DEBUG => DMEM ADDRESS: %x READ Data : %x Resonse: %x", `RISC_CORE.wbd_dmem_adr_o,`RISC_CORE.wbd_dmem_dat_i);
-end
-
-`endif
-**/
 endmodule
 `include "s25fl256s.sv"
 `default_nettype wire

@@ -78,10 +78,10 @@ output	[1:0]	gnt; 	// Grant output
 
 
 parameter	[1:0]
-                grant0 = 3'h0,
-                grant1 = 3'h1,
-                grant2 = 3'h2,
-                grant3 = 3'h3;
+                grant0 = 2'h0,
+                grant1 = 2'h1,
+                grant2 = 2'h2,
+                grant3 = 2'h3;
 
 ///////////////////////////////////////////////////////////////////////
 // Local Registers and Wires

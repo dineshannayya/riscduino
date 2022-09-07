@@ -25,6 +25,7 @@ DESIGNS?=../../..
 CONFIG = caravel_user_project
 TOOLS?=/opt/riscv32i/
 
+export USER_FIRMWARE_PATH = $(DESIGNS)/verilog/dv/common/firmware
 ########################################################
 #include $(MCW_ROOT)/verilog/dv/make/env.makefile
 ########################################################
@@ -129,6 +130,7 @@ hex:  ${BLOCKS:=.hex}
 	-I$(VERILOG_PATH)/dv/generated \
 	-I$(VERILOG_PATH)/dv/ \
 	-I$(VERILOG_PATH)/common \
+	-I$(USER_FIRMWARE_PATH) \
 	  $(CPUFLAGS) \
 	-Wl,-Bstatic,-T,$(LINKER_SCRIPT),--strip-debug \
 	-ffreestanding -nostdlib -o $@ $(SOURCE_FILES) $<

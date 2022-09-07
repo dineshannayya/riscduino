@@ -29,6 +29,9 @@
 #define ECB 1
 
 #include "aes.h"
+#include "int_reg_map.h"
+#include "common_misc.h"
+#include "common_bthread.h"
 
 
 static void phex(uint8_t* str);
@@ -39,21 +42,6 @@ static int test_decrypt_ctr(void);
 static int test_encrypt_ecb(void);
 static int test_decrypt_ecb(void);
 static void test_encrypt_ecb_verbose(void);
-
-#define reg_mprj_globl_reg0  (*(volatile uint32_t*)0x10020000) // Chip ID
-#define reg_mprj_globl_reg1  (*(volatile uint32_t*)0x10020004) // Global Config-0
-#define reg_mprj_globl_reg2  (*(volatile uint32_t*)0x10020008) // Global Config-1
-#define reg_mprj_globl_reg3  (*(volatile uint32_t*)0x1002000C) // Global Interrupt Mask
-#define reg_mprj_globl_reg4  (*(volatile uint32_t*)0x10020010) // Global Interrupt
-#define reg_mprj_globl_reg5  (*(volatile uint32_t*)0x10020014) // Multi functional sel
-#define reg_mprj_globl_soft0  (*(volatile uint32_t*)0x10020018) // Sof Register-0
-#define reg_mprj_globl_soft1  (*(volatile uint32_t*)0x1002001C) // Sof Register-1
-#define reg_mprj_globl_soft2  (*(volatile uint32_t*)0x10020020) // Sof Register-2
-#define reg_mprj_globl_soft3  (*(volatile uint32_t*)0x10020024) // Sof Register-3
-#define reg_mprj_globl_soft4 (*(volatile uint32_t*)0x10020028) // Sof Register-4
-#define reg_mprj_globl_soft5 (*(volatile uint32_t*)0x1002002C) // Sof Register-5
-
-#define reg_mprg_gpio_odata (*(volatile uint32_t*)0x1002004C)
 
 int main(void)
 {
@@ -69,35 +57,46 @@ int main(void)
     //printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
     return 0;
 #endif
+   reg_glbl_cfg0 |= 0x1F;       // Remove Reset for UART
+   reg_glbl_multi_func &=0x7FFFFFFF; // Disable UART Master Bit[31] = 0
+   reg_glbl_multi_func |=0x100; // Enable UART Multi func
+   reg_uart0_ctrl = 0x07;       // Enable Uart Access {3'h0,2'b00,1'b1,1'b1,1'b1}
+   // GLBL_CFG_MAIL_BOX used as mail box, each core update boot up handshake at 8 bit
+   // bit[7:0]   - core-0
+   // bit[15:8]  - core-1
+   // bit[23:16] - core-2
+   // bit[31:24] - core-3
 
-    reg_mprg_gpio_odata  = 0x00000100; 
-    reg_mprj_globl_soft0  = 0x00000000; 
+   reg_glbl_mail_box = 0x1 << (bthread_get_core_id() * 8); // Start of Main 
+
+    reg_gpio_odata  = 0x00000100; 
+    reg_glbl_soft_reg_0  = 0x00000000; 
     exit = test_encrypt_cbc();
-    reg_mprg_gpio_odata  = 0x00000200; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000200; 
+    reg_glbl_soft_reg_0  = exit;
     exit += test_decrypt_cbc();
-    reg_mprg_gpio_odata  = 0x00000300; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000300; 
+    reg_glbl_soft_reg_0  = exit;
     exit += test_encrypt_ctr();
-    reg_mprg_gpio_odata  = 0x00000400; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000400; 
+    reg_glbl_soft_reg_0  = exit;
     exit += test_decrypt_ctr();
-    reg_mprg_gpio_odata  = 0x00000500; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000500; 
+    reg_glbl_soft_reg_0  = exit;
     exit += test_decrypt_ecb();
-    reg_mprg_gpio_odata  = 0x00000600; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000600; 
+    reg_glbl_soft_reg_0  = exit;
     exit += test_encrypt_ecb();
-    reg_mprg_gpio_odata  = 0x00000700; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000700; 
+    reg_glbl_soft_reg_0  = exit;
     test_encrypt_ecb_verbose();
-    reg_mprg_gpio_odata  = 0x00000800; 
-    reg_mprj_globl_soft0  = exit;
+    reg_gpio_odata  = 0x00000800; 
+    reg_glbl_soft_reg_0  = exit;
 
     if(exit == 0) {
-        reg_mprg_gpio_odata  = 0x00001800; 
+        reg_gpio_odata  = 0x00001800; 
     } else {
-        reg_mprg_gpio_odata  = 0x0000A800; 
+        reg_gpio_odata  = 0x0000A800; 
     }
 
     return exit;

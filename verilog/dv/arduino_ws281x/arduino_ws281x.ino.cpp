@@ -36,7 +36,11 @@
 #include"WS281X.h"
 // These constants won't change. They're used to give names to the pins used:
 
-
+//-------------------
+// We have only 2 WS281X port
+// Port 2 will using port-0 data
+// Port 3 will using port-1 data
+//------------------------
 int port0 = 2;
 int port1 = 3;
 int port2 = 5;
@@ -51,6 +55,7 @@ void setup() {
 
   // Enable WS_281X PORT-0
   ws281x.enable(port0);
+  ws281x.enable(port2);
   ws281x.write(port0, 0x112233);
   ws281x.write(port0, 0x223344);
   ws281x.write(port0, 0x334455);
@@ -70,6 +75,7 @@ void setup() {
   
 // Enable WS_281X PORT-1
   ws281x.enable(port1);
+  ws281x.enable(port3);
   ws281x.write(port1, 0x010203);
   ws281x.write(port1, 0x020304);
   ws281x.write(port1, 0x030405);
@@ -87,43 +93,6 @@ void setup() {
   ws281x.write(port1, 0x0F0001);
   ws281x.write(port1, 0x000102);
 
-// Enable WS_281X PORT-2
-  ws281x.enable(port2);
-  ws281x.write(port2, 0x102030);
-  ws281x.write(port2, 0x203040);
-  ws281x.write(port2, 0x304050);
-  ws281x.write(port2, 0x405060);
-  ws281x.write(port2, 0x506070);
-  ws281x.write(port2, 0x607080);
-  ws281x.write(port2, 0x708090);
-  ws281x.write(port2, 0x8090A0);
-  ws281x.write(port2, 0x90A0B0);
-  ws281x.write(port2, 0xA0B0C0);
-  ws281x.write(port2, 0xB0C0D0);
-  ws281x.write(port2, 0xC0D0E0);
-  ws281x.write(port2, 0xD0E0F0);
-  ws281x.write(port2, 0xE0F000);
-  ws281x.write(port2, 0xF00010);
-  ws281x.write(port2, 0x001020);
-  
-// Enable WS_281X PORT-3
-  ws281x.enable(port3);
-  ws281x.write(port3, 0x012345);
-  ws281x.write(port3, 0x123456);
-  ws281x.write(port3, 0x234567);
-  ws281x.write(port3, 0x345678);
-  ws281x.write(port3, 0x456789);
-  ws281x.write(port3, 0x56789A);
-  ws281x.write(port3, 0x6789AB);
-  ws281x.write(port3, 0x789ABC);
-  ws281x.write(port3, 0x89ABCD);
-  ws281x.write(port3, 0x9ABCDE);
-  ws281x.write(port3, 0xABCDEF);
-  ws281x.write(port3, 0xBCDEF0);
-  ws281x.write(port3, 0xCDEF01);
-  ws281x.write(port3, 0xDEF012);
-  ws281x.write(port3, 0xEF0123);
-  ws281x.write(port3, 0xF01234);
 }
 
 void loop() {

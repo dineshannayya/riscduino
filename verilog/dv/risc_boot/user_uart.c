@@ -16,7 +16,7 @@
 // SPDX-FileContributor: Dinesh Annayya <dinesha@opencores.org>
 // //////////////////////////////////////////////////////////////////////////
 #define SC_SIM_OUTPORT (0xf0000000)
-#include "../c_func/inc/int_reg_map.h"
+#include "int_reg_map.h"
 #include "common_misc.h"
 #include "common_bthread.h"
 
