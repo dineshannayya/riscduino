@@ -73,7 +73,7 @@ else
 endif
 
 %.vcd: %.vvp
-	vvp $<
+	vvp $< 
 
 
 # ---- Clean ----

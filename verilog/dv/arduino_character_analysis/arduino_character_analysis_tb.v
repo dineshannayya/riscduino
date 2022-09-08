@@ -283,15 +283,15 @@ parameter P_QDDR   = 2'b11;
 	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	   $display("Monitor: character_analysis (GL) Passed");
+	    	   $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: character_analysis (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	   $display("Monitor: character_analysis (GL) Failed");
+	    	   $display("Monitor: %m  (GL) Failed");
 		    `else
-		       $display("Monitor: character_analysis (RTL) Failed");
+		       $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

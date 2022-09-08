@@ -116,7 +116,7 @@ end
 initial
 begin
    strap_in = 0;
-   strap_in[`PSTRAP_UARTM_CFG] = 0; // uart master config control - load from LA
+   strap_in[`PSTRAP_UARTM_CFG] = 2'b11; // uart master config control - load from LA
    apply_strap(strap_in);
 
    uart_data_bit           = 2'b11;
@@ -181,15 +181,15 @@ begin
    $display("###################################################");
    if(test_fail == 0) begin
       `ifdef GL
-          $display("Monitor: Standalone User UART Master (GL) Passed");
+          $display("Monitor: %m (GL) Passed");
       `else
-          $display("Monitor: Standalone User Uart Master (RTL) Passed");
+          $display("Monitor: %m (RTL) Passed");
       `endif
    end else begin
        `ifdef GL
-           $display("Monitor: Standalone User Uart Master (GL) Failed");
+           $display("Monitor: %m (GL) Failed");
        `else
-           $display("Monitor: Standalone User Uart Master (RTL) Failed");
+           $display("Monitor: %m (RTL) Failed");
        `endif
     end
    $display("###################################################");

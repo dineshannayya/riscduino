@@ -172,15 +172,15 @@ begin
       $display("###################################################");
       if(test_fail == 0) begin
          `ifdef GL
-             $display("Monitor: Semaphore Test (GL) Passed");
+             $display("Monitor: %m (GL) Passed");
          `else
-             $display("Monitor: Semaphore Test (RTL) Passed");
+             $display("Monitor: %m (RTL) Passed");
          `endif
       end else begin
           `ifdef GL
-              $display("Monitor: Semaphore Test (GL) Failed");
+              $display("Monitor: %m (GL) Failed");
           `else
-              $display("Monitor: Semaphore Test (RTL) Failed");
+              $display("Monitor: %m (RTL) Failed");
           `endif
        end
       $display("###################################################");

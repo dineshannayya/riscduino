@@ -108,6 +108,7 @@ module wb_host (
         output  logic              cfg_strap_pad_ctrl,
 	    output  logic [31:0]       system_strap      ,
 	    input   logic [31:0]       strap_sticky      ,
+	    input   logic [1:0]        strap_uartm       ,
 
 
     // Master Port
@@ -265,20 +266,27 @@ wbh_reset_fsm u_reset_fsm (
 //    Uart Baud-16x computation
 //      Assumption is default wb clock is 50Mhz 
 //      For 9600 Baud
-//        50,000,000/(9600*16) = 325;
-//      Configured Value = 325-2 = 323
+//        50,000,000/(9600*16) = 324;
+//      Configured Value = 325-2 = 324
 //      Internally we have used pos and neg counter
 //      it has additional 1 cycle additional count,
 //      so we are subtracting desired count by 2
+// strap_uartm
+//     2'b00 - 50Mhz - 324
+//     2'b01 - 40Mhz - 258
+//     2'b10 - 60Mhz - 389
+//     2'b11 - Load from LA
 //-------------------------------------------------
 
-wire strap_uart_cfg_mode = system_strap[`STRAP_UARTM_CFG];
 
-wire       cfg_uartm_tx_enable   = (strap_uart_cfg_mode==0) ? la_data_in[1]     : 1'b1;
-wire       cfg_uartm_rx_enable   = (strap_uart_cfg_mode==0) ? la_data_in[2]     : 1'b1;
-wire       cfg_uartm_stop_bit    = (strap_uart_cfg_mode==0) ? la_data_in[3]     : 1'b1;
-wire [11:0]cfg_uart_baud_16x     = (strap_uart_cfg_mode==0) ? la_data_in[15:4]  : 323;
-wire [1:0] cfg_uartm_cfg_pri_mod = (strap_uart_cfg_mode==0) ? la_data_in[17:16] : 2'b0;
+wire       cfg_uartm_tx_enable   = (strap_uartm==2'b11) ? la_data_in[1]     : 1'b1;
+wire       cfg_uartm_rx_enable   = (strap_uartm==2'b11) ? la_data_in[2]     : 1'b1;
+wire       cfg_uartm_stop_bit    = (strap_uartm==2'b11) ? la_data_in[3]     : 1'b1;
+wire [1:0] cfg_uartm_cfg_pri_mod = (strap_uartm==2'b11) ? la_data_in[17:16] : 2'b0;
+
+wire [11:0]cfg_uart_baud_16x     = (strap_uartm==2'b00) ? 324:
+                                   (strap_uartm==2'b01) ? 258:
+                                   (strap_uartm==2'b10) ? 389: la_data_in[15:4];
 
 
 // UART Master

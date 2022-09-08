@@ -207,9 +207,9 @@
     set tsram_iport [get_pins {mprj/u_tsram0_2kb/din0[*]}]
 	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/addr0[*]}]]
 	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/addr1[*]}]]
-	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/csb0[*]}]]
-	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/csb1[*]}]]
-	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/web0[*]}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/csb0}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/csb1}]]
+	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/web0}]]
 	set tsram_iport [concat $tsram_iport [get_pins {mprj/u_tsram0_2kb/wmask0[*]}]]
 
     set tsram_oport [get_pins {mprj/u_tsram0_2kb/dout0[*]}]
@@ -228,12 +228,12 @@
         }
 
     #ICACHE SRAM 
-    set isram_iport [                     get_pins {mprj/u_icahce_2kb/din0[*]}]
+    set isram_iport [                     get_pins {mprj/u_icache_2kb/din0[*]}]
 	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/addr0[*]}]]
 	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/addr1[*]}]]
-	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/csb0[*]}]]
-	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/csb1[*]}]]
-	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/web0[*]}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/csb0}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/csb1}]]
+	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/web0}]]
 	set isram_iport [concat $isram_iport [get_pins {mprj/u_icache_2kb/wmask0[*]}]]
 
     set isram_oport [                     get_pins {mprj/u_icache_2kb/dout0[*]}]
@@ -252,12 +252,12 @@
         }
 
     #DCACHE SRAM 
-    set dsram_iport [                     get_pins {mprj/u_dcahce_2kb/din0[*]}]
+    set dsram_iport [                     get_pins {mprj/u_dcache_2kb/din0[*]}]
 	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/addr0[*]}]]
 	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/addr1[*]}]]
-	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/csb0[*]}]]
-	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/csb1[*]}]]
-	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/web0[*]}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/csb0}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/csb1}]]
+	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/web0}]]
 	set dsram_iport [concat $isram_iport [get_pins {mprj/u_dcache_2kb/wmask0[*]}]]
 
     set dsram_oport [                     get_pins {mprj/u_dcache_2kb/dout0[*]}]

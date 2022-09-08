@@ -26,7 +26,6 @@ and one cycle latter it will get updated
 **********************************************************************************/
 
 module  glbl_rst_reg	(
-	      input logic        e_reset_n,
 	      input logic        s_reset_n,
 	      //List of Inputs
           input logic [31:0] rst_in,
@@ -41,22 +40,23 @@ module  glbl_rst_reg	(
 
   parameter   RESET_DEFAULT    = 32'h0;  
 
-logic [31:0] data_out_l;
 
-always @ (posedge clk or negedge e_reset_n) begin 
-  if (e_reset_n == 1'b0) begin
+logic flag;
+always @ (posedge clk or negedge s_reset_n) begin 
+  if (s_reset_n == 1'b0) begin
     data_out       <= RESET_DEFAULT ;
-    data_out_l     <= 'h0 ;
-  end else if (s_reset_n == 1'b0) begin
-    data_out       <= RESET_DEFAULT ;
-    data_out_l     <= rst_in ;
+    flag           <= 1'b1;
   end else begin
-    data_out  <= data_out_l;
-    if(cs && we[0]) data_out_l[7:0]   <= data_in[7:0];
-    if(cs && we[1]) data_out_l[15:8]  <= data_in[15:8];
-    if(cs && we[2]) data_out_l[23:16] <= data_in[23:16];
-    if(cs && we[3]) data_out_l[31:24] <= data_in[31:24];
-  end
+      flag         <= 1'b0;
+      if (flag == 1'b1) begin
+        data_out    <= rst_in ;
+      end else begin
+        if(cs && we[0]) data_out[7:0]   <= data_in[7:0];
+        if(cs && we[1]) data_out[15:8]  <= data_in[15:8];
+        if(cs && we[2]) data_out[23:16] <= data_in[23:16];
+        if(cs && we[3]) data_out[31:24] <= data_in[31:24];
+      end
+   end
 end
 
 

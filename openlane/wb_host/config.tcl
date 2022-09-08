@@ -96,8 +96,8 @@ set ::env(PL_TARGET_DENSITY) "0.45"
 
 
 
-#set ::env(FP_IO_VEXTEND) 4
-#set ::env(FP_IO_HEXTEND) 4
+set ::env(FP_IO_VEXTEND) 4
+set ::env(FP_IO_HEXTEND) 4
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100

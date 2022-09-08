@@ -298,15 +298,15 @@ parameter P_QDDR   = 2'b11;
 	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: arduino_switchCase2 (GL) Passed");
+	    	       $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: arduino_switchCase2 (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: arduino_switchCase2 (GL) Failed");
+	    	        $display("Monitor: %m (GL) Failed");
 		    `else
-		        $display("Monitor: arduino_switchCase2 (RTL) Failed");
+		        $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

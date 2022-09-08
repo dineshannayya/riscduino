@@ -142,15 +142,15 @@ parameter real XTAL_PERIOD = 6;
 	    $display("###################################################");
         if(test_fail == 0) begin
 		`ifdef GL
-	    	$display("Monitor: Standalone User Risc Boot (GL) Passed");
+	    	$display("Monitor: %m (GL) Passed");
 		`else
-		    $display("Monitor: Standalone User Risc Boot (RTL) Passed");
+		    $display("Monitor: %m (RTL) Passed");
 		`endif
 	    end else begin
 		`ifdef GL
-	       $display("Monitor: Standalone User Risc Boot (GL) Failed");
+	       $display("Monitor: %m (GL) Failed");
 		`else
-		   $display("Monitor: Standalone User Risc Boot (RTL) Failed");
+		   $display("Monitor: %m (RTL) Failed");
 		`endif
 		 end
 	   	 $display("###################################################");

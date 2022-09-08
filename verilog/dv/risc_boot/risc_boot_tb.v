@@ -151,9 +151,9 @@ pullup(mprj_io[3]);
 		$display("%c[1;31m",27);
 		$display ("##########################################################");
 		`ifdef GL
-			$display ("Monitor: Timeout, Test Risc Boot (GL) Failed");
+			$display ("Monitor: Timeout, %m (GL) Failed");
 		`else
-			$display ("Monitor: Timeout, Test Risc Boot (RTL) Failed");
+			$display ("Monitor: Timeout, %m (RTL) Failed");
 		`endif
 		$display ("##########################################################");
 		$display("%c[0m",27);
@@ -228,15 +228,15 @@ pullup(mprj_io[3]);
               $display("###################################################");
               if(test_fail == 0) begin
                  `ifdef GL
-                     $display("Monitor: Standalone User Risc Boot Test (GL) Passed");
+                     $display("Monitor: %m (GL) Passed");
                  `else
-                     $display("Monitor: Standalone User Risc Boot Test (RTL) Passed");
+                     $display("Monitor: %m (RTL) Passed");
                  `endif
               end else begin
                   `ifdef GL
-                      $display("Monitor: Standalone User Risc Boot Test (GL) Failed");
+                      $display("Monitor: %m (GL) Failed");
                   `else
-                      $display("Monitor: Standalone User Risc Boot Test (RTL) Failed");
+                      $display("Monitor: %m (RTL) Failed");
                   `endif
                end
               $display("###################################################");

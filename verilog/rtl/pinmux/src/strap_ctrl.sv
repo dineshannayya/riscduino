@@ -68,16 +68,14 @@ pad_strap_in decoding
                  01 - 2 Div
                  10 - 4 Div
                  11 - 8 Div
-     bit [4]   - uart master config control
-                 0   - load from LA
-                 1   - constant value based on system clock selection (Default)
+     bit [4]   - Reserved
      bit [5]   - QSPI SRAM Mode Selection
-                 1'b0 - Single (Default)
-                 1'b1 - Quad
+                 1'b0 - Single 
+                 1'b1 - Quad   (Default)
      bit [7:6] - QSPI Fash Mode Selection
-                 2'b00 - Single (Default)
+                 2'b00 - Single 
                  2'b01 - Double
-                 2'b10 - Quad
+                 2'b10 - Quad   (Default)
                  2'b11 - QDDR
      bit [8]   - Riscv Reset control
                  0 - Keep Riscv on Reset
@@ -93,6 +91,11 @@ pad_strap_in decoding
                  2'b01 - Default value + 2               
                  2'b10 - Default value + 4               
                  2'b11 - Default value - 4 
+     bit [4:13]   - uart master config control
+                 2'b00   - constant value based on system clock-50Mhz (Default)
+                 2'b01   - constant value based on system clock-40Mhz 
+                 2'b10   - constant value based on system clock-60Mhz (USB Ref Clock)
+                 2'b11   - load from LA
      bit [14:13] - Reserved
      bit [15]    - Strap Mode
                    0 - Normal
@@ -165,7 +168,8 @@ module strap_ctrl (
 	         
 	         //List of Outs
              output logic [15:0] strap_latch         ,
-	         output logic [31:0] strap_sticky 
+	         output logic [31:0] strap_sticky        ,
+             output logic [1:0]  strap_uartm           // Uart Master Strap Config
 
          );
 
@@ -195,12 +199,15 @@ assign strap_map = {
                    pstrap_select[8]     , // bit[12]      - Riscv Reset control
                    pstrap_select[7:6]   , // bit[11:10]   - QSPI FLASH Mode Selection CS#0
                    pstrap_select[5]     , // bit[9]       - QSPI SRAM Mode Selection CS#2
-                   pstrap_select[4]     , // bit[8]       - uart master config control
+                   pstrap_select[4]     , // bit[8]       - Reserved
                    pstrap_select[3:2]   , // bit[7:6]     - riscv clock div
                    pstrap_select[1:0]   , // bit[5:4]     - riscv clock source sel
                    pstrap_select[3:2]   , // bit[3:2]     - wbs clock division
                    pstrap_select[1:0]     // bit[1:0]     - wbs clock source sel
                    };
+
+
+assign strap_uartm = strap_latch[`PSTRAP_UARTM_CFG];
 
 //------------------------------------
 // Generating strap latch

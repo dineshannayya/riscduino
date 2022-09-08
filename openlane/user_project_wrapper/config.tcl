@@ -136,6 +136,7 @@ set ::env(GND_NET) {vssd1}
 set ::env(VDD_PIN) {vccd1}
 set ::env(GND_PIN) {vssd1}
 
+set ::env(DRT_OPT_ITERS) {32}
 
 set ::env(GRT_OBS) "                              \
 	                li1   150 130  833.1  546.54,\

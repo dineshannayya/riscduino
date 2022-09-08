@@ -145,15 +145,15 @@ parameter real XTAL_PERIOD = 6;
 
           	if(test_control.error_count == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: USB Mode (GL) Passed");
+	    	       $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: USB Mode (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: USB Mode (GL) Failed");
+	    	        $display("Monitor: %m (GL) Failed");
 		    `else
-		        $display("Monitor: USB Mode (RTL) Failed");
+		        $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

@@ -1111,15 +1111,15 @@ parameter P_QDDR   = 2'b11;
 
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: SPI Master Mode (GL) Passed");
+	    	       $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: SPI Master Mode (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: SPI Master Mode (GL) Failed");
+	    	        $display("Monitor: %m (GL) Failed");
 		    `else
-		        $display("Monitor: SPI Master Mode (RTL) Failed");
+		        $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

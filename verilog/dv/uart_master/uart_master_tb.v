@@ -91,9 +91,9 @@ reg  [15:0]    strap_in;
 		$display("%c[1;31m",27);
 		$display ("##########################################################");
 		`ifdef GL
-		   $display ("Monitor: Timeout, Test UART Master (GL) Failed");
+		   $display ("Monitor: Timeout, %m (GL) Failed");
 		`else
-		   $display ("Monitor: Timeout, Test UART Master (RTL) Failed");
+		   $display ("Monitor: Timeout, %m (RTL) Failed");
 		`endif
 		$display ("##########################################################");
 		$display("%c[0m",27);
@@ -162,15 +162,15 @@ reg  [15:0]    strap_in;
            $display("###################################################");
            if(test_fail == 0) begin
               `ifdef GL
-                  $display("Monitor: Standalone User UART Master (GL) Passed");
+                  $display("Monitor: %m (GL) Passed");
               `else
-                  $display("Monitor: Standalone User Uart Master (RTL) Passed");
+                  $display("Monitor: %m (RTL) Passed");
               `endif
            end else begin
                `ifdef GL
-                   $display("Monitor: Standalone User Uart Master (GL) Failed");
+                   $display("Monitor: %m (GL) Failed");
                `else
-                   $display("Monitor: Standalone User Uart Master (RTL) Failed");
+                   $display("Monitor: %m (RTL) Failed");
                `endif
             end
            $display("###################################################");

@@ -18,17 +18,17 @@ create_clock [get_pins  housekeeping/serial_load ]  -name "serial_load"  -period
 
 
 create_generated_clock -name wb_clk -add -source [get_ports {clock}] -master_clock [get_clocks master_clock] -divide_by 1 -comment {Wishbone User Clock} [get_pins mprj/wb_clk_i]
-create_clock -name int_pll_clock -period 5.0000  [get_pins {mprj/u_wb_host/u_clkbuf_pll.u_buf/X}]
+create_clock -name int_pll_clock -period 5.0000  [get_pins {mprj/u_pinmux/int_pll_clock}]
 
-create_clock -name wbs_ref_clk -period 5.0000   [get_pins {mprj/u_wb_host/u_wbs_ref_clkbuf.u_buf/X}]
+create_clock -name wbs_ref_clk -period 5.0000   [get_pins {mprj/u_wb_host/u_reg.u_wbs_ref_clkbuf.u_buf/X}]
 create_clock -name wbs_clk_i   -period 10.0000  [get_pins {mprj/u_wb_host/wbs_clk_out}]
 
-create_clock -name cpu_ref_clk -period 5.0000   [get_pins {mprj/u_wb_host/u_cpu_ref_clkbuf.u_buf/X}]
+create_clock -name cpu_ref_clk -period 5.0000   [get_pins {mprj/u_wb_host/u_reg.u_cpu_ref_clkbuf.u_buf/X}]
 create_clock -name cpu_clk     -period 10.0000  [get_pins {mprj/u_wb_host/cpu_clk}]
 
 create_clock -name rtc_clk     -period 50.0000  [get_pins {mprj/u_pinmux/rtc_clk}]
 
-create_clock -name pll_ref_clk -period 20.0000  [get_pins {mprj/u_wb_host/pll_ref_clk}]
+create_clock -name pll_ref_clk -period 20.0000  [get_pins {mprj/u_pinmux/pll_ref_clk}]
 create_clock -name pll_clk_0   -period 5.0000   [get_pins {mprj/u_pll/ringosc.ibufp01/Y}]
 
 create_clock -name usb_ref_clk -period 5.0000   [get_pins {mprj/u_pinmux/u_glbl_reg.u_usb_ref_clkbuf.u_buf/X}]
@@ -84,7 +84,7 @@ set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_sram_lphase[0]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_sram_lphase[1]}]
 
 #disable clock gating check at static clock select pins
-set_false_path -through [get_pins mprj/u_wb_host/u_wbs_clk_sel.genblk1.u_mux/S]
+#set_false_path -through [get_pins mprj/u_wb_host/u_wbs_clk_sel.genblk1.u_mux/S]
 
 set_propagated_clock [all_clocks]
 

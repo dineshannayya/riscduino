@@ -245,15 +245,15 @@ begin
      $display("###################################################");
      if(test_fail == 0) begin
         `ifdef GL
-            $display("Monitor: Standalone User I2M Test (GL) Passed");
+            $display("Monitor: %m (GL) Passed");
         `else
-            $display("Monitor: Standalone User I2M Test (RTL) Passed");
+            $display("Monitor: %m (RTL) Passed");
         `endif
      end else begin
          `ifdef GL
-             $display("Monitor: Standalone User I2M Test (GL) Failed");
+             $display("Monitor: %m (GL) Failed");
          `else
-             $display("Monitor: Standalone User I2M Test (RTL) Failed");
+             $display("Monitor: %m (RTL) Failed");
          `endif
       end
      $display("###################################################");

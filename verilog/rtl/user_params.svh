@@ -10,7 +10,7 @@ parameter CHIP_REVISION   = 32'h0005_4000;
 
 parameter SKEW_RESET_VAL = 32'b0000_0000_1000_0111_1001_1000_1001_1000;
 
-parameter PSTRAP_DEFAULT_VALUE = 15'b000_0111_1011_0000;
+parameter PSTRAP_DEFAULT_VALUE = 15'b000_0111_1010_0000;
 
 /*****************************************************
 pad_strap_in decoding
@@ -24,10 +24,7 @@ pad_strap_in decoding
                  01 - 2 Div       
                  10 - 4 Div
                  11 - 8 Div
-     bit [4]   - uart master config control
-                 0   - load from LA
-                 1   - constant value based 
-                       on system clock selection  (Default)
+     bit [4]   - Reserved
      bit [5]   - QSPI SRAM Mode Selection
                  1'b0 - Single    
                  1'b1 - Quad      (Default)
@@ -50,6 +47,11 @@ pad_strap_in decoding
                  2'b01 - Default value + 2               
                  2'b10 - Default value + 4               
                  2'b11 - Default value - 4 
+     bit [4:13]   - uart master config control
+                 2'b00   - constant value based on system clock-50Mhz (Default)
+                 2'b01   - constant value based on system clock-40Mhz 
+                 2'b10   - constant value based on system clock-60Mhz (USB Ref Clock)
+                 2'b11   - load from LA
 
      bit[15]   - Strap Mode
                 0 - [14:0] loaded from pad
@@ -66,6 +68,7 @@ pad_strap_in decoding
 `define PSTRAP_RISCV_CACHE_BYPASS  9
 `define PSTRAP_RISCV_SRAM_CLK_EDGE 10
 `define PSTRAP_CLK_SKEW            12:11
+`define PSTRAP_UARTM_CFG           14:13
 
 `define PSTRAP_DEFAULT_VALUE       15
 

@@ -245,15 +245,15 @@ parameter real XTAL_PERIOD = 6;
 	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: Standalone i2c scanner (GL) Passed");
+	    	       $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: Standalone i2c scanner (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: Standalone i2c scanner (GL) Failed");
+	    	        $display("Monitor: %m (GL) Failed");
 		    `else
-		        $display("Monitor: Standalone i2c scanner (RTL) Failed");
+		        $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

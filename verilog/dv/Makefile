@@ -19,11 +19,13 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = wb_port risc_boot user_risc_boot user_uart user_uart1 user_qspi user_i2cm riscv_regress user_basic user_usb user_pwm user_timer user_uart_master uart_master user_sram_exec user_cache_bypass user_gpio user_spi_isp arduino_risc_boot arduino_hello_world arduino_ascii_table arduino_multi_serial arduino_arrays arduino_switchCase2 arduino_character_analysis arduino_string arduino_digital_port_control user_sspi user_aes user_sema arduino_timer_intr
+PATTERNS = user_basic user_uart user_uart1 user_risc_boot user_qspi user_sspi user_i2cm user_usb user_gpio user_aes user_spi_isp user_timer user_uart_master user_sram_exec user_cache_bypass user_pwm user_sema risc_boot uart_master wb_port arduino_arrays arduino_digital_port_control arduino_i2c_scaner arduino_risc_boot arduino_timer_intr arduino_ascii_table arduino_gpio_intr arduino_i2c_wr_rd arduino_string arduino_ws281x arduino_character_analysis arduino_hello_world arduino_multi_serial arduino_switchCase2 riscv_regress
 
 all:  ${PATTERNS}
+	echo "################# Test case Summary #####################" > regression.rpt
+	xterm -e /usr/bin/watch -n 25 /bin/cat regression.rpt & 
 	for i in ${PATTERNS}; do \
-		( cd $$i && make -f Makefile $${i}.vcd &> verify.log && grep Monitor verify.log) ; \
+		( cd $$i && make | tee run.log && grep Monitor run.log | grep $$i >> ../regression.rpt) ; \
 	done
 
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))

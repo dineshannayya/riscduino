@@ -203,7 +203,7 @@ parameter real XTAL_PERIOD = 6;
                 tb_uart1.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                                uart_stick_parity, uart_timeout, uart_divisor);
 
-                repeat (1000) @(posedge clock);  // wait for Processor Get Ready
+                repeat (10000) @(posedge clock);  // wait for Processor Get Ready
 	            flag  = 0;
 		        check_sum = 0;
                 
@@ -263,15 +263,15 @@ parameter real XTAL_PERIOD = 6;
 	    	$display("###################################################");
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: Standalone Multi Serial (GL) Passed");
+	    	       $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: Standalone Multi Serial (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: Standalone Multi Serial (GL) Failed");
+	    	        $display("Monitor: %m (GL) Failed");
 		    `else
-		        $display("Monitor: Standalone Multi Serial (RTL) Failed");
+		        $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

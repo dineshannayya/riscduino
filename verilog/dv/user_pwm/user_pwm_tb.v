@@ -143,15 +143,15 @@ parameter real XTAL_PERIOD = 6;
 
           	if(test_fail == 0) begin
 		   `ifdef GL
-	    	       $display("Monitor: PWM Mode (GL) Passed");
+	    	       $display("Monitor: %m (GL) Passed");
 		   `else
-		       $display("Monitor: PWM Mode (RTL) Passed");
+		       $display("Monitor: %m (RTL) Passed");
 		   `endif
 	        end else begin
 		    `ifdef GL
-	    	        $display("Monitor: PWM Mode (GL) Failed");
+	    	        $display("Monitor: %m (GL) Failed");
 		    `else
-		        $display("Monitor: PWM Mode (RTL) Failed");
+		        $display("Monitor: %m (RTL) Failed");
 		    `endif
 		 end
 	    	$display("###################################################");

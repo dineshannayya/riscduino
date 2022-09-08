@@ -4,7 +4,7 @@
 wire  [15:0]    strap_in;
 assign strap_in[`PSTRAP_CLK_SRC] = 2'b00;            // System Clock Source wbs/riscv: User clock1
 assign strap_in[`PSTRAP_CLK_DIV] = 2'b00;            // Clock Division for wbs/riscv : 0 Div
-assign strap_in[`PSTRAP_UARTM_CFG] = 1'b0;           // uart master config control -  constant value based on system clock selection
+assign strap_in[`PSTRAP_UARTM_CFG] = 2'b0;           // uart master config control -  constant value based on system clock selection
 assign strap_in[`PSTRAP_QSPI_SRAM] = 1'b1;           // QSPI SRAM Mode Selection - Quad 
 assign strap_in[`PSTRAP_QSPI_FLASH] = 2'b10;         // QSPI Fash Mode Selection - Quad
 assign strap_in[`PSTRAP_RISCV_RESET_MODE] = 1'b1;    // Riscv Reset control - Removed Riscv on Power On Reset
@@ -30,9 +30,9 @@ parameter bit  [15:0] PAD_STRAP = (2'b00 << `PSTRAP_CLK_SRC             ) |
 //---------------------------------------------------------
 
 `ifdef RISC_BOOT // RISCV Based Test case
-parameter bit  [15:0] PAD_STRAP = 16'b0000_0001_1011_0000;
+parameter bit  [15:0] PAD_STRAP = 16'b0000_0001_1010_0000;
 `else
-parameter bit  [15:0] PAD_STRAP = 16'b0000_0000_1011_0000;
+parameter bit  [15:0] PAD_STRAP = 16'b0000_0000_1010_0000;
 `endif
 
 //-------------------------------------------------------------
