@@ -471,7 +471,7 @@ The simulation package includes the following tests:
 * **3.risc_boot**           - Complete caravel User Risc core boot 
 
 ## Arduino Based Test Case
-* **1.arduino_arrays**                - Validation of Arracy function
+* **1.arduino_arrays**                - Validation of Array function
 * **2.arduino_digital_port_control**  - Validation for AD5206 digital potentiometer through SPI
 * **3.arduino_i2c_scaner**            - I2C port scanner        
 * **4.arduino_risc_boot**             - Riscv Basic Boot
