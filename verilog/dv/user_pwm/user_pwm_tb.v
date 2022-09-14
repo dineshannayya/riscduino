@@ -72,7 +72,7 @@
 
 
 module user_pwm_tb;
-parameter real CLK1_PERIOD  = 25;
+parameter real CLK1_PERIOD  = 20; // 50Mhz
 parameter real CLK2_PERIOD = 2.5;
 parameter real IPLL_PERIOD = 5.008;
 parameter real XTAL_PERIOD = 6;
@@ -81,14 +81,16 @@ parameter real XTAL_PERIOD = 6;
 
 
 
-	reg [31:0] OneMsPeriod;
+	reg [31:0] pwm0_period;
+	reg [31:0] pwm1_period;
+	reg [31:0] pwm2_period;
+	reg [31:0] pwm3_period;
+	reg [31:0] pwm4_period;
+	reg [31:0] pwm5_period;
     integer    test_step;
     wire       clock_mon;
 
 
-	initial begin
-		OneMsPeriod = 1000;
-	end
 
 	`ifdef WFDUMP
 	   initial begin
@@ -128,15 +130,110 @@ parameter real XTAL_PERIOD = 6;
 	    repeat (200) @(posedge clock);
         wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
 
-	    $display("Step-1, PWM-0: 1ms/2 = 500Hz; PWM-1: 1ms/3; PWM-2: 1ms/4, PWM-3: 1ms/5, PWM-4: 1ms/6, PWM-5: 1ms/7");
+	    $display("########################################");
+	    $display("Step-1, PWM Square Waveform");
+        pwm0_period = 20*256;
+        pwm1_period = 20*2*256;
+        pwm2_period = 20*4*256;
+        pwm3_period = 20*8*256;
+        pwm4_period = 20*16*256;
+        pwm5_period = 20*32*256;
 	    test_step = 1;
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_0,'h0000_0000);
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_1,'h0000_0001);
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_2,'h0001_0001);
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_3,'h0001_0002);
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_4,'h0002_0002);
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_CFG_PWM_5,'h0002_0003);
-	    pwm_monitor(OneMsPeriod*2,OneMsPeriod*3,OneMsPeriod*4,OneMsPeriod*5,OneMsPeriod*6,OneMsPeriod*7);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_8000); // No Scale 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_8001); // Scale 2^1 = 2
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_8002); // Scale 2^2 = 4
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG0,'h0000_8003); // Scale 2^3 = 8
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG0,'h0000_8004); // Scale 2^4 = 16
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG0,'h0000_8005); // Scale 2^5 = 32
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG2,'h0000_007F); // COMP0 = 0xFF
+        
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_003F); // Enable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_003F); // Enable PWM Interrupt
+	    pwm_monitor(pwm0_period,pwm1_period,pwm2_period,pwm3_period,pwm4_period,pwm5_period);
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_003F); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_003F); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-1, PWM Square Waveform - FAILED");
+       end else begin
+          $display("STATUS: Step-1, PWM Square Waveform - PASSED");
+       end
+	    $display("########################################");
+	    $display("Step-2, PWM One Shot");
+        pwm0_period = 20*256;
+        pwm1_period = 20*2*256;
+        pwm2_period = 20*4*256;
+        pwm3_period = 20*8*256;
+        pwm4_period = 20*16*256;
+        pwm5_period = 20*32*256;
+	    test_step = 2;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_8010); // No Scale 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_8011); // Scale 2^1 = 2
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_8012); // Scale 2^2 = 4
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG0,'h0000_8013); // Scale 2^3 = 8
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG0,'h0000_8014); // Scale 2^4 = 16
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG0,'h0000_8015); // Scale 2^5 = 32
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG2,'h0000_007F); // COMP0 = 0xFF
+        
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_003F); // Enable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_003F); // Enable PWM Interrupt
+        read_data = 8'h3F;
+        while(read_data  != 8'h00) begin // Wait for De-assertion on Enable
+            wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+             repeat (100) @(posedge clock);
+        end
+
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_003F); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_003F); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-2, PWM One Shot - FAILED");
+       end else begin
+          $display("STATUS: Step-2, PWM One Shot - PASSED");
+       end
+
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
@@ -217,12 +314,12 @@ begin
    repeat(2) @(posedge clock_mon);
    next_t  = $realtime;
    periodd = (next_t-prev_t)/2;
-   periodd = (periodd)/1e3;
+   periodd = (periodd);
    if(clk_period != periodd) begin
-       $display("STATUS: FAIL => %s Exp Period: %d ms Rxd: %d ms",clk_name,clk_period,periodd);
+       $display("STATUS: FAIL => %s Exp Period: %d ns Rxd: %d ns",clk_name,clk_period,periodd);
        test_fail = 1;
    end else begin
-       $display("STATUS: PASS => %s  Period: %d ms ",clk_name,clk_period);
+       $display("STATUS: PASS => %s  Period: %d ns ",clk_name,clk_period);
    end
 end
 endtask

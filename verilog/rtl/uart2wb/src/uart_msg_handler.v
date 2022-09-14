@@ -44,6 +44,7 @@
 module uart_msg_handler (  
         reset_n ,
         sys_clk ,
+        cfg_uart_enb,
 
 
     // UART-TX Information
@@ -69,16 +70,17 @@ module uart_msg_handler (
 
 
 // Define the Message Hanlde States
-`define IDLE	         4'h0
-`define IDLE_TX_MSG1	 4'h1
-`define IDLE_TX_MSG2	 4'h2
-`define RX_CMD_PHASE	 4'h3
-`define ADR_PHASE	 4'h4
-`define WR_DATA_PHASE	 4'h5
-`define SEND_WR_REQ	 4'h6
-`define SEND_RD_REQ	 4'h7
-`define SEND_RD_DATA	 4'h8
-`define TX_MSG           4'h9
+`define POWERON_WAIT	 4'h0
+`define IDLE     	     4'h1
+`define IDLE_TX_MSG1	 4'h2
+`define IDLE_TX_MSG2	 4'h3
+`define RX_CMD_PHASE	 4'h4
+`define ADR_PHASE	     4'h5
+`define WR_DATA_PHASE	 4'h6
+`define SEND_WR_REQ	     4'h7
+`define SEND_RD_REQ	     4'h8
+`define SEND_RD_DATA	 4'h9
+`define TX_MSG           4'hA
      
 `define BREAK_CHAR       8'h0A
 
@@ -88,6 +90,7 @@ module uart_msg_handler (
 
 input        reset_n               ; // line reset
 input        sys_clk               ; // line clock
+input        cfg_uart_enb          ;
 
 
 //--------------------------------------
@@ -131,7 +134,7 @@ reg  [31:0]     reg_addr           ; // reg_addr
 reg  [31:0]     reg_wdata          ; // reg_addr
 reg             reg_wr             ; // 1 -> Reg Write request, 0 -> Read Requestion
 reg             reg_req            ; // 1 -> Register request
-
+reg   [7:0]     wait_cnt           ;
 
 wire rx_ready = 1; 
 /****************************************************************
@@ -164,17 +167,27 @@ begin
       reg_addr       <= 0;
       reg_wr        <= 1'b0; // Read request
       reg_wdata     <= 0;
-      State         <= `IDLE;
-      NextState     <= `IDLE;
+      State         <= `POWERON_WAIT;
+      NextState     <= `POWERON_WAIT;
+      wait_cnt      <= 'h0;
    end else begin
    case(State)
       // Send Default Message
+      `POWERON_WAIT: begin
+         if(cfg_uart_enb) begin
+           if(wait_cnt == 8'hff) begin
+	           State         <= `IDLE;
+           end else begin
+               wait_cnt      <= wait_cnt+1;
+           end
+         end
+       end
       `IDLE: begin
-   	  TxMsgBuf      <= "Command Format:\n";  // Align to 16 character format by appending space character
-          TxMsgSize     <= 16;
-	  tx_data_avail <= 0;
-	  State         <= `TX_MSG;
-	  NextState     <= `IDLE_TX_MSG1;
+   	       TxMsgBuf      <= "Command Format:\n";  // Align to 16 character format by appending space character
+           TxMsgSize     <= 16;
+	       tx_data_avail <= 0;
+	       State         <= `TX_MSG;
+	       NextState     <= `IDLE_TX_MSG1;
        end
 
       // Send Default Message (Contd..)

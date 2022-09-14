@@ -64,5 +64,6 @@ void main()
     reg_glbl_soft_reg_5 = 0x66778899; // Sig-5
 
     // Signal end of test
+   reg_glbl_mail_box = 0xff << (bthread_get_core_id() * 8); // Start of Main 
 }
 

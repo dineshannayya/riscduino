@@ -24,11 +24,8 @@
 */
 
 
-#line 25 "/tmp/.arduinoIDE-unsaved202266-51666-8e7jjt.yj22m/MultiSerial/MultiSerial.ino"
 void setup();
-#line 31 "/tmp/.arduinoIDE-unsaved202266-51666-8e7jjt.yj22m/MultiSerial/MultiSerial.ino"
 void loop();
-#line 25 "/tmp/.arduinoIDE-unsaved202266-51666-8e7jjt.yj22m/MultiSerial/MultiSerial.ino"
 void setup() {
   // initialize both serial ports:
   Serial.begin(288000);

@@ -115,7 +115,7 @@ parameter real XTAL_PERIOD = 6;
 
         wait_riscv_boot();
 
-        repeat (5000) @(posedge clock);  // wait for Processor Get Ready
+        repeat (10000) @(posedge clock);  // wait for Processor Get Ready
 
 
 		$display("Monitor: Reading Back the expected value");

@@ -74,6 +74,7 @@
 `timescale 1 ns/1 ps
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
+`include "uart_agent.v"
 `include "user_params.svh"
 
 `define TB_TOP user_basic_tb
@@ -100,7 +101,6 @@ reg [15:0]     uart_timeout         ;// wait time limit
 
 reg [15:0]     uart_rx_nu           ;
 reg [15:0]     uart_tx_nu           ;
-reg [7:0]      uart_write_data [0:39];
 reg 	       uart_fifo_enable     ;	// fifo mode disable
 
 wire           clock_mon;
@@ -109,8 +109,10 @@ reg  [15:0]    strap_in;
 wire [31:0]    strap_sticky;
 reg  [7:0]     test_id;
 reg  [25:0]    bcount;
+wire uart_txd,uart_rxd;
+reg            flag;
 
-assign io_in = {26'h0,xtal_clk,11'h0};
+assign io_in = {26'h0,xtal_clk,4'h0,uart_rxd,6'h0};
 
 wire [14:0] pstrap_select;
 
@@ -317,7 +319,9 @@ begin
        $display("Step-5, Checking the uart Master baud-16x clock is 9600* 16");
        test_id = 5;
 
-       apply_strap(16'h10); // [4] -  // uart master config control - constant value based on system clock selection
+       strap_in = 0;
+       strap_in[`PSTRAP_UARTM_CFG] = 2'b01; // constant value based on system clock-50Mhz
+       apply_strap(strap_in); 
 
        repeat (10) @(posedge clock);
        uartm_clock_monitor(6510); // 1/(9600*16) = 6510 ns, Assumption is user_clock1 = 40Mhz
@@ -329,13 +333,97 @@ begin
        end
        $display("##########################################################");
 
+       $display("##########################################################");
+       $display("Step-6, Checking the uart Master Auto Detect Mode");
+       test_id = 6;
 
+       strap_in = 0;
+       strap_in[`PSTRAP_UARTM_CFG] = 2'b00; // Auto Detect Mode
+       apply_strap(strap_in); 
+
+       tb_master_uart.uart_init;
+       uart_data_bit           = 2'b11;
+       uart_stop_bits          = 1; // 0: 1 stop bit; 1: 2 stop bit;
+       uart_stick_parity       = 0; // 1: force even parity
+       uart_parity_en          = 0; // parity enable
+       uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
+       uart_divisor            = 15;// divided by n * 16
+       uart_timeout            = 600;// wait time limit
+       uart_fifo_enable        = 0;	// fifo mode disable
+       tb_master_uart.debug_mode = 0; // disable debug display
+	   tb_set_uart_baud(50000000,288000,uart_divisor);// 50Mhz Ref clock, Baud Rate: 288000
+       tb_master_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, uart_stick_parity, uart_timeout, uart_divisor);
+
+       repeat (10) @(posedge clock);
+       tb_master_uart.write_char(8'hA); // New line for auto detect
+
+       repeat (10) @(posedge clock);
+       uartm_clock_monitor(200); // 1/(28800*16) = 217 ns - Adjusting 20ns (50Mhz) boundary => 200 
+
+       // Wait for Initial command from uart master
+       flag = 0;
+       while(flag == 0)
+       begin
+            tb_master_uart.read_char(read_data,flag);
+            $write ("%c",read_data);
+       end
+       uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,CHIP_SIGNATURE);
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-6,  Checking the uart Master Auto Detect baud-28800 - FAILED");
+       end else begin
+          $display("STATUS: Step-6,  Checking the uart Master Auto Detect baud-28800  - PASSED");
+       end
+       $display("##########################################################");
+
+       $display("##########################################################");
+       $display("Step-7, Checking the uart Master Auto Detect Mode");
+       test_id = 7;
+
+       strap_in = 0;
+       strap_in[`PSTRAP_UARTM_CFG] = 2'b00; // Auto Detect Mode
+       apply_strap(strap_in); 
+
+       tb_master_uart.uart_init;
+       uart_data_bit           = 2'b11;
+       uart_stop_bits          = 1; // 0: 1 stop bit; 1: 2 stop bit;
+       uart_stick_parity       = 0; // 1: force even parity
+       uart_parity_en          = 0; // parity enable
+       uart_even_odd_parity    = 1; // 0: odd parity; 1: even parity
+       uart_divisor            = 15;// divided by n * 16
+       uart_timeout            = 600;// wait time limit
+       uart_fifo_enable        = 0;	// fifo mode disable
+       tb_master_uart.debug_mode = 0; // disable debug display
+	   tb_set_uart_baud(50000000,38400,uart_divisor);// 50Mhz Ref clock, Baud Rate: 38400
+       tb_master_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, uart_stick_parity, uart_timeout, uart_divisor);
+
+       repeat (10) @(posedge clock);
+       tb_master_uart.write_char(8'hA); // New line for auto detect
+
+       repeat (10) @(posedge clock);
+       uartm_clock_monitor(1620); // 1/(38400*16) = 1627.6 ns, Adjusting to 20ns boundary => 1620
+   
+       // Wait for Initial command from uart master
+       flag = 0;
+       while(flag == 0)
+       begin
+            tb_master_uart.read_char(read_data,flag);
+            $write ("%c",read_data);
+       end
+       uartm_reg_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,CHIP_SIGNATURE);
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-7,  Checking the uart Master Auto Detect baud-38400 - FAILED");
+       end else begin
+          $display("STATUS: Step-7,  Checking the uart Master Auto Detect baud-38400  - PASSED");
+       end
+       $display("##########################################################");
         
        `ifndef GL  
        $display("###################################################");
-       $display("Step-5,Monitor: Checking the PLL:");
+       $display("Step-8,Monitor: Checking the PLL:");
        $display("###################################################");
-       test_id = 5;
+       test_id = 8;
        // Set PLL enable, no DCO mode ; Set PLL output divider to 0x03
        // Checking the expression
        //   Internal PLL delay = 1.168 + 0.012 * $itor(bcount)
@@ -361,18 +449,18 @@ begin
        pll_clock_monitor(5);
        */
        if(test_fail == 1) begin
-          $display("ERROR: Step-5, Checking the PLL - FAILED");
+          $display("ERROR: Step-8, Checking the PLL - FAILED");
        end else begin
-          $display("STATUS: Step-5, Checking the PLL - PASSED");
+          $display("STATUS: Step-8, Checking the PLL - PASSED");
        end
        $display("##########################################################");
        
        
        $display("###################################################");
-       $display("Step-6,Monitor: PLL Monitor Clock output:");
+       $display("Step-9,Monitor: PLL Monitor Clock output:");
        $display("###################################################");
        $display("Monitor: CPU: CLOCK2/(2+3), USB: CLOCK2/(2+9), RTC: CLOCK2/(2+255), WBS:CLOCK2/(2+4)");
-       test_id = 6;
+       test_id = 9;
        test_step = 13;
        init();
        repeat (10) @(posedge clock);
@@ -384,34 +472,34 @@ begin
        dbg_clk_monitor();
           
        if(test_fail == 1) begin
-          $display("ERROR: Step-6, PLL Monitor Clock output - FAILED");
+          $display("ERROR: Step-9, PLL Monitor Clock output - FAILED");
        end else begin
-          $display("STATUS: Step-6, PLL Monitor Clock output - PASSED");
+          $display("STATUS: Step-9, PLL Monitor Clock output - PASSED");
        end
       
        `endif
        $display("##########################################################");
-        $display("Step-7,Monitor: Checking the chip signature :");
+        $display("Step-10,Monitor: Checking the chip signature :");
         $display("###################################################");
-       test_id = 7;
+       test_id = 10;
         test_step = 14;
         // Remove Wb/PinMux Reset
         wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
-         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,32'h8273_8343);
-         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,32'h0709_2022);
-         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,32'h0005_4000);
+         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,CHIP_SIGNATURE);
+         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,CHIP_RELEASE_DATE);
+         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,CHIP_REVISION);
          if(test_fail == 1) begin
-            $display("ERROR: Step-7,Monitor: Checking the chip signature - FAILED");
+            $display("ERROR: Step-10,Monitor: Checking the chip signature - FAILED");
          end else begin
-            $display("STATUS: Step-7,Monitor: Checking the chip signature - PASSED");
+            $display("STATUS: Step-10,Monitor: Checking the chip signature - PASSED");
 
          $display("##########################################################");
 
           end
       end
       begin
-         repeat (30000) @(posedge clock);
+         repeat (500000) @(posedge clock);
    	       // $display("+1000 cycles");
          test_fail = 1;
       end
@@ -437,6 +525,19 @@ begin
       #100
       $finish;
 end
+
+//---------------------------
+//  UART Agent integration
+// --------------------------
+
+assign uart_txd   = io_out[7];
+//assign io_in[6]  = uart_rxd ; // Assigned at top-level
+ 
+uart_agent tb_master_uart(
+	.mclk                (clock              ),
+	.txd                 (uart_rxd           ),
+	.rxd                 (uart_txd           )
+	);
 
 
 
@@ -615,5 +716,6 @@ endtask
 
 
 
+`include "uart_master_tasks.sv"
 endmodule
 `default_nettype wire

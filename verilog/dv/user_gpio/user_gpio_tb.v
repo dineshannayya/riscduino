@@ -245,6 +245,9 @@ parameter real XTAL_PERIOD = 6;
         // Disable Multi func
         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_MUTI_FUNC,'h000);
 
+		// config 1us based on system clock - 1000/25ns = 40 
+        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
+
 		/************* GPIO As Output ******************/
 		$display("#####################################");
 		$display("Step-1: Testing GPIO As Output ");
@@ -255,15 +258,15 @@ parameter real XTAL_PERIOD = 6;
 		cmp_gpio_output(8'h55,8'h55,8'h55,8'h55);
 
 		// Set the GPIO Output data: 0xAAAAAAAA
-                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'hAAAAAAAA);
+        wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'hAAAAAAAA);
 		cmp_gpio_output(8'hAA,8'hAA,8'hAA,8'hAA);
 
 		// Set the GPIO Output data: 0x5A5A5A5A5A5A
-                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'h5A5A5A5A);
+        wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'h5A5A5A5A);
 		cmp_gpio_output(8'h5A,8'h5A,8'h5A,8'h5A);
 		
 		// Set the GPIO Output data: 0xA5A5A5A5A5A5
-                wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'hA5A5A5A5);
+        wb_user_core_write(`ADDR_SPACE_GPIO+`GPIO_CFG_ODATA,'hA5A5A5A5);
 		cmp_gpio_output(8'hA5,8'hA5,8'hA5,8'hA5);
 
 		/************* GPIO As Input ******************/
@@ -324,9 +327,10 @@ parameter real XTAL_PERIOD = 6;
 		// Drive GPIO with 0xA5
 		cmp_gpio_neg_intr(8'hA5,8'hA5,8'hA5,8'hA5);
 
-	        repeat (200) @(posedge clock);
+	     repeat (200) @(posedge clock);
+        check_fast_dglitch();
 
-
+        check_slow_dglitch();
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
 
@@ -420,6 +424,7 @@ begin
     port_c_out  = port_c;
     port_d_out  = port_d;
 
+	repeat (200) @(posedge clock); // for de-glitch period
     wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
 end
 endtask
@@ -543,6 +548,143 @@ begin
 end
 endtask
 
+// Check for slow De-Glitch (1us based sampling)
+task check_slow_dglitch;
+reg [7:0] port_a;
+reg [7:0] port_b;
+reg [7:0] port_c;
+reg [7:0] port_d;
+begin
+    $display("STATUS: Testing Slow De-Glitch Mode");
+    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG1,32'h0);
+    port_a = 8'hAA;
+    port_b = 8'hAA;
+    port_c = 8'hAA;
+    port_d = 8'hAA;
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+
+	repeat (200) @(posedge clock); // for de-glitch period
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+
+    port_a_out = $random();
+    port_b_out = $random();
+    port_c_out = $random();
+    port_d_out = $random();
+	repeat (10) @(posedge clock); 
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (10) @(posedge clock); 
+    port_a_out = $random();
+    port_b_out = $random();
+    port_c_out = $random();
+    port_d_out = $random();
+	repeat (10) @(posedge clock); 
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (10) @(posedge clock); 
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+
+    port_a = 8'h11;
+    port_b = 8'h22;
+    port_c = 8'h33;
+    port_d = 8'h44;
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (200) @(posedge clock); 
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+    
+    port_a = 8'h55;
+    port_b = 8'h66;
+    port_c = 8'h77;
+    port_d = 8'h88;
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (200) @(posedge clock); 
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+end
+endtask
+
+
+// Check for slow De-Glitch (system clock based sampling)
+task check_fast_dglitch;
+reg [7:0] port_a;
+reg [7:0] port_b;
+reg [7:0] port_c;
+reg [7:0] port_d;
+begin
+    $display("STATUS: Testing Fast De-Glitch Mode");
+    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG1,32'h100);
+    port_a = 8'h55;
+    port_b = 8'h55;
+    port_c = 8'h55;
+    port_d = 8'h55;
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+
+	repeat (10) @(posedge clock); // for de-glitch period
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+
+    port_a_out = $random();
+    port_b_out = $random();
+    port_c_out = $random();
+    port_d_out = $random();
+
+	repeat (2) @(posedge clock); 
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (2) @(posedge clock); 
+
+    port_a_out = $random();
+    port_b_out = $random();
+    port_c_out = $random();
+    port_d_out = $random();
+	repeat (2) @(posedge clock); 
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (2) @(posedge clock); 
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+
+    port_a = 8'h11;
+    port_b = 8'h22;
+    port_c = 8'h33;
+    port_d = 8'h44;
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (10) @(posedge clock); 
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+    
+    port_a = 8'h55;
+    port_b = 8'h66;
+    port_c = 8'h77;
+    port_d = 8'h88;
+    port_a_out  = port_a;
+    port_b_out  = port_b;
+    port_c_out  = port_c;
+    port_d_out  = port_d;
+	repeat (10) @(posedge clock); 
+    wb_user_core_read_check(`ADDR_SPACE_GPIO+`GPIO_CFG_IDATA,read_data,{port_d,port_c & 8'h7F,port_b,port_a & 8'h1F});
+
+end
+endtask
 
 endmodule
 `default_nettype wire

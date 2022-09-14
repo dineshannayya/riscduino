@@ -42,7 +42,7 @@ module delay_stage(in, trim, out);
 	.Z(d1)
     );
 
-    sky130_fd_sc_hd__einvn_4 delayenb1 (
+    sky130_fd_sc_hd__einvn_2 delayenb1 (
 	.A(ts),
 	.TE_B(trim[1]),
 	.Z(d1)
@@ -86,7 +86,7 @@ module start_stage(in, trim, reset, out);
 	.Z(d1)
     );
 
-    sky130_fd_sc_hd__einvn_4 delayenb1 (
+    sky130_fd_sc_hd__einvn_2 delayenb1 (
 	.A(in),
 	.TE_B(trim[1]),
 	.Z(d1)

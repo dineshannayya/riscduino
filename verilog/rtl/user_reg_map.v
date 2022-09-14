@@ -68,13 +68,34 @@
 //--------------------------------------------------
 // PWM Register
 // -------------------------------------------------
-`define PWM_GLBL_CFG          8'h00  // reg_0 - PWM Global Config
-`define PWM_CFG_PWM_0         8'h04  // reg_1 - PWM Reg-0
-`define PWM_CFG_PWM_1         8'h08  // reg_2 - PWM Reg-1
-`define PWM_CFG_PWM_2         8'h0C  // reg_3 - PWM Reg-2
-`define PWM_CFG_PWM_3         8'h10  // reg_4 - PWM Reg-3
-`define PWM_CFG_PWM_4         8'h14  // reg_5 - PWM Reg-4
-`define PWM_CFG_PWM_5         8'h18  // reg_6 - PWM Reg-5
+`define PWM_GLBL_CFG0         8'h00  // reg_0 - PWM Global Config-0
+`define PWM_GLBL_CFG1         8'h04  // reg_1 - PWM Global Config-1
+`define PWM_GLBL_INTR_MASK    8'h08  // reg_2 - PWM Global Interrupt Status
+`define PWM_GLBL_INTR_STAT    8'h0C  // reg_3 - PWM Global Interrupt Mask
+`define PWM_BLK0_CFG0         8'h10  // reg_0 - PWM BLK-0 Reg-0
+`define PWM_BLK0_CFG1         8'h14  // reg_1 - PWM BLK-0 Reg-1
+`define PWM_BLK0_CFG2         8'h18  // reg_2 - PWM BLK-0 Reg-2
+`define PWM_BLK0_CFG3         8'h1C  // reg_3 - PWM BLK-0 Reg-3
+`define PWM_BLK1_CFG0         8'h20  // reg_0 - PWM BLK-1 Reg-0
+`define PWM_BLK1_CFG1         8'h24  // reg_1 - PWM BLK-1 Reg-1
+`define PWM_BLK1_CFG2         8'h28  // reg_2 - PWM BLK-1 Reg-2
+`define PWM_BLK1_CFG3         8'h2C  // reg_3 - PWM BLK-1 Reg-3
+`define PWM_BLK2_CFG0         8'h30  // reg_0 - PWM BLK-2 Reg-0
+`define PWM_BLK2_CFG1         8'h34  // reg_1 - PWM BLK-2 Reg-1
+`define PWM_BLK2_CFG2         8'h38  // reg_2 - PWM BLK-2 Reg-2
+`define PWM_BLK2_CFG3         8'h3C  // reg_3 - PWM BLK-2 Reg-3
+`define PWM_BLK3_CFG0         8'h40  // reg_0 - PWM BLK-3 Reg-0
+`define PWM_BLK3_CFG1         8'h44  // reg_1 - PWM BLK-3 Reg-1
+`define PWM_BLK3_CFG2         8'h48  // reg_2 - PWM BLK-3 Reg-2
+`define PWM_BLK3_CFG3         8'h4C  // reg_3 - PWM BLK-3 Reg-3
+`define PWM_BLK4_CFG0         8'h50  // reg_0 - PWM BLK-4 Reg-0
+`define PWM_BLK4_CFG1         8'h54  // reg_1 - PWM BLK-4 Reg-1
+`define PWM_BLK4_CFG2         8'h58  // reg_2 - PWM BLK-4 Reg-2
+`define PWM_BLK4_CFG3         8'h5C  // reg_3 - PWM BLK-4 Reg-3
+`define PWM_BLK5_CFG0         8'h60  // reg_0 - PWM BLK-5 Reg-0
+`define PWM_BLK5_CFG1         8'h64  // reg_1 - PWM BLK-5 Reg-1
+`define PWM_BLK5_CFG2         8'h68  // reg_2 - PWM BLK-5 Reg-2
+`define PWM_BLK5_CFG3         8'h6C  // reg_3 - PWM BLK-5 Reg-3
 
 //--------------------------------------------------
 // TIMER Register

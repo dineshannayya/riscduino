@@ -15,8 +15,12 @@
 
 
 /*****************************************************************
+Formula clock period: 1.168 + (bcount * 0.012)
 
-Offset	bcount	4x clock period	clock period (ns)	clock (Mhz)
+Example for bcount: 10
+        clock period = 1.168 + (10 *0.012) = 1.288
+
+Offset	bcount	clock period	 4xclock period (ns)	clock (Mhz)
 1.168	0	    1.168	            4.672	        214.041095890411
 1.168	1	    1.18	            4.72	        211.864406779661
 1.168	2	    1.192	            4.768	        209.731543624161

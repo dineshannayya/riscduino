@@ -273,7 +273,13 @@
 ////          boot up config                                      ////
 ////          2'b00 - 50Mhz, 2'b01 - 40Mhz, 2'b10 - 50Mhz,        ////
 ////          2'b11 - LA control                                  ////
-////                                                              ////
+////    5.5  Sept 14 2022, Dinesh A                               ////
+////          A. Auto Baud detection added in uart master as      ////
+////          power on user_clock1 is not decided, strap def      ////
+////          changed                                             ////
+////          2'b00 - Auto, 2'b01 - 50Mhz, 2'b10 - 4Mhz,          ////
+////          2'b11 - LA control                                  ////
+////          B. digital_pll is re-synth with maual placement     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////

@@ -116,7 +116,7 @@ end
 initial
 begin
    strap_in = 0;
-   strap_in[`PSTRAP_UARTM_CFG] = 2'b11; // uart master config control - load from LA
+   strap_in[`PSTRAP_UARTM_CFG] = 2'b00; // uart master config control - load from LA
    apply_strap(strap_in);
 
    uart_data_bit           = 2'b11;
@@ -144,6 +144,8 @@ begin
    tb_master_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
 	                          uart_stick_parity, uart_timeout, uart_divisor);
 
+
+    tb_master_uart.write_char('\n'); // for uart baud auto detect purpose
    //$write ("\n(%t)Response:\n",$time);
    flag = 0;
    while(flag == 0)

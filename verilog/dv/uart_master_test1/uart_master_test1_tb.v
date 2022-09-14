@@ -18,8 +18,8 @@
 `timescale 1 ns / 1 ps
 `include "uart_agent.v"
 
-`define TB_HEX "uart_master.hex"
-`define TB_TOP  uart_master_tb
+`define TB_HEX "uart_master_test1.hex"
+`define TB_TOP  uart_master_test1_tb
 module `TB_TOP;
 	reg clock;
 	reg RSTB;
@@ -75,8 +75,8 @@ reg  [15:0]    strap_in;
 		$dumpfile("simx.vcd");
 		$dumpvars(2, `TB_TOP);
 		$dumpvars(0, `TB_TOP.tb_master_uart);
+		$dumpvars(1, `TB_TOP.u_top.mprj.u_wb_host);
 		$dumpvars(0, `TB_TOP.u_top.mprj.u_wb_host.u_uart2wb);
-		$dumpvars(1, `TB_TOP.tb_master_uart);
 		$dumpvars(0, `TB_TOP.u_top.mprj.u_pinmux);
 	end
        `endif
@@ -103,7 +103,7 @@ reg  [15:0]    strap_in;
 	initial begin
 
             strap_in = 0;
-            strap_in[`PSTRAP_UARTM_CFG] = 0; // uart master config control - load from LA
+            strap_in[`PSTRAP_UARTM_CFG] = 2'b11; // uart master config control - load from LA
             apply_strap(strap_in);
 
             uart_data_bit           = 2'b11;
@@ -244,7 +244,7 @@ reg  [15:0]    strap_in;
 	);
 
 	spiflash #(
-		.FILENAME("uart_master.hex")
+		.FILENAME(`TB_HEX)
 	) spiflash (
 		.csb(flash_csb),
 		.clk(flash_clk),

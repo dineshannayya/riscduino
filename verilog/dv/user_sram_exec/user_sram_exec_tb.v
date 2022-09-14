@@ -118,6 +118,7 @@ parameter real XTAL_PERIOD = 6;
 
 
         wait_riscv_boot();
+        wait_riscv_exit();
 
 		$display("Monitor: Reading Back the expected value");
 		// User RISC core expect to write these value in global

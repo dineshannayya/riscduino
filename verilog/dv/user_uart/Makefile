@@ -90,6 +90,6 @@ endif
 # ---- Clean ----
 
 clean:
-	rm -f *.elf *.hex *.bin *.vvp *.vcd *.log *.dump
+	rm -f *.elf *.hex *.bin *.vvp *.vcd *.log *.o *.dump
 
 .PHONY: clean hex all

@@ -97,40 +97,43 @@ module digital_pll_controller(reset, clock, osc, div, trim);
           (tint == 5'd25) ? 26'b1111101111111_1111111111111 :
                     26'b1111111111111_1111111111111;
    
-    always @(posedge clock or posedge reset) begin
-    if (reset == 1'b1) begin
+    always @(posedge clock or posedge reset) begin // {
+    if (reset == 1'b1) begin // {
         tval <= 7'd0;	// Note:  trim[0] must be zero for startup to work.
         oscbuf <= 3'd0;
         prep <= 3'd0;
         count0 <= 5'd0;
         count1 <= 5'd0;
 
-    end else begin
+    end  // }
+    else begin // {
         oscbuf <= {oscbuf[1:0], osc};
 
-        if (oscbuf[2] != oscbuf[1]) begin
-        count1 <= count0;
-        count0 <= 5'b00001;
-        prep <= {prep[1:0], 1'b1};
+        if (oscbuf[2] != oscbuf[1]) begin // {
+             count1 <= count0;
+             count0 <= 5'b00001;
+             prep   <= {prep[1:0], 1'b1};
 
-        if (prep == 3'b111) begin
-            if (sum > div) begin
-		if (tval < 127) begin
-            	    tval <= tval + 1;
-		end
-            end else if (sum < div) begin
-		if (tval > 0) begin
-            	    tval <= tval - 1;
-		end
-            end
-        end
-        end else begin
-        if (count0 != 5'b11111) begin
-                count0 <= count0 + 1;
-        end
-        end
-    end
-    end
+             if (prep == 3'b111) begin // {
+                if (sum > div) begin  // {
+		           if (tval < 127) begin // {
+                      tval <= tval + 1;
+		           end // }
+                end  // }
+                else if (sum < div) begin // {
+		           if (tval > 0) begin // {
+                      tval <= tval - 1;
+		           end // }
+                end // }
+             end  // }
+           end // } 
+           else begin  // {
+               if (count0 != 5'b11111) begin // {
+                 count0 <= count0 + 1;
+             end // }
+           end // }
+       end // }
+    end // }
 
 endmodule	// digital_pll_controller
 `default_nettype wire
