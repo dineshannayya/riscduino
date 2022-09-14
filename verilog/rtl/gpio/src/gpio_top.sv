@@ -41,6 +41,8 @@ module gpio_top  (
                        // Inputs
 		               input logic           mclk,
                        input logic           h_reset_n,
+                       input logic           cfg_gpio_dgmode, // 0 - De-glitch sampling on 1us
+                       input logic           pulse_1us,
 
 		               // Reg Bus Interface Signal
                        input logic           reg_cs,
@@ -58,6 +60,8 @@ module gpio_top  (
                        input   logic [31:0]  pad_gpio_in,
                        output  logic [31:0]  pad_gpio_out,
 
+                       output  logic [7:0]   pwm_gpio_in,
+
                        output  logic [31:0]  gpio_intr
 
                 ); 
@@ -70,6 +74,35 @@ logic  [31:0]  cfg_gpio_posedge_int_sel ;// select posedge interrupt
 logic  [31:0]  cfg_gpio_negedge_int_sel ;// select negedge interrupt
 logic  [31:00] cfg_gpio_data_in         ;
 logic [31:0]   gpio_int_event           ;
+logic [31:0]   gpio_dsync               ;
+
+
+//------------------------------------------
+// Assign GPIO PORT-C as PWM GPIO
+//----------------------------------------
+
+assign  pwm_gpio_in = gpio_dsync[23:16];
+
+//--------------------------------------
+// GPIO Ge-glitch logic
+//--------------------------------------
+genvar port;
+generate
+for (port = 0; $unsigned(port) < 32; port=port+1) begin : u_bit
+
+gpio_dglitch u_dglitch(
+                  .reset_n    (h_reset_n         ),
+                  .mclk       (mclk              ),
+                  .pulse_1us  (pulse_1us         ),
+                  .cfg_mode   (cfg_gpio_dgmode   ), 
+                  .gpio_in    (pad_gpio_in[port] ),
+                  .gpio_out   (gpio_dsync[port])
+                 );
+
+end
+endgenerate // dglitch
+
+
 
 
 gpio_reg  u_reg (
@@ -88,7 +121,7 @@ gpio_reg  u_reg (
                .reg_ack                      (reg_ack                 ),
 
             // GPIO input pins
-               .gpio_in_data                 (pad_gpio_in             ),
+               .gpio_in_data                 (gpio_dsync              ),
                .gpio_prev_indata             (gpio_prev_indata        ),
                .gpio_int_event               (gpio_int_event          ),
 

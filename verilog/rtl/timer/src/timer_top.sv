@@ -53,6 +53,7 @@ module timer_top  (
                        output logic          reg_ack,
 
                        output logic          pulse_1ms,
+                       output logic          pulse_1us,
                        output logic [2:0]    timer_intr 
 
                 ); 
@@ -67,7 +68,6 @@ logic [18:0]   cfg_timer2              ; // Timer-2 register
 
 /* clock pulse */
 //********************************************************
-logic           pulse_1us               ; // 1 UsSecond Pulse for waveform Generator
 logic           pulse_1s                ; // 1Second Pulse for waveform Generator
 logic [9:0]     cfg_pulse_1us           ; // 1us pulse generation config
 

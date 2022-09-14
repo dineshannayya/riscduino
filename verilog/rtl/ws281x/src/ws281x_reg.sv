@@ -128,12 +128,10 @@ wire   sw_wr_en_2  = sw_wr_en  & (sw_addr == 4'h2);
 wire   sw_wr_en_3  = sw_wr_en  & (sw_addr == 4'h3);
 wire   sw_wr_en_4  = sw_wr_en  & (sw_addr == 4'h4) & !fifo_full[0]; // Write only if fifo is not full
 wire   sw_wr_en_5  = sw_wr_en  & (sw_addr == 4'h5) & !fifo_full[1]; // Write only if fifo is not full
-wire   sw_wr_en_6  = sw_wr_en  & (sw_addr == 4'h6) & !fifo_full[2]; // Write only if fifo is not full
-wire   sw_wr_en_7  = sw_wr_en  & (sw_addr == 4'h7) & !fifo_full[3]; // Write only if fifo is not full
 
 
 // Generated seperate write enable case to block the reg ack duration when fifo is full
-wire  sw_wr_en_t =  sw_wr_en_0 | sw_wr_en_1 | sw_wr_en_2 | sw_wr_en_3 | sw_wr_en_4 | sw_wr_en_5 | sw_wr_en_6 | sw_wr_en_7;
+wire  sw_wr_en_t =  sw_wr_en_0 | sw_wr_en_1 | sw_wr_en_2 | sw_wr_en_3 | sw_wr_en_4 | sw_wr_en_5 ;
 
 
 always @ (posedge mclk or negedge h_reset_n)

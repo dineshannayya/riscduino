@@ -29,6 +29,10 @@
 ////  Author(s):                                                  ////
 ////      - Dinesh Annayya, dinesha@opencores.org                 ////
 ////                                                              ////
+////  Revision :                                                  ////
+////    0.1 - 12th Sep 2022, Dinesh A                             ////
+////          baud config auto detect for unknow system clock case////
+////          implemented specific to unknown caravel system clk  ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -61,11 +65,12 @@ module uart2wb (
         input wire                  app_clk         , //  sys clock    
 
 	// configuration control
+       input wire                  cfg_auto_det     , // Auto Baud Config detect mode
        input wire                  cfg_tx_enable    , // Enable Transmit Path
        input wire                  cfg_rx_enable    , // Enable Received Path
        input wire                  cfg_stop_bit     , // 0 -> 1 Start , 1 -> 2 Stop Bits
        input wire [1:0]            cfg_pri_mod      , // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
-       input wire [11:0]	    cfg_baud_16x     , // 16x Baud clock generation
+       input wire [11:0]	       cfg_baud_16x     , // 16x Baud clock generation
 
     // Master Port
        output   wire                wbm_cyc_o        ,  // strobe/request
@@ -80,7 +85,7 @@ module uart2wb (
 
        // Status information
        output   wire               frm_error        , // framing error
-       output   wire       	    par_error        , // par error
+       output   wire       	       par_error        , // par error
 
        output   wire               baud_clk_16x     , // 16x Baud clock
 
@@ -122,8 +127,25 @@ wire [7:0]  rx_data                ; // RXD Data
 wire        rx_wr                  ; // Valid RXD Data
 
 wire        line_reset_n           ;
+wire        arst_ssn               ;
+wire [11:0] auto_baud_16x          ;
+wire        auto_tx_enb            ;
+wire        auto_rx_enb            ;
+
+
+wire        cfg_tx_enable_i = (cfg_auto_det) ?  auto_tx_enb: cfg_tx_enable;
+wire        cfg_rx_enable_i = (cfg_auto_det) ?  auto_rx_enb: cfg_rx_enable;
+wire [11:0] cfg_baud_16x_i  = (cfg_auto_det) ?  auto_baud_16x: cfg_baud_16x;
+
 
 assign wbm_cyc_o  = wbm_stb_o;
+
+reset_sync  u_arst_sync (
+	          .scan_mode  (1'b0         ),
+              .dclk       (app_clk      ), // Destination clock domain
+	          .arst_n     (arst_n       ), // active low async reset
+              .srst_n     (arst_ssn     )
+          );
 
 
 // Async App clock to Uart clock handling
@@ -148,7 +170,7 @@ async_reg_bus #(.AW(32), .DW(32),.BEW(4))
 
     // Target Declaration
           .out_clk                    (app_clk),
-          .out_reset_n                (arst_n),
+          .out_reset_n                (arst_ssn),
       // Reg Bus Slave
           // output
           .out_reg_cs                 (wbm_stb_o),
@@ -163,16 +185,30 @@ async_reg_bus #(.AW(32), .DW(32),.BEW(4))
    );
 
 
+
+uart_auto_det u_aut_det (
+         .mclk              (app_clk        ),
+         .reset_n           (arst_ssn       ),
+         .cfg_auto_det      (cfg_auto_det   ),
+         .rxd               (rxd            ),
+
+         .auto_baud_16x     (auto_baud_16x  ),
+         .auto_tx_enb       (auto_tx_enb    ),
+         .auto_rx_enb       (auto_rx_enb    )
+
+        );
+
+
 uart2_core u_core (  
           .arst_n            (arst_n) ,
           .app_clk           (app_clk) ,
 
 	// configuration control
-          .cfg_tx_enable      (cfg_tx_enable) , 
-          .cfg_rx_enable      (cfg_rx_enable) , 
+          .cfg_tx_enable      (cfg_tx_enable_i) , 
+          .cfg_rx_enable      (cfg_rx_enable_i) , 
           .cfg_stop_bit       (cfg_stop_bit)  , 
           .cfg_pri_mod        (cfg_pri_mod)   , 
-	  .cfg_baud_16x       (cfg_baud_16x)  ,
+	  .cfg_baud_16x           (cfg_baud_16x_i)  ,
 
     // TXD Information
           .tx_data_avail      (tx_data_avail) ,
@@ -187,10 +223,10 @@ uart2_core u_core (
 
        // Status information
           .frm_error          (frm_error) ,
-	  .par_error          (par_error) ,
+	      .par_error          (par_error) ,
 
-	  .baud_clk_16x       (baud_clk_16x) ,
-	  .line_reset_n       (line_reset_n),
+	      .baud_clk_16x       (baud_clk_16x) ,
+	      .line_reset_n       (line_reset_n),
 
        // Line Interface
           .rxd                (rxd) ,
@@ -201,8 +237,9 @@ uart2_core u_core (
 
 
 uart_msg_handler u_msg (  
-          .reset_n            (arst_n ) ,
+          .reset_n            (line_reset_n ) ,
           .sys_clk            (baud_clk_16x ) ,
+          .cfg_uart_enb       (cfg_tx_enable_i),
 
 
     // UART-TX Information

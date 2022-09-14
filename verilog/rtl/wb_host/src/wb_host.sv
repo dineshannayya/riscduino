@@ -272,9 +272,9 @@ wbh_reset_fsm u_reset_fsm (
 //      it has additional 1 cycle additional count,
 //      so we are subtracting desired count by 2
 // strap_uartm
-//     2'b00 - 50Mhz - 324
-//     2'b01 - 40Mhz - 258
-//     2'b10 - 60Mhz - 389
+//     2'b00 - Auto Baud Detect
+//     2'b01 - 50Mhz - 324
+//     2'b10 - 4Mhz - 24
 //     2'b11 - Load from LA
 //-------------------------------------------------
 
@@ -284,9 +284,12 @@ wire       cfg_uartm_rx_enable   = (strap_uartm==2'b11) ? la_data_in[2]     : 1'
 wire       cfg_uartm_stop_bit    = (strap_uartm==2'b11) ? la_data_in[3]     : 1'b1;
 wire [1:0] cfg_uartm_cfg_pri_mod = (strap_uartm==2'b11) ? la_data_in[17:16] : 2'b0;
 
-wire [11:0]cfg_uart_baud_16x     = (strap_uartm==2'b00) ? 324:
-                                   (strap_uartm==2'b01) ? 258:
-                                   (strap_uartm==2'b10) ? 389: la_data_in[15:4];
+wire [11:0]cfg_uart_baud_16x     = (strap_uartm==2'b00) ? 'h0:
+                                   (strap_uartm==2'b01) ? 324:
+                                   (strap_uartm==2'b10) ? 24: la_data_in[15:4];
+
+wire       cfg_uartm_aut_det     = (strap_uartm==2'b00) ? 1'b1: 1'b0;
+
 
 
 // UART Master
@@ -295,6 +298,7 @@ uart2wb u_uart2wb (
         .app_clk         (wbm_clk_i               ), //  sys clock    
 
 	// configuration control
+       .cfg_auto_det     (cfg_uartm_aut_det       ), // Auto Baud Value detect
        .cfg_tx_enable    (cfg_uartm_tx_enable     ), // Enable Transmit Path
        .cfg_rx_enable    (cfg_uartm_rx_enable     ), // Enable Received Path
        .cfg_stop_bit     (cfg_uartm_stop_bit      ), // 0 -> 1 Start , 1 -> 2 Stop Bits

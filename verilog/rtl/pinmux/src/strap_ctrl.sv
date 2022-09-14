@@ -92,9 +92,9 @@ pad_strap_in decoding
                  2'b10 - Default value + 4               
                  2'b11 - Default value - 4 
      bit [4:13]   - uart master config control
-                 2'b00   - constant value based on system clock-50Mhz (Default)
-                 2'b01   - constant value based on system clock-40Mhz 
-                 2'b10   - constant value based on system clock-60Mhz (USB Ref Clock)
+                 2'b00   - Auto Detect (Default)
+                 2'b01   - constant value based on system clock-50Mhz
+                 2'b10   - constant value based on system clock-4Mhz 
                  2'b11   - load from LA
      bit [14:13] - Reserved
      bit [15]    - Strap Mode

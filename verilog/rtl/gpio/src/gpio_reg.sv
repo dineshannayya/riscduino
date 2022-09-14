@@ -28,7 +28,7 @@
 ////    nothing                                                   ////
 ////                                                              ////
 ////  Author(s):                                                  ////
-////      - Dinesh Annayya, dinesha@opencores.org                 ////
+////      - Dinesh Annayya, dinesh.annayya@gmail.com              ////
 ////                                                              ////
 ////  Revision :                                                  ////
 ////    0.1 - 15th Aug 2022, Dinesh A                             ////
@@ -168,26 +168,20 @@ gen_32b_reg  #(32'h0) u_reg_1	(
 //-----------------------------------------------------------------------
 // Logic for gpio_data_in 
 //-----------------------------------------------------------------------
-logic [31:0] gpio_in_data_s;
-logic [31:0] gpio_in_data_ss;
 // Double Sync the gpio pin data for edge detection
 always @ (posedge mclk or negedge h_reset_n)
 begin 
   if (h_reset_n == 1'b0) begin
     reg_2  <= 'h0 ;
-    gpio_in_data_s  <= 32'd0;
-    gpio_in_data_ss <= 32'd0;
   end
   else begin
-    gpio_in_data_s   <= gpio_in_data;
-    gpio_in_data_ss <= gpio_in_data_s;
-    reg_2           <= gpio_in_data_ss;
+    reg_2  <= gpio_in_data;
   end
 end
 
 
-assign cfg_gpio_data_in = reg_2[31:0]; // to be used for edge interrupt detect
-assign gpio_prev_indata = gpio_in_data_ss;
+assign cfg_gpio_data_in = gpio_in_data; // to be used for edge interrupt detect
+assign gpio_prev_indata = reg_2[31:0];
 
 //-----------------------------------------------------------------------
 // Logic for cfg_gpio_out_data 

@@ -4,9 +4,9 @@
 // ASCI Representation of RISC = 32'h8273_8343
 parameter CHIP_SIGNATURE = 32'h8273_8343;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h0709_2022;
+parameter CHIP_RELEASE_DATE = 32'h1409_2022;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0005_4000;
+parameter CHIP_REVISION   = 32'h0005_5000;
 
 parameter SKEW_RESET_VAL = 32'b0000_0000_1000_0111_1001_1000_1001_1000;
 
@@ -48,9 +48,9 @@ pad_strap_in decoding
                  2'b10 - Default value + 4               
                  2'b11 - Default value - 4 
      bit [4:13]   - uart master config control
-                 2'b00   - constant value based on system clock-50Mhz (Default)
-                 2'b01   - constant value based on system clock-40Mhz 
-                 2'b10   - constant value based on system clock-60Mhz (USB Ref Clock)
+                 2'b00   - Auto Detect (Default)
+                 2'b01   - constant value based on system clock-50Mhz
+                 2'b10   - constant value based on system clock-4Mhz 
                  2'b11   - load from LA
 
      bit[15]   - Strap Mode

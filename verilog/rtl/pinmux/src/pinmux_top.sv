@@ -206,11 +206,13 @@ module pinmux_top (
 logic         s_reset_ssn;  // Sync Reset
 logic         p_reset_ssn;  // Sync Reset
 logic [15:0]  pad_strap_in;
-logic           dbg_clk_mon;
-   
+logic         dbg_clk_mon;
+logic         cfg_gpio_dgmode; // gpio de-glitch mode
+logic         pwm_intr;   
 /* clock pulse */
 //********************************************************
 logic           pulse_1ms               ; // 1 Milli Second Pulse for waveform Generator
+logic           pulse_1us               ; // 1 Micro Second Pulse for waveform Generator
 logic [5:0]     cfg_pwm_enb             ;
 
 
@@ -281,6 +283,8 @@ logic         reg_sema_ack;
 
 logic [31:0]  reg_ws_rdata;
 logic         reg_ws_ack;
+
+logic [7:0]   pwm_gpio_in;
 
 assign reg_rdata = (reg_addr[9:7] == `SEL_GLBL)  ? {reg_glbl_rdata} : 
 	               (reg_addr[9:7] == `SEL_GPIO)  ? {reg_gpio_rdata} :
@@ -394,6 +398,7 @@ glbl_reg u_glbl_reg(
 	      .user_irq                     (user_irq                ),
           .usb_intr                     (usb_intr                ),
           .i2cm_intr                    (i2cm_intr               ),
+          .pwm_intr                     (pwm_intr                ),
 
 
 
@@ -407,7 +412,8 @@ glbl_reg u_glbl_reg(
          .cfg_dc_trim                   (cfg_dc_trim            ), // External trim for DCO mode
          .pll_ref_clk                   (pll_ref_clk            ), // Input oscillator to match
 
-         .dbg_clk_mon                   (dbg_clk_mon            )
+         .dbg_clk_mon                   (dbg_clk_mon            ),
+         .cfg_gpio_dgmode               (cfg_gpio_dgmode        )
 
 
 
@@ -421,6 +427,8 @@ gpio_top  u_gpio(
               // Inputs
 		      .mclk                     ( mclk                      ),
               .h_reset_n                (s_reset_ssn                ),
+              .cfg_gpio_dgmode          (cfg_gpio_dgmode            ),
+              .pulse_1us                (pulse_1us                  ), 
 
 		      // Reg Bus Interface Signal
               .reg_cs                   (reg_gpio_cs                ),
@@ -438,6 +446,7 @@ gpio_top  u_gpio(
               .cfg_gpio_dir_sel         (cfg_gpio_dir_sel           ),
               .pad_gpio_in              (pad_gpio_in                ),
               .pad_gpio_out             (pad_gpio_out               ),
+              .pwm_gpio_in              (pwm_gpio_in                ),
 
               .gpio_intr                (gpio_intr                  )          
 
@@ -456,7 +465,7 @@ pwm_top  u_pwm(
 		      // Reg Bus Interface Signal
               .reg_cs                   (reg_pwm_cs                 ),
               .reg_wr                   (reg_wr                     ),
-              .reg_addr                 (reg_addr[4:2]              ),
+              .reg_addr                 (reg_addr[6:2]              ),
               .reg_wdata                (reg_wdata                  ),
               .reg_be                   (reg_be                     ),
 
@@ -464,9 +473,9 @@ pwm_top  u_pwm(
               .reg_rdata                (reg_pwm_rdata              ),
               .reg_ack                  (reg_pwm_ack                ),
 
-              .pulse_1ms                (pulse_1ms                  ), 
-              .cfg_pwm_enb              (cfg_pwm_enb                ),
-              .pwm_wfm                  (pwm_wfm                    ) 
+              .pad_gpio                 (pwm_gpio_in                ),
+              .pwm_wfm                  (pwm_wfm                    ),
+              .pwm_intr                 (pwm_intr                   ) 
            );
 
 //-----------------------------------------------------------------------
@@ -489,6 +498,7 @@ timer_top  u_timer(
               .reg_rdata                (reg_timer_rdata            ),
               .reg_ack                  (reg_timer_ack              ),
 
+              .pulse_1us                (pulse_1us                  ), 
               .pulse_1ms                (pulse_1ms                  ), 
               .timer_intr               (timer_intr                 ) 
            );

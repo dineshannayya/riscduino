@@ -64,7 +64,13 @@ logic [9:0]    cfg_clk_period       ;   // Total bit clock period
 logic [9:0]    cfg_th0_period       ;   // bit-0 drive low period
 logic [9:0]    cfg_th1_period       ;   // bit-1 drive low period
 
+logic          port0_enb            ;
+logic          port0_rd             ;
+logic          port0_dval           ;
 logic [23:0]   port0_data           ;
+logic          port1_enb            ;
+logic          port1_rd             ;
+logic          port1_dval           ;
 logic [23:0]   port1_data           ;
 //logic [23:0]   port2_data         ;
 //logic [23:0]   port3_data         ;

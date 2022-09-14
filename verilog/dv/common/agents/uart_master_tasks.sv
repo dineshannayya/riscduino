@@ -73,7 +73,7 @@ begin
            8'd17 : data[3:0]   = char2hex(read_data);
       endcase
 	  i = i+1;
-   $display("received Data: %x",data);
+   $display("received Data: 0x%x",data);
    end
 
 end
@@ -119,9 +119,9 @@ begin
     i = i+1;
    end
    if(rxd_data == exp_data) begin
-      // $display("STATUS: ADDRESS: %x RXD: %x", addr,rxd_data);
+      $display("STATUS: ADDRESS: 0x%x RXD: 0x%x", addr,rxd_data);
    end else begin
-      $display("ERROR:  ADDRESS: %x EXP: %x RXD: %x", addr,exp_data,rxd_data);
+      $display("ERROR:  ADDRESS: 0x%x EXP: %x RXD: 0x%x", addr,exp_data,rxd_data);
       test_fail = 1;
    end
 

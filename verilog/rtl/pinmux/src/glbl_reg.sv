@@ -93,6 +93,7 @@ module glbl_reg (
                        output logic [2:0]      user_irq               ,
 		               input  logic            usb_intr               ,
 		               input  logic            i2cm_intr              ,
+		               input  logic            pwm_intr              ,
 
 		               output logic [15:0]     cfg_riscv_ctrl         ,
                        output  logic [31:0]    cfg_multi_func_sel     ,// multifunction pins
@@ -108,7 +109,8 @@ module glbl_reg (
                        output logic[25:0]    cfg_dc_trim        , // External trim for DCO mode
                        output logic          pll_ref_clk        , // Input oscillator to match
 
-                       output logic          dbg_clk_mon
+                       output logic          dbg_clk_mon        ,
+                       output logic          cfg_gpio_dgmode    
    ); 
 
 
@@ -344,10 +346,11 @@ gen_32b_reg2  u_reg_2	(
 	      .data_out   (reg_2         )
 	      );
 
-assign  cfg_mon_sel   = reg_2[7:4];
-assign  soft_irq      = reg_2[3]; 
-assign  user_irq      = reg_2[2:0]; 
-assign cfg_riscv_ctrl = reg_2[31:16];
+assign  cfg_gpio_dgmode   = reg_2[8]; // gpio de-glitch mode selection
+assign  cfg_mon_sel       = reg_2[7:4];
+assign  soft_irq          = reg_2[3]; 
+assign  user_irq          = reg_2[2:0]; 
+assign cfg_riscv_ctrl     = reg_2[31:16];
 
 //-----------------------------------------------------------------------
 //   reg-3 : Global Interrupt Mask
@@ -371,7 +374,7 @@ gen_32b_reg  #(32'h0) u_reg_3	(
 assign  irq_lines     = reg_3[31:0] & reg_4[31:0]; 
 
 // In Arduino GPIO[7:0] is corresponds to PORT-A which is not available for user access
-wire [31:0] hware_intr_req = {gpio_intr[31:8], 3'b0,usb_intr, i2cm_intr,timer_intr[2:0]};
+wire [31:0] hware_intr_req = {gpio_intr[31:8], 2'b0,pwm_intr,usb_intr, i2cm_intr,timer_intr[2:0]};
 
 generic_intr_stat_reg #(.WD(32),
 	                .RESET_DEFAULT(0)) u_reg4 (
@@ -755,7 +758,7 @@ clk_ctl #(2) u_pll_ref_clk (
    );
 
 // Debug clock monitor optin
-assign dbg_clk_ref       = (cfg_mon_sel == 4'b000) ? user_clock1    :
+wire  dbg_clk_ref       = (cfg_mon_sel == 4'b000) ? user_clock1    :
 	                       (cfg_mon_sel == 4'b001) ? user_clock2    :
 	                       (cfg_mon_sel == 4'b010) ? xtal_clk     :
 	                       (cfg_mon_sel == 4'b011) ? int_pll_clock: 
@@ -765,6 +768,7 @@ assign dbg_clk_ref       = (cfg_mon_sel == 4'b000) ? user_clock1    :
 	                       (cfg_mon_sel == 4'b111) ? rtc_clk      : 1'b0;
 
 //  DIv16 to debug monitor purpose
+logic dbg_clk_div16;
 
 clk_ctl #(3) u_dbgclk (
    // Outputs
