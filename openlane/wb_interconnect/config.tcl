@@ -27,6 +27,7 @@ set ::env(DESIGN_IS_CORE) "0"
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "clk_i"
+set ::env(CLOCK_NET) "clk_i"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 
@@ -98,7 +99,7 @@ set ::env(CTS_SINK_CLUSTERING_SIZE) 20
 
 ## Placement
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 1
-set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
+set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 1
 
 set ::env(PL_RESIZER_MAX_SLEW_MARGIN) 2
 set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
@@ -107,6 +108,14 @@ set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
 set ::env(GRT_ADJUSTMENT) 0.1
 set ::env(DPL_CELL_PADDING) 1
 
+set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}
+
+set ::env(GLB_RESIZER_MAX_CAP_MARGIN) {0.25}
+set ::env(PL_RESIZER_MAX_CAP_MARGIN) {0.25}
+
+set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) {500}
 
 #LVS Issue - DEF Base looks to having issue
 set ::env(MAGIC_EXT_USE_GDS) {1}
@@ -126,9 +135,6 @@ set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
 set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "2000"
 set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "2.0"
 set ::env(PL_RESIZER_MAX_CAP_MARGIN) "5"
-
-## FANOUT Reduced to take care of long routes
-set ::env(SYNTH_MAX_FANOUT) "2"
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100

@@ -1,11 +1,14 @@
 ###########################################################
 # STD CELLS - they need to be below the defines.v files 
 ###########################################################
--v $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_io/verilog/sky130_fd_io.v
--v $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_io/verilog/sky130_ef_io.v
--v $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
--v $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
--v $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hvl/verilog/primitives.v
--v $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v
+-v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_io/verilog/sky130_fd_io.v
+-v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_io/verilog/sky130_ef_io.v
+-v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
+-v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
+-v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_sc_hvl/verilog/primitives.v
+-v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v
 
-$(USER_PROJECT_VERILOG)/gl/digital_pll.v
+#$(USER_PROJECT_VERILOG)/gl/digital_pll.v
+-v $(USER_PROJECT_VERILOG)/rtl/digital_pll/src/digital_pll_controller.v
+-v $(USER_PROJECT_VERILOG)/rtl/digital_pll/src/digital_pll.v
+-v $(USER_PROJECT_VERILOG)/rtl/digital_pll/src/ring_osc2x13.v

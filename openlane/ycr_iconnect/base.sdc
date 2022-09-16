@@ -57,6 +57,10 @@ set cap_load 0.0334
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
 
+set_max_transition 1.00 [current_design]
+set_max_capacitance 0.2 [current_design]
+set_max_fanout 10 [current_design]
+
 ###############################################################################
 # Design Rules
 ###############################################################################

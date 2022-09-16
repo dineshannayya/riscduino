@@ -71,10 +71,10 @@ set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[2]}]
 set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[1]}]
 set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[0]}]
 
-set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[3]}]
-set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[2]}]
-set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[0]}]
-set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[1]}]
+set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[3]}]
+set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[2]}]
+set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[0]}]
+set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[1]}]
 
 #Keept the SRAM clock driving edge at pos edge
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_sram_lphase[0]}]

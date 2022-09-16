@@ -4,9 +4,9 @@
 +incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/yifive/ycr2c/src/includes
-+incdir+$(USER_PROJECT_VERILOG)/dv/bfm
-+incdir+$(USER_PROJECT_VERILOG)/dv/model
-+incdir+$(USER_PROJECT_VERILOG)/dv/agents
++incdir+$(USER_PROJECT_VERILOG)/dv/common/bfm
++incdir+$(USER_PROJECT_VERILOG)/dv/common/model
++incdir+$(USER_PROJECT_VERILOG)/dv/common/agents
 $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 
 ##################################################

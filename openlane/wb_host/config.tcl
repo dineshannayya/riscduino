@@ -27,6 +27,8 @@ set ::env(DESIGN_IS_CORE) "0"
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "wbm_clk_i wbs_clk_i u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X"
+set ::env(CLOCK_NET) "wbm_clk_i wbs_clk_i u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X"
+#set ::env(CLOCK_NET) "wbm_clk_i wbs_clk_i u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X u_uart2wb.u_arst_sync.u_buf.genblk1.u_mux/X"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 
@@ -87,7 +89,7 @@ set ::env(DIE_AREA) "0 0 450 425"
 
 
 # If you're going to use multiple power domains, then keep this disabled.
-set ::env(RUN_CVC) 1
+set ::env(RUN_CVC) 0
 
 #set ::env(PDN_CFG) $script_dir/pdn.tcl
 
@@ -114,6 +116,18 @@ set ::env(DIODE_INSERTION_STRATEGY) 4
 
 #LVS Issue - DEF Base looks to having issue
 set ::env(MAGIC_EXT_USE_GDS) {1}
+
+set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}
+
+set ::env(GLB_RESIZER_MAX_CAP_MARGIN) {0.25}
+set ::env(PL_RESIZER_MAX_CAP_MARGIN) {0.25}
+
+set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) {500}
+
+
+
 
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"

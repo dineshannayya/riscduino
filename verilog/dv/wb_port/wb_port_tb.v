@@ -49,7 +49,7 @@ pullup(mprj_io[3]);
 	initial begin
 		$dumpfile("simx.vcd");
 		$dumpvars(1, wb_port_tb);
-		$dumpvars(1, wb_port_tb.u_top);
+		$dumpvars(2, wb_port_tb.u_top);
 		$dumpvars(1, wb_port_tb.u_top.mgmt_buffers);
 		$dumpvars(1, wb_port_tb.u_top.housekeeping);
 		$dumpvars(1, wb_port_tb.u_top.pll);

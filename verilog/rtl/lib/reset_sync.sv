@@ -81,7 +81,6 @@ output   srst_n     ; // Sync Reset w.r.t dclk
 reg      in_data_s  ; // One   Cycle sync 
 reg      in_data_2s ; // two   Cycle sync 
 
-assign srst_n =  (scan_mode) ? arst_n : in_data_2s;
 
 always @(negedge arst_n  or posedge dclk)
 begin
@@ -97,5 +96,6 @@ begin
    end
 end
 
+ctech_mux2x1 u_buf  (.A0(in_data_2s), .A1(arst_n), .S(scan_mode), .X(srst_n));
 
 endmodule
