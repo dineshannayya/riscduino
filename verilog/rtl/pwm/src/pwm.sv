@@ -19,6 +19,7 @@ module pwm(
     input logic [7:0]     pad_gpio          ,
 
     input logic           cfg_pwm_enb       , // pwm operation enable
+    input logic           cfg_pwm_run       , // pwm operation enable
     input logic [3:0]     cfg_pwm_scale     , // pwm clock scaling
     input logic           cfg_pwm_oneshot   , // pwm OneShot mode
     input logic           cfg_pwm_frun      , // pwm is free running
@@ -49,7 +50,6 @@ logic         comp0_match ;
 logic         comp1_match ;
 logic         comp2_match ;
 logic         comp3_match ;
-logic         gpio_fedge  ; // GPIO first edge detection
 //--------------------------------
 // Counter Scaling
 // In GPIO mode, wait for first GPIO transition
@@ -60,15 +60,15 @@ begin
    if ( ~h_reset_n ) begin
       pwm_scnt  <= 15'h0;
    end else begin
-      if(cfg_pwm_enb) begin
-         if(gpio_tgr || (cfg_pwm_gpio_enb && !gpio_fedge)) begin
-            pwm_scnt  <= 15'h0;
-         end else begin
-            pwm_scnt <= pwm_scnt + 1;
-         end
+      //-------------------------------------------------------
+      // Added additional case to handle when new gpio trigger
+      // generated before completing the current Run
+      //-------------------------------------------------------
+      if(cfg_pwm_enb && cfg_pwm_run && !gpio_tgr) begin
+         pwm_scnt <= pwm_scnt + 1;
       end else begin
-          pwm_scnt  <= 15'h0;
-     end
+         pwm_scnt <= 15'h0;
+      end
    end
 end 
 
@@ -125,10 +125,12 @@ begin
       pwm_ovflow_l <= 1'b0;
    end else begin
       pwm_ovflow_l <= pwm_ovflow;
-      if(cfg_pwm_enb) begin
-         if(gpio_tgr || (cfg_pwm_gpio_enb && !gpio_fedge)) begin
-            pwm_cnt  <= 'h0;
-         end else if(cnt_trg) begin
+      //-------------------------------------------------------
+      // Added additional case to handle when new gpio trigger
+      // generated before completing the current Run
+      //-------------------------------------------------------
+      if(cfg_pwm_enb && cfg_pwm_run && !gpio_tgr) begin
+         if(cnt_trg) begin
             if(pwm_ovflow) begin
                pwm_cnt  <= 'h0;
             end else begin
@@ -229,7 +231,7 @@ always_comb begin
       else            pwm_wfm_o = pwm_wfm_hold;
    end else begin
       if(cfg_pwm_inv) pwm_wfm_o = !pwm_wfm_i;
-                      pwm_wfm_o = pwm_wfm_i;
+      else            pwm_wfm_o = pwm_wfm_i;
    end
 end
 
@@ -247,21 +249,18 @@ always @(posedge mclk or negedge h_reset_n)
 begin 
    if ( ~h_reset_n ) begin
       gpio_l        <= 1'b0;
-      gpio_fedge    <= 1'b0; 
       gpio_tgr      <= 1'b0;
    end else begin
       gpio_l <= gpio;
       if(cfg_pwm_enb && cfg_pwm_gpio_enb) begin
+         gpio_l <= gpio;
          if(cfg_pwm_gpio_edge) begin
              gpio_tgr        <= gpio_ne;
-             gpio_fedge   <= 1'b1;  // gpio first edge detect
          end else begin
              gpio_tgr        <= gpio_pe;
-             gpio_fedge      <= 1'b1; 
          end
       end else begin
          gpio_l        <= 1'b0;
-         gpio_fedge    <= 1'b0; 
          gpio_tgr      <= 1'b0;
       end
    end

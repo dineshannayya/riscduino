@@ -87,7 +87,9 @@ parameter real XTAL_PERIOD = 6;
 	reg [31:0] pwm3_period;
 	reg [31:0] pwm4_period;
 	reg [31:0] pwm5_period;
-    integer    test_step;
+
+    reg [15:0] check_sum;
+    integer    test_step,i;
     wire       clock_mon;
 
 
@@ -119,26 +121,20 @@ parameter real XTAL_PERIOD = 6;
 	    repeat (2) @(posedge clock);
 		#1;
 
-        // Remove the reset
-		// Remove WB and SPI/UART Reset, Keep CORE under Reset
-        //wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
-
-		// config 1us based on system clock - 1000/25ns = 40 
-        wb_user_core_write(`ADDR_SPACE_TIMER+`TIMER_CFG_GLBL,39);
-
 		test_fail = 0;
+        check_sum = 0;
 	    repeat (200) @(posedge clock);
         wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
 
 	    $display("########################################");
 	    $display("Step-1, PWM Square Waveform");
+	    test_step = 1;
         pwm0_period = 20*256;
         pwm1_period = 20*2*256;
         pwm2_period = 20*4*256;
-        pwm3_period = 20*8*256;
-        pwm4_period = 20*16*256;
-        pwm5_period = 20*32*256;
-	    test_step = 1;
+        pwm3_period = 20*256; // pwm3 is connected to pwm0
+        pwm4_period = 20*2*256; // pwm4 is connected to pwm1
+        pwm5_period = 20*4*256; // pwm5 is conneted to pwm2
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_8000); // No Scale 
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFFFF
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h0000_007F); // COMP0 = 0xFF
@@ -151,25 +147,26 @@ parameter real XTAL_PERIOD = 6;
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFFFF
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h0000_007F); // COMP0 = 0xFF
 
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG0,'h0000_8003); // Scale 2^3 = 8
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG1,'h0000_00FF); // Period 0xFFFF
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG2,'h0000_007F); // COMP0 = 0xFF
+        // PWm3 to 5 Removed
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG0,'h0000_8003); // Scale 2^3 = 8
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG1,'h0000_00FF); // Period 0xFFFF
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG2,'h0000_007F); // COMP0 = 0xFF
 
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG0,'h0000_8004); // Scale 2^4 = 16
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG1,'h0000_00FF); // Period 0xFFFF
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG2,'h0000_007F); // COMP0 = 0xFF
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG0,'h0000_8004); // Scale 2^4 = 16
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG1,'h0000_00FF); // Period 0xFFFF
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG2,'h0000_007F); // COMP0 = 0xFF
 
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG0,'h0000_8005); // Scale 2^5 = 32
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG1,'h0000_00FF); // Period 0xFFFF
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG2,'h0000_007F); // COMP0 = 0xFF
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG0,'h0000_8005); // Scale 2^5 = 32
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG1,'h0000_00FF); // Period 0xFFFF
+        //wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG2,'h0000_007F); // COMP0 = 0xFF
         
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_003F); // Enable PWM
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_003F); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM + RUN
 	    pwm_monitor(pwm0_period,pwm1_period,pwm2_period,pwm3_period,pwm4_period,pwm5_period);
-        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_003F); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_003F); // Clear Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
         wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
@@ -181,12 +178,6 @@ parameter real XTAL_PERIOD = 6;
        end
 	    $display("########################################");
 	    $display("Step-2, PWM One Shot");
-        pwm0_period = 20*256;
-        pwm1_period = 20*2*256;
-        pwm2_period = 20*4*256;
-        pwm3_period = 20*8*256;
-        pwm4_period = 20*16*256;
-        pwm5_period = 20*32*256;
 	    test_step = 2;
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_8010); // No Scale 
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFFFF
@@ -200,30 +191,29 @@ parameter real XTAL_PERIOD = 6;
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFFFF
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h0000_007F); // COMP0 = 0xFF
 
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG0,'h0000_8013); // Scale 2^3 = 8
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG1,'h0000_00FF); // Period 0xFFFF
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK3_CFG2,'h0000_007F); // COMP0 = 0xFF
-
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG0,'h0000_8014); // Scale 2^4 = 16
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG1,'h0000_00FF); // Period 0xFFFF
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK4_CFG2,'h0000_007F); // COMP0 = 0xFF
-
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG0,'h0000_8015); // Scale 2^5 = 32
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG1,'h0000_00FF); // Period 0xFFFF
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK5_CFG2,'h0000_007F); // COMP0 = 0xFF
-        
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_003F); // Enable PWM
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_003F); // Enable PWM Interrupt
-        read_data = 8'h3F;
-        while(read_data  != 8'h00) begin // Wait for De-assertion on Enable
-            wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
-             repeat (100) @(posedge clock);
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM + Run
+        read_data[15:8] = 8'h7;
+        fork
+        begin
+           while(read_data[15:8]  != 8'h00) begin // Wait for De-assertion on Run
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
         end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
 
-        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_003F); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
         wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
-        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_003F); // Clear Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
         wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
         wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
@@ -234,6 +224,524 @@ parameter real XTAL_PERIOD = 6;
           $display("STATUS: Step-2, PWM One Shot - PASSED");
        end
 
+	    $display("########################################");
+	    $display("Step-3, PWM One Shot + Hold last data ");
+	    test_step = 3;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_8810); // No Scale 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_8811); // Scale 2^1 = 2
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_8812); // Scale 2^2 = 4
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFFFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h0000_007F); // COMP0 = 0xFF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM + Run
+        read_data[15:8] = 8'h7;
+        fork
+        begin
+           while(read_data[15:8]  != 8'h00) begin // Wait for De-assertion on Run
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
+        end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
+
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-3, PWM One Shot + Hold last data - FAILED");
+       end else begin
+          $display("STATUS: Step-3, PWM One Shot + Hold last data - PASSED");
+       end
+
+	    $display("########################################");
+	    $display("Step-4, PWM One Shot + mode:1 ");
+	    test_step = 4;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_9010); // No Scale + One Shot + Mode:1
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h0000_0000); // COMP2 = 0x00, COMP3= 0x00
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_9011); // Scale 2^1 = 2 + One Shot + Mode:1
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h0000_0000); // COMP2 = 0x00, COMP3= 0x00
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_9012); // Scale 2^2 = 4 + One Shot + Mode:1
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h0000_0000); // COMP2 = 0x00, COMP3= 0x00
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM + Run
+        read_data[15:8] = 8'h7;
+        fork
+        begin
+           while(read_data[15:8]  != 8'h00) begin // Wait for De-assertion on Run
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
+        end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
+
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-4, PWM One Shot + mode:1 - FAILED");
+       end else begin
+          $display("STATUS: Step-4, PWM One Shot + mode:1 - PASSED");
+       end
+	    
+        $display("########################################");
+	    $display("Step-5, PWM One Shot + mode:2 ");
+	    test_step = 5;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_A010); // No Scale + One Shot + Mode:2
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h0000_00AF); // COMP2 = 0xAF, COMP3= 0x00
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_A011); // Scale 2^1 = 2 + One Shot + Mode:2
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h0000_00AF); // COMP2 = 0xAF, COMP3= 0x00
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_A012); // Scale 2^2 = 4 + One Shot + Mode:2
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h0000_00AF); // COMP2 = 0xAF, COMP3= 0x00
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM + Run
+        read_data[15:8] = 8'h7;
+        fork
+        begin
+           while(read_data[15:8]  != 8'h00) begin // Wait for De-assertion on Run
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
+        end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
+
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-5, PWM One Shot + mode:2 - FAILED");
+       end else begin
+          $display("STATUS: Step-5, PWM One Shot + mode:2 - PASSED");
+       end
+        $display("########################################");
+	    $display("Step-6, PWM One Shot + mode:3 ");
+	    test_step = 6;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_B010); // No Scale + One Shot + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_B011); // Scale 2^1 = 2 + One Shot + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_B012); // Scale 2^2 = 4 + One Shot + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM+Run
+        read_data[15:8] = 8'h7;
+        fork
+        begin
+           while(read_data[15:8]  != 8'h00) begin // Wait for De-assertion on Run
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
+        end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
+
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-6, PWM One Shot + mode:3 - FAILED");
+       end else begin
+          $display("STATUS: Step-6, PWM One Shot + mode:3 - PASSED");
+       end
+        $display("########################################");
+	    $display("Step-7, PWM Free Running + mode:3 ");
+	    test_step = 7;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_B000); // No Scale + Free Run + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_B001); // Scale 2^1 = 2 + Free Run + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_B002); // Scale 2^2 = 4 + Free Run + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM+Run
+        read_data = 8'h0;
+        fork
+        begin
+           while(read_data  != 8'h07) begin // Wait for Overflow Interrupt
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
+        end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-7, PWM Free Run + mode:3 - FAILED");
+       end else begin
+          $display("STATUS: Step-7, PWM Free Run + mode:3 - PASSED");
+       end
+        $display("########################################");
+	    $display("Step-8, PWM Gpio: 0x3 Pos Edge , One Shot  + mode:3 ");
+	    test_step = 8;
+        // Pin-26   17   PC3/usb_dn/ADC3   digital_io[25]/analog_io[14]
+
+        force u_top.io_in[25] = 1'b0; // force PC3 to 0
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_B350); // No Scale + One Shot + GPIO: 0x3, Posedge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_B351); // Scale 2^1 = 2 + One Shot + GPIO: 0x3, Posedge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_B352); // Scale 2^2 = 4 + One Shot + GPIO: 0x3, Posedge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Interrupt Enable
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0007); //  PWM Enable + No Run (Expect GPIO generate Run)
+
+        // Generate 4 GPIO Edge Sequence
+        for(i=0; i < 4; i=i+1) begin
+           read_data = 8'h0;
+           // Generate Pos Egde
+           force u_top.io_in[25] = 1'b1; // force PC3 to 1
+           repeat (10) @(posedge clock);
+           force u_top.io_in[25] = 1'b0; // force PC3 to 0
+
+           fork
+           begin
+              while(read_data  != 8'h07) begin // Wait for Overflow Interrupt
+                  wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+                  check_sum = check_sum + pwm_wfm;
+                   repeat (100) @(posedge clock);
+              end
+           end
+           begin
+              while(1) begin
+                 check_sum = check_sum + pwm_wfm;
+                 repeat (100) @(posedge clock);
+             end
+           end
+           join_any
+           if(i < 3) begin
+                  wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+           end
+         end
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-8, PWM Gpio: 0x3 Pos Edge , One Shot  + mode:3 - FAILED");
+       end else begin
+          $display("STATUS: Step-8, PWM Gpio: 0x3 Pos Edge , One Shot  + mode:3 - PASSED");
+       end
+        $display("########################################");
+	    $display("Step-9, PWM Gpio: 0x3 Neg Edge , One Shot  + mode:3 ");
+	    test_step = 9;
+        // Pin-26   17   PC3/usb_dn/ADC3   digital_io[25]/analog_io[14]
+
+        force u_top.io_in[25] = 1'b1; // force PC3 to 1
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_B3D0); // No Scale + One Shot + GPIO: 0x3, Neg Edge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_B3D1); // Scale 2^1 = 2 + One Shot + GPIO: 0x3, Neg Edge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_B3D2); // Scale 2^2 = 4 + One Shot + GPIO: 0x3, Neg Edge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Interrupt Enable
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0007); //  PWM Enable + No Run (Expect GPIO generate Run)
+
+        repeat (100) @(posedge clock); // Wait for PWM enable command propagaton
+        // Generate 4 GPIO Edge Sequence
+        for(i=0; i < 4; i=i+1) begin
+           read_data = 8'h0;
+           // Generate Neg Egde
+           force u_top.io_in[25] = 1'b0; // force PC3 to 0
+           repeat (10) @(posedge clock);
+           force u_top.io_in[25] = 1'b1; // force PC3 to 1
+
+           fork
+           begin
+              while(read_data  != 8'h07) begin // Wait for Overflow Interrupt
+                  wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+                  check_sum = check_sum + pwm_wfm;
+                   repeat (100) @(posedge clock);
+              end
+           end
+           begin
+              while(1) begin
+                 check_sum = check_sum + pwm_wfm;
+                 repeat (100) @(posedge clock);
+             end
+           end
+           join_any
+           if(i < 3) begin
+                  wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+           end
+         end
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-9, PWM Gpio: 0x3 Neg Edge , One Shot  + mode:3 - FAILED");
+       end else begin
+          $display("STATUS: Step-9, PWM Gpio: 0x3 Neg Edge , One Shot  + mode:3 - PASSED");
+       end
+        $display("########################################");
+	    $display("Step-10, PWM Gpio: 0x3 Neg Edge , One Shot  + mode:3 + Waveform Invert ");
+	    test_step = 10;
+        // Pin-26   17   PC3/usb_dn/ADC3   digital_io[25]/analog_io[14]
+
+        force u_top.io_in[25] = 1'b1; // force PC3 to 1
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h0000_F3D0); // No Scale + One Shot + Clk Inv + GPIO: 0x3, Neg Edge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h0000_F3D1); // Scale 2^1 = 2 + One Shot + Clk Inv + GPIO: 0x3, Neg Edge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h0000_F3D2); // Scale 2^2 = 4 + One Shot + Clk Inv + GPIO: 0x3, Neg Edge + Mode:3
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_00FF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Interrupt Enable
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0007); //  PWM Enable + No Run (Expect GPIO generate Run)
+
+        repeat (100) @(posedge clock); // Wait for PWM enable command propagaton
+        // Generate 4 GPIO Edge Sequence
+        for(i=0; i < 4; i=i+1) begin
+           read_data = 8'h0;
+           // Generate Neg Egde
+           force u_top.io_in[25] = 1'b0; // force PC3 to 0
+           repeat (10) @(posedge clock);
+           force u_top.io_in[25] = 1'b1; // force PC3 to 1
+
+           fork
+           begin
+              while(read_data  != 8'h07) begin // Wait for Overflow Interrupt
+                  wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+                  check_sum = check_sum + pwm_wfm;
+                   repeat (100) @(posedge clock);
+              end
+           end
+           begin
+              while(1) begin
+                 check_sum = check_sum + pwm_wfm;
+                 repeat (100) @(posedge clock);
+             end
+           end
+           join_any
+           if(i < 3) begin
+                  wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data);
+           end
+         end
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-9, PWM Gpio: 0x3 Neg Edge , One Shot  + mode:3 - FAILED");
+       end else begin
+          $display("STATUS: Step-9, PWM Gpio: 0x3 Neg Edge , One Shot  + mode:3 - PASSED");
+       end
+        $display("########################################");
+	    $display("Step-10, PWM One Shot + mode:3 + Comparator Center ");
+	    test_step = 10;
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0007_0000); // Disable Cfg Update
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG0,'h000F_B010); // No Scale + One Shot + Mode:3 + Comparator Center
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG1,'h0000_FFFF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK0_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG0,'h000F_B010); // No Scale + One Shot + Mode:3 + Comparator Center
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG1,'h0000_FFFF); // Period 0xFF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG2,'h008F_006F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK1_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG0,'h000F_B010); // No Scale + One Shot + Mode:3 + Comparator Center
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG1,'h0000_FFFF); // Period 0x80FF
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG2,'h008F_0F6F); // COMP0 = 0x6F, COMP1= 0x8F
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_BLK2_CFG3,'h00CF_00AF); // COMP2 = 0xAF, COMP3= 0xCF
+
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_MASK,'h0000_0007); // Enable PWM Interrupt
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Remove config update block 
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0707); // Enable PWM+Run
+        read_data[15:8] = 8'h7;
+        fork
+        begin
+           while(read_data[15:8]  != 8'h00) begin // Wait for De-assertion on Run
+               wb_user_core_read(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,read_data);
+               check_sum = check_sum + pwm_wfm;
+                repeat (100) @(posedge clock);
+           end
+        end
+        begin
+           while(1) begin
+              check_sum = check_sum + pwm_wfm;
+              repeat (100) @(posedge clock);
+          end
+        end
+        join_any
+
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0007); // Check Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_CFG0,'h0000_0000); // Disable PWM
+        wb_user_core_write(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,'h0000_0007); // Clear Interrupt
+        wb_user_core_read_check(`ADDR_SPACE_PWM+`PWM_GLBL_INTR_STAT,read_data,'h0000_0000); // Check Interrupt Status
+        wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,'h0000_0020); // Check Global Interrupt Status
+        wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_INTR_STAT,read_data,'h0000_0000); // Check Global Interrupt Status
+
+       if(test_fail == 1) begin
+          $display("ERROR: Step-10, PWM One Shot + mode:3 + Comparator Center - FAILED");
+       end else begin
+          $display("STATUS: Step-10, PWM One Shot + mode:3 + Comparator Center - PASSED");
+       end
+       $display("Check Sum: %x ",check_sum);
+       if(check_sum != 16'hc638) test_fail = 1;
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
@@ -255,14 +763,19 @@ parameter real XTAL_PERIOD = 6;
 	        $finish;
 	end
 
+wire [5:0] pwm_wfm = {io_out[19],
+                      io_out[18],
+                      io_out[17],
+                      io_out[14],
+                      io_out[13],
+                      io_out[9]};
 
-wire pwm0 = io_out[9];
-wire pwm1 = io_out[13];
-wire pwm2 = io_out[14];
-wire pwm3 = io_out[17];
-wire pwm4 = io_out[18];
-wire pwm5 = io_out[19];
-
+wire pwm0 = pwm_wfm[0];
+wire pwm1 = pwm_wfm[1];
+wire pwm2 = pwm_wfm[2];
+wire pwm3 = pwm_wfm[3];
+wire pwm4 = pwm_wfm[4];
+wire pwm5 = pwm_wfm[5];
 
 task pwm_monitor;
 input [31:0] pwm0_period;

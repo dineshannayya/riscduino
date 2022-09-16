@@ -33,6 +33,7 @@ module pwm_core (
     output logic          reg_ack           ,
 
     input   logic         cfg_pwm_enb       , // pwm operation enable
+    input   logic         cfg_pwm_run       , // pwm operation Run
     input   logic         cfg_pwm_dupdate   , // Disable Config update
     input   logic [7:0]   pad_gpio          ,
 	output  logic         pwm_wfm_o         ,
@@ -120,6 +121,7 @@ pwm  u_pwm     (
                        .pad_gpio              (pad_gpio              ),
                                                                     
                        .cfg_pwm_enb           (cfg_pwm_enb           ), 
+                       .cfg_pwm_run           (cfg_pwm_run           ), 
                        .cfg_pwm_scale         (cfg_pwm_scale         ), 
                        .cfg_pwm_oneshot       (cfg_pwm_oneshot       ), 
                        .cfg_pwm_frun          (cfg_pwm_frun          ), 

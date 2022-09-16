@@ -271,17 +271,17 @@ begin : preg_sel_Com
     4'b0010 : reg_out [7:0] = reg_2 [7:0];     
     4'b0011 : reg_out [7:0] = reg_3 [7:0];    
     4'b0100 : reg_out [7:0] = reg_4 [7:0];    
-    4'b0101 : reg_out [7:0] = reg_5 [7:0];    
+    4'b0101 : reg_out [7:0] = 'h0;
     4'b0110 : reg_out [7:0] = reg_6 [7:0];    
     4'b0111 : reg_out [7:0] = reg_7 [7:0];    
     4'b1000 : reg_out [7:0] = reg_8 [7:0];    
-    4'b1001 : reg_out [7:0] = reg_9 [7:0];    
-    4'b1010 : reg_out [7:0] = reg_10 [7:0];   
-    4'b1011 : reg_out [7:0] = reg_11 [7:0];   
-    4'b1100 : reg_out [7:0] = reg_12 [7:0];   
-    4'b1101 : reg_out [7:0] = reg_13 [7:0];
-    4'b1110 : reg_out [7:0] = reg_14 [7:0];
-    4'b1111 : reg_out [7:0] = reg_15 [7:0]; 
+    4'b1001 : reg_out [7:0] = 'h0;
+    4'b1010 : reg_out [7:0] = 'h0;
+    4'b1011 : reg_out [7:0] = 'h0;
+    4'b1100 : reg_out [7:0] = 'h0;
+    4'b1101 : reg_out [7:0] = 'h0;
+    4'b1110 : reg_out [7:0] = 'h0;
+    4'b1111 : reg_out [7:0] = 'h0;
   endcase
 end
 

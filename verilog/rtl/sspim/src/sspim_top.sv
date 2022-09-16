@@ -132,6 +132,13 @@ logic                cfg_bit_order                 ; // Bit order 1 -> LSBFIRST 
 logic                cfg_cpol                      ; // spi clock idle phase
 logic                cfg_cpha                      ; // spi data sample and lanch phase
 
+logic                shift                         ;
+logic                sample                        ;
+logic                sck_int                       ;
+logic                sck_active                    ;
+logic                cs_int_n                      ;
+logic                load_byte                     ;
+
 sspim_if  u_spi_if
           (
           . clk                         (clk                          ), 

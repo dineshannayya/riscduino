@@ -55,6 +55,7 @@ module pwm_glbl_reg  (
                        output logic          reg_ack            ,
 
                        output logic [5:0]    cfg_pwm_enb        , // PWM operation enable
+                       output logic [5:0]    cfg_pwm_run        , // PWM operation Run
                        output logic [5:0]    cfg_pwm_dupdate    , // Disable Config update
 
                        input logic [5:0]     pwm_os_done        , // Indicate oneshot sequence over
@@ -77,7 +78,7 @@ logic [31:0]   sw_reg_wdata    ;
 logic [3:0]    sw_be           ;
 
 logic [31:0]   reg_out         ;
-logic [5:0]    reg_0           ; // CONFIG - Unused
+logic [31:0]   reg_0           ; // CONFIG - Unused
 logic [31:0]   reg_1           ; // PWM-REG-0
 logic [31:0]   reg_2           ; // PWM-REG-1
 logic [31:0]   reg_3           ; // PWM-REG-2
@@ -120,41 +121,56 @@ end
 // PWM Enable Generation
 //----------------------------------------
 
-assign cfg_pwm_enb = reg_0[5:0];
+assign cfg_pwm_enb      = {3'b0,reg_0[2:0]};
+assign cfg_pwm_run      = {3'b0,reg_0[10:8]};
+assign cfg_pwm_dupdate  = {3'b0,reg_0[18:16]};
 
 //------------------------------------------------------------------------
 // Design wise has avoided the pwm_os_done & gpio_tgr occur at same cycle
 //------------------------------------------------------------------------
+logic [2:0] reg_0_0;
 always @ (posedge mclk or negedge h_reset_n)
 begin 
    if (h_reset_n == 1'b0) begin
-      reg_0[5:0]  <= 'h0;
-   end else if (reg_cs && sw_wr_en_0 && sw_be[0]) begin
-      reg_0[5:0]  <= sw_reg_wdata[5:0] | gpio_tgr;
-   end else begin
-      reg_0[5:0]  <= (reg_0[5:0] | gpio_tgr) ^ pwm_os_done;
+      reg_0_0[2:0]  <= 'h0;
+   end else if (reg_cs && sw_wr_en_0 && sw_be[0] && reg_ack) begin
+      reg_0_0[2:0]  <= sw_reg_wdata[2:0] ;
    end
 end
+assign reg_0[2:0] = reg_0_0; // Modified due to iverilog issue
+assign reg_0[7:3] = 'h0;
 
+logic [2:0] reg_0_1;
+always @ (posedge mclk or negedge h_reset_n)
+begin 
+   if (h_reset_n == 1'b0) begin
+      reg_0_1[2:0]  <= 'h0;
+   end else if (reg_cs && sw_wr_en_0 && sw_be[1] && reg_ack) begin
+      reg_0_1[2:0]  <= sw_reg_wdata[10:8] | gpio_tgr;
+   end else begin
+      reg_0_1[2:0]  <= (reg_0_1[2:0] | gpio_tgr) ^ pwm_os_done;
+   end
+end
+assign reg_0[10:8] = reg_0_1; // Modified due to iverilog issue
+assign reg_0[15:11] = 'h0;
+
+logic [2:0] reg_0_2;
+always @ (posedge mclk or negedge h_reset_n)
+begin 
+   if (h_reset_n == 1'b0) begin
+      reg_0_2[2:0]  <= 'h0;
+   end else if (reg_cs && sw_wr_en_0 && sw_be[2] && reg_ack) begin
+      reg_0_2[2:0]  <= sw_reg_wdata[18:16] ;
+   end
+end
+assign reg_0[18:16] = reg_0_2; // Modified due to iverilog issue
+assign reg_0[31:19] = 'h0;
 
 //-----------------------------------------------------------------------
-// Logic for PWM-1 Config
+// Logic for PWM-1 Config - Reserved
 //-----------------------------------------------------------------------
-assign  cfg_pwm_dupdate  = reg_1[5:0];
+assign  reg_1 = 'h0;
 
-generic_register #(6,6'h0  ) u_reg_1 (
-	      .we            ({6{sw_wr_en_1 & 
-                             reg_ack    & 
-                             sw_be[0]   }}  ),		 
-	      .data_in       (sw_reg_wdata[5:0] ),
-	      .reset_n       (h_reset_n         ),
-	      .clk           (mclk              ),
-	      
-	      //List of Outs
-	      .data_out      (reg_1[5:0]        )
-          );
-
-assign reg_1[31:6] = 'h0;
 
 //-----------------------------------------------------------------------
 // Reg-2: Interrupt Mask
@@ -201,7 +217,7 @@ begin
   reg_out [31:0] = 32'h0;
 
   case (sw_addr [1:0])
-    2'b00    : reg_out [31:0] = {26'h0,reg_0 [5:0]};     
+    2'b00    : reg_out [31:0] = reg_0 [31:0];     
     2'b01    : reg_out [31:0] = reg_1 [31:0];    
     2'b10    : reg_out [31:0] = reg_2 [31:0];     
     2'b11    : reg_out [31:0] = reg_3 [31:0];    

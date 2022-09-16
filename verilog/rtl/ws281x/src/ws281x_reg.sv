@@ -171,6 +171,8 @@ assign port1_enb    = reg_0[1];
 	      .data_out   (reg_0[3:0]       )
 	      );
 
+assign reg_0[31:4] = 'h0;
+
 // CONFIG-0
 assign cfg_reset_period = reg_1[15:0];
 gen_16b_reg  #(32'h0) u_reg_1	(
@@ -184,6 +186,8 @@ gen_16b_reg  #(32'h0) u_reg_1	(
 	      //List of Outs
 	      .data_out   (reg_1[15:0]         )
 	      );
+
+assign reg_1[31:16] = 0;
 
 // CONFIG-1
 
@@ -237,7 +241,7 @@ genvar port;
 generate
 for (port = 0; $unsigned(port) < NP; port=port+1) begin : gfifo
 
-sync_fifo #(.W(24), .D(8)) u_fifo
+sync_fifo #(.W(24), .D(2)) u_fifo
            (
             .clk         (mclk                 ),
 	        .reset_n     (h_reset_n            ),

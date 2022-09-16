@@ -499,7 +499,7 @@ timer_top  u_timer(
               .reg_ack                  (reg_timer_ack              ),
 
               .pulse_1us                (pulse_1us                  ), 
-              .pulse_1ms                (pulse_1ms                  ), 
+              .pulse_1ms                (pulse1m_mclk               ), 
               .timer_intr               (timer_intr                 ) 
            );
 

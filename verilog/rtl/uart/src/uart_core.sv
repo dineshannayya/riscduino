@@ -192,6 +192,7 @@ uart_cfg u_cfg (
 //###############################################################
 
 wire line_clk_16x_in;
+wire line_clk_16x;
 
 // OpenSource CTS tool does not work with buffer as source point
 // changed buf to max with select tied=0

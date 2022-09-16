@@ -62,10 +62,11 @@ module pwm_top  (
                 ); 
 
 //---------------------------------------------------
-// 6 PWM variabled
+// 3 PWM variabled
 //---------------------------------------------------
 
 logic [5:0]    cfg_pwm_enb      ;
+logic [5:0]    cfg_pwm_run      ;
 logic [5:0]    cfg_pwm_dupdate  ;
 logic [5:0]    pwm_os_done      ;
 logic [5:0]    pwm_ovflow       ;
@@ -101,18 +102,12 @@ logic [31:0]   reg_rdata_pwm5   ;
 assign reg_rdata = (reg_addr[4:2] == `SEL_GLBL)  ? {reg_rdata_glbl} : 
 	               (reg_addr[4:2] == `SEL_PWM0)  ? {reg_rdata_pwm0} :
 	               (reg_addr[4:2] == `SEL_PWM1)  ? {reg_rdata_pwm1} :
-	               (reg_addr[4:2] == `SEL_PWM2)  ? {reg_rdata_pwm2} :
-	               (reg_addr[4:2] == `SEL_PWM3)  ? {reg_rdata_pwm3} :
-	               (reg_addr[4:2] == `SEL_PWM4)  ? {reg_rdata_pwm4} :
-	               (reg_addr[4:2] == `SEL_PWM5)  ? {reg_rdata_pwm5} : 'h0;
+	               (reg_addr[4:2] == `SEL_PWM2)  ? {reg_rdata_pwm2} :'h0;
 
 assign reg_ack   = (reg_addr[4:2] == `SEL_GLBL)  ? reg_ack_glbl   : 
 	               (reg_addr[4:2] == `SEL_PWM0)  ? reg_ack_pwm0   : 
 	               (reg_addr[4:2] == `SEL_PWM1)  ? reg_ack_pwm1   : 
-	               (reg_addr[4:2] == `SEL_PWM2)  ? reg_ack_pwm2   : 
-	               (reg_addr[4:2] == `SEL_PWM3)  ? reg_ack_pwm3   : 
-	               (reg_addr[4:2] == `SEL_PWM4)  ? reg_ack_pwm4   : 
-	               (reg_addr[4:2] == `SEL_PWM5)  ? reg_ack_pwm5   : 'h0;
+	               (reg_addr[4:2] == `SEL_PWM2)  ? reg_ack_pwm2   : 'h0;
 
 assign reg_cs_glbl    = (reg_addr[4:2] == `SEL_GLBL) ? reg_cs : 1'b0;
 assign reg_cs_pwm[0]  = (reg_addr[4:2] == `SEL_PWM0) ? reg_cs : 1'b0;
@@ -138,6 +133,7 @@ pwm_glbl_reg  u_glbl_reg (
                .reg_ack          (reg_ack_glbl        ),
 
                .cfg_pwm_enb      (cfg_pwm_enb         ),
+               .cfg_pwm_run      (cfg_pwm_run         ),
                .cfg_pwm_dupdate  (cfg_pwm_dupdate     ),
 
                .pwm_os_done      (pwm_os_done         ),
@@ -167,6 +163,7 @@ pwm_core u_pwm_0(
     .reg_ack           (reg_ack_pwm0       ),
                                          
     .cfg_pwm_enb       (cfg_pwm_enb[0]     ), // pwm operation enable
+    .cfg_pwm_run       (cfg_pwm_run[0]     ), // pwm operation enable
     .cfg_pwm_dupdate   (cfg_pwm_dupdate[0] ), // Disable Config update
     .pad_gpio          (pad_gpio           ),
 	.pwm_os_done       (pwm_os_done[0]     ),
@@ -191,6 +188,7 @@ pwm_core u_pwm_1(
     .reg_ack           (reg_ack_pwm1       ),
                                          
     .cfg_pwm_enb       (cfg_pwm_enb[1]     ), // pwm operation enable
+    .cfg_pwm_run       (cfg_pwm_run[1]     ), // pwm operation enable
     .cfg_pwm_dupdate   (cfg_pwm_dupdate[1] ), // Disable Config update
     .pad_gpio          (pad_gpio           ),
 	.pwm_os_done       (pwm_os_done[1]     ),
@@ -214,6 +212,7 @@ pwm_core u_pwm_2(
     .reg_ack           (reg_ack_pwm2       ),
                                          
     .cfg_pwm_enb       (cfg_pwm_enb[2]     ), // pwm operation enable
+    .cfg_pwm_run       (cfg_pwm_run[2]     ), // pwm operation enable
     .cfg_pwm_dupdate   (cfg_pwm_dupdate[2] ), // Disable Config update
     .pad_gpio          (pad_gpio           ),
 	.pwm_os_done       (pwm_os_done[2]     ),
@@ -222,6 +221,9 @@ pwm_core u_pwm_2(
 	.pwm_wfm_o         (pwm_wfm[2]       )
 
 );
+
+
+/***
 pwm_core u_pwm_3(
 
 	.h_reset_n         (h_reset_n          ),
@@ -237,6 +239,7 @@ pwm_core u_pwm_3(
     .reg_ack           (reg_ack_pwm3       ),
                                          
     .cfg_pwm_enb       (cfg_pwm_enb[3]     ), // pwm operation enable
+    .cfg_pwm_run       (cfg_pwm_run[3]     ), // pwm operation enable
     .cfg_pwm_dupdate   (cfg_pwm_dupdate[3] ), // Disable Config update
     .pad_gpio          (pad_gpio           ),
 	.pwm_os_done       (pwm_os_done[3]     ),
@@ -245,6 +248,13 @@ pwm_core u_pwm_3(
 	.pwm_wfm_o         (pwm_wfm[3]       )
 
 );
+***/
+assign pwm_wfm[3]     = pwm_wfm[0];
+assign pwm_os_done[3] = 1'b0;
+assign pwm_ovflow[3]  = 1'b0;
+assign gpio_tgr[3]    = 1'b0;
+
+/****
 pwm_core u_pwm_4(
 
 	.h_reset_n         (h_reset_n          ),
@@ -260,6 +270,7 @@ pwm_core u_pwm_4(
     .reg_ack           (reg_ack_pwm4       ),
                                          
     .cfg_pwm_enb       (cfg_pwm_enb[4]     ), // pwm operation enable
+    .cfg_pwm_run       (cfg_pwm_run[4]     ), // pwm operation enable
     .cfg_pwm_dupdate   (cfg_pwm_dupdate[4] ), // Disable Config update
     .pad_gpio          (pad_gpio           ),
 	.pwm_os_done       (pwm_os_done[4]     ),
@@ -268,6 +279,13 @@ pwm_core u_pwm_4(
 	.pwm_wfm_o         (pwm_wfm[4]       )
 
 );
+***/
+assign pwm_wfm[4] = pwm_wfm[1];
+assign pwm_os_done[4] = 1'b0;
+assign pwm_ovflow[4]  = 1'b0;
+assign gpio_tgr[4]    = 1'b0;
+
+/***
 pwm_core u_pwm_5(
 
 	.h_reset_n         (h_reset_n          ),
@@ -283,6 +301,7 @@ pwm_core u_pwm_5(
     .reg_ack           (reg_ack_pwm5       ),
                                          
     .cfg_pwm_enb       (cfg_pwm_enb[5]     ), // pwm operation enable
+    .cfg_pwm_run       (cfg_pwm_run[5]     ), // pwm operation enable
     .cfg_pwm_dupdate   (cfg_pwm_dupdate[5] ), // Disable Config update
     .pad_gpio          (pad_gpio           ),
 	.pwm_os_done       (pwm_os_done[5]     ),
@@ -291,5 +310,11 @@ pwm_core u_pwm_5(
 	.pwm_wfm_o         (pwm_wfm[5]       )
 
 );
+
+**/
+assign pwm_wfm[5] = pwm_wfm[2];
+assign pwm_os_done[5] = 1'b0;
+assign pwm_ovflow[5]  = 1'b0;
+assign gpio_tgr[5]    = 1'b0;
 
 endmodule

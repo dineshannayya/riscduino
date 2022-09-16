@@ -59,6 +59,7 @@ set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2wb.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart2_core.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart_msg_handler.v \
+     $::env(DESIGN_DIR)/../../verilog/rtl/uart2wb/src/uart_auto_det.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/sspis_top.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/sspis_if.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/sspis/src/spi2wb.sv \

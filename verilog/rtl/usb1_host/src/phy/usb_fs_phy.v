@@ -633,7 +633,6 @@ else if (state_q == STATE_TX_EOP0)
 //-----------------------------------------------------------------
 // Tx
 //-----------------------------------------------------------------
-wire out_bit_w = sample_w ? data_q[0] : 1'bz;
 
 always @ (posedge clk_i or negedge rstn_i)
 if (!rstn_i)

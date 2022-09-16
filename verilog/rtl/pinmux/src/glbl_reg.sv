@@ -136,9 +136,6 @@ logic [31:0]   reg_5;  // Multi Function Sel
 logic [31:0]   reg_6;  // 
 logic [31:0]   reg_7;  // 
 logic [31:0]   reg_8;  // 
-logic [31:0]   reg_9;  // 
-logic [31:0]   reg_10; // 
-logic [31:0]   reg_11; // 
 logic [31:0]   reg_12; // Latched Strap 
 logic [31:0]   reg_13; // Strap Sticky
 logic [31:0]   reg_14; // System Strap
@@ -152,14 +149,6 @@ logic [31:0]   reg_20;  // Software Reg-4  - s_reset
 logic [31:0]   reg_21;  // Software Reg-5  - s_reset
 logic [31:0]   reg_22;  // Software Reg-6  - s_reset
 logic [31:0]   reg_23;  // Software Reg-7  - s_reset
-logic [31:0]   reg_24;  // Reserved
-logic [31:0]   reg_25;  // Reserved
-logic [31:0]   reg_26;  // Reserved
-logic [31:0]   reg_27;  // Reserved
-logic [31:0]   reg_28;  // Reserved
-logic [31:0]   reg_29;  // Reserved
-logic [31:0]   reg_30;  // Reserved
-logic [31:0]   reg_31;  // Reserved
 
 logic           cs_int;
 logic [3:0]     cfg_mon_sel;
@@ -656,9 +645,9 @@ begin
     5'b00110 : reg_out [31:0] = reg_6  ;    
     5'b00111 : reg_out [31:0] = reg_7  ;    
     5'b01000 : reg_out [31:0] = reg_8  ;    
-    5'b01001 : reg_out [31:0] = reg_9  ;    
-    5'b01010 : reg_out [31:0] = reg_10 ;   
-    5'b01011 : reg_out [31:0] = reg_11 ;   
+    5'b01001 : reg_out [31:0] = 'h0  ;    
+    5'b01010 : reg_out [31:0] = 'h0 ;   
+    5'b01011 : reg_out [31:0] = 'h0 ;   
     5'b01100 : reg_out [31:0] = reg_12 ;   
     5'b01101 : reg_out [31:0] = reg_13 ;   
     5'b01110 : reg_out [31:0] = reg_14 ;   
@@ -671,14 +660,14 @@ begin
     5'b10101 : reg_out [31:0] = reg_21  ;    
     5'b10110 : reg_out [31:0] = reg_22  ;    
     5'b10111 : reg_out [31:0] = reg_23  ;    
-    5'b11000 : reg_out [31:0] = reg_24  ;    
-    5'b11001 : reg_out [31:0] = reg_25  ;    
-    5'b11010 : reg_out [31:0] = reg_26 ;   
-    5'b11011 : reg_out [31:0] = reg_27 ;   
-    5'b11100 : reg_out [31:0] = reg_28 ;   
-    5'b11101 : reg_out [31:0] = reg_29 ;   
-    5'b11110 : reg_out [31:0] = reg_30 ;   
-    5'b11111 : reg_out [31:0] = reg_31 ;   
+    5'b11000 : reg_out [31:0] = 'h0  ;    
+    5'b11001 : reg_out [31:0] = 'h0  ;    
+    5'b11010 : reg_out [31:0] = 'h0 ;   
+    5'b11011 : reg_out [31:0] = 'h0 ;   
+    5'b11100 : reg_out [31:0] = 'h0 ;   
+    5'b11101 : reg_out [31:0] = 'h0 ;   
+    5'b11110 : reg_out [31:0] = 'h0 ;   
+    5'b11111 : reg_out [31:0] = 'h0 ;   
     default  : reg_out [31:0] = 32'h0;
   endcase
 end

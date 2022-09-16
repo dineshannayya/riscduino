@@ -756,6 +756,11 @@ wire                           pll_ref_clk                            ; // Input
 wire [1:0]                     pll_clk_out                            ; // Two 90 degree clock phases
 
 wire [3:0]                     spi_csn                                ;
+wire                           xtal_clk                               ;
+wire                           e_reset_n                              ;
+wire                           p_reset_n                              ;
+wire                           s_reset_n                              ;
+wire                           cfg_strap_pad_ctrl                     ;
 
 //---------------------------------------------------------------------
 // Strap
