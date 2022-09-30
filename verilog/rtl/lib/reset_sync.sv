@@ -95,7 +95,7 @@ begin
       in_data_2s <= in_data_s;
    end
 end
-
+//assign srst_n =  (scan_mode) ? arst_n : in_data_2s;
 ctech_mux2x1 u_buf  (.A0(in_data_2s), .A1(arst_n), .S(scan_mode), .X(srst_n));
 
 endmodule

@@ -33,10 +33,20 @@
 int i = 0; 
 int clk = 0;
 
+void putdword(uint32_t Data)
+{
+	reg_uart_data = Data >> 24; // MSB [31:24];
+	reg_uart_data = Data >> 16; // MSB [23:16];
+	reg_uart_data = Data >> 8;  // MSB [15:8];
+	reg_uart_data = Data;       // MSB [7:0];
+}
+
+
 void main()
 {
 
 	int bFail = 0;
+    char DataIn[5];
 	/* 
 	IO Control Registers
 	| DM     | VTRIP | SLOW  | AN_POL | AN_SEL | AN_EN | MOD_SEL | INP_DIS | HOLDH | OEB_N | MGMT_EN |
@@ -127,4 +137,5 @@ void main()
     } else {
         reg_mprj_datal = 0xAB600000;
     }
+    putdword(reg_mprj_datal);
 }

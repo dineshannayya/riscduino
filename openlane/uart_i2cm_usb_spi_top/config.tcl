@@ -128,6 +128,15 @@ set ::env(CELL_PAD) {8}
 #LVS Issue - DEF Base looks to having issue
 set ::env(MAGIC_EXT_USE_GDS) {1}
 
+set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}
+
+set ::env(GLB_RESIZER_MAX_CAP_MARGIN) {0.25}
+set ::env(PL_RESIZER_MAX_CAP_MARGIN) {0.25}
+
+set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) {500}
+
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_LVS_ERROR) "1"

@@ -36,6 +36,9 @@
 	read_sdc -echo ./sdc/ycr_core_top.sdc	
 	set_propagated_clock [all_clocks]
 
+    report_annotated_check -list_annotated
+    report_annotated_check -list_not_annotated
+
 	check_setup  -verbose >  unconstraints.rpt
 	report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -group_count 50	
 	report_checks -path_delay max -fields {slew cap input nets fanout} -format full_clock_expanded -group_count 50	

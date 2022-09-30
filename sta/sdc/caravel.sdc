@@ -1,5 +1,4 @@
 set ::env(IO_PCT) "0.2"
-set ::env(SYNTH_MAX_FANOUT) "5"
 set ::env(SYNTH_CAP_LOAD) "1"
 set ::env(SYNTH_TIMING_DERATE) 0.01
 set ::env(SYNTH_CLOCK_SETUP_UNCERTAINITY) 0.25
@@ -12,9 +11,11 @@ create_clock [get_pins clocking/user_clk ] -name "user_clk2"  -period 25
 create_generated_clock -name csclk -add -source [get_ports {clock}] -master_clock [get_clocks master_clock] -divide_by 1 -invert -comment {csclk} [get_pins housekeeping/_8847_/X]
 #create_clock [get_pins  clocking/pll_clk ] -name "pll_clk"  -period 25
 #create_clock [get_pins  clocking/pll_clk90 ] -name "pll_clk90"  -period 25
-create_clock [get_pins  housekeeping/serial_clock ] -name "serial_clock"  -period 50
-create_clock [get_pins  housekeeping/serial_load ]  -name "serial_load"  -period 50
+#create_clock [get_pins  housekeeping/serial_clock ] -name "serial_clock"  -period 50
+#create_clock [get_pins  housekeeping/serial_load ]  -name "serial_load"  -period 50
 
+create_generated_clock -name serial_clock -add -source [get_ports {clock}] -master_clock [get_clocks master_clock] -divide_by 2 -comment {Serial Shift Clock} [get_pins housekeeping/serial_clock]
+create_generated_clock -name serial_load -add -source [get_ports {clock}] -master_clock [get_clocks master_clock] -divide_by 2 -comment {Serial Shift Clock} [get_pins housekeeping/serial_load]
 
 
 create_generated_clock -name wb_clk -add -source [get_ports {clock}] -master_clock [get_clocks master_clock] -divide_by 1 -comment {Wishbone User Clock} [get_pins mprj/wb_clk_i]
@@ -86,6 +87,10 @@ set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_sram_lphase[1]}]
 #disable clock gating check at static clock select pins
 #set_false_path -through [get_pins mprj/u_wb_host/u_wbs_clk_sel.genblk1.u_mux/S]
 
+set_false_path -through [get_pins housekeeping/serial_resetn]
+#set_case_analysis 0 [get_pins housekeeping/serial_bb_enable]
+set_case_analysis 0 [get_pins housekeeping/_9787_/Q]
+
 set_propagated_clock [all_clocks]
 
 #set_multicycle_path -setup -from [get_clocks {master_clock}] -to [get_clocks {csclk}] 2
@@ -93,8 +98,9 @@ set_propagated_clock [all_clocks]
 
 set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {wb_clk master_clock}]\
- -group [get_clocks {csclk}]\
- -group [get_clocks {serial_clock serial_load }]\
+ -group [get_clocks {csclk} ]\
+ -group [get_clocks {serial_clock} ]\
+ -group [get_clocks {serial_load} ]\
  -group [get_clocks {user_clk2}]\
  -group [get_clocks {int_pll_clock}]\
  -group [get_clocks {wbs_clk_i}]\
@@ -162,7 +168,6 @@ set_output_delay $output_delay_value  -clock [get_clocks {master_clock}] -add_de
 set_output_delay $output_delay_value  -clock [get_clocks {master_clock}] -add_delay [get_ports {flash_io0}]
 set_output_delay $output_delay_value  -clock [get_clocks {master_clock}] -add_delay [get_ports {flash_io1}]
 
-set_max_fanout $::env(SYNTH_MAX_FANOUT) [current_design]
 
 ## Set system monitoring mux select to zero so that the clock/user_clk monitoring is disabled 
 set_case_analysis 0 [get_pins housekeeping/_4449_/S]

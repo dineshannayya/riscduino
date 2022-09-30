@@ -157,7 +157,7 @@ parameter real XTAL_PERIOD = 6;
 	end
 
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
+assign io_in[5]  = 1'b1; // RESET
 assign io_in[16] = 1'b0 ; // SPIS SCK 
 
 `ifndef GL // Drive Power for Hold Fix Buf

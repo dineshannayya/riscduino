@@ -196,8 +196,14 @@ module pinmux_top (
                output logic[4:0]       cfg_pll_fed_div    , // PLL feedback division ratio
                output logic            cfg_dco_mode       , // Run PLL in DCO mode
                output logic[25:0]      cfg_dc_trim        , // External trim for DCO mode
-               output logic            pll_ref_clk         // Input oscillator to match
+               output logic            pll_ref_clk        , // Input oscillator to match
 
+               
+               // DAC Config
+               output logic [7:0]    cfg_dac0_mux_sel     ,
+               output logic [7:0]    cfg_dac1_mux_sel     ,
+               output logic [7:0]    cfg_dac2_mux_sel     ,
+               output logic [7:0]    cfg_dac3_mux_sel     
 
    ); 
 
@@ -261,6 +267,7 @@ assign      pinmux_debug = '0; // Todo: Need to fix
 `define SEL_TIMER   3'b011   // TIMER REGISTER
 `define SEL_SEMA    3'b100   // SEMAPHORE REGISTER
 `define SEL_WS      3'b101   // WS281x  REGISTER
+`define SEL_D2A     3'b110   // Digital2Analog  REGISTER
 
 
 //----------------------------------------
@@ -284,6 +291,9 @@ logic         reg_sema_ack;
 logic [31:0]  reg_ws_rdata;
 logic         reg_ws_ack;
 
+logic [31:0]  reg_d2a_rdata;
+logic         reg_d2a_ack;
+
 logic [7:0]   pwm_gpio_in;
 
 assign reg_rdata = (reg_addr[9:7] == `SEL_GLBL)  ? {reg_glbl_rdata} : 
@@ -291,21 +301,24 @@ assign reg_rdata = (reg_addr[9:7] == `SEL_GLBL)  ? {reg_glbl_rdata} :
 	               (reg_addr[9:7] == `SEL_PWM)   ? {reg_pwm_rdata}  :
 	               (reg_addr[9:7] == `SEL_TIMER) ? reg_timer_rdata  : 
 	               (reg_addr[9:7] == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
-	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_rdata     : 'h0;
+	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_rdata     : 
+	               (reg_addr[9:7] == `SEL_D2A)   ? reg_d2a_rdata    : 'h0;
 
 assign reg_ack   = (reg_addr[9:7] == `SEL_GLBL)  ? reg_glbl_ack   : 
 	               (reg_addr[9:7] == `SEL_GPIO)  ? reg_gpio_ack   : 
 	               (reg_addr[9:7] == `SEL_PWM)   ? reg_pwm_ack    : 
 	               (reg_addr[9:7] == `SEL_TIMER) ? reg_timer_ack  : 
 	               (reg_addr[9:7] == `SEL_SEMA)  ? reg_sema_ack   : 
-	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_ack     : 1'b0;
+	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_ack     : 
+	               (reg_addr[9:7] == `SEL_D2A)   ? reg_d2a_ack    : 1'b0;
 
 wire reg_glbl_cs  = (reg_addr[9:7] == `SEL_GLBL) ? reg_cs : 1'b0;
 wire reg_gpio_cs  = (reg_addr[9:7] == `SEL_GPIO) ? reg_cs : 1'b0;
 wire reg_pwm_cs   = (reg_addr[9:7] == `SEL_PWM)  ? reg_cs : 1'b0;
 wire reg_timer_cs = (reg_addr[9:7] == `SEL_TIMER)? reg_cs : 1'b0;
 wire reg_sema_cs  = (reg_addr[9:7] == `SEL_SEMA) ? reg_cs : 1'b0;
-wire reg_ws_cs    = (reg_addr[9:7] == `SEL_WS) ? reg_cs : 1'b0;
+wire reg_ws_cs    = (reg_addr[9:7] == `SEL_WS)   ? reg_cs : 1'b0;
+wire reg_d2a_cs   = (reg_addr[9:7] == `SEL_D2A)  ? reg_cs : 1'b0;
 
 //---------------------------------------------------------------------
 
@@ -620,6 +633,34 @@ pinmux u_pinmux (
 
 
    ); 
+
+//-----------------------------------------------------------------------
+// Digital To Analog Register
+//-----------------------------------------------------------------------
+dig2ana_reg  u_d2a(
+              // System Signals
+              // Inputs
+		      .mclk                     ( mclk                      ),
+              .h_reset_n                (s_reset_ssn                ),
+
+		      // Reg Bus Interface Signal
+              .reg_cs                   (reg_d2a_cs                 ),
+              .reg_wr                   (reg_wr                     ),
+              .reg_addr                 (reg_addr[5:2]              ),
+              .reg_wdata                (reg_wdata[15:0]            ),
+              .reg_be                   (reg_be[1:0]                ),
+
+              // Outputs
+              .reg_rdata                (reg_d2a_rdata              ),
+              .reg_ack                  (reg_d2a_ack                ),
+
+              .cfg_dac0_mux_sel         (cfg_dac0_mux_sel           ),
+              .cfg_dac1_mux_sel         (cfg_dac1_mux_sel           ),
+              .cfg_dac2_mux_sel         (cfg_dac2_mux_sel           ),
+              .cfg_dac3_mux_sel         (cfg_dac3_mux_sel           )
+
+
+         );
 
 endmodule 
 

@@ -622,7 +622,7 @@ input real exp_period;
 begin
    //force clock_mon = u_top.u_wb_host.pll_clk_out[0];
    `ifdef GL
-      force clock_mon = u_top.u_wb_host.pll_clk_out[0];
+      force clock_mon = u_top.u_wb_host.int_pll_clock;
     `else
       force clock_mon = u_top.u_wb_host.int_pll_clock;
 
@@ -635,7 +635,11 @@ endtask
 task uartm_clock_monitor;
 input real exp_period;
 begin
+   `ifdef GL
+   force clock_mon = u_top.u_wb_host._09314_.Q;
+    `else
    force clock_mon = u_top.u_wb_host.u_uart2wb.u_core.line_clk_16x;
+    `endif
    check_clock_period("UART CLock",exp_period);
    release clock_mon;
 end

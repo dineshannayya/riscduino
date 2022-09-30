@@ -280,7 +280,9 @@
 ////          2'b00 - Auto, 2'b01 - 50Mhz, 2'b10 - 4Mhz,          ////
 ////          2'b11 - LA control                                  ////
 ////          B. digital_pll is re-synth with maual placement     ////
-////                                                              ////
+////    5.6  Sept 29 2022, Dinesh A                               ////
+////         A. 4x 8bit DAC Integration                           ////
+////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -761,6 +763,14 @@ wire                           e_reset_n                              ;
 wire                           p_reset_n                              ;
 wire                           s_reset_n                              ;
 wire                           cfg_strap_pad_ctrl                     ;
+
+//----------------------------------------------------------------------
+// DAC Config
+//----------------------------------------------------------------------
+wire [7:0]                     cfg_dac0_mux_sel                       ;
+wire [7:0]                     cfg_dac1_mux_sel                       ;
+wire [7:0]                     cfg_dac2_mux_sel                       ;
+wire [7:0]                     cfg_dac3_mux_sel                       ;
 
 //---------------------------------------------------------------------
 // Strap
@@ -1494,68 +1504,25 @@ pinmux_top u_pinmux(
        .cfg_pll_fed_div        (cfg_pll_fed_div         ), 
        .cfg_dco_mode           (cfg_dco_mode            ), 
        .cfg_dc_trim            (cfg_dc_trim             ),
-       .pll_ref_clk            (pll_ref_clk             )
+       .pll_ref_clk            (pll_ref_clk             ),
 
+       .cfg_dac0_mux_sel       (cfg_dac0_mux_sel        ),
+       .cfg_dac1_mux_sel       (cfg_dac1_mux_sel        ),
+       .cfg_dac2_mux_sel       (cfg_dac2_mux_sel        ),
+       .cfg_dac3_mux_sel       (cfg_dac3_mux_sel        )
 
    ); 
 
-/***
-sar_adc  u_adc (
-`ifdef USE_POWER_PINS
-        .vccd1 (vccd1),// User area 1 1.8V supply
-        .vssd1 (vssd1),// User area 1 digital ground
-        .vccd2 (vccd1), // (vccd2),// User area 2 1.8V supply (analog) - DOTO: Need Fix
-        .vssd2 (vssd1), // (vssd2),// User area 2 ground      (analog) - DOTO: Need Fix
-`endif
 
-    
-        .clk           (wbd_clk_adc_rp ),// The clock (digital)
-        .reset_n       (wbd_int_rst_n   ),// Active low reset (digital)
-
-    // Reg Bus Interface Signal
-        .reg_cs        (wbd_adc_stb_o   ),
-        .reg_wr        (wbd_adc_we_o    ),
-        .reg_addr      (wbd_adc_adr_o[7:0] ),
-        .reg_wdata     (wbd_adc_dat_o   ),
-        .reg_be        (wbd_adc_sel_o   ),
-
-    // Outputs
-        .reg_rdata     (wbd_adc_dat_i   ),
-        .reg_ack       (wbd_adc_ack_i   ),
-
-        .pulse1m_mclk  (pulse1m_mclk),
-
-
-	// DAC I/F
-        .sar2dac         (sar2dac       ), 
-        //.analog_dac_out  (analog_dac_out) ,  // TODO: Need to connect to DAC O/P
-        .analog_dac_out  (analog_io[6]) , 
-
-        // ADC Input 
-        .analog_din(analog_io[5:0])    // (Analog)
-
-);
-***/
-
-/****
-* TODO: Need to uncomment the DAC
-DAC_8BIT u_dac (
-     `ifdef USE_POWER_PINS
-        .vdd(vccd2),
-        .gnd(vssd2),
-    `endif 
-        .d0(sar2dac[0]),
-        .d1(sar2dac[1]),
-        .d2(sar2dac[2]),
-        .d3(sar2dac[3]),
-        .d4(sar2dac[4]),
-        .d5(sar2dac[5]),
-        .d6(sar2dac[6]),
-        .d7(sar2dac[7]),
-        .inp1(analog_io[6]),
-        .out_v(analog_dac_out)
-    );
-
-**/
-
+dac_top  u_4x8bit_dac(
+    .Vref (analog_io[23]),
+    .DIn0 (cfg_dac0_mux_sel),
+    .DIn1 (cfg_dac1_mux_sel),
+    .DIn2 (cfg_dac2_mux_sel),
+    .DIn3 (cfg_dac3_mux_sel),
+    .Vout0(analog_io[15]   ),
+    .Vout1(analog_io[16]   ),
+    .Vout2(analog_io[17]   ),
+    .Vout3(analog_io[18]   )
+   );
 endmodule : user_project_wrapper

@@ -75,6 +75,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_iconnect.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/digital_pll.v \
 	    $::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/dac_top.v \
 	    "
 
 set ::env(EXTRA_LEFS) "\
@@ -88,6 +89,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/ycr_iconnect.lef \
 	$lef_root/digital_pll.lef \
 	$::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
+	$lef_root/dac_top.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
@@ -100,7 +102,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/ycr_core_top.gds \
 	$gds_root/ycr_iconnect.gds \
 	$gds_root/digital_pll.gds \
-	$::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
+	$gds_root/dac_top.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -121,13 +123,13 @@ set ::env(FP_PDN_IRDROP) "1"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
 set ::env(FP_PDN_VERTICAL_HALO) "10"
 set ::env(FP_PDN_VOFFSET) "5"
-set ::env(FP_PDN_VPITCH) "60"
+set ::env(FP_PDN_VPITCH) "80"
 set ::env(FP_PDN_HOFFSET) "5"
-set ::env(FP_PDN_HPITCH) "60"
+set ::env(FP_PDN_HPITCH) "80"
 set ::env(FP_PDN_HWIDTH) {6.2}
 set ::env(FP_PDN_VWIDTH) {6.2}
-set ::env(FP_PDN_HSPACING) {20}
-set ::env(FP_PDN_VSPACING) {20}
+set ::env(FP_PDN_HSPACING) {33.8}
+set ::env(FP_PDN_VSPACING) {33.8}
 
 set ::env(VDD_NETS) {vccd1 vccd2 vdda1 vdda2}
 set ::env(GND_NETS) {vssd1 vssd2 vssa1 vssa2}
@@ -167,7 +169,8 @@ set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_wb_host                   vccd1 vssd1 vccd1 vssd1,\
 	u_riscv_top.i_core_top_0    vccd1 vssd1 vccd1 vssd1, \
 	u_riscv_top.u_connect       vccd1 vssd1 VPWR  VGND, \
-	u_riscv_top.u_intf          vccd1 vssd1 vccd1 vssd1 \
+	u_riscv_top.u_intf          vccd1 vssd1 vccd1 vssd1, \
+	u_4x8bit_dac                vccd1 vssd1 vccd1 vssd1
       	"
 
 

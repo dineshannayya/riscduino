@@ -146,10 +146,9 @@ endtask
 
 ////////////////////////////////////////////////////////////////////////////////
 task read_char_chk;
-input 	expected_data;
+input [7:0]	expected_data;
 
 integer i;
-reg	[7:0] expected_data;
 reg 	[7:0] data;
 reg	parity;
 
@@ -340,7 +339,6 @@ reg	[7:0] rxd_data;
 
 
 integer i;
-reg	[7:0] expected_data;
 reg 	[7:0] data;
 reg	parity;
 

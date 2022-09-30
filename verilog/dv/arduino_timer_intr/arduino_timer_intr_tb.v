@@ -124,8 +124,6 @@ parameter real XTAL_PERIOD = 6;
        `endif
 
 
-	wire [15:0] irq_lines = u_top.u_pinmux.u_glbl_reg.irq_lines;
-
 
 
 	initial begin

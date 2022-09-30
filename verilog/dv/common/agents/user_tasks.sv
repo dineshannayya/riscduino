@@ -90,7 +90,7 @@ initial
 begin
    // Run in Fast Sim Mode
    `ifdef GL
-       force u_top.u_wb_host.u_reg._09718_.Q= 1'b1; 
+       force u_top.u_wb_host._09718_.Q= 1'b1; 
    `else
        force u_top.u_wb_host.u_reg.u_fastsim_buf.X = 1'b1; 
     `endif
@@ -204,6 +204,7 @@ endtask
 
 //---------------------------------------------------------
 // Create Pull Up/Down Based on Reset Strap Parameter
+// System strap are in io_in[13] to [20] and 29 to [36]
 //---------------------------------------------------------
 genvar gCnt;
 generate
@@ -221,6 +222,13 @@ generate
            pulldown(io_in[29+gCnt-8]); 
        end
     end
+ end 
+ // Add Non Strap with pull-up to avoid unkown propagation during gate sim 
+ for(gCnt=0; gCnt<13; gCnt++) begin : g_nostrap1
+    pullup(io_in[gCnt]); 
+ end 
+ for(gCnt=21; gCnt<29; gCnt++) begin : g_nostrap2
+    pullup(io_in[gCnt]); 
  end 
 endgenerate
 
@@ -447,6 +455,32 @@ baud_div = ref_clk/baud_rate; // Get the Bit Baud rate
      baud_div = baud_div/2;
 //As counter run's from 0 , substract from 1
  baud_div = baud_div-1;
+ end
+ endtask
+ 
+/*************************************************************************
+ * This is I2C Prescale value computation logic
+ * Note: from I2c Logic 3 Prescale value SCL = 0, and 2 Prescale value SCL=1
+ *       Filtering logic uses two sample of Precale/4-1 period.
+ *       I2C Clock = System Clock / ((5*(Prescale-1)) + (2 * ((Prescale/4)-1)))
+ *   for 50Mhz system clock, 400Khz I2C clock
+ *       400,000 =  50,000,000 * (5*(Prescale-1) + 2*(Prescale/4+1)+2)
+ *      5*Prescale -5 + 2*Prescale/4 + 2 + 2= 50,000,000/400,000
+ *      5*prescale -5 + Prescale/2 + 4 = 125
+ *      (10*prescale+Prescale)/2 - 1 = 125
+ *      (11 *Prescale)/2 = 125+1
+ *      Prescale = 126*2/11
+
+ * *************************************************************************/
+ task tb_set_i2c_prescale;
+ input [31:0] ref_clk;
+ input [31:0] rate;
+ output [15:0] prescale;
+ reg   [15:0] prescale;
+ begin 
+   prescale   = ref_clk/rate; 
+   prescale = prescale +1; 
+   prescale = (prescale *2)/11; 
  end
  endtask
 

@@ -33,7 +33,8 @@ set ::env(FP_PDN_CORE_RING) "0"
 
 ## Source Verilog Files
 set ::env(VERILOG_FILES) "\
-	$script_dir/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv"
+	$::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv \
+	$::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv"
 
 ## Clock configurations
 #set ::env(CLOCK_PORT) "clk_in"

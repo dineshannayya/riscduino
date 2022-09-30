@@ -32,6 +32,11 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type1.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type2.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/clk_div8.v
+
+-v $(USER_PROJECT_VERILOG)/rtl/dac/src/dac_top.v
+
+-v $(USER_PROJECT_VERILOG)/rtl/dig2ana/src/dig2ana_reg.sv
+
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_if.sv
 -v $(USER_PROJECT_VERILOG)/rtl/qspim/src/qspim_fifo.sv
