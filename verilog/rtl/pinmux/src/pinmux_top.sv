@@ -296,29 +296,6 @@ logic         reg_d2a_ack;
 
 logic [7:0]   pwm_gpio_in;
 
-assign reg_rdata = (reg_addr[9:7] == `SEL_GLBL)  ? {reg_glbl_rdata} : 
-	               (reg_addr[9:7] == `SEL_GPIO)  ? {reg_gpio_rdata} :
-	               (reg_addr[9:7] == `SEL_PWM)   ? {reg_pwm_rdata}  :
-	               (reg_addr[9:7] == `SEL_TIMER) ? reg_timer_rdata  : 
-	               (reg_addr[9:7] == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
-	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_rdata     : 
-	               (reg_addr[9:7] == `SEL_D2A)   ? reg_d2a_rdata    : 'h0;
-
-assign reg_ack   = (reg_addr[9:7] == `SEL_GLBL)  ? reg_glbl_ack   : 
-	               (reg_addr[9:7] == `SEL_GPIO)  ? reg_gpio_ack   : 
-	               (reg_addr[9:7] == `SEL_PWM)   ? reg_pwm_ack    : 
-	               (reg_addr[9:7] == `SEL_TIMER) ? reg_timer_ack  : 
-	               (reg_addr[9:7] == `SEL_SEMA)  ? reg_sema_ack   : 
-	               (reg_addr[9:7] == `SEL_WS)    ? reg_ws_ack     : 
-	               (reg_addr[9:7] == `SEL_D2A)   ? reg_d2a_ack    : 1'b0;
-
-wire reg_glbl_cs  = (reg_addr[9:7] == `SEL_GLBL) ? reg_cs : 1'b0;
-wire reg_gpio_cs  = (reg_addr[9:7] == `SEL_GPIO) ? reg_cs : 1'b0;
-wire reg_pwm_cs   = (reg_addr[9:7] == `SEL_PWM)  ? reg_cs : 1'b0;
-wire reg_timer_cs = (reg_addr[9:7] == `SEL_TIMER)? reg_cs : 1'b0;
-wire reg_sema_cs  = (reg_addr[9:7] == `SEL_SEMA) ? reg_cs : 1'b0;
-wire reg_ws_cs    = (reg_addr[9:7] == `SEL_WS)   ? reg_cs : 1'b0;
-wire reg_d2a_cs   = (reg_addr[9:7] == `SEL_D2A)  ? reg_cs : 1'b0;
 
 //---------------------------------------------------------------------
 
@@ -662,6 +639,44 @@ dig2ana_reg  u_d2a(
 
          );
 
+//-------------------------------------------------
+// Register Block Selection Logic
+//-------------------------------------------------
+reg [2:0] reg_blk_sel;
+
+always @(posedge mclk or negedge s_reset_ssn)
+begin
+   if(s_reset_ssn == 1'b0) begin
+     reg_blk_sel <= 'h0;
+   end
+   else begin
+      if(reg_cs) reg_blk_sel <= reg_addr[9:7];
+   end
+end
+
+assign reg_rdata = (reg_blk_sel == `SEL_GLBL)  ? {reg_glbl_rdata} : 
+	               (reg_blk_sel == `SEL_GPIO)  ? {reg_gpio_rdata} :
+	               (reg_blk_sel == `SEL_PWM)   ? {reg_pwm_rdata}  :
+	               (reg_blk_sel == `SEL_TIMER) ? reg_timer_rdata  : 
+	               (reg_blk_sel == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
+	               (reg_blk_sel == `SEL_WS)    ? reg_ws_rdata     : 
+	               (reg_blk_sel == `SEL_D2A)   ? reg_d2a_rdata    : 'h0;
+
+assign reg_ack   = (reg_blk_sel == `SEL_GLBL)  ? reg_glbl_ack   : 
+	               (reg_blk_sel == `SEL_GPIO)  ? reg_gpio_ack   : 
+	               (reg_blk_sel == `SEL_PWM)   ? reg_pwm_ack    : 
+	               (reg_blk_sel == `SEL_TIMER) ? reg_timer_ack  : 
+	               (reg_blk_sel == `SEL_SEMA)  ? reg_sema_ack   : 
+	               (reg_blk_sel == `SEL_WS)    ? reg_ws_ack     : 
+	               (reg_blk_sel == `SEL_D2A)   ? reg_d2a_ack    : 1'b0;
+
+wire reg_glbl_cs  = (reg_addr[9:7] == `SEL_GLBL) ? reg_cs : 1'b0;
+wire reg_gpio_cs  = (reg_addr[9:7] == `SEL_GPIO) ? reg_cs : 1'b0;
+wire reg_pwm_cs   = (reg_addr[9:7] == `SEL_PWM)  ? reg_cs : 1'b0;
+wire reg_timer_cs = (reg_addr[9:7] == `SEL_TIMER)? reg_cs : 1'b0;
+wire reg_sema_cs  = (reg_addr[9:7] == `SEL_SEMA) ? reg_cs : 1'b0;
+wire reg_ws_cs    = (reg_addr[9:7] == `SEL_WS)   ? reg_cs : 1'b0;
+wire reg_d2a_cs   = (reg_addr[9:7] == `SEL_D2A)  ? reg_cs : 1'b0;
 endmodule 
 
 

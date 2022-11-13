@@ -8,10 +8,10 @@ parameter CHIP_RELEASE_DATE = 32'h0711_2022;
 // Software Reg-2: Poject Revison 5.1 = 0005200
 parameter CHIP_REVISION   = 32'h0005_7000;
 
-parameter CLK_SKEW1_RESET_VAL = 32'b0000_0000_1000_0111_1001_1000_1001_1100;
+parameter CLK_SKEW1_RESET_VAL = 32'b0000_0000_1000_0111_1010_1000_1001_1100;
 parameter CLK_SKEW2_RESET_VAL = 32'b0000;
 
-parameter PSTRAP_DEFAULT_VALUE = 15'b000_0111_1010_0000;
+parameter PSTRAP_DEFAULT_VALUE = 15'b000_0011_1010_0000;
 
 /*****************************************************
 pad_strap_in decoding
@@ -41,8 +41,8 @@ pad_strap_in decoding
                  0 - Cache Enable
                  1 - Bypass cache  (Default)
      bit [10]  - Riscv SRAM clock edge selection
-                 0 - Normal
-                 1 - Invert        (Default)
+                 0 - Normal      (Default)
+                 1 - Invert        
      bit [12:11] - Skew selection
                  2'b00 - Default value  (Default)
                  2'b01 - Default value + 2               

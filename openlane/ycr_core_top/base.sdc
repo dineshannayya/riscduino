@@ -34,7 +34,7 @@ set_input_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports
 #DMEM Constraints
 set_output_delay -max 6.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2dmem_cmd_o}]
 set_output_delay -max 8.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2dmem_req_o}]
-set_output_delay -max 2.5000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2dmem_addr_o[*]}]
+set_output_delay -max 6.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2dmem_addr_o[*]}]
 set_output_delay -max 6.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2dmem_wdata_o[*]}]
 set_output_delay -max 6.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2dmem_width_o[*]}]
 

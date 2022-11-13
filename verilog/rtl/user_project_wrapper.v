@@ -41,6 +41,7 @@
 ////      14. UART Master                                         ////
 ////      15. SPI Slave (As Arduino ISP)                          ////
 ////      16. AES 126 Encription/Decryption                       ////
+////      17. FPU (Single Precision)                              ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////

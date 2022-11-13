@@ -247,8 +247,8 @@ set_input_delay  -max 6.0000 -clock [get_clocks {dcache_mem_clk1}] -add_delay  [
 ###############################################################################
 # Environment
 ###############################################################################
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin $::env(SYNTH_DRIVING_CELL_PIN) [all_inputs]
-set cap_load [expr $::env(SYNTH_CAP_LOAD) / 1000.0]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} [all_inputs]
+set cap_load 0.0334
 puts "\[INFO\]: Setting load to: $cap_load"
 set_load  $cap_load [all_outputs]
 

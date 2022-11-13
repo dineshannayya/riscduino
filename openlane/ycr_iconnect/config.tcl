@@ -65,7 +65,7 @@ set ::env(DIE_AREA) "0 0 400 1100"
 
 set ::env(PL_TARGET_DENSITY) 0.20
 set ::env(CELL_PAD) 8
-#set ::env(GRT_ADJUSTMENT) {0.2}
+set ::env(GRT_ADJUSTMENT) {0.2}
 
 
 #set ::env(PL_ROUTABILITY_DRIVEN) "1"

@@ -105,7 +105,7 @@ set ::env(RUN_CVC) 0
 set ::env(PL_TIME_DRIVEN) 1
 set ::env(PL_TARGET_DENSITY) "0.38"
 set ::env(CELL_PAD) "8"
-#set ::env(GRT_ADJUSTMENT) {0.2}
+set ::env(GRT_ADJUSTMENT) {0.2}
 
 
 ######################################################################################

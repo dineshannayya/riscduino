@@ -101,22 +101,20 @@ set ::env(CTS_SINK_CLUSTERING_SIZE) 20
 ## Placement
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 1
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 1
-
-set ::env(PL_RESIZER_MAX_SLEW_MARGIN) 2
 set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "2000"
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "2.0"
+set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
+set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
 
 ## Routing
 set ::env(GRT_ADJUSTMENT) 0.1
 set ::env(DPL_CELL_PADDING) 1
 
+set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
 set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
-set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}
-
 set ::env(GLB_RESIZER_MAX_CAP_MARGIN) {0.25}
-set ::env(PL_RESIZER_MAX_CAP_MARGIN) {0.25}
-
 set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
-set ::env(PL_RESIZER_MAX_WIRE_LENGTH) {500}
 
 #LVS Issue - DEF Base looks to having issue
 set ::env(MAGIC_EXT_USE_GDS) {0}
@@ -128,20 +126,16 @@ set ::env(RT_MAX_LAYER) {met4}
 set ::env(MAGIC_GENERATE_LEF) {1}
 set ::env(MAGIC_WRITE_FULL_LEF) {0}
 
+set ::env(FP_PDN_VPITCH) 100
+set ::env(FP_PDN_HPITCH) 100
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2
+
+set ::env(ECO_ENABLE) {0}
+#set ::env(CURRENT_STEP) "synthesis"
+#set ::env(LAST_STEP) "parasitics_sta"
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 set ::env(QUIT_ON_MAGIC_DRC) "1"
 set ::env(QUIT_ON_LVS_ERROR) "1"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
-
-set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
-set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
-set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
-set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "2000"
-set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "2.0"
-set ::env(PL_RESIZER_MAX_CAP_MARGIN) "5"
-
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 6.2
-set ::env(FP_PDN_HWIDTH) 6.2
