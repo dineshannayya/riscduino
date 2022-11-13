@@ -118,6 +118,7 @@ integer i,j;
 	   	$dumpvars(1, `TB_TOP);
 	   	$dumpvars(2, `TB_TOP.u_top);
 	   	$dumpvars(0, `TB_TOP.u_top.u_wb_host);
+	   	$dumpvars(2, `TB_TOP.u_top.u_riscv_top);
 	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
 	   end
        `endif

@@ -117,13 +117,14 @@ parameter real XTAL_PERIOD = 6;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, `TB_TOP);
-	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
-	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
-	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
-	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_uart0_core);
-	   	$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_i2cm);
-	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
+	   	$dumpvars(1, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP.tb_uart);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_intf);
+	   	$dumpvars(1, `TB_TOP.u_top.u_uart_i2c_usb_spi);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_uart_i2c_usb_spi.u_i2cm);
+	   	//$dumpvars(0, `TB_TOP.u_top.u_pinmux);
 	   end
        `endif
 
@@ -172,13 +173,13 @@ parameter real XTAL_PERIOD = 6;
         tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                        uart_stick_parity, uart_timeout, uart_divisor);
 
-         u_i2c_slave_0.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_1.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_2.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_3.debug = 0; // disable i2c bfm debug message
-         u_i2c_slave_4.debug = 0; // disable i2c bfm debug message
+        u_i2c_slave_0.debug = 0; // disable i2c bfm debug message
+        u_i2c_slave_1.debug = 0; // disable i2c bfm debug message
+        u_i2c_slave_2.debug = 0; // disable i2c bfm debug message
+        u_i2c_slave_3.debug = 0; // disable i2c bfm debug message
+        u_i2c_slave_4.debug = 0; // disable i2c bfm debug message
 
-        repeat (1000) @(posedge clock);  // wait for Processor Get Ready
+        repeat (10000) @(posedge clock);  // wait for Processor Get Ready
 	    flag  = 0;
 		check_sum = 0;
         compare_start = 1;

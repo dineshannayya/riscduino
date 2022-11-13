@@ -205,6 +205,7 @@ parameter P_QDDR   = 2'b11;
         tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                            uart_stick_parity, uart_timeout, uart_divisor);
 
+        repeat (10000) @(posedge clock);  // wait for Processor Get Ready
 	    flag  = 0;
 		check_sum = 0;
         dCnt = 0;

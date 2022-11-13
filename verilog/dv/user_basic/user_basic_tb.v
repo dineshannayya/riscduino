@@ -145,33 +145,33 @@ assign strap_sticky = {
 reg [1:0]  strap_skew;
 wire [31:0] skew_config;
 
-assign skew_config[3:0]   =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[3:0] :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[3:0] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[3:0] + 4 : SKEW_RESET_VAL[3:0]-4;
+assign skew_config[3:0]   =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[3:0] :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[3:0] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[3:0] + 4 : CLK_SKEW1_RESET_VAL[3:0]-4;
 
-assign skew_config[7:4]   =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[7:4]  :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[7:4] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[7:4] + 4 : SKEW_RESET_VAL[7:4]-4;
+assign skew_config[7:4]   =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[7:4]  :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[7:4] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[7:4] + 4 : CLK_SKEW1_RESET_VAL[7:4]-4;
 
-assign skew_config[11:8]  =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[11:8]  :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[11:8] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[11:8] + 4 : SKEW_RESET_VAL[11:8]-4;
+assign skew_config[11:8]  =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[11:8]  :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[11:8] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[11:8] + 4 : CLK_SKEW1_RESET_VAL[11:8]-4;
 
-assign skew_config[15:12] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[15:12]  :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[15:12] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[15:12] + 4 : SKEW_RESET_VAL[15:12]-4;
+assign skew_config[15:12] =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[15:12]  :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[15:12] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[15:12] + 4 : CLK_SKEW1_RESET_VAL[15:12]-4;
 
-assign skew_config[19:16] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[19:16]  :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[19:16] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[19:16] + 4 : SKEW_RESET_VAL[19:16]-4;
+assign skew_config[19:16] =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[19:16]  :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[19:16] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[19:16] + 4 : CLK_SKEW1_RESET_VAL[19:16]-4;
 
-assign skew_config[23:20] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[23:20]  :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[23:20] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[23:20] + 4 : SKEW_RESET_VAL[23:20]-4;
+assign skew_config[23:20] =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[23:20]  :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[23:20] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[23:20] + 4 : CLK_SKEW1_RESET_VAL[23:20]-4;
 
-assign skew_config[27:24] =   (strap_skew == 2'b00) ?  SKEW_RESET_VAL[27:24] :
-                              (strap_skew == 2'b01) ?  SKEW_RESET_VAL[27:24] + 2 :
-                              (strap_skew == 2'b10) ?  SKEW_RESET_VAL[27:24] + 4 : SKEW_RESET_VAL[27:24]-4;
+assign skew_config[27:24] =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[27:24] :
+                              (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[27:24] + 2 :
+                              (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[27:24] + 4 : CLK_SKEW1_RESET_VAL[27:24]-4;
 
 assign skew_config[31:28] = 4'b0;
 
@@ -194,7 +194,7 @@ end
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(0, `TB_TOP);
+	   	$dumpvars(1, `TB_TOP);
 	   	$dumpvars(1, `TB_TOP.u_top);
 	   	$dumpvars(0, `TB_TOP.u_top.u_pll);
 	   	$dumpvars(0, `TB_TOP.u_top.u_wb_host);
@@ -279,7 +279,8 @@ begin
               wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_PAD_STRAP,read_data,strap_in);
               wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_STRAP_STICKY,read_data,strap_sticky);
               wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SYSTEM_STRAP,read_data,strap_sticky);
-              wb_user_core_read_check(`ADDR_SPACE_WBHOST+`WBHOST_CLK_CTRL2,read_data,clk_ctrl2);
+              wb_user_core_read(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,read_data);
+              if(read_data[23:16] != clk_ctrl2) test_fail = 1;
               clock_monitor2(cpu_clk_cfg,wbs_clk_cfg);
           end
        end
@@ -479,9 +480,40 @@ begin
       
        `endif
        $display("##########################################################");
-        $display("Step-10,Monitor: Checking the chip signature :");
-        $display("###################################################");
+       $display("Step-10,Monitor: Analog Config checks                     ");
+       $display("##########################################################");
        test_id = 10;
+       test_step = 14;
+
+        // Remove Wb/PinMux Reset
+        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+
+        wb_user_core_write(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC0,'h11);
+        wb_user_core_write(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC1,'h22);
+        wb_user_core_write(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC2,'h33);
+        wb_user_core_write(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC3,'h44);
+        wb_user_core_read_check(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC0,read_data,'h11);
+        wb_user_core_read_check(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC1,read_data,'h22);
+        wb_user_core_read_check(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC2,read_data,'h33);
+        wb_user_core_read_check(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC3,read_data,'h44);
+        repeat (10) @(posedge clock);
+        if((u_top.u_4x8bit_dac.DIn0 != 'h11) || (u_top.u_4x8bit_dac.DIn1 != 'h22) ||
+           (u_top.u_4x8bit_dac.DIn2 != 'h33) || (u_top.u_4x8bit_dac.DIn3 != 'h44)) begin
+           test_fail = 1;
+        end
+
+        if(test_fail == 1) begin
+           $display("ERROR: Step-10,Monitor: Analog Config check - FAILED");
+        end else begin
+           $display("STATUS: Step-10,Monitor: Ananlog Config check - PASSED");
+
+        $display("##########################################################");
+
+          end
+       $display("##########################################################");
+       $display("Step-11,Monitor: Checking the chip signature :");
+       $display("###################################################");
+       test_id = 11;
         test_step = 14;
         // Remove Wb/PinMux Reset
         wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
@@ -490,9 +522,9 @@ begin
          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,CHIP_RELEASE_DATE);
          wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,CHIP_REVISION);
          if(test_fail == 1) begin
-            $display("ERROR: Step-10,Monitor: Checking the chip signature - FAILED");
+            $display("ERROR: Step-11,Monitor: Checking the chip signature - FAILED");
          end else begin
-            $display("STATUS: Step-10,Monitor: Checking the chip signature - PASSED");
+            $display("STATUS: Step-11,Monitor: Checking the chip signature - PASSED");
 
          $display("##########################################################");
 
@@ -636,7 +668,7 @@ task uartm_clock_monitor;
 input real exp_period;
 begin
    `ifdef GL
-   force clock_mon = u_top.u_wb_host._09314_.Q;
+   force clock_mon = u_top.u_wb_host._09635_.Q;
     `else
    force clock_mon = u_top.u_wb_host.u_uart2wb.u_core.line_clk_16x;
     `endif

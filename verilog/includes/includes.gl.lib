@@ -9,6 +9,5 @@
 -v $(PDK_ROOT)/sky130B/libs.ref/sky130_fd_sc_hvl/verilog/sky130_fd_sc_hvl.v
 
 #$(USER_PROJECT_VERILOG)/gl/digital_pll.v
--v $(USER_PROJECT_VERILOG)/rtl/digital_pll/src/digital_pll_controller.v
--v $(USER_PROJECT_VERILOG)/rtl/digital_pll/src/digital_pll.v
--v $(USER_PROJECT_VERILOG)/rtl/digital_pll/src/ring_osc2x13.v
+-v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/digital_pll_controller.v
+-v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/ring_osc2x13.v

@@ -54,7 +54,7 @@ Offset	bcount	clock period	 4xclock period (ns)	clock (Mhz)
 // Digital PLL (ring oscillator + controller)
 // Technically this is a frequency locked loop, not a phase locked loop.
 
-module digital_pll(
+module dg_pll(
 `ifdef USE_POWER_PINS
     VPWR,
     VGND,

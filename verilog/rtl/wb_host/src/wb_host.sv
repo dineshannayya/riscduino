@@ -142,7 +142,8 @@ module wb_host (
        input   logic               wbs_ack_i        ,  // acknowlegement
        input   logic               wbs_err_i        ,  // error
 
-       output logic [31:0]         cfg_clk_ctrl1    ,
+       output logic [31:0]         cfg_clk_skew_ctrl1    ,
+       output logic [31:0]         cfg_clk_skew_ctrl2    ,
 
        input  logic [17:0]         la_data_in       ,
 
@@ -487,7 +488,8 @@ wbh_reg  u_reg (
                .wbs_clk_out        (wbs_clk_out    ),  // System clock
 
                .cfg_bank_sel       (cfg_bank_sel  ),
-               .cfg_clk_ctrl1      (cfg_clk_ctrl1  ),
+               .cfg_clk_skew_ctrl1 (cfg_clk_skew_ctrl1  ),
+               .cfg_clk_skew_ctrl2 (cfg_clk_skew_ctrl2  ),
 
                .cfg_fast_sim       (cfg_fast_sim   )
     );

@@ -21,7 +21,7 @@
 ////  This file is part of the Riscduino cores project            ////
 ////                                                              ////
 ////  Description                                                 ////
-////      To validate Software AES Encription & Decription        ////
+////      To validate AES IP Encription & Decription              ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -78,7 +78,7 @@ parameter real XTAL_PERIOD = 6;
 //----------------------------------
 // Uart Configuration
 // ---------------------------------
-reg [1:0]      uart_data_bit        ;
+reg [1:0]  uart_data_bit        ;
 reg	       uart_stop_bits       ; // 0: 1 stop bit; 1: 2 stop bit;
 reg	       uart_stick_parity    ; // 1: force even parity
 reg	       uart_parity_en       ; // parity enable
@@ -129,8 +129,9 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 	   initial begin
 	   	$dumpfile("simx.vcd");
 	   	$dumpvars(2, user_aes_tb);
+	   	$dumpvars(0, user_aes_tb.u_top.u_aes);
 	   	$dumpvars(0, user_aes_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_aes_tb.u_top.u_uart_i2c_usb_spi.u_uart0_core);
+	   	$dumpvars(0, user_aes_tb.u_top.u_pinmux);
 	   end
        `endif
 
@@ -255,7 +256,7 @@ assign io_in[21] = 1'b0 ; // SPIS SCK
    assign io_in[36] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("user_aes.hex"),
+     s25fl256s #(.mem_file_name("user_aes_core.hex"),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (

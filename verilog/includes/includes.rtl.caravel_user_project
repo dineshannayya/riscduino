@@ -3,6 +3,7 @@
 +incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/includes
++incdir+$(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/bfm
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/model
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/agents
@@ -135,6 +136,16 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_async_wbb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_arb.sv
 
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_sbox.sv			    
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_rcon.sv			    
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_key_expand_128.sv	
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_cipher_top.sv		
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_inv_sbox.sv			
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_inv_cipher_top.sv    
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/top/aes_top.sv                
+$(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/top/aes_reg.sv                
+
+
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo.sv
 -v $(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart2wb.sv 
 -v $(USER_PROJECT_VERILOG)/rtl/uart2wb/src/uart2_core.sv 
@@ -144,3 +155,15 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v
 -v $(USER_PROJECT_VERILOG)/rtl/lib/clk_skew_adjust.gv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/ctech_cells.sv
+
+-v $(USER_PROJECT_VERILOG)/rtl/fpu_wrapper/src/fpu_wrapper.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu_wrapper/src/fpu_reg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl/fpu_sp_top.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl/fpu_sp_mul.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl/fpu_sp_div.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl/fpu_sp_add.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl/fpu_sp_f2i.sv
+-v $(USER_PROJECT_VERILOG)/rtl/fpu/verilog/rtl/fpu_sp_i2f.sv
+
+
+-v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/dg_pll.v

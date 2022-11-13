@@ -175,7 +175,7 @@ parameter real XTAL_PERIOD = 6;
          u_i2c_slave_0.debug = 1; // disable i2c bfm debug message
          u_i2c_slave_1.debug = 1; // disable i2c bfm debug message
 
-        repeat (1000) @(posedge clock);  // wait for Processor Get Ready
+        repeat (10000) @(posedge clock);  // wait for Processor Get Ready
 	    flag  = 0;
 		check_sum = 0;
         compare_start = 1;

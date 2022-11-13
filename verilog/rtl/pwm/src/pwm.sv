@@ -45,7 +45,7 @@ logic [14:0]  pwm_scnt    ; // PWM Scaling counter
 logic [15:0]  pwm_cnt     ; // PWM counter
 logic         cnt_trg     ;
 logic         pwm_wfm_i   ;
-logic         pwm_wfm_hold;
+logic         pwm_wfm_r   ; // Register pwm
 logic         comp0_match ;
 logic         comp1_match ;
 logic         comp2_match ;
@@ -214,11 +214,18 @@ end
 always @(posedge mclk or negedge h_reset_n)
 begin 
    if ( ~h_reset_n ) begin
-      pwm_wfm_hold  <= 1'b0;
-   end else if(cfg_pwm_enb) begin
-      pwm_wfm_hold <= pwm_wfm_i;
+      pwm_wfm_r     <= 1'b0;
+   end else begin 
+      if(cfg_pwm_hold) begin
+          if(cfg_pwm_enb ) begin
+              pwm_wfm_r   <= pwm_wfm_i;
+          end 
+      end else begin
+         pwm_wfm_r   <= pwm_wfm_i;
+      end
    end
 end
+
 
 //--------------------------------------------
 // Final Waveform output generation based
@@ -226,13 +233,8 @@ end
 //--------------------------------------------
 always_comb begin
    pwm_wfm_o = 0;
-   if(!cfg_pwm_enb && cfg_pwm_hold) begin
-      if(cfg_pwm_inv) pwm_wfm_o = !pwm_wfm_hold;
-      else            pwm_wfm_o = pwm_wfm_hold;
-   end else begin
-      if(cfg_pwm_inv) pwm_wfm_o = !pwm_wfm_i;
-      else            pwm_wfm_o = pwm_wfm_i;
-   end
+   if(cfg_pwm_inv) pwm_wfm_o = !pwm_wfm_r;
+   else            pwm_wfm_o = pwm_wfm_r;
 end
 
 //----------------------------------------

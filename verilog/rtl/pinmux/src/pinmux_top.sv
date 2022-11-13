@@ -106,7 +106,7 @@ module pinmux_top (
                         output logic           rtc_clk                ,
 
                        // Global Reset control
-                       output logic  [1:0]     cpu_core_rst_n   ,
+                       output logic  [3:0]     cpu_core_rst_n   ,
                        output logic            cpu_intf_rst_n   ,
                        output logic            qspim_rst_n      ,
                        output logic            sspim_rst_n      ,
@@ -647,8 +647,8 @@ dig2ana_reg  u_d2a(
               .reg_cs                   (reg_d2a_cs                 ),
               .reg_wr                   (reg_wr                     ),
               .reg_addr                 (reg_addr[5:2]              ),
-              .reg_wdata                (reg_wdata[15:0]            ),
-              .reg_be                   (reg_be[1:0]                ),
+              .reg_wdata                (reg_wdata[31:0]            ),
+              .reg_be                   (reg_be[3:0]                ),
 
               // Outputs
               .reg_rdata                (reg_d2a_rdata              ),

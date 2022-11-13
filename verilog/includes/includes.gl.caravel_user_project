@@ -217,3 +217,8 @@ $(USER_PROJECT_VERILOG)/gl/wb_interconnect.v
 #-v $(USER_PROJECT_VERILOG)/rtl/lib/double_sync_low.v
 #-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type1.sv
 #-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type2.sv
+
+
+-v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/dg_pll.v
+
+-v $(USER_PROJECT_VERILOG)/rtl/dac/src/dac_top.v

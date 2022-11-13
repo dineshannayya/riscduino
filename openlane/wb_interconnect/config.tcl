@@ -52,7 +52,7 @@ set ::env(VERILOG_FILES) "\
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
 set ::env(SYNTH_PARAMETERS) "CH_CLK_WD=4\
-	                 CH_DATA_WD=53 \
+	                 CH_DATA_WD=154 \
 			 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
@@ -71,8 +71,9 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 300 1725"
+set ::env(DIE_AREA) "0 0 300 1800"
 
+#set ::env(GRT_OBS) "met4  0 0 300 1725"
 
 # If you're going to use multiple power domains, then keep this disabled.
 set ::env(RUN_CVC) 0
@@ -118,10 +119,14 @@ set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
 set ::env(PL_RESIZER_MAX_WIRE_LENGTH) {500}
 
 #LVS Issue - DEF Base looks to having issue
-set ::env(MAGIC_EXT_USE_GDS) {1}
+set ::env(MAGIC_EXT_USE_GDS) {0}
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
+
+#Lef 
+set ::env(MAGIC_GENERATE_LEF) {1}
+set ::env(MAGIC_WRITE_FULL_LEF) {0}
 
 
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"

@@ -90,7 +90,7 @@ initial
 begin
    // Run in Fast Sim Mode
    `ifdef GL
-       force u_top.u_wb_host._09718_.Q= 1'b1; 
+       force u_top.u_wb_host._10673_.Q= 1'b1; 
    `else
        force u_top.u_wb_host.u_reg.u_fastsim_buf.X = 1'b1; 
     `endif

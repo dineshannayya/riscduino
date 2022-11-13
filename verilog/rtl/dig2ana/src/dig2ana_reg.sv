@@ -105,7 +105,7 @@ begin : preg_out_Seq
    if (h_reset_n == 1'b0) begin
       reg_rdata  <= 'h0;
       reg_ack    <= 1'b0;
-   end else if (reg_cs && !reg_ack && sw_rd_en) begin
+   end else if (reg_cs && !reg_ack) begin
       reg_rdata  <= reg_out[DW-1:0] ;
       reg_ack    <= 1'b1;
    end else begin
@@ -129,7 +129,7 @@ generic_register #(8,8'h0  ) u_reg0_be0 (
 	      .data_out      (reg_0[7:0]        )
           );
 
-assign reg_0[31:24] = 'h0;
+assign reg_0[31:8] = 'h0;
 
 //-----------------------------------------------------------------------
 //   reg-1
@@ -147,7 +147,7 @@ generic_register #(8,8'h0  ) u_reg1_be0 (
 	      .data_out      (reg_1[7:0]        )
           );
 
-assign reg_1[31:24] = 'h0;
+assign reg_1[31:8] = 'h0;
 
 //-----------------------------------------------------------------------
 //   reg-2
@@ -165,7 +165,7 @@ generic_register #(8,8'h0  ) u_reg2_be0 (
 	      .data_out      (reg_2[7:0]        )
           );
 
-assign reg_2[31:24] = 'h0;
+assign reg_2[31:8] = 'h0;
 
 //-----------------------------------------------------------------------
 //   reg-3
@@ -183,7 +183,7 @@ generic_register #(8,8'h0  ) u_reg3_be0 (
 	      .data_out      (reg_3[7:0]        )
           );
 
-assign reg_3[31:24] = 'h0;
+assign reg_3[31:8] = 'h0;
 
 //-----------------------------------------------------------------------
 // Register Read Path Multiplexer instantiation

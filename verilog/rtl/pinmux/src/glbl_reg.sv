@@ -66,7 +66,7 @@ module glbl_reg (
                        
 
                        // Global Reset control
-                       output logic  [1:0]     cpu_core_rst_n         ,
+                       output logic  [3:0]     cpu_core_rst_n         ,
                        output logic            cpu_intf_rst_n         ,
                        output logic            qspim_rst_n            ,
                        output logic            sspim_rst_n            ,
@@ -282,6 +282,10 @@ ctech_buf u_buf_uart1_rst     (.A(cfg_rst_ctrl[6]),.X(uart_rst_n[1]));
 
 ctech_buf u_buf_cpu0_rst      (.A(cfg_rst_ctrl[8]),.X(cpu_core_rst_n[0]));
 ctech_buf u_buf_cpu1_rst      (.A(cfg_rst_ctrl[9]),.X(cpu_core_rst_n[1]));
+ctech_buf u_buf_cpu2_rst      (.A(cfg_rst_ctrl[10]),.X(cpu_core_rst_n[2]));
+ctech_buf u_buf_cpu3_rst      (.A(cfg_rst_ctrl[11]),.X(cpu_core_rst_n[3]));
+
+
 
 //---------------------------------------------------------
 // Default reset value decided based on riscv boot mode
@@ -756,6 +760,9 @@ wire  dbg_clk_ref       = (cfg_mon_sel == 4'b000) ? user_clock1    :
 	                       (cfg_mon_sel == 4'b110) ? usb_clk      : 
 	                       (cfg_mon_sel == 4'b111) ? rtc_clk      : 1'b0;
 
+wire dbg_clk_ref_buf;
+ctech_clk_buf u_clkbuf_dbg_ref (.A (dbg_clk_ref), . X(dbg_clk_ref_buf));
+
 //  DIv16 to debug monitor purpose
 logic dbg_clk_div16;
 
@@ -763,7 +770,7 @@ clk_ctl #(3) u_dbgclk (
    // Outputs
        .clk_o         (dbg_clk_div16    ),
    // Inputs
-       .mclk          (dbg_clk_ref      ),
+       .mclk          (dbg_clk_ref_buf  ),
        .reset_n       (e_reset_n        ), 
        .clk_div_ratio (4'hE             )
    );

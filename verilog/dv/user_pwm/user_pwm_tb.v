@@ -98,9 +98,11 @@ parameter real XTAL_PERIOD = 6;
 	   initial begin
 	   	$dumpfile("simx.vcd");
 	   	$dumpvars(1, `TB_GLBL);
-	   	$dumpvars(0, `TB_GLBL.u_top.u_wb_host);
+	   	$dumpvars(1, `TB_GLBL.pwm_monitor);
+	   	$dumpvars(1, `TB_GLBL.check_clock_period);
+	   	$dumpvars(1, `TB_GLBL.u_top.u_wb_host);
 	   	$dumpvars(0, `TB_GLBL.u_top.u_pinmux);
-	   	$dumpvars(0, `TB_GLBL.u_top.u_intercon);
+	   	$dumpvars(1, `TB_GLBL.u_top.u_intercon);
 	   end
        `endif
 
@@ -741,7 +743,7 @@ parameter real XTAL_PERIOD = 6;
           $display("STATUS: Step-10, PWM One Shot + mode:3 + Comparator Center - PASSED");
        end
        $display("Check Sum: %x ",check_sum);
-       if(check_sum != 16'hc638) test_fail = 1;
+       if(check_sum != 16'hc692) test_fail = 1;
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");
@@ -777,6 +779,16 @@ wire pwm3 = pwm_wfm[3];
 wire pwm4 = pwm_wfm[4];
 wire pwm5 = pwm_wfm[5];
 
+
+reg [2:0] pwm_sel;
+
+assign clock_mon = (pwm_sel == 0) ? pwm0 :
+                   (pwm_sel == 1) ? pwm1 :
+                   (pwm_sel == 2) ? pwm2 :
+                   (pwm_sel == 3) ? pwm3 :
+                   (pwm_sel == 4) ? pwm4 : pwm5;
+
+                   
 task pwm_monitor;
 input [31:0] pwm0_period;
 input [31:0] pwm1_period;
@@ -785,29 +797,29 @@ input [31:0] pwm3_period;
 input [31:0] pwm4_period;
 input [31:0] pwm5_period;
 begin
-   force clock_mon = pwm0;
+   pwm_sel = 3'h0;
+   repeat (100) @(posedge clock);
    check_clock_period("PWM0 Clock",pwm0_period);
-   release clock_mon;
 
-   force clock_mon = pwm1;
+   pwm_sel = 3'h1;
+   repeat (100) @(posedge clock);
    check_clock_period("PWM1 Clock",pwm1_period);
-   release clock_mon;
 
-   force clock_mon = pwm2;
+   pwm_sel = 3'h2;
+   repeat (100) @(posedge clock);
    check_clock_period("PWM2 Clock",pwm2_period);
-   release clock_mon;
 
-   force clock_mon = pwm3;
+   pwm_sel = 3'h3;
+   repeat (100) @(posedge clock);
    check_clock_period("PWM3 Clock",pwm3_period);
-   release clock_mon;
 
-   force clock_mon = pwm4;
+   pwm_sel = 3'h4;
+   repeat (100) @(posedge clock);
    check_clock_period("PWM4 Clock",pwm4_period);
-   release clock_mon;
 
-   force clock_mon = pwm5;
+   pwm_sel = 3'h5;
+   repeat (100) @(posedge clock);
    check_clock_period("PWM5 Clock",pwm5_period);
-   release clock_mon;
 end
 endtask
 
@@ -821,7 +833,7 @@ input [31:0] clk_period; // in NS
 time prev_t, next_t, periodd;
 begin
     $timeformat(-12,3,"ns",10);
-   repeat(1) @(posedge clock_mon);
+   repeat(2) @(posedge clock_mon);
    repeat(1) @(posedge clock_mon);
    prev_t  = $realtime;
    repeat(2) @(posedge clock_mon);

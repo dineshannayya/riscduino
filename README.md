@@ -588,7 +588,7 @@ Riscduino Soc flow uses Openlane tool sets.
 We are looking for community help in following activity, interested user can ping me in efabless slack platform
 
 *  **Analog Design**           - ADC, DAC, PLL,
-*  **Digital Design**          - New IP Integration, Encription,DSP, Floating point functions
+*  **Digital Design**          - New IP Integration, Encription,DSP, DMA controller, 10Mb MAC, Floating point functions
 *  **Verification**            - Improving the Verification flow
 *  **Linux Porting**           - Build Root integration
 *  **Arudino Software Update** - Tool Customisation for Riscduino, Adding additional plug-in and Riscv compilation support

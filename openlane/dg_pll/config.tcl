@@ -15,12 +15,12 @@
 
 set script_dir [file dirname [file normalize [info script]]]
 
-set ::env(DESIGN_NAME) digital_pll
+set ::env(DESIGN_NAME) dg_pll
 set ::env(DESIGN_IS_CORE) 0
 
-set ::env(VERILOG_FILES) "$::env(DESIGN_DIR)/../../verilog/rtl/digital_pll/src/digital_pll.v \
-                          $::env(DESIGN_DIR)/../../verilog/rtl/digital_pll/src/digital_pll_controller.v \
-                          $::env(DESIGN_DIR)/../../verilog/rtl/digital_pll/src/ring_osc2x13.v"
+set ::env(VERILOG_FILES) "$::env(DESIGN_DIR)/../../verilog/rtl/dg_pll/src/dg_pll.v \
+                          $::env(DESIGN_DIR)/../../verilog/rtl/dg_pll/src/digital_pll_controller.v \
+                          $::env(DESIGN_DIR)/../../verilog/rtl/dg_pll/src/ring_osc2x13.v"
 
 set ::env(CLOCK_PORT) ""
 set ::env(CLOCK_TREE_SYNTH) 0
@@ -41,29 +41,43 @@ set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro.cfg
 
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 90 100"
+set ::env(GRT_OBS)  "met4 0 0 90 100"
+
 
 #set ::env(TOP_MARGIN_MULT) 2
 #set ::env(BOTTOM_MARGIN_MULT) 2
 
 #LVS Issue - DEF Base looks to having issue
-#set ::env(MAGIC_EXT_USE_GDS) {1}
+set ::env(MAGIC_EXT_USE_GDS) {1}
+
 
 set ::env(CELL_PAD)  0
 
 ## PDN 
 set ::env(FP_PDN_VPITCH) 40
 set ::env(FP_PDN_HPITCH) 40
+set ::env(FP_PDN_VWIDTH) 6.2
+set ::env(FP_PDN_HWIDTH) 6.2
+set ::env(FP_PDN_VOFFSET) "5"
+set ::env(FP_PDN_HOFFSET) "5"
+set ::env(FP_PDN_HSPACING) {13.8}
+set ::env(FP_PDN_VSPACING) {13.8}
+set ::env(FP_PDN_HORIZONTAL_HALO) "10"
+set ::env(FP_PDN_VERTICAL_HALO) "10"
 
 ## Placement
 set ::env(PL_TARGET_DENSITY) 0.82
 
-## Routing 
-#set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) 0
-#set ::env(GLB_RT_ADJUSTMENT) 0
 
-#set ::env(GLB_RT_MINLAYER) 2
-#set ::env(GLB_RT_MAXLAYER) 6
+## Routing 
+
+#set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
+
+#Lef 
+set ::env(MAGIC_GENERATE_LEF) {1}
+set ::env(MAGIC_WRITE_FULL_LEF) {0}
+
 
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 1
@@ -77,11 +91,4 @@ set ::env(CLOCK_TREE_SYNTH) 0
 ## Diode Insertion
 #set ::env(DIODE_INSERTION_STRATEGY) "4"
 
-set ::env(FP_PDN_VOFFSET) "5"
-set ::env(FP_PDN_VPITCH) "40"
-set ::env(FP_PDN_HOFFSET) "5"
-set ::env(FP_PDN_HPITCH) "40"
-set ::env(FP_PDN_HWIDTH) {6.2}
-set ::env(FP_PDN_VWIDTH) {6.2}
-set ::env(FP_PDN_HSPACING) {15}
-set ::env(FP_PDN_VSPACING) {15}
+

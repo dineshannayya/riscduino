@@ -34,6 +34,8 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(LEC_ENABLE) 0
 
 set ::env(VERILOG_FILES) "\
+    $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/clk_skew_adjust.gv                  \
+    $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/ctech_cells.sv                      \
 	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_iconnect.sv                  \
 	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_cross_bar.sv                 \
 	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_router.sv                    \
@@ -43,7 +45,6 @@ set ::env(VERILOG_FILES) "\
 	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_timer.sv                      \
         $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/top/ycr_req_retiming.sv               \
         $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/ycr_arb.sv                        \
-        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/ctech_cells.sv                    \
         $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/sync_fifo2.sv                     \
 	$::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/core/primitives/ycr_reset_cells.sv    \
 	"
@@ -60,24 +61,28 @@ set ::env(LEC_ENABLE) 0
 ## Floorplan
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 380 1100"
+set ::env(DIE_AREA) "0 0 400 1100"
 
 set ::env(PL_TARGET_DENSITY) 0.20
-#set ::env(CELL_PAD) 2
+set ::env(CELL_PAD) 8
 #set ::env(GRT_ADJUSTMENT) {0.2}
 
-#set ::env(GLB_RT_ADJUSTMENT) {0.2}
 
 #set ::env(PL_ROUTABILITY_DRIVEN) "1"
 set ::env(PL_TIME_DRIVEN) "1"
 
 #set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
+
+#Lef 
+set ::env(MAGIC_GENERATE_LEF) {1}
+set ::env(MAGIC_WRITE_FULL_LEF) {0}
+
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 20
 set ::env(DIODE_INSERTION_STRATEGY) 3
 
 #LVS Issue - DEF Base looks to having issue
-set ::env(MAGIC_EXT_USE_GDS) {1}
+set ::env(MAGIC_EXT_USE_GDS) {0}
 
 set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
 set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}

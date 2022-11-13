@@ -15,6 +15,7 @@
 `define ADDR_SPACE_TIMER   32'h3002_0180
 `define ADDR_SPACE_SEMA    32'h3002_0200
 `define ADDR_SPACE_WS281X  32'h3002_0280
+`define ADDR_SPACE_ANALOG  32'h3002_0300
 `define ADDR_SPACE_WBHOST  32'h3008_0000
 
 //--------------------------------------------------
@@ -124,6 +125,15 @@
 `define SEMA_CFG_LOCK_13      8'h34  // reg_13 - Semaphore Lock Bit-13
 `define SEMA_CFG_LOCK_14      8'h38  // reg_14 - Semaphore Lock Bit-14
 `define SEMA_CFG_STATUS       8'h3C  // reg_15 - Semaphore Lock Status
+
+
+//----------------------------------------------------
+// Analog Configuration
+//----------------------------------------------------
+`define ANALOG_CFG_DAC0          8'h00
+`define ANALOG_CFG_DAC1          8'h04
+`define ANALOG_CFG_DAC2          8'h08
+`define ANALOG_CFG_DAC3          8'h0C
 
 //----------------------------------------------------------
 // QSPI Register Map

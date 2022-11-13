@@ -90,3 +90,50 @@
 #define reg_uart1_txfifo_stat  (*(volatile uint32_t*)0x1001011C)  // Reg-7
 #define reg_uart1_rxfifo_stat  (*(volatile uint32_t*)0x10010120)  // Reg-8
 
+// AES Encription Register
+#define reg_aes_enc_ctrl           (*(volatile uint32_t*)0x0C490080)  // Reg-0
+
+#define reg_aes_enc_key_dw0        (*(volatile uint32_t*)0x0C490084)  // Reg-1
+#define reg_aes_enc_key_dw1        (*(volatile uint32_t*)0x0C490088)  // Reg-2
+#define reg_aes_enc_key_dw2        (*(volatile uint32_t*)0x0C49008C)  // Reg-3
+#define reg_aes_enc_key_dw3        (*(volatile uint32_t*)0x0C490090)  // Reg-4
+#define reg_aes_enc_key_bptr       (*(volatile uint8_t*)0x0C490093)  // Last Addr Location
+
+#define reg_aes_enc_text_in_dw0    (*(volatile uint32_t*)0x0C490094) // Reg-5
+#define reg_aes_enc_text_in_dw1    (*(volatile uint32_t*)0x0C490098) // Reg-6
+#define reg_aes_enc_text_in_dw2    (*(volatile uint32_t*)0x0C49009C) // Reg-7
+#define reg_aes_enc_text_in_dw3    (*(volatile uint32_t*)0x0C4900A0) // Reg-8
+#define reg_aes_enc_text_in_bptr   (*(volatile uint8_t*)0x0C4900A3)  // Last Addr Location
+
+#define reg_aes_enc_text_out_dw0   (*(volatile uint32_t*)0x0C4900A4) // Reg-9
+#define reg_aes_enc_text_out_dw1   (*(volatile uint32_t*)0x0C4900A8) // Reg-10
+#define reg_aes_enc_text_out_dw2   (*(volatile uint32_t*)0x0C4900AC) // Reg-11
+#define reg_aes_enc_text_out_dw3   (*(volatile uint32_t*)0x0C4900B0) // Reg-12
+#define reg_aes_enc_text_out_bptr  (*(volatile uint8_t*)0x0C4900B3)  // Last Addr Location
+
+// AES Decryption Register
+#define reg_aes_dec_ctrl           (*(volatile uint32_t*)0x0C4900C0)  // Reg-0
+#define reg_aes_dec_key_dw0        (*(volatile uint32_t*)0x0C4900C4)  // Reg-1
+#define reg_aes_dec_key_dw1        (*(volatile uint32_t*)0x0C4900C8)  // Reg-2
+#define reg_aes_dec_key_dw2        (*(volatile uint32_t*)0x0C4900CC)  // Reg-3
+#define reg_aes_dec_key_dw3        (*(volatile uint32_t*)0x0C4900D0)  // Reg-4
+#define reg_aes_dec_key_bptr       (*(volatile uint8_t*)0x0C4900D3)   // Last Addr Location
+
+#define reg_aes_dec_text_in_dw0    (*(volatile uint32_t*)0x0C4900D4)  // Reg-5
+#define reg_aes_dec_text_in_dw1    (*(volatile uint32_t*)0x0C4900D8)  // Reg-6
+#define reg_aes_dec_text_in_dw2    (*(volatile uint32_t*)0x0C4900DC)  // Reg-7
+#define reg_aes_dec_text_in_dw3    (*(volatile uint32_t*)0x0C4900E0)  // Reg-8
+#define reg_aes_dec_text_in_bptr   (*(volatile uint8_t*)0x0C4900E3)   // Last Addr Location
+
+#define reg_aes_dec_text_out_dw0   (*(volatile uint32_t*)0x0C4900E4)  // Reg-9
+#define reg_aes_dec_text_out_dw1   (*(volatile uint32_t*)0x0C4900E8)  // Reg-10
+#define reg_aes_dec_text_out_dw2   (*(volatile uint32_t*)0x0C4900EC)  // Reg-11
+#define reg_aes_dec_text_out_dw3   (*(volatile uint32_t*)0x0C4900F0)  // Reg-12
+#define reg_aes_dec_text_out_bptr  (*(volatile uint8_t*)0x0C4900F3)   // Last Addr Location
+
+// FPU Core
+#define reg_fpu_ctrl (*(volatile uint32_t*)0x0C490100)  // Reg-0
+#define reg_fpu_din1 (*(volatile uint32_t*)0x0C490104)  // Reg-1
+#define reg_fpu_din2 (*(volatile uint32_t*)0x0C490108)  // Reg-2
+#define reg_fpu_res  (*(volatile uint32_t*)0x0C49010C)  // Reg-3
+

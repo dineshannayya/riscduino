@@ -4,11 +4,12 @@
 // ASCI Representation of RISC = 32'h8273_8343
 parameter CHIP_SIGNATURE = 32'h8273_8343;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h2909_2022;
+parameter CHIP_RELEASE_DATE = 32'h0711_2022;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0005_6000;
+parameter CHIP_REVISION   = 32'h0005_7000;
 
-parameter SKEW_RESET_VAL = 32'b0000_0000_1000_0111_1001_1000_1001_0111;
+parameter CLK_SKEW1_RESET_VAL = 32'b0000_0000_1000_0111_1001_1000_1001_1100;
+parameter CLK_SKEW2_RESET_VAL = 32'b0000;
 
 parameter PSTRAP_DEFAULT_VALUE = 15'b000_0111_1010_0000;
 
@@ -138,13 +139,13 @@ system strap decoding
 `define STRAP_RISCV_CACHE_BYPASS   13
 `define STRAP_RISCV_SRAM_CLK_EDGE  14
 `define STRAP_QSPI_PRE_SRAM        15      // Previous SRAM Strap Status
-`define STRAP_CLK_SKEW_WI          17:16
-`define STRAP_CLK_SKEW_WH          19:18
-`define STRAP_CLK_SKEW_RISCV       21:20
-`define STRAP_CLK_SKEW_QSPI        23:22
-`define STRAP_CLK_SKEW_UART        25:24
-`define STRAP_CLK_SKEW_PINMUX      27:26
-`define STRAP_CLK_SKEW_QSPI_CO     29:28
+`define STRAP_SCLK_SKEW_WI          17:16
+`define STRAP_SCLK_SKEW_WH          19:18
+`define STRAP_SCLK_SKEW_RISCV       21:20
+`define STRAP_SCLK_SKEW_QSPI        23:22
+`define STRAP_SCLK_SKEW_UART        25:24
+`define STRAP_SCLK_SKEW_PINMUX      27:26
+`define STRAP_SCLK_SKEW_QSPI_CO     29:28
 `define STRAP_QSPI_INIT_BYPASS     30
 `define STRAP_SOFT_REBOOT_REQ      31
 
