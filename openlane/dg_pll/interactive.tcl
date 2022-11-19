@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package require openlane; # provides the utils as well
-
 proc run_placement_step {args} {
     if { ! [ info exists ::env(PLACEMENT_CURRENT_DEF) ] } {
         set ::env(PLACEMENT_CURRENT_DEF) $::env(CURRENT_DEF)
@@ -24,69 +23,6 @@ proc run_placement_step {args} {
     run_placement
 }
 
-proc run_placement {args} {
-    # |----------------------------------------------------|
-    # |----------------   3. PLACEMENT   ------------------|
-    # |----------------------------------------------------|
-    set ::env(CURRENT_STAGE) placement
-
-    if { [info exists ::env(PL_TARGET_DENSITY_CELLS)] } {
-        set old_pl_target_density $::env(PL_TARGET_DENSITY)
-        set ::env(PL_TARGET_DENSITY) $::env(PL_TARGET_DENSITY_CELLS)
-    }
-
-    if { $::env(PL_RANDOM_GLB_PLACEMENT) } {
-        # useful for very tiny designs
-        random_global_placement
-    } else {
-        global_placement_or
-    }
-
-    if { [info exists ::env(PL_TARGET_DENSITY_CELLS)] } {
-        set ::env(PL_TARGET_DENSITY) $old_pl_target_density
-    }
-
-    run_resizer_design
-    remove_buffers_from_nets
-
-    detailed_placement_or -def $::env(placement_results)/$::env(DESIGN_NAME).def -log $::env(placement_logs)/detailed.log
-
-    scrot_klayout -layout $::env(CURRENT_DEF) -log $::env(placement_logs)/screenshot.log
-}
-
-
-proc global_placement_or {args} {
-    increment_index
-    TIMER::timer_start
-    set log [index_file $::env(placement_logs)/global.log]
-    puts_info "Running Global Placement (log: [relpath . $log])..."
-
-    set ::env(SAVE_DEF) [index_file $::env(placement_tmpfiles)/global.def]
-
-    # random initial placement
-    if { $::env(PL_RANDOM_INITIAL_PLACEMENT) } {
-        random_global_placement
-        set ::env(PL_SKIP_INITIAL_PLACEMENT) 1
-    }
-
-    run_openroad_script $::env(SCRIPTS_DIR)/openroad/gpl.tcl -indexed_log $log
-
-    # sometimes replace fails with a ZERO exit code; the following is a workaround
-    # until the cause is found and fixed
-    if { ! [file exists $::env(SAVE_DEF)] } {
-        puts_err "Global placement has failed to produce a DEF file."
-        flow_fail
-    }
-
-    check_replace_divergence
-
-    TIMER::timer_stop
-    exec echo "[TIMER::get_runtime]" | python3 $::env(SCRIPTS_DIR)/write_runtime.py "global placement - openroad"
-    set_def $::env(SAVE_DEF)
-}
-
-
-
 proc run_cts_step {args} {
     if { ! [ info exists ::env(CTS_CURRENT_DEF) ] } {
         set ::env(CTS_CURRENT_DEF) $::env(CURRENT_DEF)
@@ -96,6 +32,9 @@ proc run_cts_step {args} {
 
     run_cts
     run_resizer_timing
+    if { $::env(RSZ_USE_OLD_REMOVER) == 1} {
+        remove_buffers_from_nets
+    }
 }
 
 proc run_routing_step {args} {
@@ -181,6 +120,12 @@ proc run_antenna_check_step {{ antenna_check_enabled 1 }} {
     }
 }
 
+proc run_erc_step {args} {
+    if { $::env(RUN_CVC) } {
+        run_erc
+    }
+}
+
 proc run_eco_step {args} {
     if { $::env(ECO_ENABLE) == 1 } {
         run_eco_flow
@@ -205,88 +150,11 @@ proc run_klayout_step {args} {
 proc run_post_run_hooks {} {
     if { [file exists $::env(DESIGN_DIR)/hooks/post_run.py]} {
         puts_info "Running post run hook"
-        set result [exec $::env(OPENROAD_BIN) -python $::env(DESIGN_DIR)/hooks/post_run.py]
+        set result [exec $::env(OPENROAD_BIN) -exit -no_init -python $::env(DESIGN_DIR)/hooks/post_run.py]
         puts_info "$result"
     } else {
         puts_info "hooks/post_run.py not found, skipping"
     }
-}
-
-proc run_magic_drc_batch {args} {
-    set options {
-        {-magicrc optional}
-        {-tech optional}
-        {-report required}
-        {-design required}
-        {-gds required}
-    }
-    set flags {}
-    parse_key_args "run_magic_drc_batch" args arg_values $options flags_mag $flags
-    if { [info exists arg_values(-magicrc)] } {
-        set magicrc [file normalize $arg_values(-magicrc)]
-    }
-    if { [info exists arg_values(-tech)] } {
-        set ::env(TECH) [file normalize $arg_values(-tech)]
-    }
-    set ::env(GDS_INPUT) [file normalize $arg_values(-gds)]
-    set ::env(REPORT_OUTPUT) [file normalize $arg_values(-report)]
-    set ::env(DESIGN_NAME) $arg_values(-design)
-
-    if { [info exists magicrc] } {
-        exec magic \
-            -noconsole \
-            -dnull \
-            -rcfile $magicrc \
-            $::env(OPENLANE_ROOT)/scripts/magic/drc_batch.tcl \
-            </dev/null |& tee /dev/tty
-    } else {
-        exec magic \
-            -noconsole \
-            -dnull \
-            $::env(OPENLANE_ROOT)/scripts/magic/drc_batch.tcl \
-            </dev/null |& tee /dev/tty
-    }
-}
-
-proc run_lvs_batch {args} {
-    # runs device level lvs on -gds/CURRENT_GDS and -net/CURRENT_NETLIST
-    # extracts gds only if EXT_NETLIST does not exist
-    set options {
-        {-design required}
-        {-gds optional}
-        {-net optional}
-    }
-    set flags {}
-    parse_key_args "run_lvs_batch" args arg_values $options flags_lvs $flags -no_consume
-
-    prep {*}$args
-
-    if { [info exists arg_values(-gds)] } {
-        set ::env(CURRENT_GDS) [file normalize $arg_values(-gds)]
-    } else {
-        set ::env(CURRENT_GDS) $::env(signoff_results)/$::env(DESIGN_NAME).gds
-    }
-    if { [info exists arg_values(-net)] } {
-        set ::env(CURRENT_NETLIST) [file normalize $arg_values(-net)]
-    }
-
-    assert_files_exist "$::env(CURRENT_GDS) $::env(CURRENT_NETLIST)"
-
-    set ::env(MAGIC_EXT_USE_GDS) 1
-    set ::env(EXT_NETLIST) $::env(signoff_results)/$::env(DESIGN_NAME).gds.spice
-    if { [file exists $::env(EXT_NETLIST)] } {
-        puts_warn "The file $::env(EXT_NETLIST) will be used. If you would like the file re-exported, please delete it."
-    } else {
-        run_magic_spice_export
-    }
-
-    run_lvs
-}
-
-
-proc run_file {args} {
-    set ::env(TCLLIBPATH) $::auto_path
-    exec tclsh {*}$args >&@stdout
 }
 
 proc run_floorplan {args} {
@@ -340,13 +208,14 @@ proc run_floorplan {args} {
         }
     #}
 
-    tap_decap_or
+    if { $::env(RUN_TAP_DECAP_INSERTION) } {
+        tap_decap_or
+    }
 
     scrot_klayout -layout $::env(CURRENT_DEF) -log $::env(floorplan_logs)/screenshot.log
 
     run_power_grid_generation
 }
-
 
 
 

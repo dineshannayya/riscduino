@@ -48,7 +48,7 @@ set ::env(GRT_OBS)  "met4 0 0 90 100"
 #set ::env(BOTTOM_MARGIN_MULT) 2
 
 #LVS Issue - DEF Base looks to having issue
-set ::env(MAGIC_EXT_USE_GDS) {1}
+set ::env(MAGIC_EXT_USE_GDS) {0}
 
 
 set ::env(CELL_PAD)  0

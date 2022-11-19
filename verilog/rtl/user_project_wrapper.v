@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileContributor: Created by Dinesh Annayya <dinesha@opencores.org>
+// SPDX-FileContributor: Created by Dinesh Annayya <dinesh.annayya@gmail.com>
 //
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////

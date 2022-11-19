@@ -32,7 +32,7 @@ create_clock -name usb_clk     -period 20.0000  [get_pins {mprj/u_pinmux/u_glbl_
 create_clock -name uarts0_clk  -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart0_core.u_lineclk_buf.genblk1.u_mux/X}]
 create_clock -name uarts1_clk  -period 100.0000 [get_pins {mprj/u_uart_i2c_usb_spi/u_uart1_core.u_lineclk_buf.genblk1.u_mux/X}]
 create_clock -name uartm_clk   -period 100.0000 [get_pins {mprj/u_wb_host/u_uart2wb.u_core.u_uart_clk.genblk1.u_mux/X}]
-create_clock -name dbg_ref_clk -period 10.0000 [get_pins {mprj/u_pinmux/clkbuf_0_u_glbl_reg.dbg_clk_ref/X}]
+create_clock -name dbg_ref_clk -period 10.0000 [get_pins {mprj/u_pinmux/u_glbl_reg.u_clkbuf_dbg_ref.u_buf/X}]
 
 
 set_clock_groups \
@@ -127,8 +127,8 @@ set_case_analysis 1 [get_pins {mprj/u_uart_i2c_usb_spi/cfg_cska_uart[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[3]}]
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[2]}]
-set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
-set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
+set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[1]}]
+set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[3]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[2]}]
@@ -168,15 +168,15 @@ set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_sram_lphase[1]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_sram_lphase[0]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_sram_lphase[1]}]
 
-set_case_analysis 0 [get_pins {mprj/u_aes/cfg_ccska[3]}]
-set_case_analysis 0 [get_pins {mprj/u_aes/cfg_ccska[2]}]
-set_case_analysis 0 [get_pins {mprj/u_aes/cfg_ccska[1]}]
-set_case_analysis 0 [get_pins {mprj/u_aes/cfg_ccska[0]}]
+set_case_analysis 0 [get_pins {mprj/u_aes/cfg_cska[3]}]
+set_case_analysis 0 [get_pins {mprj/u_aes/cfg_cska[2]}]
+set_case_analysis 0 [get_pins {mprj/u_aes/cfg_cska[1]}]
+set_case_analysis 0 [get_pins {mprj/u_aes/cfg_cska[0]}]
 
-set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_ccska[3]}]
-set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_ccska[2]}]
-set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_ccska[1]}]
-set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_ccska[0]}]
+set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[3]}]
+set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[2]}]
+set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[1]}]
+set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[0]}]
 ############## Caravel False Path ########################################################
 ## FALSE PATHS (ASYNCHRONOUS INPUTS)
 set_false_path -from [get_ports {resetb}]

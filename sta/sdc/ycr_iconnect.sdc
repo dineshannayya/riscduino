@@ -19,15 +19,15 @@ set_case_analysis 0 [get_ports {cfg_sram_lphase[0]}]
 set_case_analysis 0 [get_ports {cfg_sram_lphase[1]}]
 
 #CORE-0 IMEM Constraints
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_cmd}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_req}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_addr[*]}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_bl[*]}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_cmd}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_req}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_addr[*]}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_bl[*]}]
 
-set_input_delay -min 2.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_cmd}]
-set_input_delay -min 2.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_req}]
-set_input_delay -min 2.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_addr[*]}]
-set_input_delay -min 2.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_bl[*]}]
+set_input_delay -min 1.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_cmd}]
+set_input_delay -min 1.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_req}]
+set_input_delay -min 1.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_addr[*]}]
+set_input_delay -min 1.0000  -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_bl[*]}]
 
 set_output_delay -max 4.5000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_req_ack}]
 set_output_delay -max 4.5000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_rdata[*]}]
@@ -36,17 +36,17 @@ set_output_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_port
 set_output_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_imem_rdata[*]}]
 
 #CORE-0 DMEM Constraints
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_cmd}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_req}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_addr[*]}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_wdata[*]}]
-set_input_delay -max 4.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_width[*]}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_cmd}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_req}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_addr[*]}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_wdata[*]}]
+set_input_delay -max 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_width[*]}]
 
-set_input_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_cmd}]
-set_input_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_req}]
-set_input_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_addr[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_wdata[*]}]
-set_input_delay -min 2.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_width[*]}]
+set_input_delay -min 1.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_cmd}]
+set_input_delay -min 1.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_req}]
+set_input_delay -min 1.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_addr[*]}]
+set_input_delay -min 1.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_wdata[*]}]
+set_input_delay -min 1.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_width[*]}]
 
 set_output_delay -max 4.5000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_req_ack}]
 set_output_delay -max 4.5000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core0_dmem_rdata[*]}]
@@ -81,6 +81,8 @@ set_output_delay -max 1.000 -clock [get_clocks {sram0_clk1}] -add_delay  [get_po
 set_input_delay  -min 2.0000 -clock [get_clocks {sram0_clk1}] -add_delay  [get_ports {sram0_dout1[*]}]
 set_input_delay  -max 6.0000 -clock [get_clocks {sram0_clk1}] -add_delay  [get_ports {sram0_dout1[*]}]
 
+
+set_max_delay 5 -to [get_ports core_icache_req]
 ###############################################################################
 # Environment
 ###############################################################################

@@ -178,7 +178,7 @@ set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_riscv_top.u_connect       vccd1 vssd1 VPWR  VGND, \
 	u_riscv_top.u_intf          vccd1 vssd1 vccd1 vssd1,\
 	u_4x8bit_dac                vdda1 vssa1 vccd1 vssd1,\
-	u_aes                       vdda1 vssa1 vccd1 vssd1
+	u_aes                       vdda1 vssa1 vccd1 vssd1,\
 	u_fpu                       vdda1 vssa1 vccd1 vssd1
       	"
 
@@ -192,8 +192,8 @@ set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) 0
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) 0
 set ::env(DIODE_INSERTION_STRATEGY) 0
-set ::env(FILL_INSERTION) 0
-set ::env(TAP_DECAP_INSERTION) 0
+set ::env(RUN_FILL_INSERTION) 0
+set ::env(RUN_TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
 set ::env(QUIT_ON_LVS_ERROR) "1"
 set ::env(QUIT_ON_MAGIC_DRC) "0"

@@ -99,23 +99,6 @@ logic [31:0]   reg_rdata_pwm5   ;
 `define SEL_PWM4    3'b101   // PWM-4
 `define SEL_PWM5    3'b110   // PWM-5
 
-assign reg_rdata = (reg_addr[4:2] == `SEL_GLBL)  ? {reg_rdata_glbl} : 
-	               (reg_addr[4:2] == `SEL_PWM0)  ? {reg_rdata_pwm0} :
-	               (reg_addr[4:2] == `SEL_PWM1)  ? {reg_rdata_pwm1} :
-	               (reg_addr[4:2] == `SEL_PWM2)  ? {reg_rdata_pwm2} :'h0;
-
-assign reg_ack   = (reg_addr[4:2] == `SEL_GLBL)  ? reg_ack_glbl   : 
-	               (reg_addr[4:2] == `SEL_PWM0)  ? reg_ack_pwm0   : 
-	               (reg_addr[4:2] == `SEL_PWM1)  ? reg_ack_pwm1   : 
-	               (reg_addr[4:2] == `SEL_PWM2)  ? reg_ack_pwm2   : 'h0;
-
-assign reg_cs_glbl    = (reg_addr[4:2] == `SEL_GLBL) ? reg_cs : 1'b0;
-assign reg_cs_pwm[0]  = (reg_addr[4:2] == `SEL_PWM0) ? reg_cs : 1'b0;
-assign reg_cs_pwm[1]  = (reg_addr[4:2] == `SEL_PWM1) ? reg_cs : 1'b0;
-assign reg_cs_pwm[2]  = (reg_addr[4:2] == `SEL_PWM2) ? reg_cs : 1'b0;
-assign reg_cs_pwm[3]  = (reg_addr[4:2] == `SEL_PWM3) ? reg_cs : 1'b0;
-assign reg_cs_pwm[4]  = (reg_addr[4:2] == `SEL_PWM4) ? reg_cs : 1'b0;
-assign reg_cs_pwm[5]  = (reg_addr[4:2] == `SEL_PWM5) ? reg_cs : 1'b0;
 
 pwm_glbl_reg  u_glbl_reg (
 		       .mclk             (mclk                ),
@@ -317,4 +300,36 @@ assign pwm_os_done[5] = 1'b0;
 assign pwm_ovflow[5]  = 1'b0;
 assign gpio_tgr[5]    = 1'b0;
 
+
+//-----------------------------------
+// Register Select
+//------------------------------------
+logic [2:0] blk_sel;
+
+always @(posedge mclk or negedge h_reset_n)
+begin
+   if(h_reset_n == 1'b0) begin
+      blk_sel <= 3'b0;
+   end else begin
+      blk_sel <= reg_addr[4:2];
+   end
+end
+
+assign reg_rdata = (blk_sel == `SEL_GLBL)  ? {reg_rdata_glbl} : 
+	               (blk_sel == `SEL_PWM0)  ? {reg_rdata_pwm0} :
+	               (blk_sel == `SEL_PWM1)  ? {reg_rdata_pwm1} :
+	               (blk_sel == `SEL_PWM2)  ? {reg_rdata_pwm2} :'h0;
+
+assign reg_ack   = (blk_sel == `SEL_GLBL)  ? reg_ack_glbl   : 
+	               (blk_sel == `SEL_PWM0)  ? reg_ack_pwm0   : 
+	               (blk_sel == `SEL_PWM1)  ? reg_ack_pwm1   : 
+	               (blk_sel == `SEL_PWM2)  ? reg_ack_pwm2   : 'h0;
+
+assign reg_cs_glbl    = (reg_addr[4:2] == `SEL_GLBL) ? reg_cs : 1'b0;
+assign reg_cs_pwm[0]  = (reg_addr[4:2] == `SEL_PWM0) ? reg_cs : 1'b0;
+assign reg_cs_pwm[1]  = (reg_addr[4:2] == `SEL_PWM1) ? reg_cs : 1'b0;
+assign reg_cs_pwm[2]  = (reg_addr[4:2] == `SEL_PWM2) ? reg_cs : 1'b0;
+assign reg_cs_pwm[3]  = (reg_addr[4:2] == `SEL_PWM3) ? reg_cs : 1'b0;
+assign reg_cs_pwm[4]  = (reg_addr[4:2] == `SEL_PWM4) ? reg_cs : 1'b0;
+assign reg_cs_pwm[5]  = (reg_addr[4:2] == `SEL_PWM5) ? reg_cs : 1'b0;
 endmodule

@@ -179,44 +179,44 @@
 	report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -slack_max 0.18 -group_count 10	
 	report_check_types -max_slew -max_capacitance -max_fanout -violators  > slew.cap.fanout.vio.rpt
 
-    echo " Management Area Interface "	
-    report_checks -to soc/core_clk -unconstrained -group_count 1	
-    echo " User project Interface "	
-    report_checks -to mprj/wb_clk_i -unconstrained -group_count 1	
-    report_checks -to mprj/wb_rst_i -unconstrained -group_count 1	
-    report_checks -to mprj/wbs_cyc_i -unconstrained -group_count 1	
-    report_checks -to mprj/wbs_stb_i -unconstrained -group_count 1	
-    report_checks -to mprj/wbs_we_i -unconstrained -group_count 1	
-    report_checks -to mprj/wbs_sel_i[*] -unconstrained -group_count 4	
-    report_checks -to mprj/wbs_adr_i[*] -unconstrained -group_count 32	
-    report_checks -to mprj/io_in[*] -unconstrained -group_count 32	
-    report_checks -to mprj/user_clock2 -unconstrained -group_count 32	
-    report_checks -to mprj/user_irq[*] -unconstrained -group_count 32	
-    report_checks -to mprj/la_data_in[*] -unconstrained -group_count 128	
-    report_checks -to mprj/la_oenb[*] -unconstrained -group_count 128	
-
-
-	echo "Wishbone Interface Timing.................." > wb.max.rpt
-	echo "Wishbone Interface Timing.................." > wb.min.rpt
-	set wb_port [get_pins {mprj/wbs_adr_i[*]}]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_cyc_i}]]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_dat_i[*]}]]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_sel_i[*]}]]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_stb_i}]]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_we_i}]]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_ack_o}]]
-	set wb_port [concat $wb_port [get_pins {mprj/wbs_dat_o[*]}]]
-	foreach pin $wb_port {
-	   echo "Wishbone Interface Timing for : [get_full_name $pin]"  >> wb.max.rpt
-           report_checks -path_delay max -fields {slew cap input nets fanout} -through $pin  >> wb.max.rpt 
-        }
-	foreach pin $wb_port {
-	   echo "Wishbone Interface Timing for [get_full_name $pin]" >> wb.min.rpt
-           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> wb.min.rpt
-        }
-       
-	echo "SRAM Interface Timing.................." > sram.min.rpt
-	echo "SRAM Interface Timing.................." > sram.min.summary.rpt
+#    echo " Management Area Interface "	
+#    report_checks -to soc/core_clk -unconstrained -group_count 1	
+#    echo " User project Interface "	
+#    report_checks -to mprj/wb_clk_i -unconstrained -group_count 1	
+#    report_checks -to mprj/wb_rst_i -unconstrained -group_count 1	
+#    report_checks -to mprj/wbs_cyc_i -unconstrained -group_count 1	
+#    report_checks -to mprj/wbs_stb_i -unconstrained -group_count 1	
+#    report_checks -to mprj/wbs_we_i -unconstrained -group_count 1	
+#    report_checks -to mprj/wbs_sel_i[*] -unconstrained -group_count 4	
+#    report_checks -to mprj/wbs_adr_i[*] -unconstrained -group_count 32	
+#    report_checks -to mprj/io_in[*] -unconstrained -group_count 32	
+#    report_checks -to mprj/user_clock2 -unconstrained -group_count 32	
+#    report_checks -to mprj/user_irq[*] -unconstrained -group_count 32	
+#    report_checks -to mprj/la_data_in[*] -unconstrained -group_count 128	
+#    report_checks -to mprj/la_oenb[*] -unconstrained -group_count 128	
+#
+#
+#	echo "Wishbone Interface Timing.................." > wb.max.rpt
+#	echo "Wishbone Interface Timing.................." > wb.min.rpt
+#	set wb_port [get_pins {mprj/wbs_adr_i[*]}]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_cyc_i}]]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_dat_i[*]}]]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_sel_i[*]}]]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_stb_i}]]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_we_i}]]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_ack_o}]]
+#	set wb_port [concat $wb_port [get_pins {mprj/wbs_dat_o[*]}]]
+#	foreach pin $wb_port {
+#	   echo "Wishbone Interface Timing for : [get_full_name $pin]"  >> wb.max.rpt
+#           report_checks -path_delay max -fields {slew cap input nets fanout} -through $pin  >> wb.max.rpt 
+#        }
+#	foreach pin $wb_port {
+#	   echo "Wishbone Interface Timing for [get_full_name $pin]" >> wb.min.rpt
+#           report_checks -path_delay min -fields {slew cap input nets fanout} -through $pin  >> wb.min.rpt
+#        }
+#       
+#	echo "SRAM Interface Timing.................." > sram.min.rpt
+#	echo "SRAM Interface Timing.................." > sram.min.summary.rpt
 
     ### Caravel SRAM Path ######################################
     #set sram_iport [get_pins {soc/core/sky130_sram_2kbyte_1rw1r_32x512_8/din0[*]}]

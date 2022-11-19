@@ -224,3 +224,41 @@ unzip:
 help:
 	cd $(CARAVEL_ROOT) && $(MAKE) help
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
+
+## New Task from Caravel Makefile
+LVS_GDS_BLOCKS = $(foreach block, $(BLOCKS), lvs-gds-$(block))
+$(LVS_GDS_BLOCKS): lvs-gds-% : ./gds/%.gds ./verilog/gl/%.v
+	echo "Extracting $*"
+	mkdir -p ./gds/tmp
+	echo "	gds flatglob \"*_example_*\";\
+		gds flatten true;\
+		gds read ./$*.gds;\
+		load $* -dereference;\
+		select top cell;\
+		extract no all;\
+		extract do local;\
+		extract unique;\
+		extract;\
+		ext2spice lvs;\
+		ext2spice $*.ext;\
+		feedback save extract_$*.log;\
+		exit;" > ./gds/extract_$*.tcl
+	cd gds && \
+		magic -rcfile ${PDK_ROOT}/$(PDK)/libs.tech/magic/$(PDK).magicrc -noc -dnull extract_$*.tcl < /dev/null
+	mv ./gds/$*.spice ./spi/lvs
+	rm ./gds/*.ext
+	mv -f ./gds/extract_$*.tcl ./gds/tmp
+	mv -f ./gds/extract_$*.log ./gds/tmp
+	####
+	mkdir -p ./spi/lvs/tmp
+	MAGIC_EXT_USE_GDS=1 sh $(CARAVEL_ROOT)/spi/lvs/run_lvs.sh ./spi/lvs/$*.spice ./verilog/gl/$*.v $*
+	@echo ""
+	python3 $(CARAVEL_ROOT)/scripts/count_lvs.py -f ./verilog/gl/$*.v_comp.json | tee ./spi/lvs/tmp/$*.lvs.summary.log
+	mv -f ./verilog/gl/*.out ./spi/lvs/tmp 2> /dev/null || true
+	mv -f ./verilog/gl/*.json ./spi/lvs/tmp 2> /dev/null || true
+	mv -f ./verilog/gl/*.log ./spi/lvs/tmp 2> /dev/null || true
+	@echo ""
+	@echo "LVS: ./spi/lvs/$*.spice vs. ./verilog/gl/$*.v"
+	@echo "Comparison result: ./spi/lvs/tmp/$*.v_comp.out"
+	@awk '/^NET mismatches/,0' ./spi/lvs/tmp/$*.v_comp.out
+
