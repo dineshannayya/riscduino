@@ -545,6 +545,67 @@ Examples:
    make user_project_wrapper
 ```
 
+#Timing Analysis
+## Timing Analysis setup
+   
+``` sh
+   make setup-timing-scripts
+   make install
+   make install_mcw
+```
+his will update Caravel design files and install the scripts for running timing.
+
+## Running Timing Analysis
+
+``` sh
+make extract-parasitics
+make create-spef-mapping
+make caravel-sta
+```
+#Other Miscellaneous Targets
+The makefile provides a number of useful that targets that can run LVS, DRC, and XOR checks on your hardened design outside of openlane’s flow.
+
+Run make help to display available targets.
+
+Run lvs on the mag view,
+
+``` sh
+make lvs-<macro_name>
+```
+
+Run lvs on the gds,
+
+``` sh
+make lvs-gds-<macro_name>
+```
+
+Run lvs on the maglef,
+
+``` sh
+make lvs-maglef-<macro_name>
+```
+
+Run drc using magic,
+
+``` sh
+make drc-<macro_name>
+```
+
+Run antenna check using magic,
+
+``` sh
+make antenna-<macro_name>
+```
+
+Run XOR check,
+
+``` sh
+make xor-wrapper
+```
+
+
+
+
 # Tool Sets
 
 Riscduino Soc flow uses Openlane tool sets.

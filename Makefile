@@ -15,22 +15,28 @@
 # SPDX-License-Identifier: Apache-2.0
 MAKEFLAGS+=--warn-undefined-variables
 
-CARAVEL_ROOT?=$(PWD)/caravel
+export CARAVEL_ROOT?=$(PWD)/caravel
 PRECHECK_ROOT?=${HOME}/mpw_precheck
-MCW_ROOT?=$(PWD)/mgmt_core_wrapper
+export MCW_ROOT?=$(PWD)/mgmt_core_wrapper
 SIM?=RTL
 DUMP?=OFF
 RISC_CORE ?=0
 
-export SKYWATER_COMMIT=c094b6e83a4f9298e47f696ec5a7fd53535ec5eb
-export OPEN_PDKS_COMMIT=7519dfb04400f224f140749cda44ee7de6f5e095
-export PDK_MAGIC_COMMIT=7d601628e4e05fd17fcb80c3552dacb64e9f6e7b
-export OPENLANE_TAG=2022.02.23_02.50.41
-
 # Install lite version of caravel, (1): caravel-lite, (0): caravel
 CARAVEL_LITE?=1
 
-MPW_TAG ?= mpw-5c
+# PDK switch varient
+export PDK?=sky130A
+#export PDK?=gf180mcuC
+export PDKPATH?=$(PDK_ROOT)/$(PDK)
+
+
+
+ifeq ($(PDK),sky130A)
+	SKYWATER_COMMIT=f70d8ca46961ff92719d8870a18a076370b85f6c
+	export OPEN_PDKS_COMMIT?=0059588eebfc704681dc2368bd1d33d96281d10f
+	export OPENLANE_TAG?=2022.10.20
+	MPW_TAG ?= mpw-7g
 
 ifeq ($(CARAVEL_LITE),1)
 	CARAVEL_NAME := caravel-lite
@@ -42,8 +48,7 @@ else
 	CARAVEL_TAG := $(MPW_TAG)
 endif
 
-# Install caravel as submodule, (1): submodule, (0): clone
-SUBMODULE?=1
+endif
 
 #RISCV COMPLIANCE test Environment
 COREMARK_DIR   = verilog/dv/riscv_regress/dependencies/coremark
@@ -57,6 +62,36 @@ RISCV_TEST_REPO =  https://github.com/riscv/riscv-tests
 COREMARK_BRANCH   =  7f420b6bdbff436810ef75381059944e2b0d79e8
 RISCV_COMP_BRANCH =  d51259b2a949be3af02e776c39e135402675ac9b
 RISCV_TEST_BRANCH =  e30978a71921159aec38eeefd848fca4ed39a826
+
+ifeq ($(PDK),sky130B)
+	SKYWATER_COMMIT=f70d8ca46961ff92719d8870a18a076370b85f6c
+	export OPEN_PDKS_COMMIT?=0059588eebfc704681dc2368bd1d33d96281d10f
+	export OPENLANE_TAG?=2022.10.20
+	MPW_TAG ?= mpw-7g
+
+ifeq ($(CARAVEL_LITE),1)
+	CARAVEL_NAME := caravel-lite
+	CARAVEL_REPO := https://github.com/efabless/caravel-lite
+	CARAVEL_TAG := $(MPW_TAG)
+else
+	CARAVEL_NAME := caravel
+	CARAVEL_REPO := https://github.com/efabless/caravel
+	CARAVEL_TAG := $(MPW_TAG)
+endif
+
+endif
+
+ifeq ($(PDK),gf180mcuC)
+
+	MPW_TAG ?= gfmpw-0a
+	CARAVEL_NAME := caravel
+	CARAVEL_REPO := https://github.com/efabless/caravel-gf180mcu
+	CARAVEL_TAG := $(MPW_TAG)
+	#OPENLANE_TAG=ddfeab57e3e8769ea3d40dda12be0460e09bb6d9
+	export OPEN_PDKS_COMMIT?=0059588eebfc704681dc2368bd1d33d96281d10f
+	export OPENLANE_TAG?=2022.11.17
+
+endif
 
 # Include Caravel Makefile Targets
 .PHONY: % : check-caravel
@@ -78,13 +113,13 @@ simenv:
 	docker pull riscduino/dv_setup:mpw6
 
 .PHONY: setup
-setup: install check-env install_mcw pdk openlane
+setup: install check-env install_mcw openlane pdk-with-volare setup-timing-scripts
 
 # Openlane
 blocks=$(shell cd openlane && find * -maxdepth 0 -type d)
 .PHONY: $(blocks)
 $(blocks): % :
-	export CARAVEL_ROOT=$(CARAVEL_ROOT) && cd openlane && $(MAKE) $*
+	$(MAKE) -C openlane $*
 
 
 PATTERNS=$(shell cd verilog/dv && find * -maxdepth 0 -type d)
@@ -111,6 +146,11 @@ verify:
 # Install Openlane
 .PHONY: openlane
 openlane:
+	@if [ "$$(realpath $${OPENLANE_ROOT})" = "$$(realpath $$(pwd)/openlane)" ]; then\
+		echo "OPENLANE_ROOT is set to '$$(pwd)/openlane' which contains openlane config files"; \
+		echo "Please set it to a different directory"; \
+		exit 1; \
+	fi
 	cd openlane && $(MAKE) openlane
 
 #### Not sure if the targets following are of any use
@@ -225,40 +265,65 @@ help:
 	cd $(CARAVEL_ROOT) && $(MAKE) help
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
-## New Task from Caravel Makefile
-LVS_GDS_BLOCKS = $(foreach block, $(BLOCKS), lvs-gds-$(block))
-$(LVS_GDS_BLOCKS): lvs-gds-% : ./gds/%.gds ./verilog/gl/%.v
-	echo "Extracting $*"
-	mkdir -p ./gds/tmp
-	echo "	gds flatglob \"*_example_*\";\
-		gds flatten true;\
-		gds read ./$*.gds;\
-		load $* -dereference;\
-		select top cell;\
-		extract no all;\
-		extract do local;\
-		extract unique;\
-		extract;\
-		ext2spice lvs;\
-		ext2spice $*.ext;\
-		feedback save extract_$*.log;\
-		exit;" > ./gds/extract_$*.tcl
-	cd gds && \
-		magic -rcfile ${PDK_ROOT}/$(PDK)/libs.tech/magic/$(PDK).magicrc -noc -dnull extract_$*.tcl < /dev/null
-	mv ./gds/$*.spice ./spi/lvs
-	rm ./gds/*.ext
-	mv -f ./gds/extract_$*.tcl ./gds/tmp
-	mv -f ./gds/extract_$*.log ./gds/tmp
-	####
-	mkdir -p ./spi/lvs/tmp
-	MAGIC_EXT_USE_GDS=1 sh $(CARAVEL_ROOT)/spi/lvs/run_lvs.sh ./spi/lvs/$*.spice ./verilog/gl/$*.v $*
-	@echo ""
-	python3 $(CARAVEL_ROOT)/scripts/count_lvs.py -f ./verilog/gl/$*.v_comp.json | tee ./spi/lvs/tmp/$*.lvs.summary.log
-	mv -f ./verilog/gl/*.out ./spi/lvs/tmp 2> /dev/null || true
-	mv -f ./verilog/gl/*.json ./spi/lvs/tmp 2> /dev/null || true
-	mv -f ./verilog/gl/*.log ./spi/lvs/tmp 2> /dev/null || true
-	@echo ""
-	@echo "LVS: ./spi/lvs/$*.spice vs. ./verilog/gl/$*.v"
-	@echo "Comparison result: ./spi/lvs/tmp/$*.v_comp.out"
-	@awk '/^NET mismatches/,0' ./spi/lvs/tmp/$*.v_comp.out
 
+export CUP_ROOT=$(shell pwd)
+export TIMING_ROOT?=$(shell pwd)/deps/timing-scripts
+export PROJECT_ROOT=$(CUP_ROOT)
+timing-scripts-repo=https://github.com/efabless/timing-scripts.git
+
+$(TIMING_ROOT):
+	@mkdir -p $(CUP_ROOT)/deps
+	@git clone $(timing-scripts-repo) $(TIMING_ROOT)
+
+.PHONY: setup-timing-scripts
+setup-timing-scripts: $(TIMING_ROOT)
+	@( cd $(TIMING_ROOT) && git pull )
+	@#( cd $(TIMING_ROOT) && git fetch && git checkout $(MPW_TAG); )
+	@python3 -m venv ./venv 
+		. ./venv/bin/activate && \
+		python3 -m pip install --upgrade pip && \
+		python3 -m pip install -r $(TIMING_ROOT)/requirements.txt && \
+		deactivate
+
+./verilog/gl/user_project_wrapper.v:
+	$(error you don't have $@)
+
+./env/spef-mapping.tcl: 
+	@echo "run the following:"
+	@echo "make extract-parasitics"
+	@echo "make create-spef-mapping"
+	exit 1
+
+.PHONY: create-spef-mapping
+create-spef-mapping: ./verilog/gl/user_project_wrapper.v
+	@. ./venv/bin/activate && \
+		python3 $(TIMING_ROOT)/scripts/generate_spef_mapping.py \
+			-i ./verilog/gl/user_project_wrapper.v \
+			-o ./env/spef-mapping.tcl \
+			--pdk-path $(PDK_ROOT)/$(PDK) \
+			--macro-parent mprj \
+			--project-root "$(CUP_ROOT)" && \
+		deactivate
+
+.PHONY: extract-parasitics
+extract-parasitics: ./verilog/gl/user_project_wrapper.v
+	@. ./venv/bin/activate && \
+		python3 $(TIMING_ROOT)/scripts/get_macros.py \
+		-i ./verilog/gl/user_project_wrapper.v \
+		-o ./tmp-macros-list \
+		--project-root "$(CUP_ROOT)" \
+		--pdk-path $(PDK_ROOT)/$(PDK) && \
+		deactivate
+		@cat ./tmp-macros-list | cut -d " " -f2 \
+			| xargs -I % bash -c "$(MAKE) -C $(TIMING_ROOT) \
+				-f $(TIMING_ROOT)/timing.mk rcx-% || echo 'Cannot extract %. Probably no def for this macro'"
+	@$(MAKE) -C $(TIMING_ROOT) -f $(TIMING_ROOT)/timing.mk rcx-user_project_wrapper
+	@cat ./tmp-macros-list
+	@rm ./tmp-macros-list
+	
+.PHONY: caravel-sta
+caravel-sta: ./env/spef-mapping.tcl
+	@$(MAKE) -C $(TIMING_ROOT) -f $(TIMING_ROOT)/timing.mk caravel-timing-typ
+	@$(MAKE) -C $(TIMING_ROOT) -f $(TIMING_ROOT)/timing.mk caravel-timing-fast
+	@$(MAKE) -C $(TIMING_ROOT) -f $(TIMING_ROOT)/timing.mk caravel-timing-slow
+	@echo "You can find results for all corners in $(CUP_ROOT)/signoff/caravel/openlane-signoff/timing/"
