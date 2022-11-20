@@ -218,6 +218,8 @@ $(USER_PROJECT_VERILOG)/gl/wb_interconnect.v
 #-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type1.sv
 #-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_gen_type2.sv
 
+$(USER_PROJECT_VERILOG)/gl/aes_top.v
+$(USER_PROJECT_VERILOG)/gl/fpu_wrapper.v
 
 -v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/dg_pll.v
 

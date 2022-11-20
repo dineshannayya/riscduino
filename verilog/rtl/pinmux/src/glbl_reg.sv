@@ -367,7 +367,26 @@ gen_32b_reg  #(32'h0) u_reg_3	(
 assign  irq_lines     = reg_3[31:0] & reg_4[31:0]; 
 
 // In Arduino GPIO[7:0] is corresponds to PORT-A which is not available for user access
-wire [31:0] hware_intr_req = {gpio_intr[31:8], 2'b0,pwm_intr,usb_intr, i2cm_intr,timer_intr[2:0]};
+
+logic usb_intr_s,usb_intr_ss;   // Usb Interrupt Double Sync
+logic i2cm_intr_s,i2cm_intr_ss; // I2C Interrupt Double Sync
+
+always @ (posedge mclk or negedge s_reset_n)
+begin  
+   if (s_reset_n == 1'b0) begin
+     usb_intr_s   <= 'h0;
+     usb_intr_ss  <= 'h0;
+     i2cm_intr_s  <= 'h0;
+     i2cm_intr_ss <= 'h0;
+   end else begin
+     usb_intr_s   <= usb_intr;
+     usb_intr_ss  <= usb_intr_s;
+     i2cm_intr_s  <= i2cm_intr;
+     i2cm_intr_ss <= i2cm_intr_s;
+   end
+end
+
+wire [31:0] hware_intr_req = {gpio_intr[31:8], 2'b0,pwm_intr,usb_intr_ss, i2cm_intr_ss,timer_intr[2:0]};
 
 generic_intr_stat_reg #(.WD(32),
 	                .RESET_DEFAULT(0)) u_reg4 (

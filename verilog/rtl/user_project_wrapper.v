@@ -288,6 +288,8 @@
 ////    5.7  Nov 7, 2022, Dinesh A                                ////
 ////         A. AES 128 Bit Encription and Decryption integration ////
 ////         B. FPU Integration                                   ////
+////    5.8  Nov 20, 2022, Dinesh A                               ////
+////         A. Pinmux - Double Sync added for usb & i2c inter    ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
