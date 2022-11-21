@@ -108,7 +108,7 @@ set ::env(DIODE_INSERTION_STRATEGY) 4
 
 
 #LVS Issue - DEF Base looks to having issue
-set ::env(MAGIC_EXT_USE_GDS) {0}
+set ::env(MAGIC_EXT_USE_GDS) {1}
 
 set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
 set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}

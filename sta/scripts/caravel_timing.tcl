@@ -22,28 +22,32 @@
 
 
     read_verilog $::env(CARAVEL_ROOT)/mgmt_core_wrapper/verilog/gl/RAM128.v
+    read_verilog $::env(CARAVEL_ROOT)/mgmt_core_wrapper/verilog/gl/mgmt_core_wrapper.v
     read_verilog $::env(CARAVEL_ROOT)/mgmt_core_wrapper/verilog/gl/RAM256.v
-    read_verilog $::env(CARAVEL_ROOT)/mgmt_core_wrapper/verilog/gl/mgmt_core_wrapper.v	
-
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/caravel_clocking.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/digital_pll.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/housekeeping.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_logic_high.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_control_block.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block_0403.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block_1803.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mgmt_protect_hv.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mprj_logic_high.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mprj2_logic_high.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mgmt_protect.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/user_id_programming.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/xres_buf.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/spare_logic_block.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/buff_flash_clkrst.v	
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_control_block.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mprj_logic_high.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/caravel_clocking.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/constant_block.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/xres_buf.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block_0801.v
     read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_signal_buffering_alt.v
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/chip_io.v	
-    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/caravel.v	
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mgmt_protect_hv.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/digital_pll.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/chip_io_alt.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_logic_high.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/housekeeping.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/spare_logic_block.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/caravel.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/user_id_programming.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block_1803.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_signal_buffering.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mprj2_logic_high.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/chip_io.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/buff_flash_clkrst.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/mgmt_protect.v
+    read_verilog $::env(CARAVEL_ROOT)/verilog/gl/gpio_defaults_block_0403.v
+
 
 
 	# User project netlist
@@ -63,111 +67,121 @@
 
 	link_design caravel	
 
+    read_spef -path clock_ctrl                         $::env(CARAVEL_ROOT)/signoff/caravel_clocking/openlane-signoff/spef/caravel_clocking.nom.spef
+    read_spef -path flash_clkrst_buffers               $::env(CARAVEL_ROOT)/signoff/buff_flash_clkrst/openlane-signoff/spef/buff_flash_clkrst.nom.spef
+    read_spef -path gpio_control_bidir_1[0]            $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_bidir_1[1]            $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_bidir_2[0]            $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_bidir_2[1]            $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_bidir_2[2]            $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[0]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[10]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[1]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[2]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[3]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[4]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[5]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[6]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[7]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[8]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1[9]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1a[0]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1a[1]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1a[2]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1a[3]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1a[4]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_1a[5]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[0]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[10]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[11]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[12]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[13]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[14]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[15]              $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[1]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[2]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[3]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[4]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[5]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[6]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[7]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[8]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_control_in_2[9]               $::env(CARAVEL_ROOT)/signoff/gpio_control_block/openlane-signoff/spef/gpio_control_block.nom.spef
+    read_spef -path gpio_defaults_block_0              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_10             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_11             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_12             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_13             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_14             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_15             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_16             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_17             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_18             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_19             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_1              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_20             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_21             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_22             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_23             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_24             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_25             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_26             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_27             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_28             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_29             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_2              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_30             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_31             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_32             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_33             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_34             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_35             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_36             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_37             $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_3              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_4              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_5              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_6              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_7              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_8              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path gpio_defaults_block_9              $::env(CARAVEL_ROOT)/signoff/gpio_defaults_block/openlane-signoff/spef/gpio_defaults_block.nom.spef
+    read_spef -path housekeeping                       $::env(CARAVEL_ROOT)/signoff/housekeeping/openlane-signoff/spef/housekeeping.nom.spef
+    read_spef -path mgmt_buffers                       $::env(CARAVEL_ROOT)/signoff/mgmt_protect/openlane-signoff/spef/mgmt_protect.nom.spef
+    read_spef -path padframe/constant_value_inst[0]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe/constant_value_inst[1]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe/constant_value_inst[2]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe/constant_value_inst[3]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe/constant_value_inst[4]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe/constant_value_inst[5]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe/constant_value_inst[6]    $::env(CARAVEL_ROOT)/signoff/constant_block/openlane-signoff/spef/constant_block.nom.spef
+    read_spef -path padframe                           $::env(CARAVEL_ROOT)/signoff/chip_io/openlane-signoff/spef/chip_io.nom.spef
+    read_spef -path pll                                $::env(CARAVEL_ROOT)/signoff/digital_pll/openlane-signoff/spef/digital_pll.nom.spef
+    read_spef -path rstb_level                         $::env(CARAVEL_ROOT)/signoff/xres_buf/openlane-signoff/spef/xres_buf.nom.spef
+    read_spef -path soc/core.RAM128                    $::env(CARAVEL_ROOT)/mgmt_core_wrapper/signoff/RAM128/openlane-signoff/spef/RAM128.nom.spef
+    read_spef -path soc/core.RAM256                    $::env(CARAVEL_ROOT)/mgmt_core_wrapper/signoff/RAM256/openlane-signoff/spef/RAM256.nom.spef
+    read_spef -path soc                                $::env(CARAVEL_ROOT)/mgmt_core_wrapper/signoff/mgmt_core_wrapper/openlane-signoff/spef/mgmt_core_wrapper.nom.spef
+    read_spef -path spare_logic[0]                     $::env(CARAVEL_ROOT)/signoff/spare_logic_block/openlane-signoff/spef/spare_logic_block.nom.spef
+    read_spef -path spare_logic[1]                     $::env(CARAVEL_ROOT)/signoff/spare_logic_block/openlane-signoff/spef/spare_logic_block.nom.spef
+    read_spef -path spare_logic[2]                     $::env(CARAVEL_ROOT)/signoff/spare_logic_block/openlane-signoff/spef/spare_logic_block.nom.spef
+    read_spef -path spare_logic[3]                     $::env(CARAVEL_ROOT)/signoff/spare_logic_block/openlane-signoff/spef/spare_logic_block.nom.spef
 
-    read_spef -path soc/core.RAM128                    $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/RAM128.spef	
-    read_spef -path soc/core.RAM256                    $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/RAM256.spef	
-    read_spef -path soc                                $::env(CARAVEL_ROOT)/mgmt_core_wrapper/spef/mgmt_core_wrapper.spef	
-    read_spef -path padframe                           $::env(CARAVEL_ROOT)/spef/chip_io.spef	
-    read_spef -path rstb_level                         $::env(CARAVEL_ROOT)/spef/xres_buf.spef	
-    read_spef -path pll                                $::env(CARAVEL_ROOT)/spef/digital_pll.spef	
-    read_spef -path housekeeping                       $::env(CARAVEL_ROOT)/spef/housekeeping.spef	
-    read_spef -path mgmt_buffers/powergood_check       $::env(CARAVEL_ROOT)/spef/mgmt_protect_hv.spef	
-    read_spef -path mgmt_buffers/mprj_logic_high_inst  $::env(CARAVEL_ROOT)/spef/mprj_logic_high.spef	
-    read_spef -path mgmt_buffers/mprj2_logic_high_inst $::env(CARAVEL_ROOT)/spef/mprj2_logic_high.spef	
-    read_spef -path mgmt_buffers                       $::env(CARAVEL_ROOT)/spef/mgmt_protect.spef	
-    read_spef -path \gpio_control_bidir_1[0]           $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_bidir_1[1]           $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_bidir_2[1]           $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_bidir_2[2]           $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[0]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[10]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[1]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[2]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[3]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[4]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[5]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[6]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[7]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[8]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1[9]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1a[0]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1a[1]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1a[2]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1a[3]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1a[4]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_1a[5]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[0]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[10]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[11]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[12]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[13]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[14]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[15]             $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[1]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[2]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[3]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[4]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[5]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[6]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[7]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[8]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path \gpio_control_in_2[9]              $::env(CARAVEL_ROOT)/spef/gpio_control_block.spef	
-    read_spef -path gpio_defaults_block_0              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block_1803.spef	
-    read_spef -path gpio_defaults_block_1              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block_1803.spef	
-    read_spef -path gpio_defaults_block_2              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block_0403.spef	
-    read_spef -path gpio_defaults_block_3              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block_0403.spef	
-    read_spef -path gpio_defaults_block_4              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block_0403.spef	
-    read_spef -path gpio_defaults_block_5              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_6              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_7              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_8              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_9              $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_10             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_11             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_12             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_13             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_14             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_15             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_16             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_17             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_18             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_19             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_20             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_21             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_22             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_23             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_24             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_25             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_26             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_27             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_28             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_29             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_30             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_31             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_32             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_33             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_34             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_35             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_36             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path gpio_defaults_block_37             $::env(CARAVEL_ROOT)/spef/gpio_defaults_block.spef	
-    read_spef -path flash_clkrst_buffers               $::env(CARAVEL_ROOT)/spef/buff_flash_clkrst.spef
 
 	## User Project Spef
 
-    read_spef -path mprj/u_riscv_top.u_connect          $::env(USER_ROOT)/spef/ycr_iconnect.spef
-    read_spef -path mprj/u_riscv_top.u_intf             $::env(USER_ROOT)/spef/ycr_intf.spef
-    read_spef -path mprj/u_riscv_top.i_core_top_0       $::env(USER_ROOT)/spef/ycr_core_top.spef
-    read_spef -path mprj/u_pinmux                       $::env(USER_ROOT)/spef/pinmux_top.spef
-    read_spef -path mprj/u_qspi_master                  $::env(USER_ROOT)/spef/qspim_top.spef
-    read_spef -path mprj/u_uart_i2c_usb_spi             $::env(USER_ROOT)/spef/uart_i2c_usb_spi_top.spef
-    read_spef -path mprj/u_wb_host                      $::env(USER_ROOT)/spef/wb_host.spef
-    read_spef -path mprj/u_intercon                     $::env(USER_ROOT)/spef/wb_interconnect.spef
-	read_spef -path mprj/u_pll                          $::env(USER_ROOT)/spef/dg_pll.spef	
-	read_spef -path mprj/u_aes                          $::env(USER_ROOT)/spef/aes_top.spef	
-	read_spef -path mprj/u_fpu                          $::env(USER_ROOT)/spef/fpu_wrapper.spef	
-    read_spef -path mprj                                $::env(USER_ROOT)/spef/user_project_wrapper.spef  
+    read_spef -path mprj/u_riscv_top.u_connect          $::env(USER_ROOT)/signoff/ycr_iconnect/openlane-signoff/spef/ycr_iconnect.nom.spef
+    read_spef -path mprj/u_riscv_top.u_intf             $::env(USER_ROOT)/signoff/ycr_intf/openlane-signoff/spef/ycr_intf.nom.spef
+    read_spef -path mprj/u_riscv_top.i_core_top_0       $::env(USER_ROOT)/signoff/ycr_core_top/openlane-signoff/spef/ycr_core_top.nom.spef
+    read_spef -path mprj/u_pinmux                       $::env(USER_ROOT)/signoff/pinmux_top/openlane-signoff/spef/pinmux_top.nom.spef
+    read_spef -path mprj/u_qspi_master                  $::env(USER_ROOT)/signoff/qspim_top/openlane-signoff/spef/qspim_top.nom.spef
+    read_spef -path mprj/u_uart_i2c_usb_spi             $::env(USER_ROOT)/signoff/uart_i2c_usb_spi_top/openlane-signoff/spef/uart_i2c_usb_spi_top.nom.spef
+    read_spef -path mprj/u_wb_host                      $::env(USER_ROOT)/signoff/wb_host/openlane-signoff/spef/wb_host.nom.spef
+    read_spef -path mprj/u_intercon                     $::env(USER_ROOT)/signoff/wb_interconnect/openlane-signoff/spef/wb_interconnect.nom.spef
+	read_spef -path mprj/u_pll                          $::env(USER_ROOT)/signoff/dg_pll/openlane-signoff/spef/dg_pll.nom.spef	
+	read_spef -path mprj/u_aes                          $::env(USER_ROOT)/signoff/aes_top/openlane-signoff/spef/aes_top.nom.spef	
+	read_spef -path mprj/u_fpu                          $::env(USER_ROOT)/signoff/fpu_wrapper/openlane-signoff/spef/fpu_wrapper.nom.spef	
+    read_spef -path mprj                                $::env(USER_ROOT)/signoff/user_project_wrapper/openlane-signoff/spef/user_project_wrapper.nom.spef  
 
-    read_spef $::env(CARAVEL_ROOT)/spef/caravel.spef
+    read_spef $::env(CARAVEL_ROOT)/signoff/caravel/openlane-signoff/spef/caravel.nom.spef
 
 
 	read_sdc -echo ./sdc/caravel.sdc	

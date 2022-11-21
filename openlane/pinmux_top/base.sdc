@@ -7,7 +7,32 @@ current_design pinmux
 # Timing Constraints
 ###############################################################################
 create_clock -name mclk -period 10.0000 [get_ports {mclk}]
-set_propagated_clock [get_clocks {mclk}]
+create_clock -name user_clock1 -period 10.0000 [get_ports {user_clock1}]
+create_clock -name user_clock2 -period 10.0000 [get_ports {user_clock2}]
+create_clock -name int_pll_clock -period 5.0000  [get_pins {int_pll_clock}]
+create_clock -name rtc_ref_clk -period 50.0000  [get_pins {u_glbl_reg.u_rtc_ref_clkbuf.u_buf/X}]
+create_clock -name rtc_clk     -period 50.0000  [get_pins {u_glbl_reg.u_clkbuf_rtc.u_buf/X}]
+create_clock -name usb_ref_clk -period 5.0000   [get_pins {u_glbl_reg.u_usb_ref_clkbuf.u_buf/X}]
+create_clock -name dbg_ref_clk -period 10.0000 [get_pins {u_glbl_reg.u_clkbuf_dbg_ref.u_buf/X}]
+
+
+set_clock_groups \
+   -name clock_group \
+   -logically_exclusive \
+   -group [get_clocks {mclk}]\
+   -group [get_clocks {user_clock1}]\
+   -group [get_clocks {user_clock2}]\
+   -group [get_clocks {int_pll_clock}]\
+   -group [get_clocks {rtc_ref_clk}]\
+   -group [get_clocks {rtc_clk}]\
+   -group [get_clocks {usb_ref_clk}]\
+   -group [get_clocks {dbg_ref_clk}]\
+   -comment {Async Clock group}
+
+
+
+set_propagated_clock [all_clocks]
+
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.5000 [all_clocks]
