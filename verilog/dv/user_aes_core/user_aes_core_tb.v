@@ -65,7 +65,7 @@
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "uart_agent.v"
-module user_aes_tb;
+module user_aes_core_tb;
 
 parameter real CLK1_PERIOD  = 20; // 50Mhz
 parameter real CLK2_PERIOD = 2.5;
@@ -128,10 +128,10 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(2, user_aes_tb);
-	   	$dumpvars(0, user_aes_tb.u_top.u_aes);
-	   	$dumpvars(0, user_aes_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_aes_tb.u_top.u_pinmux);
+	   	$dumpvars(2, user_aes_core_tb);
+	   	$dumpvars(0, user_aes_core_tb.u_top.u_aes);
+	   	$dumpvars(0, user_aes_core_tb.u_top.u_riscv_top);
+	   	$dumpvars(0, user_aes_core_tb.u_top.u_pinmux);
 	   end
        `endif
 

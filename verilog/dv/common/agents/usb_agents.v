@@ -274,7 +274,7 @@ input [7:0]  request;
 input [15:0] value; 
 input [15:0] index; 
 input [15:0] length;
-output       status;
+output[7:0]  status;
 reg   [7:0]  status;
 integer idx;
 begin

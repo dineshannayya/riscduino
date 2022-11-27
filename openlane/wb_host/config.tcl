@@ -42,7 +42,7 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-     $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wb_host.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wbh_reset_fsm.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/wb_host/src/wbh_reg.sv \
@@ -85,7 +85,7 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 400 425"
+set ::env(DIE_AREA) "0 0 425 425"
 
 set ::env(GRT_OBS) "                              \
 	                met4  0 0 400 425"

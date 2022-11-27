@@ -290,6 +290,9 @@
 ////         B. FPU Integration                                   ////
 ////    5.8  Nov 20, 2022, Dinesh A                               ////
 ////         A. Pinmux - Double Sync added for usb & i2c inter    ////
+////    5.9  Nov 25, 2022, Dinesh A                               ////
+////         cpu_clk will be feed through wb_interconnect for     ////
+////         buffering purpose                                    ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -876,6 +879,19 @@ assign la_data_out[127:0]    = {pinmux_debug,spi_debug,riscv_debug};
 
 wire   int_pll_clock       = pll_clk_out[0];
 
+//-------------------------------------
+// cpu clock repeater mapping
+//-------------------------------------
+wire [9:0] cpu_clk_rp;
+
+wire [5:0] cpu_clk_rp_risc   = cpu_clk_rp[5:0];
+wire       cpu_clk_rp_aes    = cpu_clk_rp[6];
+wire       cpu_clk_rp_fpu    = cpu_clk_rp[7];
+wire       cpu_clk_rp_pinmux = cpu_clk_rp[8];
+
+
+`include "bus_repeater.sv"
+
 /***********************************************
  Wishbone HOST
 *************************************************/
@@ -885,7 +901,7 @@ wb_host u_wb_host(
           .vccd1                   (vccd1                   ),// User area 1 1.8V supply
           .vssd1                   (vssd1                   ),// User area 1 digital ground
 `endif
-          .user_clock1             (wb_clk_i                ),
+          .user_clock1             (wb_clk_int_i            ),
           .user_clock2             (user_clock2             ),
           .int_pll_clock           (int_pll_clock           ),
 
@@ -905,16 +921,16 @@ wb_host u_wb_host(
           .wbd_pll_rst_n           (wbd_pll_rst_n           ),
 
     // Master Port
-          .wbm_rst_i               (wb_rst_i                ),  
-          .wbm_clk_i               (wb_clk_i                ),  
-          .wbm_cyc_i               (wbs_cyc_i               ),  
-          .wbm_stb_i               (wbs_stb_i               ),  
-          .wbm_adr_i               (wbs_adr_i               ),  
-          .wbm_we_i                (wbs_we_i                ),  
-          .wbm_dat_i               (wbs_dat_i               ),  
-          .wbm_sel_i               (wbs_sel_i               ),  
-          .wbm_dat_o               (wbs_dat_o               ),  
-          .wbm_ack_o               (wbs_ack_o               ),  
+          .wbm_rst_i               (wb_rst_int_i            ),  
+          .wbm_clk_i               (wb_clk_int_i            ),  
+          .wbm_cyc_i               (wbs_cyc_int_i           ),  
+          .wbm_stb_i               (wbs_stb_int_i           ),  
+          .wbm_adr_i               (wbs_adr_int_i           ),  
+          .wbm_we_i                (wbs_we_int_i            ),  
+          .wbm_dat_i               (wbs_dat_int_i           ),  
+          .wbm_sel_i               (wbs_sel_int_i           ),  
+          .wbm_dat_o               (wbs_dat_int_o           ),  
+          .wbm_ack_o               (wbs_ack_int_o           ),  
           .wbm_err_o               (                        ),  
 
     // Clock Skeq Adjust
@@ -938,7 +954,7 @@ wb_host u_wb_host(
           .cfg_clk_skew_ctrl1      (cfg_clk_skew_ctrl1      ),
           .cfg_clk_skew_ctrl2      (cfg_clk_skew_ctrl2      ),
 
-          .la_data_in              (la_data_in[17:0]        ),
+          .la_data_in              (la_data_in_rp[17:0]     ),
 
           .uartm_rxd               (uartm_rxd               ),
           .uartm_txd               (uartm_txd               ),
@@ -998,7 +1014,7 @@ ycr_top_wb u_riscv_top (
 	      .cfg_bypass_dcache       (cfg_bypass_dcache          ),
 
     // Clock
-          .core_clk_int            (cpu_clk                    ),
+          .core_clk_int            (cpu_clk_rp_risc            ),
           .cfg_ccska_riscv_intf    (cfg_ccska_riscv_intf_rp    ),
           .cfg_ccska_riscv_icon    (cfg_ccska_riscv_icon_rp    ),
           .cfg_ccska_riscv_core0   (cfg_ccska_riscv_core0_rp   ),
@@ -1225,15 +1241,15 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_dcache_2kb(
 *************************************************/
 aes_top u_aes (
 `ifdef USE_POWER_PINS
-    .vccd1                 (vdda1                  ),
-    .vssd1                 (vssa1                  ),
+    .vccd1                 (vdda1            ),
+    .vssd1                 (vssa1            ),
 `endif
 
     .mclk                  (cpu_clk_aes      ),
     .rst_n                 (cpu_intf_rst_n   ),
 
     .cfg_cska              (cfg_ccska_aes_rp ),
-    .wbd_clk_int           (cpu_clk          ),
+    .wbd_clk_int           (cpu_clk_rp_aes   ),
     .wbd_clk_out           (cpu_clk_aes      ),
 
     .dmem_req              (aes_dmem_req     ),
@@ -1259,7 +1275,7 @@ fpu_wrapper u_fpu (
     .rst_n                 (cpu_intf_rst_n   ),
 
     .cfg_cska              (cfg_ccska_fpu_rp ),
-    .wbd_clk_int           (cpu_clk          ),
+    .wbd_clk_int           (cpu_clk_rp_fpu   ),
     .wbd_clk_out           (cpu_clk_fpu      ),
 
     .dmem_req              (fpu_dmem_req     ),
@@ -1331,7 +1347,7 @@ qspim_top
 
 wb_interconnect  #(
 	`ifndef SYNTHESIS
-          .CH_CLK_WD           (4                       ),
+          .CH_CLK_WD           (14                      ),
 	      .CH_DATA_WD          (154                     )
         `endif
 	) u_intercon (
@@ -1340,11 +1356,22 @@ wb_interconnect  #(
           .vssd1                   (vssd1                   ),// User area 1 digital ground
 `endif
 	  .ch_clk_in               ({
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
+                                     cpu_clk,
                                      wbd_clk_int, 
                                      wbd_clk_int, 
                                      wbd_clk_int, 
                                      wbd_clk_int}                  ),
 	  .ch_clk_out              ({
+                                     cpu_clk_rp,
                                      wbd_clk_pinmux_rp, 
                                      wbd_clk_uart_rp, 
                                      wbd_clk_qspi_rp, 
@@ -1586,7 +1613,7 @@ pinmux_top u_pinmux(
           .user_clock2             (user_clock2             ),
           .int_pll_clock           (int_pll_clock           ),
           .xtal_clk                (xtal_clk                ),
-          .cpu_clk                 (cpu_clk                 ),
+          .cpu_clk                 (cpu_clk_rp_pinmux       ),
 
 
           .rtc_clk                 (rtc_clk                 ),

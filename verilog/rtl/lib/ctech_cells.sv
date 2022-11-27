@@ -111,10 +111,12 @@ module ctech_delay_clkbuf (
 	input  logic A,
 	output logic X);
 
+wire X1;
 `ifndef SYNTHESIS
     assign X = A;
 `else
-     sky130_fd_sc_hd__clkdlybuf4s15_2 u_dly (.X(X),.A(A));
+     sky130_fd_sc_hd__clkbuf_1 u_dly0 (.X(X1),.A(A));
+     sky130_fd_sc_hd__clkbuf_1 u_dly1 (.X(X),.A(X1));
 `endif
 
 endmodule

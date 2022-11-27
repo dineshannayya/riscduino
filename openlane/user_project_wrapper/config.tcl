@@ -74,10 +74,11 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_core_top.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/ycr_iconnect.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/dg_pll.v \
-	    $::env(PDK_ROOT)/sky130B/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
+	    $::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/dac_top.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/aes_top.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/fpu_wrapper.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_south.v \
 	    "
 
 set ::env(EXTRA_LEFS) "\
@@ -94,6 +95,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/dac_top.lef \
 	$lef_root/aes_top.lef \
 	$lef_root/fpu_wrapper.lef \
+	$lef_root/bus_rep_south.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
@@ -107,8 +109,10 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/ycr_iconnect.gds \
 	$gds_root/dg_pll.gds \
 	$gds_root/dac_top.gds \
+	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
 	$gds_root/aes_top.gds \
 	$gds_root/fpu_wrapper.gds \
+	$gds_root/bus_rep_south.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -120,12 +124,19 @@ set ::env(RT_MAX_LAYER) {met5}
 
 ## Internal Macros
 ### Macro PDN Connections
+### Follow checks are temp masked due to PDNGEN issue in 
+### handling SRAM Power Strip in MET3, This issue occured due
+### Enabling MET3 to MET4 connectivity to handle power hook up
+### for bus repeater macro
+set ::env(FP_PDN_CHECK_NODES) 1
+set ::env(FP_PDN_IRDROP) "1"
+set ::env(RUN_IRDROP_REPORT) "1"
+####################
 
 set ::env(FP_PDN_ENABLE_MACROS_GRID) {1}
 set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "0"
-set ::env(FP_PDN_CHECK_NODES) 1
 set ::env(FP_PDN_ENABLE_RAILS) 0
-set ::env(FP_PDN_IRDROP) "1"
+set ::env(FP_PDN_IRDROP) "0"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
 set ::env(FP_PDN_VERTICAL_HALO) "10"
 set ::env(FP_PDN_VOFFSET) "5"
@@ -179,7 +190,8 @@ set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_riscv_top.u_intf          vccd1 vssd1 vccd1 vssd1,\
 	u_4x8bit_dac                vdda1 vssa1 vccd1 vssd1,\
 	u_aes                       vdda1 vssa1 vccd1 vssd1,\
-	u_fpu                       vdda1 vssa1 vccd1 vssd1
+	u_fpu                       vdda1 vssa1 vccd1 vssd1,\
+	u_rp_south                  vdda1 vssa1 vccd1 vssd1
       	"
 
 

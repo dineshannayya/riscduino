@@ -18,18 +18,17 @@
 ////                                                              ////
 ////  User Risc Core Boot Validation                              ////
 ////                                                              ////
-////  This file is part of the YIFive cores project               ////
-////  https://github.com/dineshannayya/yifive_r0.git              ////
-////  http://www.opencores.org/cores/yifive/                      ////
+////  This file is part of the riscduino cores project            ////
+////  https://github.com/dineshannayya/riscuino.git               ////
+////  http://www.opencores.org/cores/riscuino/                    ////
 ////                                                              ////
 ////  Description                                                 ////
-////     1. User Risc core is booted using  compiled code of      ////
-////        user_risc_boot.hex                                    ////
-////     2. User Risc core uses Serial Flash and SDRAM to boot    ////
-////     3. After successful boot, Risc core will  write signature////
-////        in to  user register from 0x3000_0018 to 0x3000_002C  ////
-////     4. Through the External Wishbone Interface we read back  ////
-////         and validate the user register to declared pass fail ////
+////    1. Strap is set to RISC core auto Boot mode               ////
+////    2. With Reset removal from caravel, User core boot up     ////
+////    3. Risc-V firmware have UART Loop back mode               ////
+////    4. Any UART Data Transmited by testbench will be loop back////
+////    5. There are 40 Random char are transmited and compared   ////
+////       againt received data                                   ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -132,9 +131,10 @@ pullup(mprj_io[3]);
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
            //$dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
-           $dumpvars(2,risc_boot_tb.u_top);
+           //$dumpvars(2,risc_boot_tb.u_top);
            $dumpvars(1,risc_boot_tb.u_top.mprj);
            $dumpvars(0,risc_boot_tb.u_top.mprj.u_wb_host);
+           $dumpvars(0,risc_boot_tb.u_top.mprj.u_pinmux);
            //$dumpvars(0,risc_boot_tb.tb_uart);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");
@@ -165,7 +165,7 @@ pullup(mprj_io[3]);
 
  $value$plusargs("risc_core_id=%d", d_risc_id);
 
-   init();
+         init();
 
            uart_data_bit           = 2'b11;
            uart_stop_bits          = 0; // 0: 1 stop bit; 1: 2 stop bit;
@@ -186,7 +186,7 @@ pullup(mprj_io[3]);
 					     uart_stick_parity, uart_timeout, uart_divisor);
 
 
-                wait_riscv_boot();
+        wait_riscv_boot();
 		repeat (50000) @(posedge clock);  
 
 		for (i=0; i<40; i=i+1)

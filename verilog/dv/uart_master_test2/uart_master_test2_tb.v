@@ -19,7 +19,7 @@
 `include "uart_agent.v"
 
 `define TB_HEX "uart_master.hex"
-`define TB_TOP  uart_master_tb
+`define TB_TOP  uart_master_test2
 module `TB_TOP;
 	reg clock;
 	reg RSTB;

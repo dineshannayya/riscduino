@@ -165,11 +165,11 @@ hex:  ${BLOCKS:=.hex}
 ## RTL
 ifeq ($(SIM),RTL)
    ifeq ($(DUMP),OFF)
-	iverilog -g2005-sv -Ttyp -DFUNCTIONAL -DSIM -DRISC_BOOT -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+	iverilog -g2012 -Ttyp -DFUNCTIONAL -DSIM -DRISC_BOOT -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
     else  
-	iverilog -g2005-sv -DWFDUMP -Ttyp -DFUNCTIONAL -DRISC_BOOT -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
+	iverilog -g2012 -DWFDUMP -Ttyp -DFUNCTIONAL -DRISC_BOOT -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#0.1 \
         -f$(VERILOG_PATH)/includes/includes.rtl.caravel \
         -f$(USER_PROJECT_VERILOG)/includes/includes.rtl.$(CONFIG) -o $@ $<
    endif

@@ -13,9 +13,9 @@ parameter bit  [15:0] PAD_STRAP = (2'b00 << `PSTRAP_CLK_SRC             ) |
 ****/
 
 `ifdef RISC_BOOT // RISCV Based Test case
-parameter bit  [15:0] PAD_STRAP = 16'b0000_0001_1011_0000;
+parameter bit  [15:0] PAD_STRAP = 16'b0000_0001_1010_0000;
 `else
-parameter bit  [15:0] PAD_STRAP = 16'b0000_0000_1011_0000;
+parameter bit  [15:0] PAD_STRAP = 16'b0000_0000_1010_0000;
 `endif
 
 /***********************************************

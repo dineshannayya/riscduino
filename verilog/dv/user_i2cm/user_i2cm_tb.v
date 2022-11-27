@@ -68,7 +68,7 @@
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "i2c_slave_model.v"
 
-module tb_top;
+module user_i2cm_tb;
 parameter real CLK1_PERIOD  = 20; // 50Mhz
 parameter real CLK2_PERIOD = 2.5;
 parameter real IPLL_PERIOD = 5.008;
@@ -88,7 +88,7 @@ integer i,j;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(0, tb_top);
+	   	$dumpvars(0, user_i2cm_tb);
 	   end
        `endif
 

@@ -145,7 +145,7 @@ begin
 	                          uart_stick_parity, uart_timeout, uart_divisor);
 
 
-    tb_master_uart.write_char('\n'); // for uart baud auto detect purpose
+    tb_master_uart.write_char(8'h0A); // for uart baud auto detect purpose - New Line Character \n
    //$write ("\n(%t)Response:\n",$time);
    flag = 0;
    while(flag == 0)

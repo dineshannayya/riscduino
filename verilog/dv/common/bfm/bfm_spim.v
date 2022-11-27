@@ -172,8 +172,7 @@ end
 endtask
 // Write 4 Byte
 task send_dword;
-input dword;
-reg [31:0] dword;
+input [31:0] dword;
 begin
   send_word(dword[31:16]);
   send_word(dword[15:0]);
@@ -182,8 +181,7 @@ endtask
 
 // Write 2 Byte
 task send_word;
-input word;
-reg [15:0] word;
+input [15:0] word;
 begin
   send_byte(word[15:8]);
   send_byte(word[7:0]);
@@ -194,8 +192,7 @@ endtask // spi_send_word
 
 // Write 1 Byte
 task send_byte;
-input data;
-reg [7:0] data;
+input [7:0] data;
 integer i;
 begin
 
@@ -217,7 +214,7 @@ endtask
 
 // READ 4 BYTE
 task receive_dword;
-output dword;
+output [31:0] dword;
 reg [31:0] dword;
 begin
   receive_word(dword[31:16]);
@@ -227,7 +224,7 @@ endtask
 
 // READ 2 BYTE
 task receive_word;
-output word;
+output [15:0] word;
 reg [15:0] word;
 begin
   receive_byte(word[15:8]);
@@ -239,7 +236,7 @@ endtask
 
 // READ 1 BYTE
 task receive_byte;
-output data;
+output [7:0] data;
 reg [7:0] data;
 integer i;
 begin

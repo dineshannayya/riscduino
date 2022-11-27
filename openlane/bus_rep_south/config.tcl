@@ -19,15 +19,16 @@
 
 set script_dir [file dirname [file normalize [info script]]]
 # Name
-set ::env(DESIGN_NAME) wb_interconnect
+set ::env(DESIGN_NAME) bus_rep_south
 
 
-set ::env(DESIGN_IS_CORE) "0"
+set ::env(DESIGN_IS_CORE) "1"
+set ::env(FP_PDN_CORE_RING) {1}
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "clk_i"
-set ::env(CLOCK_NET) "clk_i"
+set ::env(CLOCK_PORT) ""
+set ::env(CLOCK_NET) ""
 
 set ::env(SYNTH_MAX_FANOUT) 4
 set ::env(SYNTH_BUFFERING) {0}
@@ -43,24 +44,16 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-        $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv \
-        $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv     \
-        $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_wbb.sv                \
-        $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_fifo2.sv                \
-        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
-        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_slave_port.sv  \
-        $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_interconnect.sv  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/bus_rep/bus_rep_south.sv \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(SYNTH_PARAMETERS) "CH_CLK_WD=14\
-	                 CH_DATA_WD=154 \
-			 "
+set ::env(SYNTH_PARAMETERS) "BUS_REP_WD=124 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
-set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
-set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+#set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
+#set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
 
@@ -74,14 +67,14 @@ set ::env(GND_PIN) [list {vssd1}]
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 300 1800"
+set ::env(DIE_AREA) "0 0 2030 50"
 
 #set ::env(GRT_OBS) "met4  0 0 300 1725"
 
 # If you're going to use multiple power domains, then keep this disabled.
 set ::env(RUN_CVC) 0
 
-#set ::env(PDN_CFG) $script_dir/pdn.tcl
+#set ::env(PDN_CFG) $::env(DESIGN_DIR)/pdn.tcl
 
 
 
@@ -97,42 +90,32 @@ set ::env(USE_ARC_ANTENNA_CHECK) "0"
 set ::env(DIODE_INSERTION_STRATEGY) 4
 
 ## CTS
-set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8 sky130_fd_sc_hd__clkbuf_16"
-set ::env(CTS_SINK_CLUSTERING_MAX_DIAMETER) 50
-set ::env(CTS_SINK_CLUSTERING_SIZE) 20
+set ::env(CLOCK_TREE_SYNTH) {0}
 
 ## Placement
-set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 1
-set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 1
-set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
-set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "500"
-set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "2.0"
+set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
+set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
 set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
 
 ## Routing
-set ::env(GRT_ADJUSTMENT) 0.1
-set ::env(DPL_CELL_PADDING) 1
-
-set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "1"
-set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
-set ::env(GLB_RESIZER_MAX_CAP_MARGIN) {0.25}
-set ::env(GLB_RESIZER_MAX_WIRE_LENGTH) {500}
+set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
 
 #LVS Issue - DEF Base looks to having issue
 set ::env(MAGIC_EXT_USE_GDS) {1}
 
-#set ::env(GLB_RT_MAXLAYER) 5
-set ::env(RT_MAX_LAYER) {met4}
+#set ::env(GLB_RT_MAXLAYER) 3
+set ::env(RT_MAX_LAYER) {met3}
+set ::env(FP_PDN_LOWER_LAYER) {met2}
+set ::env(FP_PDN_UPPER_LAYER) {met3}
+
+set ::env(FP_IO_HLAYER) {met2}
+set ::env(FP_IO_VLAYER) {met1}
 
 #Lef 
 set ::env(MAGIC_GENERATE_LEF) {1}
 set ::env(MAGIC_WRITE_FULL_LEF) {0}
 
-set ::env(FP_PDN_VPITCH) 100
-set ::env(FP_PDN_HPITCH) 100
-set ::env(FP_PDN_VWIDTH) 6.2
-set ::env(FP_PDN_HWIDTH) 6.2
 
 set ::env(ECO_ENABLE) {0}
 #set ::env(CURRENT_STEP) "synthesis"

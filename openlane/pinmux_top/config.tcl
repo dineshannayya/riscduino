@@ -41,7 +41,7 @@ set ::env(CLOCK_BUFFER_FANOUT) "8"
 
 # Local sources + no2usb sources
 set ::env(VERILOG_FILES) "\
-     $::env(DESIGN_DIR)/../../verilog/rtl/clk_skew_adjust/src/clk_skew_adjust.gv \
+     $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/glbl_reg.sv  \
@@ -141,7 +141,7 @@ set ::env(DIODE_INSERTION_STRATEGY) 4
 
 
 #LVS Issue - DEF Base looks to having issue
-set ::env(MAGIC_EXT_USE_GDS) {0}
+set ::env(MAGIC_EXT_USE_GDS) {1}
 
 set ::env(GLB_RESIZER_MAX_SLEW_MARGIN) {1.5}
 set ::env(PL_RESIZER_MAX_SLEW_MARGIN) {1.5}

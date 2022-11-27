@@ -65,7 +65,10 @@
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 `include "uart_agent.v"
-module user_fpu_tb;
+
+`define TB_HEX "user_fpu_core.hex"
+`define TB_TOP  user_fpu_core_tb
+module `TB_TOP;
 
 parameter real CLK1_PERIOD  = 20; // 50Mhz
 parameter real CLK2_PERIOD = 2.5;
@@ -128,10 +131,10 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(2, user_fpu_tb);
-	   	$dumpvars(0, user_fpu_tb.u_top.u_fpu);
-	   	$dumpvars(0, user_fpu_tb.u_top.u_riscv_top);
-	   	$dumpvars(0, user_fpu_tb.u_top.u_pinmux);
+	   	$dumpvars(2, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP.u_top.u_fpu);
+	   	$dumpvars(0, `TB_TOP.u_top.u_riscv_top);
+	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
 	   end
        `endif
 
@@ -256,7 +259,7 @@ assign io_in[21] = 1'b0 ; // SPIS SCK
    assign io_in[36] = flash_io3;
 
    // Quard flash
-     s25fl256s #(.mem_file_name("user_fpu_core.hex"),
+     s25fl256s #(.mem_file_name(`TB_HEX),
 	         .otp_file_name("none"),
                  .TimingModel("S25FL512SAGMFI010_F_30pF")) 
 		 u_spi_flash_256mb (

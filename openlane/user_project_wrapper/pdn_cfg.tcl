@@ -150,14 +150,32 @@ if { $::env(FP_PDN_CORE_RING) == 1 } {
         -spacings "$::env(FP_PDN_CORE_RING_VSPACING) $::env(FP_PDN_CORE_RING_HSPACING)" \
         -core_offset "$::env(FP_PDN_CORE_RING_VOFFSET) $::env(FP_PDN_CORE_RING_HOFFSET)"
 }
+##################################
+# Common Macro Power Hook Up
+#   Power Connect met-4 to met-5
+##################################
 
 define_pdn_grid \
     -macro \
-    -default \
-    -name macro \
+    -name macro_1 \
+    -instances "u_pll u_intercon u_pinmux u_qspi_master u_tsram0_2kb u_icache_2kb u_dcache_2kb u_uart_i2c_usb_spi u_wb_host u_riscv_top.i_core_top_0 u_riscv_top.u_connect u_riscv_top.u_intf u_4x8bit_dac u_aes u_fpu" \
     -starts_with POWER \
     -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
 
 add_pdn_connect \
-    -grid macro \
+    -grid macro_1 \
     -layers "$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)"
+
+##################################
+# u_rp_south Power Hook Up
+#  Power connect met-3 to met-4
+##################################
+
+define_pdn_grid \
+    -macro \
+    -name macro_2 \
+    -instances "u_rp_south" \
+    -starts_with POWER \
+    -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
+
+add_pdn_connect -grid macro_2 -layers "met3 met4"

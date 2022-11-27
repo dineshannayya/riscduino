@@ -23,7 +23,7 @@ set ::env(FP_PDN_CORE_RING) "0"
 
 # Timing configuration
 set ::env(CLOCK_PERIOD) "10"
-set ::env(CLOCK_PORT) "core_clk rtc_clk"
+set ::env(CLOCK_PORT) "u_cclk_cts.genblk1.u_mux/X rtc_clk"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 
