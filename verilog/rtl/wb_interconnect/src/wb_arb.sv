@@ -68,8 +68,8 @@ module wb_arb(clk, rstn, req, gnt);
 
 input		clk;
 input		rstn;
-input	[3:0]	req;	// Req input
-output	[1:0]	gnt; 	// Grant output
+input	[4:0]	req;	// Req input
+output	[2:0]	gnt; 	// Grant output
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -77,17 +77,18 @@ output	[1:0]	gnt; 	// Grant output
 //
 
 
-parameter	[1:0]
-                grant0 = 2'h0,
-                grant1 = 2'h1,
-                grant2 = 2'h2,
-                grant3 = 2'h3;
+parameter	[2:0]
+                grant0 = 3'h0,
+                grant1 = 3'h1,
+                grant2 = 3'h2,
+                grant3 = 3'h3,
+                grant4 = 3'h4;
 
 ///////////////////////////////////////////////////////////////////////
 // Local Registers and Wires
 //////////////////////////////////////////////////////////////////////
 
-reg [1:0]	state, next_state;
+reg [2:0]	state, next_state;
 
 ///////////////////////////////////////////////////////////////////////
 //  Misc Logic 
@@ -114,30 +115,41 @@ always@(state or req )
          grant0:
       	// if this req is dropped or next is asserted, check for other req's
       	if(!req[0] ) begin
-      		if(req[1])	next_state = grant1;
+      		if(req[1])	    next_state = grant1;
       		else if(req[2])	next_state = grant2;
       		else if(req[3])	next_state = grant3;
+      		else if(req[4])	next_state = grant4;
       	end
          grant1:
       	// if this req is dropped or next is asserted, check for other req's
       	if(!req[1] ) begin
-      		if(req[2])	next_state = grant2;
-      		if(req[3])	next_state = grant3;
+      		if(req[2])	    next_state = grant2;
+      		if(req[3])	    next_state = grant3;
+      		if(req[4])	    next_state = grant4;
       		else if(req[0])	next_state = grant0;
       	end
          grant2:
       	// if this req is dropped or next is asserted, check for other req's
       	if(!req[2] ) begin
-      	   if(req[0])	        next_state = grant0;
-      	   else if(req[1])	next_state = grant1;
-      	   else if(req[3])	next_state = grant3;
+      	   if(req[3])	    next_state = grant3;
+      	   else if(req[4])	next_state = grant4;
+      	   else if(req[0])	next_state = grant0;
       	end
          grant3:
       	// if this req is dropped or next is asserted, check for other req's
       	if(!req[3] ) begin
-      	   if(req[0])	        next_state = grant0;
+      	   if(req[4])	    next_state = grant4;
+      	   else if(req[0])	next_state = grant0;
       	   else if(req[1])	next_state = grant1;
       	   else if(req[2])	next_state = grant2;
+      	end
+         grant4:
+      	// if this req is dropped or next is asserted, check for other req's
+      	if(!req[4] ) begin
+      	   if(req[0])	    next_state = grant0;
+      	   else if(req[1])	next_state = grant1;
+      	   else if(req[2])	next_state = grant2;
+      	   else if(req[3])	next_state = grant3;
       	end
       endcase
    end

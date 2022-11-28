@@ -217,7 +217,7 @@ set_input_delay -max 6.0000 -clock [get_clocks {wb_clk}] -add_delay  [get_ports 
 set_input_delay -max 6.0000 -clock [get_clocks {wb_clk}] -add_delay  [get_ports {wb_dcache_err_i}]
 
 ## DCACHE PORT-0 SRAM I/F
-set_output_delay -min -1.0000 -clock [get_clocks {dcache_mem_clk0}] -add_delay  [get_ports {dcache_mem_csb0}]
+set_output_delay -min -1.2500 -clock [get_clocks {dcache_mem_clk0}] -add_delay  [get_ports {dcache_mem_csb0}]
 set_output_delay -min -1.0000 -clock [get_clocks {dcache_mem_clk0}] -add_delay  [get_ports {dcache_mem_web0}]
 set_output_delay -min -1.0000 -clock [get_clocks {dcache_mem_clk0}] -add_delay  [get_ports {dcache_mem_addr0[*]}]
 set_output_delay -min -1.0000 -clock [get_clocks {dcache_mem_clk0}] -add_delay  [get_ports {dcache_mem_wmask0[*]}]

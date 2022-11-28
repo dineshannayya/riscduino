@@ -293,6 +293,8 @@
 ////    5.9  Nov 25, 2022, Dinesh A                               ////
 ////         cpu_clk will be feed through wb_interconnect for     ////
 ////         buffering purpose                                    ////
+////    6.0  Nov 27, 2022, Dinesh A                               ////
+////         MPW-7 Timing clean setup
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
