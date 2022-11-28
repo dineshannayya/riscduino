@@ -294,7 +294,10 @@
 ////         cpu_clk will be feed through wb_interconnect for     ////
 ////         buffering purpose                                    ////
 ////    6.0  Nov 27, 2022, Dinesh A                               ////
-////         MPW-7 Timing clean setup
+////         MPW-7 Timing clean setup                             ////
+////    6.1  Nov 28, 2022, Dinesh A                               ////
+////        Power Hook up connectivity issue for                  ////
+////        aes,fpu,bus repeater is fixed                         ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -1243,8 +1246,8 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_dcache_2kb(
 *************************************************/
 aes_top u_aes (
 `ifdef USE_POWER_PINS
-    .vccd1                 (vdda1            ),
-    .vssd1                 (vssa1            ),
+    .vccd1                 (vccd1            ),
+    .vssd1                 (vssd1            ),
 `endif
 
     .mclk                  (cpu_clk_aes      ),
@@ -1269,8 +1272,8 @@ aes_top u_aes (
 *************************************************/
 fpu_wrapper u_fpu (
 `ifdef USE_POWER_PINS
-    .vccd1                 (vdda1            ),
-    .vssd1                 (vssa1            ),
+    .vccd1                 (vccd1            ),
+    .vssd1                 (vssd1            ),
 `endif
 
     .mclk                  (cpu_clk_fpu      ),
@@ -1611,7 +1614,7 @@ pinmux_top u_pinmux(
           .strap_sticky            (strap_sticky            ),
 	      .strap_uartm             (strap_uartm             ),
 
-          .user_clock1             (wb_clk_i                ),
+          .user_clock1             (wb_clk_int_i            ),
           .user_clock2             (user_clock2             ),
           .int_pll_clock           (int_pll_clock           ),
           .xtal_clk                (xtal_clk                ),

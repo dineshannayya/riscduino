@@ -189,9 +189,9 @@ set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_riscv_top.u_connect       vccd1 vssd1 VPWR  VGND, \
 	u_riscv_top.u_intf          vccd1 vssd1 vccd1 vssd1,\
 	u_4x8bit_dac                vdda1 vssa1 vccd1 vssd1,\
-	u_aes                       vdda1 vssa1 vccd1 vssd1,\
-	u_fpu                       vdda1 vssa1 vccd1 vssd1,\
-	u_rp_south                  vdda1 vssa1 vccd1 vssd1
+	u_aes                       vccd1 vssd1 vccd1 vssd1,\
+	u_fpu                       vccd1 vssd1 vccd1 vssd1,\
+	u_rp_south                  vccd1 vssd1 vccd1 vssd1
       	"
 
 

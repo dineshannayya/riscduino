@@ -19,19 +19,19 @@
 .SUFFIXES:
 .SILENT: clean all
 
-PATTERNS = user_basic user_uart user_uart1 user_risc_boot user_qspi user_sspi user_i2cm user_usb user_gpio user_aes user_spi_isp user_timer user_uart_master  user_sram_exec user_cache_bypass user_pwm user_sema risc_boot uart_master_test1 uart_master_test2 wb_port arduino_arrays arduino_digital_port_control arduino_i2c_scaner arduino_risc_boot arduino_timer_intr arduino_ascii_table arduino_gpio_intr arduino_i2c_wr_rd arduino_string arduino_ws281x arduino_character_analysis arduino_hello_world arduino_multi_serial arduino_switchCase2 user_aes_core user_fpu_core
+PATTERNS = user_uart user_uart1 user_risc_boot user_qspi user_sspi user_i2cm user_usb user_gpio user_basic user_aes user_spi_isp user_timer user_uart_master  user_sram_exec user_cache_bypass user_pwm user_sema risc_boot uart_master_test1 uart_master_test2 wb_port arduino_arrays arduino_digital_port_control arduino_i2c_scaner arduino_risc_boot arduino_timer_intr arduino_ascii_table arduino_gpio_intr arduino_i2c_wr_rd arduino_string arduino_ws281x arduino_character_analysis arduino_hello_world arduino_multi_serial arduino_switchCase2 user_aes_core user_fpu_core
 
 all:  ${PATTERNS}
 	echo "################# RTL Test case Summary #####################" > regression.rpt
 	xterm -e /usr/bin/watch -n 25 /bin/cat regression.rpt & 
-	for i in ${PATTERNS}; do \
-		( cd $$i && make | tee run.rtl.log && grep Monitor run.rtl.log | grep $$i >> ../regression.rpt) ; \
-	done
-	#echo "################# GL Test case Summary #####################" >> regression.rpt
-	#\rm -rf */*.vvp
 	#for i in ${PATTERNS}; do \
-	#	( cd $$i && make SIM=GL | tee run.gl.log && grep Monitor run.gl.log | grep $$i >> ../regression.rpt) ; \
+	#	( cd $$i && make | tee run.rtl.log && grep Monitor run.rtl.log | grep $$i >> ../regression.rpt) ; \
 	#done
+	echo "################# GL Test case Summary #####################" >> regression.rpt
+	\rm -rf */*.vvp
+	for i in ${PATTERNS}; do \
+		( cd $$i && make SIM=GL | tee run.gl.log && grep Monitor run.gl.log | grep $$i >> ../regression.rpt) ; \
+	done
 	echo "################# End of Test case Summary #####################" >> regression.rpt
 
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))

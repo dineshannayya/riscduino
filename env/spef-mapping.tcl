@@ -8,5 +8,6 @@ set spef_mapping(mprj/u_qspi_master) "$::env(PROJECT_ROOT)/signoff/qspim_top/ope
 set spef_mapping(mprj/\u_riscv_top.i_core_top_0) "$::env(PROJECT_ROOT)/signoff/ycr_core_top/openlane-signoff/spef/ycr_core_top.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/\u_riscv_top.u_connect) "$::env(PROJECT_ROOT)/signoff/ycr_iconnect/openlane-signoff/spef/ycr_iconnect.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/\u_riscv_top.u_intf) "$::env(PROJECT_ROOT)/signoff/ycr_intf/openlane-signoff/spef/ycr_intf.$::env(RCX_CORNER).spef"
+set spef_mapping(mprj/u_rp_south) "$::env(PROJECT_ROOT)/signoff/bus_rep_south/openlane-signoff/spef/bus_rep_south.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_uart_i2c_usb_spi) "$::env(PROJECT_ROOT)/signoff/uart_i2c_usb_spi_top/openlane-signoff/spef/uart_i2c_usb_spi_top.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_wb_host) "$::env(PROJECT_ROOT)/signoff/wb_host/openlane-signoff/spef/wb_host.$::env(RCX_CORNER).spef"

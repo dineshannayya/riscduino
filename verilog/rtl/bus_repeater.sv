@@ -274,8 +274,8 @@ bus_rep_south  #(
 `endif
       ) u_rp_south(
 `ifdef USE_POWER_PINS
-    .vccd1                 (vdda1                  ),
-    .vssd1                 (vssa1                  ),
+    .vccd1                 (vccd1                  ),
+    .vssd1                 (vssd1                  ),
 `endif
     .ch_in (ch_in_south),
     .ch_out (ch_out_south)
