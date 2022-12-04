@@ -298,6 +298,9 @@
 ////    6.1  Nov 28, 2022, Dinesh A                               ////
 ////        Power Hook up connectivity issue for                  ////
 ////        aes,fpu,bus repeater is fixed                         ////
+////    6.2  Dec 4, 2022, Dinesh A                                ////
+////         Bus repeater north/south/east/west added for better  ////
+////         global buffering                                     ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -880,7 +883,7 @@ wire [3:0]   cfg_ccska_riscv_core3  = cfg_clk_skew_ctrl2[23:20];
 assign       cfg_ccska_aes          = cfg_clk_skew_ctrl2[27:24];
 assign       cfg_ccska_fpu          = cfg_clk_skew_ctrl2[31:28];
 
-assign la_data_out[127:0]    = {pinmux_debug,spi_debug,riscv_debug};
+wire [127:0] la_data_out_int    = {pinmux_debug,spi_debug,riscv_debug};
 
 wire   int_pll_clock       = pll_clk_out[0];
 
@@ -894,6 +897,13 @@ wire       cpu_clk_rp_aes    = cpu_clk_rp[6];
 wire       cpu_clk_rp_fpu    = cpu_clk_rp[7];
 wire       cpu_clk_rp_pinmux = cpu_clk_rp[8];
 
+//----------------------------------------------------------
+// Bus Repeater Initiatiation
+//----------------------------------------------------------
+wire  [37:0]                io_in_rp           ;
+wire  [37:0]                io_out_int         ;
+wire  [37:0]                io_oeb_int         ;
+wire                        user_clock2_rp     ;
 
 `include "bus_repeater.sv"
 
@@ -906,8 +916,8 @@ wb_host u_wb_host(
           .vccd1                   (vccd1                   ),// User area 1 1.8V supply
           .vssd1                   (vssd1                   ),// User area 1 digital ground
 `endif
-          .user_clock1             (wb_clk_int_i            ),
-          .user_clock2             (user_clock2             ),
+          .user_clock1             (wb_clk_i_rp             ),
+          .user_clock2             (user_clock2_rp          ),
           .int_pll_clock           (int_pll_clock           ),
 
           .cpu_clk                 (cpu_clk                 ),
@@ -926,14 +936,14 @@ wb_host u_wb_host(
           .wbd_pll_rst_n           (wbd_pll_rst_n           ),
 
     // Master Port
-          .wbm_rst_i               (wb_rst_int_i            ),  
-          .wbm_clk_i               (wb_clk_int_i            ),  
-          .wbm_cyc_i               (wbs_cyc_int_i           ),  
-          .wbm_stb_i               (wbs_stb_int_i           ),  
-          .wbm_adr_i               (wbs_adr_int_i           ),  
-          .wbm_we_i                (wbs_we_int_i            ),  
-          .wbm_dat_i               (wbs_dat_int_i           ),  
-          .wbm_sel_i               (wbs_sel_int_i           ),  
+          .wbm_rst_i               (wb_rst_i_rp             ),  
+          .wbm_clk_i               (wb_clk_i_rp             ),  
+          .wbm_cyc_i               (wbs_cyc_i_rp            ),  
+          .wbm_stb_i               (wbs_stb_i_rp            ),  
+          .wbm_adr_i               (wbs_adr_i_rp            ),  
+          .wbm_we_i                (wbs_we_i_rp             ),  
+          .wbm_dat_i               (wbs_dat_i_rp            ),  
+          .wbm_sel_i               (wbs_sel_i_rp            ),  
           .wbm_dat_o               (wbs_dat_int_o           ),  
           .wbm_ack_o               (wbs_ack_int_o           ),  
           .wbm_err_o               (                        ),  
@@ -1614,8 +1624,8 @@ pinmux_top u_pinmux(
           .strap_sticky            (strap_sticky            ),
 	      .strap_uartm             (strap_uartm             ),
 
-          .user_clock1             (wb_clk_int_i            ),
-          .user_clock2             (user_clock2             ),
+          .user_clock1             (wb_clk_i_rp             ),
+          .user_clock2             (user_clock2_rp          ),
           .int_pll_clock           (int_pll_clock           ),
           .xtal_clk                (xtal_clk                ),
           .cpu_clk                 (cpu_clk_rp_pinmux       ),
@@ -1654,9 +1664,9 @@ pinmux_top u_pinmux(
           .i2cm_intr               (i2cm_intr_o             ),
 
        // Digital IO
-          .digital_io_out          (io_out                  ),
-          .digital_io_oen          (io_oeb                  ),
-          .digital_io_in           (io_in                   ),
+          .digital_io_out          (io_out_int              ),
+          .digital_io_oen          (io_oeb_int              ),
+          .digital_io_in           (io_in_rp                ),
 
        // SFLASH I/F
           .sflash_sck              (sflash_sck              ),

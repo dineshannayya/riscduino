@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 package require openlane; # provides the utils as well
-
 proc run_placement_step {args} {
     if { ! [ info exists ::env(PLACEMENT_CURRENT_DEF) ] } {
         set ::env(PLACEMENT_CURRENT_DEF) $::env(CURRENT_DEF)
@@ -33,6 +32,9 @@ proc run_cts_step {args} {
 
     run_cts
     run_resizer_timing
+    if { $::env(RSZ_USE_OLD_REMOVER) == 1} {
+        remove_buffers_from_nets
+    }
 }
 
 proc run_routing_step {args} {
@@ -118,6 +120,12 @@ proc run_antenna_check_step {{ antenna_check_enabled 1 }} {
     }
 }
 
+proc run_erc_step {args} {
+    if { $::env(RUN_CVC) } {
+        run_erc
+    }
+}
+
 proc run_eco_step {args} {
     if { $::env(ECO_ENABLE) == 1 } {
         run_eco_flow
@@ -142,88 +150,71 @@ proc run_klayout_step {args} {
 proc run_post_run_hooks {} {
     if { [file exists $::env(DESIGN_DIR)/hooks/post_run.py]} {
         puts_info "Running post run hook"
-        set result [exec $::env(OPENROAD_BIN) -python $::env(DESIGN_DIR)/hooks/post_run.py]
+        set result [exec $::env(OPENROAD_BIN) -exit -no_init -python $::env(DESIGN_DIR)/hooks/post_run.py]
         puts_info "$result"
     } else {
         puts_info "hooks/post_run.py not found, skipping"
     }
 }
 
-proc run_magic_drc_batch {args} {
-    set options {
-        {-magicrc optional}
-        {-tech optional}
-        {-report required}
-        {-design required}
-        {-gds required}
-    }
-    set flags {}
-    parse_key_args "run_magic_drc_batch" args arg_values $options flags_mag $flags
-    if { [info exists arg_values(-magicrc)] } {
-        set magicrc [file normalize $arg_values(-magicrc)]
-    }
-    if { [info exists arg_values(-tech)] } {
-        set ::env(TECH) [file normalize $arg_values(-tech)]
-    }
-    set ::env(GDS_INPUT) [file normalize $arg_values(-gds)]
-    set ::env(REPORT_OUTPUT) [file normalize $arg_values(-report)]
-    set ::env(DESIGN_NAME) $arg_values(-design)
+proc run_floorplan {args} {
+    # |----------------------------------------------------|
+    # |----------------   2. FLOORPLAN   ------------------|
+    # |----------------------------------------------------|
+    #
+    # intial fp
+    init_floorplan
 
-    if { [info exists magicrc] } {
-        exec magic \
-            -noconsole \
-            -dnull \
-            -rcfile $magicrc \
-            $::env(OPENLANE_ROOT)/scripts/magic/drc_batch.tcl \
-            </dev/null |& tee /dev/tty
+    # check for deprecated io variables
+    if { [info exists ::env(FP_IO_HMETAL)]} {
+        set ::env(FP_IO_HLAYER) [lindex $::env(TECH_METAL_LAYERS) [expr {$::env(FP_IO_HMETAL) - 1}]]
+        puts_warn "You're using FP_IO_HMETAL in your configuration, which is a deprecated variable that will be removed in the future."
+        puts_warn "We recommend you update your configuration as follows:"
+        puts_warn "\tset ::env(FP_IO_HLAYER) {$::env(FP_IO_HLAYER)}"
+    }
+
+    if { [info exists ::env(FP_IO_VMETAL)]} {
+        set ::env(FP_IO_VLAYER) [lindex $::env(TECH_METAL_LAYERS) [expr {$::env(FP_IO_VMETAL) - 1}]]
+        puts_warn "You're using FP_IO_VMETAL in your configuration, which is a deprecated variable that will be removed in the future."
+        puts_warn "We recommend you update your configuration as follows:"
+        puts_warn "\tset ::env(FP_IO_VLAYER) {$::env(FP_IO_VLAYER)}"
+    }
+
+
+    # place io
+    if { [info exists ::env(FP_PIN_ORDER_CFG)] } {
+        place_io_ol
     } else {
-        exec magic \
-            -noconsole \
-            -dnull \
-            $::env(OPENLANE_ROOT)/scripts/magic/drc_batch.tcl \
-            </dev/null |& tee /dev/tty
-    }
-}
-
-proc run_lvs_batch {args} {
-    # runs device level lvs on -gds/CURRENT_GDS and -net/CURRENT_NETLIST
-    # extracts gds only if EXT_NETLIST does not exist
-    set options {
-        {-design required}
-        {-gds optional}
-        {-net optional}
-    }
-    set flags {}
-    parse_key_args "run_lvs_batch" args arg_values $options flags_lvs $flags -no_consume
-
-    prep {*}$args
-
-    if { [info exists arg_values(-gds)] } {
-        set ::env(CURRENT_GDS) [file normalize $arg_values(-gds)]
-    } else {
-        set ::env(CURRENT_GDS) $::env(signoff_results)/$::env(DESIGN_NAME).gds
-    }
-    if { [info exists arg_values(-net)] } {
-        set ::env(CURRENT_NETLIST) [file normalize $arg_values(-net)]
+        if { [info exists ::env(FP_CONTEXT_DEF)] && [info exists ::env(FP_CONTEXT_LEF)] } {
+            place_io
+            global_placement_or
+            place_contextualized_io \
+                -lef $::env(FP_CONTEXT_LEF) \
+                -def $::env(FP_CONTEXT_DEF)
+        } else {
+            place_io
+        }
     }
 
-    assert_files_exist "$::env(CURRENT_GDS) $::env(CURRENT_NETLIST)"
+    apply_def_template
 
-    set ::env(MAGIC_EXT_USE_GDS) 1
-    set ::env(EXT_NETLIST) $::env(signoff_results)/$::env(DESIGN_NAME).gds.spice
-    if { [file exists $::env(EXT_NETLIST)] } {
-        puts_warn "The file $::env(EXT_NETLIST) will be used. If you would like the file re-exported, please delete it."
-    } else {
-        run_magic_spice_export
+    #if { [info exist ::env(EXTRA_LEFS)] } {
+        if { [info exist ::env(MACRO_PLACEMENT_CFG)] } {
+            file copy -force $::env(MACRO_PLACEMENT_CFG) $::env(placement_tmpfiles)/macro_placement.cfg
+            manual_macro_placement -f
+        } else {
+        #    global_placement_or
+        #    basic_macro_placement
+        }
+    #}
+
+    if { $::env(RUN_TAP_DECAP_INSERTION) } {
+        tap_decap_or
     }
 
-    run_lvs
-}
+    scrot_klayout -layout $::env(CURRENT_DEF) -log $::env(floorplan_logs)/screenshot.log
 
-
-proc run_file {args} {
-    set ::env(TCLLIBPATH) $::auto_path
-    exec tclsh {*}$args >&@stdout
+    run_power_grid_generation
 }
 
 
@@ -281,18 +272,9 @@ proc run_flow {args} {
     } else {
         set ::env(CURRENT_STEP) "synthesis"
     }
-    #Dinesh-A: Addition for LAST_STEP
-    if { [info exists arg_values(-to) ]} {
-        puts_info "Last flow Will be at $arg_values(-to)..."
-        set ::env(LAST_STEP) $arg_values(-to)
-    } elseif {  [info exists ::env(LAST_STEP) ] } {
-        puts_info "Last flow Will be at $::env(LAST_STEP)..."
-    } else {
-        set ::env(LAST_STEP) "cvc"
-    }
 
     set_if_unset arg_values(-from) $::env(CURRENT_STEP)
-    set_if_unset arg_values(-to)   $::env(LAST_STEP)
+    set_if_unset arg_values(-to) "cvc"
 
     set exe 0;
     dict for {step_name step_exe} $steps {

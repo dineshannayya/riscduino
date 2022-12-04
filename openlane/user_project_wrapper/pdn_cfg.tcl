@@ -167,15 +167,29 @@ add_pdn_connect \
     -layers "$::env(FP_PDN_LOWER_LAYER) $::env(FP_PDN_UPPER_LAYER)"
 
 ##################################
-# u_rp_south Power Hook Up
+# u_rp_North & u_rp_south Power Hook Up
 #  Power connect met-3 to met-4
 ##################################
 
 define_pdn_grid \
     -macro \
     -name macro_2 \
-    -instances "u_rp_south" \
+    -instances "u_rp_south u_rp_north" \
     -starts_with POWER \
     -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
 
 add_pdn_connect -grid macro_2 -layers "met3 met4"
+
+##################################
+# u_rp_east Power Hook Up
+#  Power connect met-3 to met-5
+##################################
+
+define_pdn_grid \
+    -macro \
+    -name macro_3 \
+    -instances "u_rp_east u_rp_west" \
+    -starts_with POWER \
+    -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
+
+add_pdn_connect -grid macro_3 -layers "met3 met5"

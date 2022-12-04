@@ -49,7 +49,7 @@ set ::env(VERILOG_FILES) "\
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(SYNTH_PARAMETERS) "BUS_REP_WD=124 "
+set ::env(SYNTH_PARAMETERS) "BUS_REP_WD=253 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 #set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
@@ -65,9 +65,10 @@ set ::env(GND_PIN) [list {vssd1}]
 # -------------
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
+set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 2030 50"
+set ::env(DIE_AREA) "0 0 2650 50"
 
 #set ::env(GRT_OBS) "met4  0 0 300 1725"
 
@@ -81,6 +82,7 @@ set ::env(RUN_CVC) 0
 set ::env(PL_TIME_DRIVEN) 1
 set ::env(PL_TARGET_DENSITY) "0.20"
 set ::env(CELL_PAD) "8"
+set ::env(GRT_ADJUSTMENT) 0.2
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
@@ -96,7 +98,7 @@ set ::env(CLOCK_TREE_SYNTH) {0}
 set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_TIMING_OPTIMIZATIONS) 0
 set ::env(PL_RESIZER_BUFFER_INPUT_PORTS) "0"
-set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "1"
+set ::env(PL_RESIZER_BUFFER_OUTPUT_PORTS) "0"
 
 ## Routing
 set ::env(GLB_RESIZER_TIMING_OPTIMIZATIONS) "0"
@@ -116,6 +118,11 @@ set ::env(FP_IO_VLAYER) {met1}
 set ::env(MAGIC_GENERATE_LEF) {1}
 set ::env(MAGIC_WRITE_FULL_LEF) {0}
 
+## Placement
+set ::env(PL_RESIZER_DESIGN_OPTIMIZATIONS) 1
+set ::env(PL_RESIZER_MAX_CAP_MARGIN) 2
+set ::env(PL_RESIZER_MAX_WIRE_LENGTH) "600"
+set ::env(PL_RESIZER_MAX_SLEW_MARGIN) "2.0"
 
 set ::env(ECO_ENABLE) {0}
 #set ::env(CURRENT_STEP) "synthesis"

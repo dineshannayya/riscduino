@@ -31,7 +31,21 @@ module bus_rep_south #(
       );
 
 // channel repeater
+
+`ifndef SYNTHESIS
+
 assign ch_out = ch_in;
+
+`else
+
+ genvar i;
+ generate
+	for (i = 0; i < BUS_REP_WD; i = i + 1) begin : u_rp
+       sky130_fd_sc_hd__clkbuf_4 u_buf ( .A(ch_in[i]), .X(ch_out[i]));
+    end
+ endgenerate
+
+`endif
 
 
 endmodule

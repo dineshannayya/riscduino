@@ -168,3 +168,6 @@ $(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/top/aes_reg.sv
 
 -v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/dg_pll.v
 -v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_south.sv
+-v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_north.sv
+-v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_east.sv
+-v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_west.sv

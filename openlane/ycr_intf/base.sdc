@@ -2,6 +2,7 @@
 # Timing Constraints
 ###############################################################################
 create_clock -name core_clk -period 10.0000 [get_ports {core_clk}]
+create_clock -name rtc_clk -period 40.0000 [get_ports {rtc_clk}]
 create_clock -name wb_clk -period 10.0000 [get_ports {wb_clk}]
 
 create_generated_clock -name dcache_mem_clk0 -add -source [get_ports {core_clk}] -master_clock [get_clocks core_clk] -divide_by 1 -comment {dcache mem clock0} [get_ports dcache_mem_clk0]
@@ -20,6 +21,7 @@ set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
 set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {core_clk dcache_mem_clk0 dcache_mem_clk1 icache_mem_clk0 icache_mem_clk1}]\
+ -group [get_clocks {rtc_clk}]\
  -group [get_clocks {wb_clk}] -comment {Async Clock group}
 
 # Set case analysis

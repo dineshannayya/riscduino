@@ -143,6 +143,14 @@ pullup(mprj_io[3]);
 
 	initial begin
 
+		$display("################# NOTE:#####################################");
+        $display("This test assumes Caravel GPIO are pre-programmed with user_define.v value");
+        $display("If you see RTL simulation fails, cross check mgmt_core_wrapper/verilog/includes/includes.rtl.caravel ");
+        $display("    From: -v $(CARAVEL_PATH)/rtl/user_defines.v       ");
+        $display("    To:   -v $(USER_PROJECT_VERILOG)/rtl/user_defines.v ");
+        $display("    Gate Sim expect to fail as caravel gate netlist have not generated based on user_define.v in user project");
+		$display("#####################################################################################");
+        
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (80) begin
 			repeat (2000) @(posedge clock);

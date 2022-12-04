@@ -219,6 +219,23 @@ begin
    test_fail=0;
    fork
    begin
+       $display("##########################################################");
+       $display("Step-0,Monitor: Checking the chip signature :");
+       $display("###################################################");
+       test_id = 0;
+       test_step = 0;
+       // Remove Wb/PinMux Reset
+       wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+
+       wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,CHIP_SIGNATURE);
+       wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,CHIP_RELEASE_DATE);
+       wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,CHIP_REVISION);
+       if(test_fail == 1) begin
+          $display("ERROR: Step-0,Monitor: Checking the chip signature - FAILED");
+       end else begin
+          $display("STATUS: Step-0,Monitor: Checking the chip signature - PASSED");
+          $display("##########################################################");
+       end
 
        $display("##########################################################");
        $display("Step-1, Checking the Strap Loading");
@@ -510,25 +527,6 @@ begin
            $display("STATUS: Step-10,Monitor: Ananlog Config check - PASSED");
 
         $display("##########################################################");
-
-          end
-       $display("##########################################################");
-       $display("Step-11,Monitor: Checking the chip signature :");
-       $display("###################################################");
-       test_id = 11;
-        test_step = 14;
-        // Remove Wb/PinMux Reset
-        wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
-
-         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_0,read_data,CHIP_SIGNATURE);
-         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_1,read_data,CHIP_RELEASE_DATE);
-         wb_user_core_read_check(`ADDR_SPACE_GLBL+`GLBL_CFG_SOFT_REG_2,read_data,CHIP_REVISION);
-         if(test_fail == 1) begin
-            $display("ERROR: Step-11,Monitor: Checking the chip signature - FAILED");
-         end else begin
-            $display("STATUS: Step-11,Monitor: Checking the chip signature - PASSED");
-
-         $display("##########################################################");
 
           end
       end
