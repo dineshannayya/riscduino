@@ -24,14 +24,14 @@ PATTERNS = user_uart user_uart1 user_risc_boot user_qspi user_sspi user_i2cm use
 all:  ${PATTERNS}
 	echo "################# RTL Test case Summary #####################" > regression.rpt
 	xterm -e /usr/bin/watch -n 25 /bin/cat regression.rpt & 
-	#for i in ${PATTERNS}; do \
-	#	( cd $$i && make | tee run.rtl.log && grep Monitor run.rtl.log | grep $$i >> ../regression.rpt) ; \
-	#done
-	#echo "################# GL Test case Summary #####################" >> regression.rpt
-	\rm -rf */*.vvp
 	for i in ${PATTERNS}; do \
-		( cd $$i && make SIM=GL | tee run.gl.log && grep Monitor run.gl.log | grep $$i >> ../regression.rpt) ; \
+		( cd $$i && make | tee run.rtl.log && grep Monitor run.rtl.log | grep $$i >> ../regression.rpt) ; \
 	done
+	#echo "################# GL Test case Summary #####################" >> regression.rpt
+	#\rm -rf */*.vvp
+	#for i in ${PATTERNS}; do \
+	#	( cd $$i && make SIM=GL | tee run.gl.log && grep Monitor run.gl.log | grep $$i >> ../regression.rpt) ; \
+	#done
 	echo "################# End of Test case Summary #####################" >> regression.rpt
 
 DV_PATTERNS = $(foreach dv, $(PATTERNS), verify-$(dv))

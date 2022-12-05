@@ -129,6 +129,17 @@ module i2cm_top(
 	wire i2c_al;      // i2c bus arbitration lost
 	reg  al;          // status register arbitration lost bit
 
+//###################################
+// Application Reset Synchronization
+//###################################
+wire aresetn_ss;
+reset_sync  u_app_rst (
+	      .scan_mode  (1'b0           ),
+          .dclk       (wb_clk_i       ), // Destination clock domain
+	      .arst_n     (aresetn        ), // active low async reset
+          .srst_n     (aresetn_ss     )
+          );
+
 	//
 	// module body
 	//
@@ -157,8 +168,8 @@ module i2cm_top(
 	end
 
 	// generate registers
-	always @(posedge wb_clk_i or negedge aresetn)
-	  if (!aresetn)
+	always @(posedge wb_clk_i or negedge aresetn_ss)
+	  if (!aresetn_ss)
 	    begin
 	        prer <= #1 16'hffff;
 	        ctr  <= #1  8'h0;
@@ -181,8 +192,8 @@ module i2cm_top(
 	      endcase
 
 	// generate command register (special case)
-	always @(posedge wb_clk_i or negedge aresetn)
-	  if (!aresetn)
+	always @(posedge wb_clk_i or negedge aresetn_ss)
+	  if (!aresetn_ss)
 	    cr <= #1 8'h0;
 	  else if (!sresetn)
 	    cr <= #1 8'h0;
@@ -217,7 +228,7 @@ module i2cm_top(
 	i2cm_byte_ctrl u_byte_ctrl (
 		.clk          ( wb_clk_i     ),
 		.sresetn      ( sresetn      ),
-		.aresetn      ( aresetn      ),
+		.aresetn      ( aresetn_ss   ),
 		.ena          ( core_en      ),
 		.clk_cnt      ( prer         ),
 		.start        ( sta          ),
@@ -241,8 +252,8 @@ module i2cm_top(
 	);
 
 	// status register block + interrupt request signal
-	always @(posedge wb_clk_i or negedge aresetn)
-	  if (!aresetn)
+	always @(posedge wb_clk_i or negedge aresetn_ss)
+	  if (!aresetn_ss)
 	    begin
 	        al       <= #1 1'b0;
 	        rxack    <= #1 1'b0;
@@ -265,8 +276,8 @@ module i2cm_top(
 	    end
 
 	// generate interrupt request signals
-	always @(posedge wb_clk_i or negedge aresetn)
-	  if (!aresetn)
+	always @(posedge wb_clk_i or negedge aresetn_ss)
+	  if (!aresetn_ss)
 	    wb_inta_o <= #1 1'b0;
 	  else if (!sresetn)
 	    wb_inta_o <= #1 1'b0;

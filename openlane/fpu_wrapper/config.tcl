@@ -30,6 +30,7 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "mclk"
 
 set ::env(SYNTH_MAX_FANOUT) 4
+set ::env(SYNTH_BUFFERING) {0}
 
 ## CTS BUFFER
 set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"
@@ -88,8 +89,8 @@ set ::env(RUN_CVC) 0
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"
 
-#set ::env(FP_IO_VEXTEND) 4
-#set ::env(FP_IO_HEXTEND) 4
+set ::env(FP_IO_VEXTEND) 2
+set ::env(FP_IO_HEXTEND) 2
 
 set ::env(FP_PDN_VPITCH) 100
 set ::env(FP_PDN_HPITCH) 100

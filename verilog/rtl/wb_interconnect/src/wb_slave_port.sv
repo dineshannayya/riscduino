@@ -238,10 +238,10 @@ wb_arb	u_wb_arb(
 // Generate Multiplexed Master Interface based on grant
 always_comb begin
      case(gnt)
-        3'h0:	   m_bus_wr = m0_wb_wr;
-        3'h1:	   m_bus_wr = m1_wb_wr;
-        3'h2:	   m_bus_wr = m2_wb_wr;
-        3'h3:	   m_bus_wr = m3_wb_wr;
+        2'h0:	   m_bus_wr = m0_wb_wr;
+        2'h1:	   m_bus_wr = m1_wb_wr;
+        2'h2:	   m_bus_wr = m2_wb_wr;
+        2'h3:	   m_bus_wr = m3_wb_wr;
         default:   m_bus_wr = m0_wb_wr;
      endcase			
 end

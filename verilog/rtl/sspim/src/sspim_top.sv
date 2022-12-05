@@ -139,10 +139,23 @@ logic                sck_active                    ;
 logic                cs_int_n                      ;
 logic                load_byte                     ;
 
+
+//###################################
+// Application Reset Synchronization
+//###################################
+wire reset_ssn;
+reset_sync  u_app_rst (
+	      .scan_mode  (1'b0           ),
+          .dclk       (clk            ), // Destination clock domain
+	      .arst_n     (reset_n        ), // active low async reset
+          .srst_n     (reset_ssn      )
+          );
+
+
 sspim_if  u_spi_if
           (
           . clk                         (clk                          ), 
-          . reset_n                     (reset_n                      ),
+          . reset_n                     (reset_ssn                    ),
 
           // cfg
           . cfg_bit_order               (cfg_bit_order                ),
@@ -170,7 +183,7 @@ sspim_if  u_spi_if
 sspim_clkgen u_clkgen
        ( 
           . clk                         (clk                          ), 
-          . reset_n                     (reset_n                      ),
+          . reset_n                     (reset_ssn                    ),
 
           // cfg
           . cfg_cpol                    (cfg_cpol                     ),    
@@ -192,7 +205,7 @@ sspim_clkgen u_clkgen
 sspim_ctl  u_spi_ctrl
        ( 
           . clk                         (clk                          ),
-          . reset_n                     (reset_n                      ),
+          . reset_n                     (reset_ssn                    ),
 
           // cfg
           . cfg_cpol                    (cfg_cpol                     ),    
@@ -222,7 +235,7 @@ sspim_ctl  u_spi_ctrl
 sspim_cfg u_cfg (
 
           . mclk                        (clk                          ),
-          . reset_n                     (reset_n                      ),
+          . reset_n                     (reset_ssn                    ),
 
         // Reg Bus Interface Signal
           . reg_cs                      (reg_cs                       ),

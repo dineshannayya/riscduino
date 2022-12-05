@@ -140,8 +140,9 @@ set ::env(RUN_IRDROP_REPORT) "1"
 
 set ::env(FP_PDN_ENABLE_MACROS_GRID) {1}
 set ::env(FP_PDN_ENABLE_GLOBAL_CONNECTIONS) "0"
+set ::env(FP_PDN_CHECK_NODES) 1
 set ::env(FP_PDN_ENABLE_RAILS) 0
-set ::env(FP_PDN_IRDROP) "0"
+set ::env(FP_PDN_IRDROP) "1"
 set ::env(FP_PDN_HORIZONTAL_HALO) "10"
 set ::env(FP_PDN_VERTICAL_HALO) "10"
 set ::env(FP_PDN_VOFFSET) "5"
@@ -222,4 +223,6 @@ set ::env(QUIT_ON_NEGATIVE_WNS) "0"
 set ::env(QUIT_ON_SLEW_VIOLATIONS) "0"
 set ::env(QUIT_ON_TIMING_VIOLATIONS) "0"
 
+## Temp Masked due to long Run Time
+set ::env(RUN_KLAYOUT_XOR) {0}
 
