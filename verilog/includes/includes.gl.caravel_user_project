@@ -1,5 +1,5 @@
 # Caravel user project includes
-+define+UNIT_DELAY=#0.1
++define+UNIT_DELAY=#0.2
 +incdir+$(USER_PROJECT_VERILOG)/rtl/
 +incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes

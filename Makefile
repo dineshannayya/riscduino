@@ -110,7 +110,7 @@ install:
 # Install DV setup
 .PHONY: simenv
 simenv:
-	docker pull riscduino/dv_setup:mpw6
+	docker pull riscduino/dv_setup:mpw7
 
 .PHONY: setup
 setup: install check-env install_mcw openlane pdk-with-volare setup-timing-scripts
@@ -132,7 +132,7 @@ $(DV_PATTERNS): verify-% : ./verilog/dv/%  check-coremark_repo check-riscv_comp_
 		-e TOOLS=/opt/riscv32i \
 		-e DESIGNS=$(TARGET_PATH) \
 		-e GCC_PREFIX=riscv32-unknown-elf \
-		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:mpw6 \
+		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:mpw7 \
 		sh -c $(verify_command)
 
 
@@ -247,18 +247,18 @@ check-riscv_test_repo:
 	fi
 
 zip:
-	gzip -f lef/*
-	gzip -f gds/*
-	gzip -f spef/*
-	gzip -f spi/lvs/*
-	gzip -f verilog/gl/*
+	gzip -f -r lef/*
+	gzip -f -r gds/*
+	gzip -f -r spef/*
+	gzip -f -r spi/lvs/*
+	gzip -f -r verilog/gl/*
 
 unzip:
-	gzip -d lef/*
-	gzip -d gds/*
-	gzip -d spef/*
-	gzip -d spi/lvs/*
-	gzip -d verilog/gl/*
+	gzip -d -r lef/*
+	gzip -d -r gds/*
+	gzip -d -r spef/*
+	gzip -d -r spi/lvs/*
+	gzip -d -r verilog/gl/*
 
 .PHONY: help
 help:

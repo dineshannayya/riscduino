@@ -72,7 +72,7 @@
 
 `default_nettype wire
 
-`timescale 1 ns / 1 ns
+`timescale 1 ns / 10 ps
 
 `include "sram_macros/sky130_sram_2kbyte_1rw1r_32x512_8.v"
 
@@ -92,7 +92,10 @@ parameter real XTAL_PERIOD = 6;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(3, `TB_TOP);
+	   	$dumpvars(1, `TB_TOP);
+	   	$dumpvars(1, `TB_TOP.u_top.u_wb_host);
+	   	$dumpvars(1, `TB_TOP.u_top.u_pinmux);
+	   	$dumpvars(1, `TB_TOP.u_top);
 	   end
        `endif
 
