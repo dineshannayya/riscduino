@@ -171,3 +171,10 @@ $(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/top/aes_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_north.sv
 -v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_east.sv
 -v $(USER_PROJECT_VERILOG)/rtl/bus_rep/bus_rep_west.sv
+
+-v $(USER_PROJECT_VERILOG)/rtl/peripheral/src/peri_top.sv
+
+$(USER_PROJECT_VERILOG)/rtl/rtc/verilog/rtl/core/rtc_top.sv
+$(USER_PROJECT_VERILOG)/rtl/rtc/verilog/rtl/core/rtc_core.sv
+$(USER_PROJECT_VERILOG)/rtl/rtc/verilog/rtl/core/rtc_reg.sv
+

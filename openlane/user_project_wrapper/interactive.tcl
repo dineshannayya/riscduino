@@ -258,7 +258,7 @@ proc run_flow {args} {
     set steps [dict create \
         "synthesis" "run_synthesis" \
         "floorplan" "run_floorplan" \
-        "placement" "run_placement_step"\
+        "placement" "run_placement_step" \
         "cts" "run_cts_step" \
         "routing" "run_routing_step" \
         "parasitics_sta" "run_parasitics_sta_step" \

@@ -19,7 +19,8 @@
 //               Bus Repater                                        //
 //////////////////////////////////////////////////////////////////////
 module bus_rep_north #(
-	parameter BUS_REP_WD = 7
+	parameter BUS_REP_WD = 7,
+	parameter BUS_BUF_WD = 42
         ) (
 `ifdef USE_POWER_PINS
          input logic            vccd1,    // User area 1 1.8V supply
@@ -27,7 +28,10 @@ module bus_rep_north #(
 `endif
 	 // Bus repeaters
 	 input  [BUS_REP_WD-1:0]  ch_in,
-	 output [BUS_REP_WD-1:0] ch_out
+	 output [BUS_REP_WD-1:0]  ch_out,
+     // Bus Buffering 
+	 input  [BUS_BUF_WD-1:0]  buf_in,
+	 output [BUS_BUF_WD-1:0]  buf_out
       );
 
 // channel repeater
@@ -35,6 +39,7 @@ module bus_rep_north #(
 `ifndef SYNTHESIS
 
 assign ch_out = ch_in;
+assign buf_out = buf_in;
 
 `else
 
@@ -44,6 +49,8 @@ assign ch_out = ch_in;
        sky130_fd_sc_hd__clkbuf_4 u_buf ( .A(ch_in[i]), .X(ch_out[i]));
     end
  endgenerate
+
+assign buf_out = buf_in;
 
 `endif
 

@@ -119,7 +119,7 @@ module pinmux_top (
 		       // Reg Bus Interface Signal
                        input logic             reg_cs,
                        input logic             reg_wr,
-                       input logic [9:0]       reg_addr,
+                       input logic [10:0]      reg_addr,
                        input logic [31:0]      reg_wdata,
                        input logic [3:0]       reg_be,
 
@@ -198,13 +198,19 @@ module pinmux_top (
                output logic[25:0]      cfg_dc_trim        , // External trim for DCO mode
                output logic            pll_ref_clk        , // Input oscillator to match
 
-               
-               // DAC Config
-               output logic [7:0]    cfg_dac0_mux_sel     ,
-               output logic [7:0]    cfg_dac1_mux_sel     ,
-               output logic [7:0]    cfg_dac2_mux_sel     ,
-               output logic [7:0]    cfg_dac3_mux_sel     
+		       // Peripheral Reg Bus Interface Signal
+               output logic             reg_peri_cs,
+               output logic             reg_peri_wr,
+               output logic [10:0]      reg_peri_addr,
+               output logic [31:0]      reg_peri_wdata,
+               output logic [3:0]       reg_peri_be,
 
+               // Input
+               input logic [31:0]       reg_peri_rdata,
+               input logic              reg_peri_ack,
+
+               input logic              rtc_intr
+               
    ); 
 
 
@@ -258,17 +264,6 @@ logic [3:0]     ws_txd        ; // ws281x txd port
 
 assign      pinmux_debug = '0; // Todo: Need to fix
 
-//------------------------------------------------------
-// Register Map Decoding
-
-`define SEL_GLBL    3'b000   // GLOBAL REGISTER
-`define SEL_GPIO    3'b001   // GPIO REGISTER
-`define SEL_PWM     3'b010   // PWM REGISTER
-`define SEL_TIMER   3'b011   // TIMER REGISTER
-`define SEL_SEMA    3'b100   // SEMAPHORE REGISTER
-`define SEL_WS      3'b101   // WS281x  REGISTER
-`define SEL_D2A     3'b110   // Digital2Analog  REGISTER
-
 
 //----------------------------------------
 //  Register Response Path Mux
@@ -295,6 +290,15 @@ logic [31:0]  reg_d2a_rdata;
 logic         reg_d2a_ack;
 
 logic [7:0]   pwm_gpio_in;
+
+logic         reg_glbl_cs ;
+logic         reg_gpio_cs ;
+logic         reg_pwm_cs  ;
+logic         reg_timer_cs;
+logic         reg_sema_cs ;
+logic         reg_ws_cs   ;
+
+
 
 
 //---------------------------------------------------------------------
@@ -389,6 +393,7 @@ glbl_reg u_glbl_reg(
           .usb_intr                     (usb_intr                ),
           .i2cm_intr                    (i2cm_intr               ),
           .pwm_intr                     (pwm_intr                ),
+          .rtc_intr                     (rtc_intr                ),
 
 
 
@@ -611,38 +616,11 @@ pinmux u_pinmux (
 
    ); 
 
-//-----------------------------------------------------------------------
-// Digital To Analog Register
-//-----------------------------------------------------------------------
-dig2ana_reg  u_d2a(
-              // System Signals
-              // Inputs
-		      .mclk                     ( mclk                      ),
-              .h_reset_n                (s_reset_ssn                ),
-
-		      // Reg Bus Interface Signal
-              .reg_cs                   (reg_d2a_cs                 ),
-              .reg_wr                   (reg_wr                     ),
-              .reg_addr                 (reg_addr[5:2]              ),
-              .reg_wdata                (reg_wdata[31:0]            ),
-              .reg_be                   (reg_be[3:0]                ),
-
-              // Outputs
-              .reg_rdata                (reg_d2a_rdata              ),
-              .reg_ack                  (reg_d2a_ack                ),
-
-              .cfg_dac0_mux_sel         (cfg_dac0_mux_sel           ),
-              .cfg_dac1_mux_sel         (cfg_dac1_mux_sel           ),
-              .cfg_dac2_mux_sel         (cfg_dac2_mux_sel           ),
-              .cfg_dac3_mux_sel         (cfg_dac3_mux_sel           )
-
-
-         );
 
 //-------------------------------------------------
 // Register Block Selection Logic
 //-------------------------------------------------
-reg [2:0] reg_blk_sel;
+reg [3:0] reg_blk_sel;
 
 always @(posedge mclk or negedge s_reset_ssn)
 begin
@@ -650,33 +628,46 @@ begin
      reg_blk_sel <= 'h0;
    end
    else begin
-      if(reg_cs) reg_blk_sel <= reg_addr[9:7];
+      if(reg_cs) reg_blk_sel <= reg_addr[10:7];
    end
 end
 
-assign reg_rdata = (reg_blk_sel == `SEL_GLBL)  ? {reg_glbl_rdata} : 
-	               (reg_blk_sel == `SEL_GPIO)  ? {reg_gpio_rdata} :
-	               (reg_blk_sel == `SEL_PWM)   ? {reg_pwm_rdata}  :
-	               (reg_blk_sel == `SEL_TIMER) ? reg_timer_rdata  : 
-	               (reg_blk_sel == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
-	               (reg_blk_sel == `SEL_WS)    ? reg_ws_rdata     : 
-	               (reg_blk_sel == `SEL_D2A)   ? reg_d2a_rdata    : 'h0;
+assign reg_rdata = (reg_blk_sel    == `SEL_GLBL)  ? {reg_glbl_rdata} : 
+	               (reg_blk_sel    == `SEL_GPIO)  ? {reg_gpio_rdata} :
+	               (reg_blk_sel    == `SEL_PWM)   ? {reg_pwm_rdata}  :
+	               (reg_blk_sel    == `SEL_TIMER) ? reg_timer_rdata  : 
+	               (reg_blk_sel    == `SEL_SEMA)  ? {16'h0,reg_sema_rdata} : 
+	               (reg_blk_sel    == `SEL_WS)    ? reg_ws_rdata     : 
+	               (reg_blk_sel[3] == `SEL_PERI)  ? reg_peri_rdata   : 'h0;
 
-assign reg_ack   = (reg_blk_sel == `SEL_GLBL)  ? reg_glbl_ack   : 
-	               (reg_blk_sel == `SEL_GPIO)  ? reg_gpio_ack   : 
-	               (reg_blk_sel == `SEL_PWM)   ? reg_pwm_ack    : 
-	               (reg_blk_sel == `SEL_TIMER) ? reg_timer_ack  : 
-	               (reg_blk_sel == `SEL_SEMA)  ? reg_sema_ack   : 
-	               (reg_blk_sel == `SEL_WS)    ? reg_ws_ack     : 
-	               (reg_blk_sel == `SEL_D2A)   ? reg_d2a_ack    : 1'b0;
+assign reg_ack   = (reg_blk_sel    == `SEL_GLBL)  ? reg_glbl_ack   : 
+	               (reg_blk_sel    == `SEL_GPIO)  ? reg_gpio_ack   : 
+	               (reg_blk_sel    == `SEL_PWM)   ? reg_pwm_ack    : 
+	               (reg_blk_sel    == `SEL_TIMER) ? reg_timer_ack  : 
+	               (reg_blk_sel    == `SEL_SEMA)  ? reg_sema_ack   : 
+	               (reg_blk_sel    == `SEL_WS)    ? reg_ws_ack     : 
+	               (reg_blk_sel[3] == `SEL_PERI)  ? reg_peri_ack   : 1'b0;
 
-wire reg_glbl_cs  = (reg_addr[9:7] == `SEL_GLBL) ? reg_cs : 1'b0;
-wire reg_gpio_cs  = (reg_addr[9:7] == `SEL_GPIO) ? reg_cs : 1'b0;
-wire reg_pwm_cs   = (reg_addr[9:7] == `SEL_PWM)  ? reg_cs : 1'b0;
-wire reg_timer_cs = (reg_addr[9:7] == `SEL_TIMER)? reg_cs : 1'b0;
-wire reg_sema_cs  = (reg_addr[9:7] == `SEL_SEMA) ? reg_cs : 1'b0;
-wire reg_ws_cs    = (reg_addr[9:7] == `SEL_WS)   ? reg_cs : 1'b0;
-wire reg_d2a_cs   = (reg_addr[9:7] == `SEL_D2A)  ? reg_cs : 1'b0;
+assign reg_glbl_cs  = (reg_addr[10:7] == `SEL_GLBL) ? reg_cs : 1'b0;
+assign reg_gpio_cs  = (reg_addr[10:7] == `SEL_GPIO) ? reg_cs : 1'b0;
+assign reg_pwm_cs   = (reg_addr[10:7] == `SEL_PWM)  ? reg_cs : 1'b0;
+assign reg_timer_cs = (reg_addr[10:7] == `SEL_TIMER)? reg_cs : 1'b0;
+assign reg_sema_cs  = (reg_addr[10:7] == `SEL_SEMA) ? reg_cs : 1'b0;
+assign reg_ws_cs    = (reg_addr[10:7] == `SEL_WS)   ? reg_cs : 1'b0;
+assign reg_peri_cs  = (reg_addr[10]   == `SEL_PERI) ? reg_cs : 1'b0;
+
+assign  reg_peri_wr    = reg_wr;
+assign  reg_peri_addr  = reg_addr;
+assign  reg_peri_wdata = reg_wdata;
+assign  reg_peri_be    = reg_be;
+
+
+
+
+
+
+
+
 endmodule 
 
 

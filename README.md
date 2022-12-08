@@ -73,6 +73,9 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     * 3 x Timer (16 Bit), 1us/1ms/1second resolution
     * 2 x ws281x driver
     * 16 Hardware Semaphore
+    * FPU (SP) Core
+    * AES 128 Bit Core
+    * RTC Core
     * Pin Compatbible to arduino uno
     * Wishbone compatible design
     * Written in System Verilog
@@ -405,16 +408,16 @@ Following Design changes are done on the basic version of syntacore RISC core
     - flow automatically pull the required docker based on MPW version.
     - RTL to gds docker is hardcoded inside File: openlane/Makefile
 ```bash
-     OPENLANE_TAG = mpw6
+     OPENLANE_TAG = mpw7
      OPENLANE_IMAGE_NAME = riscduino/openlane:$(OPENLANE_TAG)
 ```
 ## Note-1.1: View the RTL to GDS Docker content
-    - for MPW-6 caravel pdk and openlane avaible inside riscduino/openlane:mpw6 docker 
+    - for MPW-7 caravel pdk and openlane avaible inside riscduino/openlane:mpw7 docker 
     - caravel, openlane and pdk envionment are automatically pointed to internal docker pointer
     - To view the docker contents
 ```bash
-    docker run -ti --rm riscduino/openlane:mpw6  bash
-    cd /opt/pdk_mpw6     -  pdk folder
+    docker run -ti --rm riscduino/openlane:mpw7  bash
+    cd /opt/pdk_mpw7     -  pdk folder
     cd /opt/caravel      -  caravel folder 
     cd /openlane         -  openlane folder
     env   - Show the internally defined env's
@@ -431,12 +434,12 @@ Following Design changes are done on the basic version of syntacore RISC core
 	    docker pull riscduino/dv_setup:mpw6
 
 ## Note-2.1: View the RTL Simulation Docker content
-    - for MPW-6 caravel and pdk avaible inside riscduino/dv_setup:mpw6 docker this is used for RTL to gds flows
+    - for MPW-7 caravel and pdk avaible inside riscduino/dv_setup:mpw7 docker this is used for RTL to gds flows
     - caravel and pdk envionment are automatically pointed to internal docker pointer
     - To view the docker contents
 ```bash
-    docker run -ti --rm riscduino/dv_setup:mpw6  bash
-    cd /opt/pdk_mpw6     -  pdk folder
+    docker run -ti --rm riscduino/dv_setup:mpw7  bash
+    cd /opt/pdk_mpw7     -  pdk folder
     cd /opt/caravel      -  caravel folder 
     env   - Show the internally defined env's
         CARAVEL_ROOT=/opt/caravel
@@ -466,7 +469,10 @@ The simulation package includes the following tests:
 * **15.user_cache_bypass**  - Riscv Boot without icache and dcache
 * **16.user_pwm**            -Standalone pwm Test
 * **17.user_sema**           -Standalone validation of hardware Semaphore function
-* **18.riscv_regress**       - Standalone riscv compliance and regression test suite
+* **18.riscv_regress**       -Standalone riscv compliance and regression test suite
+* **19.user_rtc**            -Standalone RTC core test
+* **20.user_aes_core**       -Standalone AES Core test
+* **21.user_fpu_core**       -Standalone FPU(SP) Core test
 
 ## Caravel+RISCDUINO Integrated Specific Test case 
 * **1.wb_port**             - Complete caravel User Wishbone validation

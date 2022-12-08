@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Nov 26 13:14:33 2022
+# Wed Dec  7 14:01:07 2022
 ###############################################################################
 current_design ycr_iconnect
 ###############################################################################
@@ -613,6 +613,7 @@ set_max_delay\
 set_load -pin_load 0.0334 [get_ports {aes_dmem_cmd}]
 set_load -pin_load 0.0334 [get_ports {aes_dmem_req}]
 set_load -pin_load 0.0334 [get_ports {cfg_dcache_force_flush}]
+set_load -pin_load 0.0334 [get_ports {core0_clk}]
 set_load -pin_load 0.0334 [get_ports {core0_dmem_req_ack}]
 set_load -pin_load 0.0334 [get_ports {core0_imem_req_ack}]
 set_load -pin_load 0.0334 [get_ports {core0_irq_soft}]
@@ -624,6 +625,8 @@ set_load -pin_load 0.0334 [get_ports {core_dmem_cmd}]
 set_load -pin_load 0.0334 [get_ports {core_dmem_req}]
 set_load -pin_load 0.0334 [get_ports {core_icache_cmd}]
 set_load -pin_load 0.0334 [get_ports {core_icache_req}]
+set_load -pin_load 0.0334 [get_ports {cpu_clk_aes}]
+set_load -pin_load 0.0334 [get_ports {cpu_clk_fpu}]
 set_load -pin_load 0.0334 [get_ports {fpu_dmem_cmd}]
 set_load -pin_load 0.0334 [get_ports {fpu_dmem_req}]
 set_load -pin_load 0.0334 [get_ports {sram0_clk0}]

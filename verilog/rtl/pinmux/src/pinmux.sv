@@ -508,8 +508,7 @@ always_comb begin
      else if(cfg_port_d_dir_sel[4])  digital_io_oen[10]   = 1'b0;
 
      //Pin-9        PB6/WS[1]/XTAL1/TOSC1     digital_io[11]
-     if   (cfg_uart_enb[1])          digital_io_oen[11]   = 1'b1;
-     else if(cfg_port_b_port_type[6]) digital_io_oen[11]   = 1'b1;
+     if(cfg_port_b_port_type[6])       digital_io_oen[11]   = 1'b1;
      else if(cfg_port_b_dir_sel[6])    digital_io_oen[11]   = 1'b0;
 
      // Pin-10       PB7/WS[1]/XTAL2/TOSC2     digital_io[12]

@@ -224,6 +224,7 @@ $(USER_PROJECT_VERILOG)/gl/bus_rep_south.v
 $(USER_PROJECT_VERILOG)/gl/bus_rep_north.v
 $(USER_PROJECT_VERILOG)/gl/bus_rep_east.v
 $(USER_PROJECT_VERILOG)/gl/bus_rep_west.v
+$(USER_PROJECT_VERILOG)/gl/peri_top.v
 
 -v $(USER_PROJECT_VERILOG)/rtl/dg_pll/src/dg_pll.v
 

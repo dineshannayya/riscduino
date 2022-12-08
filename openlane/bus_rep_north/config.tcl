@@ -49,7 +49,8 @@ set ::env(VERILOG_FILES) "\
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 
-set ::env(SYNTH_PARAMETERS) "BUS_REP_WD=27 "
+set ::env(SYNTH_PARAMETERS) "BUS_REP_WD=27 \ 
+                             BUS_BUF_WD=42 "
 
 set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 #set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc

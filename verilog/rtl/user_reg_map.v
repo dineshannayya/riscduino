@@ -15,7 +15,8 @@
 `define ADDR_SPACE_TIMER   32'h3002_0180
 `define ADDR_SPACE_SEMA    32'h3002_0200
 `define ADDR_SPACE_WS281X  32'h3002_0280
-`define ADDR_SPACE_ANALOG  32'h3002_0300
+`define ADDR_SPACE_ANALOG  32'h3002_0400
+`define ADDR_SPACE_RTC     32'h3002_0480
 `define ADDR_SPACE_WBHOST  32'h3008_0000
 
 //--------------------------------------------------
@@ -166,3 +167,13 @@
 `define UART_RDATA        8'h18  // Reg-6
 `define UART_TFIFO_STAT   8'h1C  // Reg-7
 `define UART_RFIFO_STAT   8'h20  // Reg-8
+
+//--------------------------------------------------------
+// RTC Register Map
+//--------------------------------------------------------
+`define  RTC_CMD          8'h0
+`define  RTC_TIME         8'h4
+`define  RTC_DATE         8'h8
+`define  RTC_ALRM1        8'hC
+`define  RTC_ALRM2        8'h10
+`define  RTC_CTRL         8'h14

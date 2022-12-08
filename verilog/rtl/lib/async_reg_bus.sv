@@ -58,9 +58,10 @@ module async_reg_bus (
           out_reg_rdata              ,
           out_reg_ack
    );
-parameter AW = 26 ; // Address width
-parameter DW = 32 ; // DATA WIDTH
-parameter BEW = 4 ; // Byte enable width
+parameter AW = 26         ; // Address width
+parameter DW = 32         ; // DATA WIDTH
+parameter BEW = 4         ; // Byte enable width
+parameter TIMEOUT_ENB = 1 ; // TIMEOUT Generation enabled
 
 //----------------------------------------
 // Reg Bus reg inout declration
@@ -191,17 +192,18 @@ begin
 		in_reg_ack          <= 1'b1;
                 in_state           <= INI_WAIT_TAR_DONE;
              end
-             else begin
-                 if(in_timer == 9'h1FF) begin
-                    in_flag          <= 1'b0;
-                    in_reg_ack       <= 1'b1;
-                    in_reg_rdata     <= 32'h0;
-                    in_reg_timeout   <= 1'b1;
-                    in_state         <= INI_IDLE;
-                 end
-                 else begin
-                     in_timer       <= in_timer + 1;
-                 end
+             else begin if(TIMEOUT_ENB) begin
+                    if(in_timer == 9'h1FF ) begin
+                       in_flag          <= 1'b0;
+                       in_reg_ack       <= 1'b1;
+                       in_reg_rdata     <= 32'h0;
+                       in_reg_timeout   <= 1'b1;
+                       in_state         <= INI_IDLE;
+                    end
+                    else begin
+                        in_timer       <= in_timer + 1;
+                    end
+                end
              end
            end
       INI_WAIT_TAR_DONE :

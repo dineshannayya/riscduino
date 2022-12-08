@@ -158,7 +158,7 @@ if { $::env(FP_PDN_CORE_RING) == 1 } {
 define_pdn_grid \
     -macro \
     -name macro_1 \
-    -instances "u_pll u_intercon u_pinmux u_qspi_master u_tsram0_2kb u_icache_2kb u_dcache_2kb u_uart_i2c_usb_spi u_wb_host u_riscv_top.i_core_top_0 u_riscv_top.u_connect u_riscv_top.u_intf u_4x8bit_dac u_aes u_fpu" \
+    -instances "u_pll u_intercon u_pinmux u_qspi_master u_tsram0_2kb u_icache_2kb u_dcache_2kb u_uart_i2c_usb_spi u_wb_host u_riscv_top.i_core_top_0 u_riscv_top.u_connect u_riscv_top.u_intf u_4x8bit_dac u_aes u_fpu u_peri" \
     -starts_with POWER \
     -halo "$::env(FP_PDN_HORIZONTAL_HALO) $::env(FP_PDN_VERTICAL_HALO)"
 

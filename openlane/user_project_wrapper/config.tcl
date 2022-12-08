@@ -82,6 +82,7 @@ set ::env(VERILOG_FILES_BLACKBOX) "\
 	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_north.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_east.v \
 	    $::env(DESIGN_DIR)/../../verilog/gl/bus_rep_west.v \
+	    $::env(DESIGN_DIR)/../../verilog/gl/peri_top.v \
 	    "
 
 set ::env(EXTRA_LEFS) "\
@@ -102,6 +103,7 @@ set ::env(EXTRA_LEFS) "\
 	$lef_root/bus_rep_north.lef \
 	$lef_root/bus_rep_east.lef \
 	$lef_root/bus_rep_west.lef \
+	$lef_root/peri_top.lef \
 	"
 
 set ::env(EXTRA_GDS_FILES) "\
@@ -122,6 +124,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/bus_rep_north.gds \
 	$gds_root/bus_rep_east.gds \
 	$gds_root/bus_rep_west.gds \
+	$gds_root/peri_top.gds \
 	"
 
 set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
@@ -201,7 +204,8 @@ set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_rp_south                  vccd1 vssd1 vccd1 vssd1,\
 	u_rp_north                  vccd1 vssd1 vccd1 vssd1,\
 	u_rp_east                   vccd1 vssd1 vccd1 vssd1,\
-	u_rp_west                   vccd1 vssd1 vccd1 vssd1
+	u_rp_west                   vccd1 vssd1 vccd1 vssd1,\
+	u_peri                      vccd1 vssd1 vccd1 vssd1
       	"
 
 

@@ -2,6 +2,7 @@ set spef_mapping(mprj/u_4x8bit_dac) "$::env(PROJECT_ROOT)/signoff/not-found/dac_
 set spef_mapping(mprj/u_aes) "$::env(PROJECT_ROOT)/signoff/aes_top/openlane-signoff/spef/aes_top.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_fpu) "$::env(PROJECT_ROOT)/signoff/fpu_wrapper/openlane-signoff/spef/fpu_wrapper.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_intercon) "$::env(PROJECT_ROOT)/signoff/wb_interconnect/openlane-signoff/spef/wb_interconnect.$::env(RCX_CORNER).spef"
+set spef_mapping(mprj/u_peri) "$::env(PROJECT_ROOT)/signoff/peri_top/openlane-signoff/spef/peri_top.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_pinmux) "$::env(PROJECT_ROOT)/signoff/pinmux_top/openlane-signoff/spef/pinmux_top.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_pll) "$::env(PROJECT_ROOT)/signoff/dg_pll/openlane-signoff/spef/dg_pll.$::env(RCX_CORNER).spef"
 set spef_mapping(mprj/u_qspi_master) "$::env(PROJECT_ROOT)/signoff/qspim_top/openlane-signoff/spef/qspim_top.$::env(RCX_CORNER).spef"

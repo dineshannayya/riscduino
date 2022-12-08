@@ -94,6 +94,7 @@ module glbl_reg (
 		               input  logic            usb_intr               ,
 		               input  logic            i2cm_intr              ,
 		               input  logic            pwm_intr              ,
+		               input  logic            rtc_intr              ,
 
 		               output logic [15:0]     cfg_riscv_ctrl         ,
                        output  logic [31:0]    cfg_multi_func_sel     ,// multifunction pins
@@ -370,6 +371,7 @@ assign  irq_lines     = reg_3[31:0] & reg_4[31:0];
 
 logic usb_intr_s,usb_intr_ss;   // Usb Interrupt Double Sync
 logic i2cm_intr_s,i2cm_intr_ss; // I2C Interrupt Double Sync
+logic rtc_intr_s,rtc_intr_ss;
 
 always @ (posedge mclk or negedge s_reset_n)
 begin  
@@ -378,15 +380,19 @@ begin
      usb_intr_ss  <= 'h0;
      i2cm_intr_s  <= 'h0;
      i2cm_intr_ss <= 'h0;
+     rtc_intr_s  <= 'h0;
+     rtc_intr_ss <= 'h0;
    end else begin
      usb_intr_s   <= usb_intr;
      usb_intr_ss  <= usb_intr_s;
      i2cm_intr_s  <= i2cm_intr;
      i2cm_intr_ss <= i2cm_intr_s;
+     rtc_intr_s   <= rtc_intr;
+     rtc_intr_ss  <= rtc_intr_s;
    end
 end
 
-wire [31:0] hware_intr_req = {gpio_intr[31:8], 2'b0,pwm_intr,usb_intr_ss, i2cm_intr_ss,timer_intr[2:0]};
+wire [31:0] hware_intr_req = {gpio_intr[31:8], 1'b0,rtc_intr_ss,pwm_intr,usb_intr_ss, i2cm_intr_ss,timer_intr[2:0]};
 
 generic_intr_stat_reg #(.WD(32),
 	                .RESET_DEFAULT(0)) u_reg4 (

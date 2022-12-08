@@ -203,7 +203,7 @@ module wb_interconnect #(
          input	logic 	        s2_wbd_ack_i,
          // input	logic 	s2_wbd_err_i, - unused
          output	logic [31:0]	s2_wbd_dat_o,
-         output	logic [9:0]	    s2_wbd_adr_o, // glbl reg need only 9 bits
+         output	logic [10:0]	s2_wbd_adr_o, // glbl reg need only 9 bits
          output	logic [3:0]	    s2_wbd_sel_o,
          output	logic 	        s2_wbd_we_o,
          output	logic 	        s2_wbd_cyc_o,
@@ -677,7 +677,7 @@ end
  assign  s1_wbd_stb_o =  s1_wb_wr.wbd_stb ;
                       
  assign  s2_wbd_dat_o =  s2_wb_wr.wbd_dat ;
- assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr[9:0] ; // Global Reg Need 8 bit
+ assign  s2_wbd_adr_o =  s2_wb_wr.wbd_adr[10:0] ; // Global Reg Need 8 bit
  assign  s2_wbd_sel_o =  s2_wb_wr.wbd_sel ;
  assign  s2_wbd_we_o  =  s2_wb_wr.wbd_we  ;
  assign  s2_wbd_cyc_o =  s2_wb_wr.wbd_cyc ;

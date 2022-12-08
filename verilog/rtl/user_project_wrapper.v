@@ -42,6 +42,7 @@
 ////      15. SPI Slave (As Arduino ISP)                          ////
 ////      16. AES 126 Encription/Decryption                       ////
 ////      17. FPU (Single Precision)                              ////
+////      18. RTC                                                 ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -301,6 +302,9 @@
 ////    6.2  Dec 4, 2022, Dinesh A                                ////
 ////         Bus repeater north/south/east/west added for better  ////
 ////         global buffering                                     ////
+////    6.3  Dec 7, 2022, Dinesh A                                ////
+////         A. peripheral block integration                      ////
+////         B. RTC Integration                                   ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -575,7 +579,7 @@ wire                           wbd_adc_ack_i                          ;
 //    Global Register Wishbone Interface
 //---------------------------------------------------------------------
 wire                           wbd_glbl_stb_o                         ; // strobe/request
-wire   [9:0]                   wbd_glbl_adr_o                         ; // address
+wire   [10:0]                  wbd_glbl_adr_o                         ; // address
 wire                           wbd_glbl_we_o                          ; // write
 wire   [WB_WIDTH-1:0]          wbd_glbl_dat_o                         ; // data output
 wire   [3:0]                   wbd_glbl_sel_o                         ; // byte enable
@@ -627,14 +631,15 @@ wire                           soft_irq                               ;
 wire [7:0]                     cfg_glb_ctrl                           ;
 wire [31:0]                    cfg_clk_skew_ctrl1                     ;
 wire [31:0]                    cfg_clk_skew_ctrl2                     ;
-wire [3:0]                     cfg_wcska_wi                            ; // clock skew adjust for wishbone interconnect
-wire [3:0]                     cfg_wcska_wh                            ; // clock skew adjust for web host
+wire [3:0]                     cfg_wcska_wi                           ; // clock skew adjust for wishbone interconnect
+wire [3:0]                     cfg_wcska_wh                           ; // clock skew adjust for web host
+wire [3:0]                     cfg_wcska_peri                         ; // clock skew adjust for peripheral
 
-wire [3:0]                     cfg_wcska_riscv                         ; // clock skew adjust for riscv
-wire [3:0]                     cfg_wcska_uart                          ; // clock skew adjust for uart
-wire [3:0]                     cfg_wcska_qspi                          ; // clock skew adjust for spi
-wire [3:0]                     cfg_wcska_pinmux                        ; // clock skew adjust for pinmux
-wire [3:0]                     cfg_wcska_qspi_co                       ; // clock skew adjust for global reg
+wire [3:0]                     cfg_wcska_riscv                        ; // clock skew adjust for riscv
+wire [3:0]                     cfg_wcska_uart                         ; // clock skew adjust for uart
+wire [3:0]                     cfg_wcska_qspi                         ; // clock skew adjust for spi
+wire [3:0]                     cfg_wcska_pinmux                       ; // clock skew adjust for pinmux
+wire [3:0]                     cfg_wcska_qspi_co                      ; // clock skew adjust for global reg
 
 // Bus Repeater Signals  output from Wishbone Interface
 wire [3:0]                     cfg_wcska_riscv_rp                      ; // clock skew adjust for riscv
@@ -642,6 +647,7 @@ wire [3:0]                     cfg_wcska_uart_rp                       ; // cloc
 wire [3:0]                     cfg_wcska_qspi_rp                       ; // clock skew adjust for spi
 wire [3:0]                     cfg_wcska_pinmux_rp                     ; // clock skew adjust for pinmux
 wire [3:0]                     cfg_wcska_qspi_co_rp                    ; // clock skew adjust for global reg
+wire [3:0]                     cfg_wcska_peri_rp                       ; // clock skew adjust for peripheral 
 
 wire [31:0]                    irq_lines_rp                           ; // Repeater
 wire                           soft_irq_rp                            ; // Repeater
@@ -651,6 +657,8 @@ wire                           wbd_clk_qspi_rp                        ;
 wire                           wbd_clk_uart_rp                        ;
 wire                           wbd_clk_pinmux_rp                      ;
 wire                           wbd_clk_pinmux_skew                    ;
+wire                           wbd_clk_peri_rp                        ;
+wire                           wbd_clk_peri_skew                      ;
 
 // Progammable Clock Skew inserted signals
 wire                           wbd_clk_wi_skew                        ; // clock for wishbone interconnect with clock skew
@@ -764,6 +772,7 @@ wire                           i2cm_intr_o                            ;
 // AES Integration local decleration
 //------------------------------------------------------------
 wire                           cpu_clk_aes                            ;
+wire                           cpu_clk_aes_skew                       ;
 wire [3:0]                     cfg_ccska_aes                          ;
 wire [3:0]                     cfg_ccska_aes_rp                       ;
 wire                           aes_dmem_req                           ;
@@ -778,7 +787,8 @@ wire [1:0]                     aes_dmem_resp                          ;
 //------------------------------------------------------------
 // FPU Integration local decleration
 //------------------------------------------------------------
-wire                           cpu_clk_fpu                            ;
+wire                           cpu_clk_fpu                           ;
+wire                           cpu_clk_fpu_skew                       ;
 wire [3:0]                     cfg_ccska_fpu                          ;
 wire [3:0]                     cfg_ccska_fpu_rp                       ;
 wire                           fpu_dmem_req                           ;
@@ -826,6 +836,19 @@ wire [7:0]                     cfg_dac2_mux_sel                       ;
 wire [7:0]                     cfg_dac3_mux_sel                       ;
 
 //---------------------------------------------------------------------
+// Peripheral Reg I/F
+//---------------------------------------------------------------------
+wire                           reg_peri_cs                            ;
+wire                           reg_peri_wr                            ;
+wire [10:0]                    reg_peri_addr                          ;
+wire [31:0]                    reg_peri_wdata                         ;
+wire [3:0]                     reg_peri_be                            ;
+
+wire [31:0]                    reg_peri_rdata                         ;
+wire                           reg_peri_ack                           ;
+
+wire                           rtc_intr                               ; // RTC interrupt
+//---------------------------------------------------------------------
 // Strap
 //---------------------------------------------------------------------
 wire [31:0]                    system_strap                           ;
@@ -863,6 +886,7 @@ assign cfg_wcska_qspi        = cfg_clk_skew_ctrl1[15:12];
 assign cfg_wcska_uart        = cfg_clk_skew_ctrl1[19:16];
 assign cfg_wcska_pinmux      = cfg_clk_skew_ctrl1[23:20];
 assign cfg_wcska_qspi_co     = cfg_clk_skew_ctrl1[27:24];
+assign cfg_wcska_peri        = cfg_clk_skew_ctrl1[31:28];
 
 /////////////////////////////////////////////////////////
 // RISCV Clock skew control
@@ -890,19 +914,21 @@ wire   int_pll_clock       = pll_clk_out[0];
 //-------------------------------------
 // cpu clock repeater mapping
 //-------------------------------------
-wire [9:0] cpu_clk_rp;
+wire [2:0] cpu_clk_rp;
 
-wire [5:0] cpu_clk_rp_risc   = cpu_clk_rp[5:0];
-wire       cpu_clk_rp_aes    = cpu_clk_rp[6];
-wire       cpu_clk_rp_fpu    = cpu_clk_rp[7];
-wire       cpu_clk_rp_pinmux = cpu_clk_rp[8];
+wire [1:0] cpu_clk_rp_risc   = cpu_clk_rp[1:0];
+wire       cpu_clk_rp_pinmux = cpu_clk_rp[2];
 
 //----------------------------------------------------------
 // Bus Repeater Initiatiation
 //----------------------------------------------------------
 wire  [37:0]                io_in_rp           ;
+wire  [37:0]                io_in_rp1          ;
+wire  [37:0]                io_in_rp2          ;
 wire  [37:0]                io_out_int         ;
 wire  [37:0]                io_oeb_int         ;
+wire  [37:0]                io_out_rp1         ;
+wire  [37:0]                io_oeb_rp1         ;
 wire                        user_clock2_rp     ;
 
 `include "bus_repeater.sv"
@@ -1010,50 +1036,50 @@ dg_pll   u_pll(
 //------------------------------------------------------------------------------
 ycr_top_wb u_riscv_top (
 `ifdef USE_POWER_PINS
-          .vccd1                   (vccd1                      ),// User area 1 1.8V supply
-          .vssd1                   (vssd1                      ),// User area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-          .wbd_clk_int             (wbd_clk_risc_rp            ), 
-          .cfg_wcska_riscv_intf    (cfg_wcska_riscv_rp         ), 
-          .wbd_clk_skew            (wbd_clk_riscv_skew         ),
+          .wbd_clk_int        (wbd_clk_risc_rp              ), 
+          .cfg_wcska_riscv_intf(cfg_wcska_riscv_rp           ), 
+          .wbd_clk_skew       (wbd_clk_riscv_skew           ),
 
     // Reset
-          .pwrup_rst_n             (wbd_int_rst_n              ),
-          .rst_n                   (wbd_int_rst_n              ),
-          .cpu_intf_rst_n          (cpu_intf_rst_n             ),
-          .cpu_core_rst_n          (cpu_core_rst_n[0]          ),
-          .riscv_debug             (riscv_debug                ),
-	      .cfg_sram_lphase         (cfg_riscv_sram_lphase      ),
-	      .cfg_cache_ctrl          (cfg_riscv_cache_ctrl       ),
-	      .cfg_bypass_icache       (cfg_bypass_icache          ),
-	      .cfg_bypass_dcache       (cfg_bypass_dcache          ),
+          .pwrup_rst_n        (wbd_int_rst_n                ),
+          .rst_n              (wbd_int_rst_n                ),
+          .cpu_intf_rst_n     (cpu_intf_rst_n               ),
+          .cpu_core_rst_n     (cpu_core_rst_n[0]            ),
+          .riscv_debug        (riscv_debug                  ),
+	      .cfg_sram_lphase    (cfg_riscv_sram_lphase        ),
+	      .cfg_cache_ctrl     (cfg_riscv_cache_ctrl         ),
+	      .cfg_bypass_icache  (cfg_bypass_icache            ),
+	      .cfg_bypass_dcache  (cfg_bypass_dcache            ),
 
     // Clock
-          .core_clk_int            (cpu_clk_rp_risc            ),
-          .cfg_ccska_riscv_intf    (cfg_ccska_riscv_intf_rp    ),
-          .cfg_ccska_riscv_icon    (cfg_ccska_riscv_icon_rp    ),
-          .cfg_ccska_riscv_core0   (cfg_ccska_riscv_core0_rp   ),
+          .core_clk_int         (cpu_clk_rp_risc            ),
+          .cfg_ccska_riscv_intf (cfg_ccska_riscv_intf_rp    ),
+          .cfg_ccska_riscv_icon (cfg_ccska_riscv_icon_rp    ),
+          .cfg_ccska_riscv_core0(cfg_ccska_riscv_core0_rp   ),
 
-          .rtc_clk                 (rtc_clk                    ),
+          .rtc_clk              (rtc_clk                    ),
 
 
     // IRQ
-          .irq_lines               (irq_lines_rp               ), 
-          .soft_irq                (soft_irq_rp                ), // TODO - Interrupts
+          .irq_lines            (irq_lines_rp               ), 
+          .soft_irq             (soft_irq_rp                ), // TODO - Interrupts
 
     // DFT
-    //    .test_mode               (1'b0                       ), // Moved inside IP
-    //    .test_rst_n              (1'b1                       ), // Moved inside IP
+    //    .test_mode            (1'b0                       ), // Moved inside IP
+    //    .test_rst_n           (1'b1                       ), // Moved inside IP
 
 `ifndef SCR1_TCM_MEM
     // SRAM-0 PORT-0
-          .sram0_clk0             (sram0_clk0                  ),
-          .sram0_csb0             (sram0_csb0                  ),
-          .sram0_web0             (sram0_web0                  ),
-          .sram0_addr0            (sram0_addr0                 ),
-          .sram0_wmask0           (sram0_wmask0                ),
-          .sram0_din0             (sram0_din0                  ),
-          .sram0_dout0            (sram0_dout0                 ),
+          .sram0_clk0           (sram0_clk0                  ),
+          .sram0_csb0           (sram0_csb0                  ),
+          .sram0_web0           (sram0_web0                  ),
+          .sram0_addr0          (sram0_addr0                 ),
+          .sram0_wmask0         (sram0_wmask0                ),
+          .sram0_din0           (sram0_din0                  ),
+          .sram0_dout0          (sram0_dout0                 ),
     
     // SRAM-0 PORT-0
           .sram0_clk1             (sram0_clk1                   ),
@@ -1147,6 +1173,7 @@ ycr_top_wb u_riscv_top (
           .wbd_dmem_lack_i         (wbd_riscv_dmem_lack_o   ),
           .wbd_dmem_err_i          (wbd_riscv_dmem_err_o    ),
 
+          .cpu_clk_aes             (cpu_clk_aes             ),
           .aes_dmem_req            (aes_dmem_req            ),
           .aes_dmem_cmd            (aes_dmem_cmd            ),
           .aes_dmem_width          (aes_dmem_width          ),
@@ -1156,6 +1183,7 @@ ycr_top_wb u_riscv_top (
           .aes_dmem_rdata          (aes_dmem_rdata          ),
           .aes_dmem_resp           (aes_dmem_resp           ),
 
+          .cpu_clk_fpu             (cpu_clk_fpu             ),
           .fpu_dmem_req            (fpu_dmem_req            ),
           .fpu_dmem_cmd            (fpu_dmem_cmd            ),
           .fpu_dmem_width          (fpu_dmem_width          ),
@@ -1165,6 +1193,10 @@ ycr_top_wb u_riscv_top (
           .fpu_dmem_rdata          (fpu_dmem_rdata          ),
           .fpu_dmem_resp           (fpu_dmem_resp           )
 );
+
+//----------------------------------------------
+// TCM
+//----------------------------------------------
 
 `ifndef SCR1_TCM_MEM
 sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram0_2kb(
@@ -1210,6 +1242,9 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_tsram1_2kb(
 ***/
 `endif
 
+//------------------------------------------------
+// icache
+//------------------------------------------------
 
 sky130_sram_2kbyte_1rw1r_32x512_8 u_icache_2kb(
 `ifdef USE_POWER_PINS
@@ -1230,6 +1265,10 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_icache_2kb(
           .addr1              (icache_mem_addr1             ),
           .dout1              (icache_mem_dout1             )
   );
+
+//----------------------------------------------------------
+// dcache
+//----------------------------------------------------------
 
 sky130_sram_2kbyte_1rw1r_32x512_8 u_dcache_2kb(
 `ifdef USE_POWER_PINS
@@ -1256,25 +1295,25 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_dcache_2kb(
 *************************************************/
 aes_top u_aes (
 `ifdef USE_POWER_PINS
-    .vccd1                 (vccd1            ),
-    .vssd1                 (vssd1            ),
+          .vccd1              (vccd1                        ),
+          .vssd1              (vssd1                        ),
 `endif
 
-    .mclk                  (cpu_clk_aes      ),
-    .rst_n                 (cpu_intf_rst_n   ),
+          .mclk               (cpu_clk_aes_skew             ),
+          .rst_n              (cpu_intf_rst_n               ),
 
-    .cfg_cska              (cfg_ccska_aes_rp ),
-    .wbd_clk_int           (cpu_clk_rp_aes   ),
-    .wbd_clk_out           (cpu_clk_aes      ),
+          .cfg_cska           (cfg_ccska_aes_rp             ),
+          .wbd_clk_int        (cpu_clk_aes                  ),
+          .wbd_clk_out        (cpu_clk_aes_skew             ),
 
-    .dmem_req              (aes_dmem_req     ),
-    .dmem_cmd              (aes_dmem_cmd     ),
-    .dmem_width            (aes_dmem_width   ),
-    .dmem_addr             (aes_dmem_addr    ),
-    .dmem_wdata            (aes_dmem_wdata   ),
-    .dmem_req_ack          (aes_dmem_req_ack ),
-    .dmem_rdata            (aes_dmem_rdata   ),
-    .dmem_resp             (aes_dmem_resp    )
+          .dmem_req           (aes_dmem_req                 ),
+          .dmem_cmd           (aes_dmem_cmd                 ),
+          .dmem_width         (aes_dmem_width               ),
+          .dmem_addr          (aes_dmem_addr                ),
+          .dmem_wdata         (aes_dmem_wdata               ),
+          .dmem_req_ack       (aes_dmem_req_ack             ),
+          .dmem_rdata         (aes_dmem_rdata               ),
+          .dmem_resp          (aes_dmem_resp                )
 );
 
 /***********************************************
@@ -1282,116 +1321,115 @@ aes_top u_aes (
 *************************************************/
 fpu_wrapper u_fpu (
 `ifdef USE_POWER_PINS
-    .vccd1                 (vccd1            ),
-    .vssd1                 (vssd1            ),
+          .vccd1              (vccd1                        ),
+          .vssd1              (vssd1                        ),
 `endif
 
-    .mclk                  (cpu_clk_fpu      ),
-    .rst_n                 (cpu_intf_rst_n   ),
+          .mclk               (cpu_clk_fpu_skew             ),
+          .rst_n              (cpu_intf_rst_n               ),
 
-    .cfg_cska              (cfg_ccska_fpu_rp ),
-    .wbd_clk_int           (cpu_clk_rp_fpu   ),
-    .wbd_clk_out           (cpu_clk_fpu      ),
+          .cfg_cska           (cfg_ccska_fpu_rp             ),
+          .wbd_clk_int        (cpu_clk_rp_fpu               ),
+          .wbd_clk_out        (cpu_clk_fpu_skew             ),
 
-    .dmem_req              (fpu_dmem_req     ),
-    .dmem_cmd              (fpu_dmem_cmd     ),
-    .dmem_width            (fpu_dmem_width   ),
-    .dmem_addr             (fpu_dmem_addr    ),
-    .dmem_wdata            (fpu_dmem_wdata   ),
-    .dmem_req_ack          (fpu_dmem_req_ack ),
-    .dmem_rdata            (fpu_dmem_rdata   ),
-    .dmem_resp             (fpu_dmem_resp    )
+          .dmem_req           (fpu_dmem_req                 ),
+          .dmem_cmd           (fpu_dmem_cmd                 ),
+          .dmem_width         (fpu_dmem_width               ),
+          .dmem_addr          (fpu_dmem_addr                ),
+          .dmem_wdata         (fpu_dmem_wdata               ),
+          .dmem_req_ack       (fpu_dmem_req_ack             ),
+          .dmem_rdata         (fpu_dmem_rdata               ),
+          .dmem_resp          (fpu_dmem_resp                )
 );
 
 /*********************************************************
 * SPI Master
-* This is implementation of an SPI master that is controlled via an AXI bus                                                  . 
+* This is of an SPI master that is controlled via an AXI bus                                                                                                       . 
 * It has FIFOs for transmitting and receiving data. 
 * It supports both the normal SPI mode and QPI mode with 4 data lines.
 * *******************************************************/
 
 qspim_top
-#(
+#                             (
 `ifndef SYNTHESIS
     .WB_WIDTH  (WB_WIDTH                                    )
 `endif
 ) u_qspi_master
 (
 `ifdef USE_POWER_PINS
-          .vccd1                   (vccd1                   ),// User area 1 1.8V supply
-          .vssd1                   (vssd1                   ),// User area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-          .mclk                    (wbd_clk_spi             ),
-          .rst_n                   (qspim_rst_n             ),
+          .mclk               (wbd_clk_spi                  ),
+          .rst_n              (qspim_rst_n                  ),
 
-          .strap_flash             (strap_qspi_flash        ),
-          .strap_pre_sram          (strap_qspi_pre_sram     ),
-          .strap_sram              (strap_qspi_sram         ),
-          .cfg_init_bypass         (strap_qspi_init_bypass  ),
+          .strap_flash        (strap_qspi_flash             ),
+          .strap_pre_sram     (strap_qspi_pre_sram          ),
+          .strap_sram         (strap_qspi_sram              ),
+          .cfg_init_bypass    (strap_qspi_init_bypass       ),
 
     // Clock Skew Adjust
-          .cfg_cska_sp_co          (cfg_wcska_qspi_co_rp     ),
-          .cfg_cska_spi            (cfg_wcska_qspi_rp        ),
-          .wbd_clk_int             (wbd_clk_qspi_rp         ),
-          .wbd_clk_spi             (wbd_clk_spi             ),
+          .cfg_cska_sp_co     (cfg_wcska_qspi_co_rp         ),
+          .cfg_cska_spi       (cfg_wcska_qspi_rp            ),
+          .wbd_clk_int        (wbd_clk_qspi_rp              ),
+          .wbd_clk_spi        (wbd_clk_spi                  ),
 
-          .wbd_stb_i               (wbd_spim_stb_o          ),
-          .wbd_adr_i               (wbd_spim_adr_o          ),
-          .wbd_we_i                (wbd_spim_we_o           ), 
-          .wbd_dat_i               (wbd_spim_dat_o          ),
-          .wbd_sel_i               (wbd_spim_sel_o          ),
-          .wbd_bl_i                (wbd_spim_bl_o           ),
-          .wbd_bry_i               (wbd_spim_bry_o          ),
-          .wbd_dat_o               (wbd_spim_dat_i          ),
-          .wbd_ack_o               (wbd_spim_ack_i          ),
-          .wbd_lack_o              (wbd_spim_lack_i         ),
-          .wbd_err_o               (wbd_spim_err_i          ),
+          .wbd_stb_i          (wbd_spim_stb_o               ),
+          .wbd_adr_i          (wbd_spim_adr_o               ),
+          .wbd_we_i           (wbd_spim_we_o                ), 
+          .wbd_dat_i          (wbd_spim_dat_o               ),
+          .wbd_sel_i          (wbd_spim_sel_o               ),
+          .wbd_bl_i           (wbd_spim_bl_o                ),
+          .wbd_bry_i          (wbd_spim_bry_o               ),
+          .wbd_dat_o          (wbd_spim_dat_i               ),
+          .wbd_ack_o          (wbd_spim_ack_i               ),
+          .wbd_lack_o         (wbd_spim_lack_i              ),
+          .wbd_err_o          (wbd_spim_err_i               ),
 
-          .spi_debug               (spi_debug               ),
+          .spi_debug          (spi_debug                    ),
 
     // Pad Interface
-          .spi_sdi                 (sflash_di               ),
-          .spi_clk                 (sflash_sck              ),
-          .spi_csn                 (spi_csn                 ),
-          .spi_sdo                 (sflash_do               ),
-          .spi_oen                 (sflash_oen              )
+          .spi_sdi            (sflash_di                    ),
+          .spi_clk            (sflash_sck                   ),
+          .spi_csn            (spi_csn                      ),
+          .spi_sdo            (sflash_do                    ),
+          .spi_oen            (sflash_oen                   )
 
 );
 
 
+//---------------------------------------------------
+// wb_interconnect
+//---------------------------------------------------
 
 wb_interconnect  #(
 	`ifndef SYNTHESIS
-          .CH_CLK_WD           (14                      ),
-	      .CH_DATA_WD          (154                     )
+          .CH_CLK_WD          (8                            ),
+          .CH_DATA_WD         (158                          )
         `endif
 	) u_intercon (
 `ifdef USE_POWER_PINS
-          .vccd1                   (vccd1                   ),// User area 1 1.8V supply
-          .vssd1                   (vssd1                   ),// User area 1 digital ground
+       .vccd1              (vccd1                        ),// User area 1 1                                                     .8V supply
+       .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-	  .ch_clk_in               ({
+	  .ch_clk_in              ({
                                      cpu_clk,
                                      cpu_clk,
                                      cpu_clk,
-                                     cpu_clk,
-                                     cpu_clk,
-                                     cpu_clk,
-                                     cpu_clk,
-                                     cpu_clk,
-                                     cpu_clk,
-                                     cpu_clk,
+                                     wbd_clk_int, 
                                      wbd_clk_int, 
                                      wbd_clk_int, 
                                      wbd_clk_int, 
                                      wbd_clk_int}                  ),
-	  .ch_clk_out              ({
+	  .ch_clk_out             ({
                                      cpu_clk_rp,
+                                     wbd_clk_peri_rp, 
                                      wbd_clk_pinmux_rp, 
                                      wbd_clk_uart_rp, 
                                      wbd_clk_qspi_rp, 
                                      wbd_clk_risc_rp}              ),
-	  .ch_data_in              ({
+	  .ch_data_in             ({
+			                      cfg_wcska_peri[3:0],
                                   cfg_ccska_fpu[3:0],
                                   cfg_ccska_aes[3:0],
                                   strap_sticky[31:0],
@@ -1417,7 +1455,8 @@ wb_interconnect  #(
 		                          cfg_wcska_qspi[3:0],
                                   cfg_wcska_riscv[3:0]
 			             }                             ),
-	  .ch_data_out             ({
+	  .ch_data_out            ({
+		                          cfg_wcska_peri_rp[3:0],
 			                      cfg_ccska_fpu_rp[3:0],
 			                      cfg_ccska_aes_rp[3:0],
                                   strap_sticky_rp[31:0],
@@ -1444,309 +1483,372 @@ wb_interconnect  #(
                                   cfg_wcska_riscv_rp[3:0]
                                } ),
      // Clock Skew adjust
-	  .wbd_clk_int                 (wbd_clk_int             ), 
-	  .cfg_cska_wi                 (cfg_wcska_wi            ), 
-	  .wbd_clk_wi                  (wbd_clk_wi_skew         ),
+          .wbd_clk_int        (wbd_clk_int                  ), 
+          .cfg_cska_wi        (cfg_wcska_wi                 ), 
+          .wbd_clk_wi         (wbd_clk_wi_skew              ),
 
-          .clk_i                   (wbd_clk_wi_skew         ), 
-          .rst_n                   (wbd_int_rst_n           ),
+          .clk_i              (wbd_clk_wi_skew              ), 
+          .rst_n              (wbd_int_rst_n                ),
 
          // Master 0 Interface
-          .m0_wbd_dat_i            (wbd_int_dat_i           ),
-          .m0_wbd_adr_i            (wbd_int_adr_i           ),
-          .m0_wbd_sel_i            (wbd_int_sel_i           ),
-          .m0_wbd_we_i             (wbd_int_we_i            ),
-          .m0_wbd_cyc_i            (wbd_int_cyc_i           ),
-          .m0_wbd_stb_i            (wbd_int_stb_i           ),
-          .m0_wbd_dat_o            (wbd_int_dat_o           ),
-          .m0_wbd_ack_o            (wbd_int_ack_o           ),
-          .m0_wbd_err_o            (wbd_int_err_o           ),
+          .m0_wbd_dat_i       (wbd_int_dat_i                ),
+          .m0_wbd_adr_i       (wbd_int_adr_i                ),
+          .m0_wbd_sel_i       (wbd_int_sel_i                ),
+          .m0_wbd_we_i        (wbd_int_we_i                 ),
+          .m0_wbd_cyc_i       (wbd_int_cyc_i                ),
+          .m0_wbd_stb_i       (wbd_int_stb_i                ),
+          .m0_wbd_dat_o       (wbd_int_dat_o                ),
+          .m0_wbd_ack_o       (wbd_int_ack_o                ),
+          .m0_wbd_err_o       (wbd_int_err_o                ),
          
          // Master 1 Interface
-          .m1_wbd_dat_i            (wbd_riscv_dmem_dat_i    ),
-          .m1_wbd_adr_i            (wbd_riscv_dmem_adr_i    ),
-          .m1_wbd_sel_i            (wbd_riscv_dmem_sel_i    ),
-          .m1_wbd_bl_i             (wbd_riscv_dmem_bl_i    ),
-          .m1_wbd_bry_i            (wbd_riscv_dmem_bry_i    ),
-          .m1_wbd_we_i             (wbd_riscv_dmem_we_i     ),
-          .m1_wbd_cyc_i            (wbd_riscv_dmem_stb_i    ),
-          .m1_wbd_stb_i            (wbd_riscv_dmem_stb_i    ),
-          .m1_wbd_dat_o            (wbd_riscv_dmem_dat_o    ),
-          .m1_wbd_ack_o            (wbd_riscv_dmem_ack_o    ),
-          .m1_wbd_lack_o           (wbd_riscv_dmem_lack_o   ),
-          .m1_wbd_err_o            (wbd_riscv_dmem_err_o    ),
+          .m1_wbd_dat_i       (wbd_riscv_dmem_dat_i         ),
+          .m1_wbd_adr_i       (wbd_riscv_dmem_adr_i         ),
+          .m1_wbd_sel_i       (wbd_riscv_dmem_sel_i         ),
+          .m1_wbd_bl_i        (wbd_riscv_dmem_bl_i          ),
+          .m1_wbd_bry_i       (wbd_riscv_dmem_bry_i         ),
+          .m1_wbd_we_i        (wbd_riscv_dmem_we_i          ),
+          .m1_wbd_cyc_i       (wbd_riscv_dmem_stb_i         ),
+          .m1_wbd_stb_i       (wbd_riscv_dmem_stb_i         ),
+          .m1_wbd_dat_o       (wbd_riscv_dmem_dat_o         ),
+          .m1_wbd_ack_o       (wbd_riscv_dmem_ack_o         ),
+          .m1_wbd_lack_o      (wbd_riscv_dmem_lack_o        ),
+          .m1_wbd_err_o       (wbd_riscv_dmem_err_o         ),
          
          // Master 2 Interface
-          .m2_wbd_dat_i            (wbd_riscv_dcache_dat_i  ),
-          .m2_wbd_adr_i            (wbd_riscv_dcache_adr_i  ),
-          .m2_wbd_sel_i            (wbd_riscv_dcache_sel_i  ),
-          .m2_wbd_bl_i             (wbd_riscv_dcache_bl_i   ),
-          .m2_wbd_bry_i            (wbd_riscv_dcache_bry_i  ),
-          .m2_wbd_we_i             (wbd_riscv_dcache_we_i   ),
-          .m2_wbd_cyc_i            (wbd_riscv_dcache_stb_i  ),
-          .m2_wbd_stb_i            (wbd_riscv_dcache_stb_i  ),
-          .m2_wbd_dat_o            (wbd_riscv_dcache_dat_o  ),
-          .m2_wbd_ack_o            (wbd_riscv_dcache_ack_o  ),
-          .m2_wbd_lack_o           (wbd_riscv_dcache_lack_o ),
-          .m2_wbd_err_o            (wbd_riscv_dcache_err_o  ),
+          .m2_wbd_dat_i       (wbd_riscv_dcache_dat_i       ),
+          .m2_wbd_adr_i       (wbd_riscv_dcache_adr_i       ),
+          .m2_wbd_sel_i       (wbd_riscv_dcache_sel_i       ),
+          .m2_wbd_bl_i        (wbd_riscv_dcache_bl_i        ),
+          .m2_wbd_bry_i       (wbd_riscv_dcache_bry_i       ),
+          .m2_wbd_we_i        (wbd_riscv_dcache_we_i        ),
+          .m2_wbd_cyc_i       (wbd_riscv_dcache_stb_i       ),
+          .m2_wbd_stb_i       (wbd_riscv_dcache_stb_i       ),
+          .m2_wbd_dat_o       (wbd_riscv_dcache_dat_o       ),
+          .m2_wbd_ack_o       (wbd_riscv_dcache_ack_o       ),
+          .m2_wbd_lack_o      (wbd_riscv_dcache_lack_o      ),
+          .m2_wbd_err_o       (wbd_riscv_dcache_err_o       ),
 
          // Master 3 Interface
-          .m3_wbd_adr_i            (wbd_riscv_icache_adr_i  ),
-          .m3_wbd_sel_i            (wbd_riscv_icache_sel_i  ),
-          .m3_wbd_bl_i             (wbd_riscv_icache_bl_i   ),
-          .m3_wbd_bry_i            (wbd_riscv_icache_bry_i  ),
-          .m3_wbd_we_i             (wbd_riscv_icache_we_i   ),
-          .m3_wbd_cyc_i            (wbd_riscv_icache_stb_i  ),
-          .m3_wbd_stb_i            (wbd_riscv_icache_stb_i  ),
-          .m3_wbd_dat_o            (wbd_riscv_icache_dat_o  ),
-          .m3_wbd_ack_o            (wbd_riscv_icache_ack_o  ),
-          .m3_wbd_lack_o           (wbd_riscv_icache_lack_o ),
-          .m3_wbd_err_o            (wbd_riscv_icache_err_o  ),
+          .m3_wbd_adr_i       (wbd_riscv_icache_adr_i       ),
+          .m3_wbd_sel_i       (wbd_riscv_icache_sel_i       ),
+          .m3_wbd_bl_i        (wbd_riscv_icache_bl_i        ),
+          .m3_wbd_bry_i       (wbd_riscv_icache_bry_i       ),
+          .m3_wbd_we_i        (wbd_riscv_icache_we_i        ),
+          .m3_wbd_cyc_i       (wbd_riscv_icache_stb_i       ),
+          .m3_wbd_stb_i       (wbd_riscv_icache_stb_i       ),
+          .m3_wbd_dat_o       (wbd_riscv_icache_dat_o       ),
+          .m3_wbd_ack_o       (wbd_riscv_icache_ack_o       ),
+          .m3_wbd_lack_o      (wbd_riscv_icache_lack_o      ),
+          .m3_wbd_err_o       (wbd_riscv_icache_err_o       ),
          
          
          // Slave 0 Interface
-       // .s0_wbd_err_i            (1'b0                    ), - Moved inside IP
-          .s0_wbd_dat_i            (wbd_spim_dat_i          ),
-          .s0_wbd_ack_i            (wbd_spim_ack_i          ),
-          .s0_wbd_lack_i           (wbd_spim_lack_i         ),
-          .s0_wbd_dat_o            (wbd_spim_dat_o          ),
-          .s0_wbd_adr_o            (wbd_spim_adr_o          ),
-          .s0_wbd_bry_o            (wbd_spim_bry_o          ),
-          .s0_wbd_bl_o             (wbd_spim_bl_o           ),
-          .s0_wbd_sel_o            (wbd_spim_sel_o          ),
-          .s0_wbd_we_o             (wbd_spim_we_o           ),  
-          .s0_wbd_cyc_o            (wbd_spim_cyc_o          ),
-          .s0_wbd_stb_o            (wbd_spim_stb_o          ),
+       // .s0_wbd_err_i       (1'b0                         ), - Moved inside IP
+          .s0_wbd_dat_i       (wbd_spim_dat_i               ),
+          .s0_wbd_ack_i       (wbd_spim_ack_i               ),
+          .s0_wbd_lack_i      (wbd_spim_lack_i              ),
+          .s0_wbd_dat_o       (wbd_spim_dat_o               ),
+          .s0_wbd_adr_o       (wbd_spim_adr_o               ),
+          .s0_wbd_bry_o       (wbd_spim_bry_o               ),
+          .s0_wbd_bl_o        (wbd_spim_bl_o                ),
+          .s0_wbd_sel_o       (wbd_spim_sel_o               ),
+          .s0_wbd_we_o        (wbd_spim_we_o                ),  
+          .s0_wbd_cyc_o       (wbd_spim_cyc_o               ),
+          .s0_wbd_stb_o       (wbd_spim_stb_o               ),
          
          // Slave 1 Interface
-       // .s1_wbd_err_i            (1'b0                    ), - Moved inside IP
-          .s1_wbd_dat_i            (wbd_uart_dat_i          ),
-          .s1_wbd_ack_i            (wbd_uart_ack_i          ),
-          .s1_wbd_dat_o            (wbd_uart_dat_o          ),
-          .s1_wbd_adr_o            (wbd_uart_adr_o          ),
-          .s1_wbd_sel_o            (wbd_uart_sel_o          ),
-          .s1_wbd_we_o             (wbd_uart_we_o           ),  
-          .s1_wbd_cyc_o            (wbd_uart_cyc_o          ),
-          .s1_wbd_stb_o            (wbd_uart_stb_o          ),
+       // .s1_wbd_err_i       (1'b0                         ), - Moved inside IP
+          .s1_wbd_dat_i       (wbd_uart_dat_i               ),
+          .s1_wbd_ack_i       (wbd_uart_ack_i               ),
+          .s1_wbd_dat_o       (wbd_uart_dat_o               ),
+          .s1_wbd_adr_o       (wbd_uart_adr_o               ),
+          .s1_wbd_sel_o       (wbd_uart_sel_o               ),
+          .s1_wbd_we_o        (wbd_uart_we_o                ),  
+          .s1_wbd_cyc_o       (wbd_uart_cyc_o               ),
+          .s1_wbd_stb_o       (wbd_uart_stb_o               ),
          
          // Slave 2 Interface
-       // .s2_wbd_err_i            (1'b0                    ), - Moved inside IP
-          .s2_wbd_dat_i            (wbd_glbl_dat_i          ),
-          .s2_wbd_ack_i            (wbd_glbl_ack_i          ),
-          .s2_wbd_dat_o            (wbd_glbl_dat_o          ),
-          .s2_wbd_adr_o            (wbd_glbl_adr_o          ),
-          .s2_wbd_sel_o            (wbd_glbl_sel_o          ),
-          .s2_wbd_we_o             (wbd_glbl_we_o           ),  
-          .s2_wbd_cyc_o            (wbd_glbl_cyc_o          ),
-          .s2_wbd_stb_o            (wbd_glbl_stb_o          )
+       // .s2_wbd_err_i       (1'b0                         ), - Moved inside IP
+          .s2_wbd_dat_i       (wbd_glbl_dat_i               ),
+          .s2_wbd_ack_i       (wbd_glbl_ack_i               ),
+          .s2_wbd_dat_o       (wbd_glbl_dat_o               ),
+          .s2_wbd_adr_o       (wbd_glbl_adr_o               ),
+          .s2_wbd_sel_o       (wbd_glbl_sel_o               ),
+          .s2_wbd_we_o        (wbd_glbl_we_o                ),  
+          .s2_wbd_cyc_o       (wbd_glbl_cyc_o               ),
+          .s2_wbd_stb_o       (wbd_glbl_stb_o               )
 
 
 	);
 
+//-----------------------------------------------
+// uart+i2c+usb+spi
+//-----------------------------------------------
 
 uart_i2c_usb_spi_top   u_uart_i2c_usb_spi (
 `ifdef USE_POWER_PINS
-          .vccd1                   (vccd1                   ),// User area 1 1.8V supply
-          .vssd1                   (vssd1                   ),// User area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
-          .wbd_clk_int             (wbd_clk_uart_rp         ), 
-          .cfg_cska_uart           (cfg_wcska_uart_rp        ), 
-          .wbd_clk_uart            (wbd_clk_uart_skew       ),
+          .wbd_clk_int        (wbd_clk_uart_rp              ), 
+          .cfg_cska_uart      (cfg_wcska_uart_rp            ), 
+          .wbd_clk_uart       (wbd_clk_uart_skew            ),
 
-          .uart_rstn               (uart_rst_n              ), // uart reset
-          .i2c_rstn                (i2c_rst_n               ), // i2c reset
-          .usb_rstn                (usb_rst_n               ), // USB reset
-          .spi_rstn                (sspim_rst_n             ), // SPI reset
-          .app_clk                 (wbd_clk_uart_skew       ),
-	      .usb_clk                 (usb_clk                 ),
+          .uart_rstn          (uart_rst_n                   ), // uart reset
+          .i2c_rstn           (i2c_rst_n                    ), // i2c reset
+          .usb_rstn           (usb_rst_n                    ), // USB reset
+          .spi_rstn           (sspim_rst_n                  ), // SPI reset
+          .app_clk            (wbd_clk_uart_skew            ),
+          .usb_clk            (usb_clk                      ),
 
         // Reg Bus Interface Signal
-          .reg_cs                  (wbd_uart_stb_o          ),
-          .reg_wr                  (wbd_uart_we_o           ),
-          .reg_addr                (wbd_uart_adr_o[8:0]     ),
-          .reg_wdata               (wbd_uart_dat_o          ),
-          .reg_be                  (wbd_uart_sel_o          ),
+          .reg_cs             (wbd_uart_stb_o               ),
+          .reg_wr             (wbd_uart_we_o                ),
+          .reg_addr           (wbd_uart_adr_o[8:0]          ),
+          .reg_wdata          (wbd_uart_dat_o               ),
+          .reg_be             (wbd_uart_sel_o               ),
 
        // Outputs
-          .reg_rdata               (wbd_uart_dat_i          ),
-          .reg_ack                 (wbd_uart_ack_i          ),
+          .reg_rdata          (wbd_uart_dat_i               ),
+          .reg_ack            (wbd_uart_ack_i               ),
 
        // Pad interface
-          .scl_pad_i               (i2cm_clk_i              ),
-          .scl_pad_o               (i2cm_clk_o              ),
-          .scl_pad_oen_o           (i2cm_clk_oen            ),
+          .scl_pad_i          (i2cm_clk_i                   ),
+          .scl_pad_o          (i2cm_clk_o                   ),
+          .scl_pad_oen_o      (i2cm_clk_oen                 ),
 
-          .sda_pad_i               (i2cm_data_i             ),
-          .sda_pad_o               (i2cm_data_o             ),
-          .sda_padoen_o            (i2cm_data_oen           ),
+          .sda_pad_i          (i2cm_data_i                  ),
+          .sda_pad_o          (i2cm_data_o                  ),
+          .sda_padoen_o       (i2cm_data_oen                ),
      
-          .i2cm_intr_o             (i2cm_intr_o             ),
+          .i2cm_intr_o        (i2cm_intr_o                  ),
 
-          .uart_rxd                (uart_rxd                ),
-          .uart_txd                (uart_txd                ),
+          .uart_rxd           (uart_rxd                     ),
+          .uart_txd           (uart_txd                     ),
 
-          .usb_in_dp               (usb_dp_i                ),
-          .usb_in_dn               (usb_dn_i                ),
+          .usb_in_dp          (usb_dp_i                     ),
+          .usb_in_dn          (usb_dn_i                     ),
 
-          .usb_out_dp              (usb_dp_o                ),
-          .usb_out_dn              (usb_dn_o                ),
-          .usb_out_tx_oen          (usb_oen                 ),
+          .usb_out_dp         (usb_dp_o                     ),
+          .usb_out_dn         (usb_dn_o                     ),
+          .usb_out_tx_oen     (usb_oen                      ),
        
-          .usb_intr_o              (usb_intr_o              ),
+          .usb_intr_o         (usb_intr_o                   ),
 
       // SPIM Master
-          .sspim_sck               (sspim_sck               ), 
-          .sspim_so                (sspim_so                ),  
-          .sspim_si                (sspim_si                ),  
-          .sspim_ssn               (sspim_ssn               )  
+          .sspim_sck          (sspim_sck                    ), 
+          .sspim_so           (sspim_so                     ),  
+          .sspim_si           (sspim_si                     ),  
+          .sspim_ssn          (sspim_ssn                    )  
 
      );
 
+//---------------------------------------
+// Pinmux
+//---------------------------------------
+
 pinmux_top u_pinmux(
 `ifdef USE_POWER_PINS
-          .vccd1                   (vccd1                   ),// User area 1 1.8V supply
-          .vssd1                   (vssd1                   ),// User area 1 digital ground
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
 `endif
         //clk skew adjust
-          .cfg_cska_pinmux         (cfg_wcska_pinmux_rp      ),
-          .wbd_clk_int             (wbd_clk_pinmux_rp       ),
-          .wbd_clk_pinmux          (wbd_clk_pinmux_skew     ),
+          .cfg_cska_pinmux    (cfg_wcska_pinmux_rp          ),
+          .wbd_clk_int        (wbd_clk_pinmux_rp            ),
+          .wbd_clk_pinmux     (wbd_clk_pinmux_skew          ),
 
         // System Signals
         // Inputs
-          .mclk                    (wbd_clk_pinmux_skew     ),
-          .e_reset_n               (e_reset_n_rp            ),
-          .p_reset_n               (p_reset_n_rp            ),
-          .s_reset_n               (wbd_int_rst_n           ),
+          .mclk               (wbd_clk_pinmux_skew          ),
+          .e_reset_n          (e_reset_n_rp                 ),
+          .p_reset_n          (p_reset_n_rp                 ),
+          .s_reset_n          (wbd_int_rst_n                ),
 
-          .cfg_strap_pad_ctrl      (cfg_strap_pad_ctrl_rp   ),
-          .system_strap            (system_strap_rp         ),
-          .strap_sticky            (strap_sticky            ),
-	      .strap_uartm             (strap_uartm             ),
+          .cfg_strap_pad_ctrl (cfg_strap_pad_ctrl_rp        ),
+          .system_strap       (system_strap_rp              ),
+          .strap_sticky       (strap_sticky                 ),
+          .strap_uartm        (strap_uartm                  ),
 
-          .user_clock1             (wb_clk_i_rp             ),
-          .user_clock2             (user_clock2_rp          ),
-          .int_pll_clock           (int_pll_clock           ),
-          .xtal_clk                (xtal_clk                ),
-          .cpu_clk                 (cpu_clk_rp_pinmux       ),
+          .user_clock1        (wb_clk_i_rp                  ),
+          .user_clock2        (user_clock2_rp               ),
+          .int_pll_clock      (int_pll_clock                ),
+          .xtal_clk           (xtal_clk                     ),
+          .cpu_clk            (cpu_clk_rp_pinmux            ),
 
 
-          .rtc_clk                 (rtc_clk                 ),
-          .usb_clk                 (usb_clk                 ),
+          .rtc_clk            (rtc_clk                      ),
+          .usb_clk            (usb_clk                      ),
 	// Reset Control
-          .cpu_core_rst_n          (cpu_core_rst_n          ),
-          .cpu_intf_rst_n          (cpu_intf_rst_n          ),
-          .qspim_rst_n             (qspim_rst_n             ),
-          .sspim_rst_n             (sspim_rst_n             ),
-          .uart_rst_n              (uart_rst_n              ),
-          .i2cm_rst_n              (i2c_rst_n               ),
-          .usb_rst_n               (usb_rst_n               ),
+          .cpu_core_rst_n     (cpu_core_rst_n               ),
+          .cpu_intf_rst_n     (cpu_intf_rst_n               ),
+          .qspim_rst_n        (qspim_rst_n                  ),
+          .sspim_rst_n        (sspim_rst_n                  ),
+          .uart_rst_n         (uart_rst_n                   ),
+          .i2cm_rst_n         (i2c_rst_n                    ),
+          .usb_rst_n          (usb_rst_n                    ),
 
-	      .cfg_riscv_ctrl          (cfg_riscv_ctrl          ),
+          .cfg_riscv_ctrl     (cfg_riscv_ctrl               ),
 
         // Reg Bus Interface Signal
-          .reg_cs                  (wbd_glbl_stb_o          ),
-          .reg_wr                  (wbd_glbl_we_o           ),
-          .reg_addr                (wbd_glbl_adr_o          ),
-          .reg_wdata               (wbd_glbl_dat_o          ),
-          .reg_be                  (wbd_glbl_sel_o          ),
+          .reg_cs             (wbd_glbl_stb_o               ),
+          .reg_wr             (wbd_glbl_we_o                ),
+          .reg_addr           (wbd_glbl_adr_o               ),
+          .reg_wdata          (wbd_glbl_dat_o               ),
+          .reg_be             (wbd_glbl_sel_o               ),
 
        // Outputs
-          .reg_rdata               (wbd_glbl_dat_i          ),
-          .reg_ack                 (wbd_glbl_ack_i          ),
+          .reg_rdata          (wbd_glbl_dat_i               ),
+          .reg_ack            (wbd_glbl_ack_i               ),
 
 
        // Risc configuration
-          .irq_lines               (irq_lines               ),
-          .soft_irq                (soft_irq                ),
-          .user_irq                (user_irq                ),
-          .usb_intr                (usb_intr_o              ),
-          .i2cm_intr               (i2cm_intr_o             ),
+          .irq_lines          (irq_lines                    ),
+          .soft_irq           (soft_irq                     ),
+          .user_irq           (user_irq                     ),
+          .usb_intr           (usb_intr_o                   ),
+          .i2cm_intr          (i2cm_intr_o                  ),
 
        // Digital IO
-          .digital_io_out          (io_out_int              ),
-          .digital_io_oen          (io_oeb_int              ),
-          .digital_io_in           (io_in_rp                ),
+          .digital_io_out     (io_out_int                   ),
+          .digital_io_oen     (io_oeb_int                   ),
+          .digital_io_in      (io_in_rp                     ),
 
        // SFLASH I/F
-          .sflash_sck              (sflash_sck              ),
-          .sflash_ss               (spi_csn                 ),
-          .sflash_oen              (sflash_oen              ),
-          .sflash_do               (sflash_do               ),
-          .sflash_di               (sflash_di               ),
+          .sflash_sck         (sflash_sck                   ),
+          .sflash_ss          (spi_csn                      ),
+          .sflash_oen         (sflash_oen                   ),
+          .sflash_do          (sflash_do                    ),
+          .sflash_di          (sflash_di                    ),
 
 
        // USB I/F
-          .usb_dp_o                (usb_dp_o                ),
-          .usb_dn_o                (usb_dn_o                ),
-          .usb_oen                 (usb_oen                 ),
-          .usb_dp_i                (usb_dp_i                ),
-          .usb_dn_i                (usb_dn_i                ),
+          .usb_dp_o           (usb_dp_o                     ),
+          .usb_dn_o           (usb_dn_o                     ),
+          .usb_oen            (usb_oen                      ),
+          .usb_dp_i           (usb_dp_i                     ),
+          .usb_dn_i           (usb_dn_i                     ),
 
        // UART I/F
-          .uart_txd                (uart_txd                ),
-          .uart_rxd                (uart_rxd                ),
+          .uart_txd           (uart_txd                     ),
+          .uart_rxd           (uart_rxd                     ),
 
        // I2CM I/F
-          .i2cm_clk_o              (i2cm_clk_o              ),
-          .i2cm_clk_i              (i2cm_clk_i              ),
-          .i2cm_clk_oen            (i2cm_clk_oen            ),
-          .i2cm_data_oen           (i2cm_data_oen           ),
-          .i2cm_data_o             (i2cm_data_o             ),
-          .i2cm_data_i             (i2cm_data_i             ),
+          .i2cm_clk_o         (i2cm_clk_o                   ),
+          .i2cm_clk_i         (i2cm_clk_i                   ),
+          .i2cm_clk_oen       (i2cm_clk_oen                 ),
+          .i2cm_data_oen      (i2cm_data_oen                ),
+          .i2cm_data_o        (i2cm_data_o                  ),
+          .i2cm_data_i        (i2cm_data_i                  ),
 
        // SPI MASTER
-          .spim_sck                (sspim_sck               ),
-          .spim_ssn                (sspim_ssn               ),
-          .spim_miso               (sspim_so                ),
-          .spim_mosi               (sspim_si                ),
+          .spim_sck           (sspim_sck                    ),
+          .spim_ssn           (sspim_ssn                    ),
+          .spim_miso          (sspim_so                     ),
+          .spim_mosi          (sspim_si                     ),
        
        // SPI SLAVE
-          .spis_sck                (sspis_sck               ),
-          .spis_ssn                (sspis_ssn               ),
-          .spis_miso               (sspis_so                ),
-          .spis_mosi               (sspis_si                ),
+          .spis_sck           (sspis_sck                    ),
+          .spis_ssn           (sspis_ssn                    ),
+          .spis_miso          (sspis_so                     ),
+          .spis_mosi          (sspis_si                     ),
 
       // UART MASTER I/F
-          .uartm_rxd               (uartm_rxd               ),
-          .uartm_txd               (uartm_txd               ),
+          .uartm_rxd          (uartm_rxd                    ),
+          .uartm_txd          (uartm_txd                    ),
 
 
-	  .pulse1m_mclk            (pulse1m_mclk            ),
+          .pulse1m_mclk       (pulse1m_mclk                 ),
+     
+          .pinmux_debug       (pinmux_debug                 ),
+     
+     
+          .cfg_pll_enb        (cfg_pll_enb                  ), 
+          .cfg_pll_fed_div    (cfg_pll_fed_div              ), 
+          .cfg_dco_mode       (cfg_dco_mode                 ), 
+          .cfg_dc_trim        (cfg_dc_trim                  ),
+          .pll_ref_clk        (pll_ref_clk                  ),
+     
+        // Peripheral Reg Bus Interface Signal
+          .reg_peri_cs        (reg_peri_cs                  ),
+          .reg_peri_wr        (reg_peri_wr                  ),
+          .reg_peri_addr      (reg_peri_addr                ),
+          .reg_peri_wdata     (reg_peri_wdata               ),
+          .reg_peri_be        (reg_peri_be                  ),
 
-	  .pinmux_debug            (pinmux_debug            ),
+       // Outputs
+          .reg_peri_rdata     (reg_peri_rdata               ),
+          .reg_peri_ack       (reg_peri_ack                 ),
 
+          .rtc_intr           (rtc_intr                     )
 
-       .cfg_pll_enb            (cfg_pll_enb             ), 
-       .cfg_pll_fed_div        (cfg_pll_fed_div         ), 
-       .cfg_dco_mode           (cfg_dco_mode            ), 
-       .cfg_dc_trim            (cfg_dc_trim             ),
-       .pll_ref_clk            (pll_ref_clk             ),
+   ); 
 
-       .cfg_dac0_mux_sel       (cfg_dac0_mux_sel        ),
-       .cfg_dac1_mux_sel       (cfg_dac1_mux_sel        ),
-       .cfg_dac2_mux_sel       (cfg_dac2_mux_sel        ),
-       .cfg_dac3_mux_sel       (cfg_dac3_mux_sel        )
+//---------------------------------------------------------
+// Peripheral block
+//----------------------------------------------------------
+
+peri_top u_peri(
+`ifdef USE_POWER_PINS
+          .vccd1              (vccd1                        ),// User area 1 1.8V supply
+          .vssd1              (vssd1                        ),// User area 1 digital ground
+`endif
+        //clk skew adjust
+          .cfg_cska_peri      (cfg_wcska_peri_rp            ),
+          .wbd_clk_int        (wbd_clk_peri_rp              ),
+          .wbd_clk_peri       (wbd_clk_peri_skew            ),
+
+        // System Signals
+        // Inputs
+          .mclk                    (wbd_clk_peri_skew       ),
+          .s_reset_n               (wbd_int_rst_n           ),
+
+        // Peripheral Reg Bus Interface Signal
+          .reg_cs                  (reg_peri_cs             ),
+          .reg_wr                  (reg_peri_wr             ),
+          .reg_addr                (reg_peri_addr           ),
+          .reg_wdata               (reg_peri_wdata          ),
+          .reg_be                  (reg_peri_be             ),
+
+       // Outputs
+          .reg_rdata               (reg_peri_rdata          ),
+          .reg_ack                 (reg_peri_ack            ),
+
+          // RTC clock domain
+          .rtc_clk                 (rtc_clk                 ),
+          .rtc_intr                (rtc_intr                ),
+
+          .inc_time_s              (                        ),
+          .inc_date_d              (                        ),
+
+          .cfg_dac0_mux_sel        (cfg_dac0_mux_sel        ),
+          .cfg_dac1_mux_sel        (cfg_dac1_mux_sel        ),
+          .cfg_dac2_mux_sel        (cfg_dac2_mux_sel        ),
+          .cfg_dac3_mux_sel        (cfg_dac3_mux_sel        )
 
    ); 
 
 
 
+//------------------------------------------
+// 4 x 8 bit DAC
+//------------------------------------------
+
 
 dac_top  u_4x8bit_dac(
 `ifdef USE_POWER_PINS
-    .vccd1                 (vdda1                  ),
-    .vssd1                 (vssa1                  ),
+          .vccd1              (vdda1                        ),
+          .vssd1              (vssa1                        ),
 `endif
-    .Vref (analog_io[23]),
-    .DIn0 (cfg_dac0_mux_sel),
-    .DIn1 (cfg_dac1_mux_sel),
-    .DIn2 (cfg_dac2_mux_sel),
-    .DIn3 (cfg_dac3_mux_sel),
-    .Vout0(analog_io[15]   ),
-    .Vout1(analog_io[16]   ),
-    .Vout2(analog_io[17]   ),
-    .Vout3(analog_io[18]   )
+          .Vref               (analog_io[23]                ),
+          .DIn0               (cfg_dac0_mux_sel             ),
+          .DIn1               (cfg_dac1_mux_sel             ),
+          .DIn2               (cfg_dac2_mux_sel             ),
+          .DIn3               (cfg_dac3_mux_sel             ),
+          .Vout0              (analog_io[15]                ),
+          .Vout1              (analog_io[16]                ),
+          .Vout2              (analog_io[17]                ),
+          .Vout3              (analog_io[18]                )
    );
 
 
