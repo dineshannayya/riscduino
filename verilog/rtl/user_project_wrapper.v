@@ -1329,7 +1329,7 @@ fpu_wrapper u_fpu (
           .rst_n              (cpu_intf_rst_n               ),
 
           .cfg_cska           (cfg_ccska_fpu_rp             ),
-          .wbd_clk_int        (cpu_clk_rp_fpu               ),
+          .wbd_clk_int        (cpu_clk_fpu                  ),
           .wbd_clk_out        (cpu_clk_fpu_skew             ),
 
           .dmem_req           (fpu_dmem_req                 ),

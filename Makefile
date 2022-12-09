@@ -327,3 +327,11 @@ caravel-sta: ./env/spef-mapping.tcl
 	@$(MAKE) -C $(TIMING_ROOT) -f $(TIMING_ROOT)/timing.mk caravel-timing-fast
 	@$(MAKE) -C $(TIMING_ROOT) -f $(TIMING_ROOT)/timing.mk caravel-timing-slow
 	@echo "You can find results for all corners in $(CUP_ROOT)/signoff/caravel/openlane-signoff/timing/"
+
+#Added by Dinesh-A for Klayout Based DRC check
+.PHONY: run-drc
+run-drc: 
+	@echo "run kalyout DRC checks"
+	mkdir -p signoff/user_project_wrapper/openlane-signoff/drc
+	docker run -ti --rm  -v $(PROJECT_ROOT):/project riscduino/openlane:mpw7  sh -c "cd /project && ./scripts/klayout_drc.sh user_project_wrapper "
+
