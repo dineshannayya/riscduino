@@ -228,7 +228,7 @@ assign rst_clk_ctrl1[27:24] = (strap_sticky[`STRAP_SCLK_SKEW_QSPI_CO] == 2'b00) 
                               (strap_sticky[`STRAP_SCLK_SKEW_QSPI_CO] == 2'b01) ?  CLK_SKEW1_RESET_VAL[27:24] + 2 :
                               (strap_sticky[`STRAP_SCLK_SKEW_QSPI_CO] == 2'b10) ?  CLK_SKEW1_RESET_VAL[27:24] + 4 : CLK_SKEW1_RESET_VAL[27:24]-4;
 
-assign rst_clk_ctrl1[31:28] = 4'b0;
+assign rst_clk_ctrl1[31:28] = CLK_SKEW1_RESET_VAL[31:28];
 
 
 always @ (posedge mclk ) begin 

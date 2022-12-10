@@ -173,7 +173,7 @@ assign skew_config[27:24] =   (strap_skew == 2'b00) ?  CLK_SKEW1_RESET_VAL[27:24
                               (strap_skew == 2'b01) ?  CLK_SKEW1_RESET_VAL[27:24] + 2 :
                               (strap_skew == 2'b10) ?  CLK_SKEW1_RESET_VAL[27:24] + 4 : CLK_SKEW1_RESET_VAL[27:24]-4;
 
-assign skew_config[31:28] = 4'b0;
+assign skew_config[31:28] = CLK_SKEW1_RESET_VAL[31:28];
 
 //----------------------------------------------------------
 reg [3:0] cpu_clk_cfg,wbs_clk_cfg;
@@ -668,7 +668,7 @@ task uartm_clock_monitor;
 input real exp_period;
 begin
    `ifdef GL
-   force clock_mon = u_top.u_wb_host._10399_.Q;
+   force clock_mon = u_top.u_wb_host._10372_.Q;
     `else
    force clock_mon = u_top.u_wb_host.u_uart2wb.u_core.line_clk_16x;
     `endif

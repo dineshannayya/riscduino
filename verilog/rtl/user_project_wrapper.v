@@ -1036,50 +1036,50 @@ dg_pll   u_pll(
 //------------------------------------------------------------------------------
 ycr_top_wb u_riscv_top (
 `ifdef USE_POWER_PINS
-          .vccd1              (vccd1                        ),// User area 1 1.8V supply
-          .vssd1              (vssd1                        ),// User area 1 digital ground
+          .vccd1                   (vccd1                      ),// User area 1 1.8V supply
+          .vssd1                   (vssd1                      ),// User area 1 digital ground
 `endif
-          .wbd_clk_int        (wbd_clk_risc_rp              ), 
-          .cfg_wcska_riscv_intf(cfg_wcska_riscv_rp           ), 
-          .wbd_clk_skew       (wbd_clk_riscv_skew           ),
+          .wbd_clk_int             (wbd_clk_risc_rp            ), 
+          .cfg_wcska_riscv_intf    (cfg_wcska_riscv_rp         ), 
+          .wbd_clk_skew            (wbd_clk_riscv_skew         ),
 
     // Reset
-          .pwrup_rst_n        (wbd_int_rst_n                ),
-          .rst_n              (wbd_int_rst_n                ),
-          .cpu_intf_rst_n     (cpu_intf_rst_n               ),
-          .cpu_core_rst_n     (cpu_core_rst_n[0]            ),
-          .riscv_debug        (riscv_debug                  ),
-	      .cfg_sram_lphase    (cfg_riscv_sram_lphase        ),
-	      .cfg_cache_ctrl     (cfg_riscv_cache_ctrl         ),
-	      .cfg_bypass_icache  (cfg_bypass_icache            ),
-	      .cfg_bypass_dcache  (cfg_bypass_dcache            ),
+          .pwrup_rst_n             (wbd_int_rst_n           ),
+          .rst_n                   (wbd_int_rst_n           ),
+          .cpu_intf_rst_n          (cpu_intf_rst_n          ),
+          .cpu_core_rst_n          (cpu_core_rst_n[0]       ),
+          .riscv_debug             (riscv_debug             ),
+	  .cfg_sram_lphase         (cfg_riscv_sram_lphase   ),
+	  .cfg_cache_ctrl          (cfg_riscv_cache_ctrl    ),
+	  .cfg_bypass_icache       (cfg_bypass_icache       ),
+	  .cfg_bypass_dcache       (cfg_bypass_dcache       ),
 
     // Clock
-          .core_clk_int         (cpu_clk_rp_risc            ),
-          .cfg_ccska_riscv_intf (cfg_ccska_riscv_intf_rp    ),
-          .cfg_ccska_riscv_icon (cfg_ccska_riscv_icon_rp    ),
-          .cfg_ccska_riscv_core0(cfg_ccska_riscv_core0_rp   ),
+          .core_clk_int            (cpu_clk_rp_risc            ),
+          .cfg_ccska_riscv_intf    (cfg_ccska_riscv_intf_rp    ),
+          .cfg_ccska_riscv_icon    (cfg_ccska_riscv_icon_rp    ),
+          .cfg_ccska_riscv_core0   (cfg_ccska_riscv_core0_rp   ),
 
-          .rtc_clk              (rtc_clk                    ),
+          .rtc_clk                 (rtc_clk                    ),
 
 
     // IRQ
-          .irq_lines            (irq_lines_rp               ), 
-          .soft_irq             (soft_irq_rp                ), // TODO - Interrupts
+          .irq_lines               (irq_lines_rp               ), 
+          .soft_irq                (soft_irq_rp                ), // TODO - Interrupts
 
     // DFT
-    //    .test_mode            (1'b0                       ), // Moved inside IP
-    //    .test_rst_n           (1'b1                       ), // Moved inside IP
+    //    .test_mode               (1'b0                       ), // Moved inside IP
+    //    .test_rst_n              (1'b1                       ), // Moved inside IP
 
 `ifndef SCR1_TCM_MEM
     // SRAM-0 PORT-0
-          .sram0_clk0           (sram0_clk0                  ),
-          .sram0_csb0           (sram0_csb0                  ),
-          .sram0_web0           (sram0_web0                  ),
-          .sram0_addr0          (sram0_addr0                 ),
-          .sram0_wmask0         (sram0_wmask0                ),
-          .sram0_din0           (sram0_din0                  ),
-          .sram0_dout0          (sram0_dout0                 ),
+          .sram0_clk0             (sram0_clk0                  ),
+          .sram0_csb0             (sram0_csb0                  ),
+          .sram0_web0             (sram0_web0                  ),
+          .sram0_addr0            (sram0_addr0                 ),
+          .sram0_wmask0           (sram0_wmask0                ),
+          .sram0_din0             (sram0_din0                  ),
+          .sram0_dout0            (sram0_dout0                 ),
     
     // SRAM-0 PORT-0
           .sram0_clk1             (sram0_clk1                   ),
@@ -1295,25 +1295,25 @@ sky130_sram_2kbyte_1rw1r_32x512_8 u_dcache_2kb(
 *************************************************/
 aes_top u_aes (
 `ifdef USE_POWER_PINS
-          .vccd1              (vccd1                        ),
-          .vssd1              (vssd1                        ),
+    .vccd1                 (vccd1            ),
+    .vssd1                 (vssd1            ),
 `endif
 
-          .mclk               (cpu_clk_aes_skew             ),
-          .rst_n              (cpu_intf_rst_n               ),
+    .mclk                  (cpu_clk_aes_skew ),
+    .rst_n                 (cpu_intf_rst_n   ),
 
-          .cfg_cska           (cfg_ccska_aes_rp             ),
-          .wbd_clk_int        (cpu_clk_aes                  ),
-          .wbd_clk_out        (cpu_clk_aes_skew             ),
+    .cfg_cska              (cfg_ccska_aes_rp ),
+    .wbd_clk_int           (cpu_clk_aes      ),
+    .wbd_clk_out           (cpu_clk_aes_skew ),
 
-          .dmem_req           (aes_dmem_req                 ),
-          .dmem_cmd           (aes_dmem_cmd                 ),
-          .dmem_width         (aes_dmem_width               ),
-          .dmem_addr          (aes_dmem_addr                ),
-          .dmem_wdata         (aes_dmem_wdata               ),
-          .dmem_req_ack       (aes_dmem_req_ack             ),
-          .dmem_rdata         (aes_dmem_rdata               ),
-          .dmem_resp          (aes_dmem_resp                )
+    .dmem_req              (aes_dmem_req     ),
+    .dmem_cmd              (aes_dmem_cmd     ),
+    .dmem_width            (aes_dmem_width   ),
+    .dmem_addr             (aes_dmem_addr    ),
+    .dmem_wdata            (aes_dmem_wdata   ),
+    .dmem_req_ack          (aes_dmem_req_ack ),
+    .dmem_rdata            (aes_dmem_rdata   ),
+    .dmem_resp             (aes_dmem_resp    )
 );
 
 /***********************************************
@@ -1321,8 +1321,8 @@ aes_top u_aes (
 *************************************************/
 fpu_wrapper u_fpu (
 `ifdef USE_POWER_PINS
-          .vccd1              (vccd1                        ),
-          .vssd1              (vssd1                        ),
+    .vccd1                 (vccd1            ),
+    .vssd1                 (vssd1            ),
 `endif
 
           .mclk               (cpu_clk_fpu_skew             ),
@@ -1344,56 +1344,56 @@ fpu_wrapper u_fpu (
 
 /*********************************************************
 * SPI Master
-* This is of an SPI master that is controlled via an AXI bus                                                                                                       . 
+* This is implementation of an SPI master that is controlled via an AXI bus                                                  . 
 * It has FIFOs for transmitting and receiving data. 
 * It supports both the normal SPI mode and QPI mode with 4 data lines.
 * *******************************************************/
 
 qspim_top
-#                             (
+#(
 `ifndef SYNTHESIS
     .WB_WIDTH  (WB_WIDTH                                    )
 `endif
 ) u_qspi_master
 (
 `ifdef USE_POWER_PINS
-          .vccd1              (vccd1                        ),// User area 1 1.8V supply
-          .vssd1              (vssd1                        ),// User area 1 digital ground
+          .vccd1                   (vccd1                   ),// User area 1 1.8V supply
+          .vssd1                   (vssd1                   ),// User area 1 digital ground
 `endif
-          .mclk               (wbd_clk_spi                  ),
-          .rst_n              (qspim_rst_n                  ),
+          .mclk                    (wbd_clk_spi             ),
+          .rst_n                   (qspim_rst_n             ),
 
-          .strap_flash        (strap_qspi_flash             ),
-          .strap_pre_sram     (strap_qspi_pre_sram          ),
-          .strap_sram         (strap_qspi_sram              ),
-          .cfg_init_bypass    (strap_qspi_init_bypass       ),
+          .strap_flash             (strap_qspi_flash        ),
+          .strap_pre_sram          (strap_qspi_pre_sram     ),
+          .strap_sram              (strap_qspi_sram         ),
+          .cfg_init_bypass         (strap_qspi_init_bypass  ),
 
     // Clock Skew Adjust
-          .cfg_cska_sp_co     (cfg_wcska_qspi_co_rp         ),
-          .cfg_cska_spi       (cfg_wcska_qspi_rp            ),
-          .wbd_clk_int        (wbd_clk_qspi_rp              ),
-          .wbd_clk_spi        (wbd_clk_spi                  ),
+          .cfg_cska_sp_co          (cfg_wcska_qspi_co_rp     ),
+          .cfg_cska_spi            (cfg_wcska_qspi_rp        ),
+          .wbd_clk_int             (wbd_clk_qspi_rp         ),
+          .wbd_clk_spi             (wbd_clk_spi             ),
 
-          .wbd_stb_i          (wbd_spim_stb_o               ),
-          .wbd_adr_i          (wbd_spim_adr_o               ),
-          .wbd_we_i           (wbd_spim_we_o                ), 
-          .wbd_dat_i          (wbd_spim_dat_o               ),
-          .wbd_sel_i          (wbd_spim_sel_o               ),
-          .wbd_bl_i           (wbd_spim_bl_o                ),
-          .wbd_bry_i          (wbd_spim_bry_o               ),
-          .wbd_dat_o          (wbd_spim_dat_i               ),
-          .wbd_ack_o          (wbd_spim_ack_i               ),
-          .wbd_lack_o         (wbd_spim_lack_i              ),
-          .wbd_err_o          (wbd_spim_err_i               ),
+          .wbd_stb_i               (wbd_spim_stb_o          ),
+          .wbd_adr_i               (wbd_spim_adr_o          ),
+          .wbd_we_i                (wbd_spim_we_o           ), 
+          .wbd_dat_i               (wbd_spim_dat_o          ),
+          .wbd_sel_i               (wbd_spim_sel_o          ),
+          .wbd_bl_i                (wbd_spim_bl_o           ),
+          .wbd_bry_i               (wbd_spim_bry_o          ),
+          .wbd_dat_o               (wbd_spim_dat_i          ),
+          .wbd_ack_o               (wbd_spim_ack_i          ),
+          .wbd_lack_o              (wbd_spim_lack_i         ),
+          .wbd_err_o               (wbd_spim_err_i          ),
 
-          .spi_debug          (spi_debug                    ),
+          .spi_debug               (spi_debug               ),
 
     // Pad Interface
-          .spi_sdi            (sflash_di                    ),
-          .spi_clk            (sflash_sck                   ),
-          .spi_csn            (spi_csn                      ),
-          .spi_sdo            (sflash_do                    ),
-          .spi_oen            (sflash_oen                   )
+          .spi_sdi                 (sflash_di               ),
+          .spi_clk                 (sflash_sck              ),
+          .spi_csn                 (spi_csn                 ),
+          .spi_sdo                 (sflash_do               ),
+          .spi_oen                 (sflash_oen              )
 
 );
 
