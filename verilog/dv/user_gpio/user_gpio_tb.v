@@ -99,11 +99,11 @@ parameter real XTAL_PERIOD = 6;
 
      reg  [7:0]  port_a_out;
      wire [7:0]  port_a_in = {   3'b0,
-		                         io_out[4],
-			                     io_out[3],
-			                     io_out[2],
-		                         io_out[1],
-		                         io_out[0]
+		                         (io_oeb[4] == 1'b0) ? io_out[4]: 1'b0,
+			                     (io_oeb[3] == 1'b0) ? io_out[3]: 1'b0,
+			                     (io_oeb[2] == 1'b0) ? io_out[2]: 1'b0,
+		                         (io_oeb[1] == 1'b0) ? io_out[1]: 1'b0,
+		                         (io_oeb[0] == 1'b0) ? io_out[0]: 1'b0
 			                 };
 
 
@@ -112,7 +112,7 @@ parameter real XTAL_PERIOD = 6;
 		        io_in[2],
 		        io_in[1],
 		        io_in[0]
-		} = (test_start) ? port_a_out[4:0]: 5'hZ;
+		} = (test_start) ? ((&io_oeb[4:0]) ? port_a_out[4:0]: 5'hZ) :  5'hZ;
 
 
      /************* Port-B Mapping **********************************
@@ -127,14 +127,14 @@ parameter real XTAL_PERIOD = 6;
      *   ********************************************************/
 
      reg  [7:0]  port_b_out;
-     wire [7:0]  port_b_in = {   io_out[12],
-		                         io_out[11],
-		                         io_out[21],
-		                         io_out[20],
-			                     io_out[19],
-			                     io_out[18],
-		                         io_out[17],
-		                         io_out[16]
+     wire [7:0]  port_b_in = {  (io_oeb[12]== 1'b0)? io_out[12] : 1'b0,
+		                        (io_oeb[11]== 1'b0)? io_out[11] : 1'b0,
+		                        (io_oeb[21]== 1'b0)? io_out[21] : 1'b0,
+		                        (io_oeb[20]== 1'b0)? io_out[20] : 1'b0,
+			                    (io_oeb[19]== 1'b0)? io_out[19] : 1'b0,
+			                    (io_oeb[18]== 1'b0)? io_out[18] : 1'b0,
+		                        (io_oeb[17]== 1'b0)? io_out[17] : 1'b0,
+		                        (io_oeb[16]== 1'b0)? io_out[16] : 1'b0
 			     };
      
      assign {   io_in[12],
@@ -159,13 +159,13 @@ parameter real XTAL_PERIOD = 6;
 
      reg  [7:0]  port_c_out;
      wire [7:0]  port_c_in = {   1'b0,
-		             io_out[5],
-		             io_out[27],
-		             io_out[26],
-			         io_out[25],
-			         io_out[24],
-		             io_out[23],
-		             io_out[22]
+		             (io_oeb[5]  == 1'b0) ? io_out[5]  : 1'b0,
+		             (io_oeb[27] == 1'b0) ? io_out[27] : 1'b0,
+		             (io_oeb[26] == 1'b0) ? io_out[26] : 1'b0,
+			         (io_oeb[25] == 1'b0) ? io_out[25] : 1'b0,
+			         (io_oeb[24] == 1'b0) ? io_out[24] : 1'b0,
+		             (io_oeb[23] == 1'b0) ? io_out[23] : 1'b0,
+		             (io_oeb[22] == 1'b0) ? io_out[22] : 1'b0
 			     };
       assign {  io_in[5],
 	            io_in[27],
@@ -189,14 +189,14 @@ parameter real XTAL_PERIOD = 6;
       *   ********************************************************/
 
      reg  [7:0]  port_d_out;
-     wire [7:0]  port_d_in = {  io_out[15],
-		                        io_out[14],
-		                        io_out[13],
-		                        io_out[10],
-			                    io_out[9],
-			                    io_out[8],
-		                        io_out[7],
-		                        io_out[6]
+     wire [7:0]  port_d_in = { (io_oeb[15]== 1'b0) ? io_out[15] : 1'b0,
+		                       (io_oeb[14]== 1'b0) ? io_out[14] : 1'b0,
+		                       (io_oeb[13]== 1'b0) ? io_out[13] : 1'b0,
+		                       (io_oeb[10]== 1'b0) ? io_out[10] : 1'b0,
+			                   (io_oeb[9] == 1'b0) ? io_out[9]  : 1'b0,
+			                   (io_oeb[8] == 1'b0) ? io_out[8]  : 1'b0,
+		                       (io_oeb[7] == 1'b0) ? io_out[7]  : 1'b0,
+		                       (io_oeb[6] == 1'b0) ? io_out[6]  : 1'b0
 			        };
 
 	assign {  io_in[15],

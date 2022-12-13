@@ -232,9 +232,9 @@ assign io_in[5]  = 1'b1; // RESET
 //  Integrate the Serial SPI to ad5204/5206 (4-/6-Channel Digital Potentiometers)
 //  https://www.analog.com/media/en/technical-documentation/data-sheets/ad5204_5206.pdf
 //  -----------------------------------------------------------------------------------
-   wire sspi_sck = io_out[21];
-   wire sspi_sdi = io_out[20];
-   wire sspi_ssn = io_out[18];
+   wire sspi_sck = (io_oeb[21] == 1'b0) ? io_out[21] : 1'b0;
+   wire sspi_sdi = (io_oeb[20] == 1'b0) ? io_out[20] : 1'b0;
+   wire sspi_ssn = (io_oeb[18] == 1'b0) ? io_out[18] : 1'b0;
 
    wire [2:0]      p_channel; // potentiometer channel
    wire [7:0]      p_position; // potentiometer position
@@ -260,22 +260,22 @@ assign io_in[5]  = 1'b1; // RESET
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[28];
-   wire flash_csb = io_out[29];
+   wire flash_clk = (io_oeb[28] == 1'b0) ? io_out[28]: 1'b0;
+   wire flash_csb = (io_oeb[29] == 1'b0) ? io_out[29]: 1'b0;
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[33];
-   wire #1 io_oeb_30 = io_oeb[34];
-   wire #1 io_oeb_31 = io_oeb[35];
-   wire #1 io_oeb_32 = io_oeb[36];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
+   wire #1 io_oeb_33 = io_oeb[33];
+   wire #1 io_oeb_34 = io_oeb[34];
+   wire #1 io_oeb_35 = io_oeb[35];
+   wire #1 io_oeb_36 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_33== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_34== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_36== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[33] = flash_io0;
-   assign io_in[34] = flash_io1;
-   assign io_in[35] = flash_io2;
-   assign io_in[36] = flash_io3;
+   assign io_in[33] = (io_oeb[33] == 1'b1) ? flash_io0: 1'b0;
+   assign io_in[34] = (io_oeb[34] == 1'b1) ? flash_io1: 1'b0;
+   assign io_in[35] = (io_oeb[35] == 1'b1) ? flash_io2: 1'b0;
+   assign io_in[36] = (io_oeb[36] == 1'b1) ? flash_io3: 1'b0;
 
    // Quard flash
      s25fl256s #(.mem_file_name(`TB_HEX),
@@ -294,7 +294,7 @@ assign io_in[5]  = 1'b1; // RESET
 
        );
 
-   wire spiram_csb = io_out[31];
+   wire spiram_csb = (io_oeb[31] == 1'b0) ? io_out[31] : 1'b0;
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (

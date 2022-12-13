@@ -95,6 +95,7 @@ module glbl_reg (
 		               input  logic            i2cm_intr              ,
 		               input  logic            pwm_intr              ,
 		               input  logic            rtc_intr              ,
+		               input  logic            ir_intr                ,
 
 		               output logic [15:0]     cfg_riscv_ctrl         ,
                        output  logic [31:0]    cfg_multi_func_sel     ,// multifunction pins
@@ -137,6 +138,7 @@ logic [31:0]   reg_5;  // Multi Function Sel
 logic [31:0]   reg_6;  // 
 logic [31:0]   reg_7;  // 
 logic [31:0]   reg_8;  // 
+logic [31:0]   reg_9;  // Random Number
 logic [31:0]   reg_12; // Latched Strap 
 logic [31:0]   reg_13; // Strap Sticky
 logic [31:0]   reg_14; // System Strap
@@ -372,16 +374,19 @@ assign  irq_lines     = reg_3[31:0] & reg_4[31:0];
 logic usb_intr_s,usb_intr_ss;   // Usb Interrupt Double Sync
 logic i2cm_intr_s,i2cm_intr_ss; // I2C Interrupt Double Sync
 logic rtc_intr_s,rtc_intr_ss;
+logic ir_intr_s,ir_intr_ss;
 
 always @ (posedge mclk or negedge s_reset_n)
 begin  
    if (s_reset_n == 1'b0) begin
-     usb_intr_s   <= 'h0;
-     usb_intr_ss  <= 'h0;
-     i2cm_intr_s  <= 'h0;
-     i2cm_intr_ss <= 'h0;
-     rtc_intr_s  <= 'h0;
-     rtc_intr_ss <= 'h0;
+     usb_intr_s       <= 'h0;
+     usb_intr_ss      <= 'h0;
+     i2cm_intr_s      <= 'h0;
+     i2cm_intr_ss     <= 'h0;
+     rtc_intr_s       <= 'h0;
+     rtc_intr_ss      <= 'h0;
+     ir_intr_s        <= 'h0;
+     ir_intr_ss       <= 'h0;
    end else begin
      usb_intr_s   <= usb_intr;
      usb_intr_ss  <= usb_intr_s;
@@ -389,10 +394,13 @@ begin
      i2cm_intr_ss <= i2cm_intr_s;
      rtc_intr_s   <= rtc_intr;
      rtc_intr_ss  <= rtc_intr_s;
+
+     ir_intr_s   <= ir_intr;
+     ir_intr_ss  <= ir_intr_s;
    end
 end
 
-wire [31:0] hware_intr_req = {gpio_intr[31:8], 1'b0,rtc_intr_ss,pwm_intr,usb_intr_ss, i2cm_intr_ss,timer_intr[2:0]};
+wire [31:0] hware_intr_req = {gpio_intr[31:8], ir_intr_ss,rtc_intr_ss,pwm_intr,usb_intr_ss, i2cm_intr_ss,timer_intr[2:0]};
 
 generic_intr_stat_reg #(.WD(32),
 	                .RESET_DEFAULT(0)) u_reg4 (
@@ -492,6 +500,16 @@ assign    cfg_dco_mode     = reg_8[31];
 assign    cfg_pll_fed_div  = reg_8[30:26];
 assign    cfg_dc_trim      = reg_8[25:0];
 
+
+//------------------------------------------
+// reg_9: Random Number Generator
+//------------------------------------------
+pseudorandom u_random (
+  .rst_n     ( s_reset_n     ), 
+  .clk       ( mclk          ), 
+  .next      ( reg_ack       ), 
+  .random    ( reg_9         )  
+);
 
 
 //-------------------------------------------------
@@ -674,7 +692,7 @@ begin
     5'b00110 : reg_out [31:0] = reg_6  ;    
     5'b00111 : reg_out [31:0] = reg_7  ;    
     5'b01000 : reg_out [31:0] = reg_8  ;    
-    5'b01001 : reg_out [31:0] = 'h0  ;    
+    5'b01001 : reg_out [31:0] = reg_9  ;    
     5'b01010 : reg_out [31:0] = 'h0 ;   
     5'b01011 : reg_out [31:0] = 'h0 ;   
     5'b01100 : reg_out [31:0] = reg_12 ;   

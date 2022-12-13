@@ -210,8 +210,8 @@ assign io_in[21] = 1'b0; // CLOCK
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[7];
-assign io_in[6]  = uart_rxd ;
+assign uart_txd   = (io_oeb[7] == 1'b0) ? io_out[7] : 1'b0;
+assign io_in[6]   = (io_oeb[6] == 1'b1) ? uart_rxd  : 1'b0;
  
 uart_agent tb_master_uart(
 	.mclk                (clock              ),

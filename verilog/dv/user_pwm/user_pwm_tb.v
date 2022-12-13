@@ -765,12 +765,12 @@ parameter real XTAL_PERIOD = 6;
 	        $finish;
 	end
 
-wire [5:0] pwm_wfm = {io_out[19],
-                      io_out[18],
-                      io_out[17],
-                      io_out[14],
-                      io_out[13],
-                      io_out[9]};
+wire [5:0] pwm_wfm = {(io_oeb[19] == 1'b0) ? io_out[19]: 1'b0 ,
+                      (io_oeb[18] == 1'b0) ? io_out[18]: 1'b0 ,
+                      (io_oeb[17] == 1'b0) ? io_out[17]: 1'b0 ,
+                      (io_oeb[14] == 1'b0) ? io_out[14]: 1'b0 ,
+                      (io_oeb[13] == 1'b0) ? io_out[13]: 1'b0 ,
+                      (io_oeb[9]  == 1'b0) ? io_out[9] : 1'b0  };
 
 wire pwm0 = pwm_wfm[0];
 wire pwm1 = pwm_wfm[1];

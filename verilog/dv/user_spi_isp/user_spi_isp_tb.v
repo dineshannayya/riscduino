@@ -151,10 +151,10 @@ begin
 end
 
 
-assign io_in[5]  = 1'b0;
-assign io_in[21] = sclk;
-assign io_in[20] = sdi;
-assign sdo       = io_out[19];
+assign io_in[5]  = (io_oeb[5]  == 1'b1) ? 1'b0 : 1'b0;
+assign io_in[21] = (io_oeb[21] == 1'b1) ? sclk : 1'b0;
+assign io_in[20] = (io_oeb[20] == 1'b1) ? sdi  : 1'b0;
+assign sdo       = (io_oeb[19] == 1'b0) ? io_out[19] : 1'b0;
 
 bfm_spim  u_spim (
           // SPI

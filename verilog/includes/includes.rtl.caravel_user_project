@@ -14,6 +14,7 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/semaphore_reg.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/strap_ctrl.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/glbl_rst_reg.sv
+-v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pseudorandom.sv
 -v $(USER_PROJECT_VERILOG)/rtl/gpio/src/gpio_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/gpio/src/gpio_dglicth.sv
 -v $(USER_PROJECT_VERILOG)/rtl/gpio/src/gpio_intr.sv
@@ -178,3 +179,15 @@ $(USER_PROJECT_VERILOG)/rtl/rtc/verilog/rtl/core/rtc_top.sv
 $(USER_PROJECT_VERILOG)/rtl/rtc/verilog/rtl/core/rtc_core.sv
 $(USER_PROJECT_VERILOG)/rtl/rtc/verilog/rtl/core/rtc_reg.sv
 
+-v $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo_occ.sv
+-v $(USER_PROJECT_VERILOG)/rtl/lib/prescaler.v
+-v $(USER_PROJECT_VERILOG)/rtl/lib/metastability_filter.sv
+-v $(USER_PROJECT_VERILOG)/rtl/lib/pulse_filter.sv
+
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_rx.sv
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_frame_decoder.sv
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_event_catcher.sv
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_regs.sv
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_div8.sv
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_tx.sv
+$(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_top.sv

@@ -71,6 +71,11 @@ module peri_top (
 
                        output logic            inc_time_s,
                        output logic            inc_date_d,
+
+                       // IR Receiver I/F
+                       input  logic            ir_rx,
+                       output logic            ir_tx,
+                       output logic            ir_intr,
                
                       // DAC Config
                        output logic [7:0]      cfg_dac0_mux_sel,
@@ -97,14 +102,21 @@ logic [31:0]  reg_rtc_rdata;
 logic         reg_rtc_ack;
 logic         reg_rtc_cs;
 
+logic [31:0]  reg_ir_rdata;
+logic         reg_ir_ack;
+logic         reg_ir_cs;
+
 assign reg_rdata  = (reg_addr[10:7] == `SEL_D2A) ? reg_d2a_rdata :
                     (reg_addr[10:7] == `SEL_RTC) ? reg_rtc_rdata :
+                    (reg_addr[10:7] == `SEL_IR)  ? reg_ir_rdata :
                      'h0;
 assign reg_ack    = (reg_addr[10:7] == `SEL_D2A) ? reg_d2a_ack   :
                     (reg_addr[10:7] == `SEL_RTC) ? reg_rtc_ack   :
+                    (reg_addr[10:7] == `SEL_IR)  ? reg_ir_ack   :
                     1'b0;
 assign reg_d2a_cs = (reg_addr[10:7] == `SEL_D2A)  ? reg_cs : 1'b0;
 assign reg_rtc_cs = (reg_addr[10:7] == `SEL_RTC)  ? reg_cs : 1'b0;
+assign reg_ir_cs  = (reg_addr[10:7] == `SEL_IR)  ? reg_cs : 1'b0;
 
 
 // peri clock skew control
@@ -180,6 +192,32 @@ rtc_top  u_rtc(
               .inc_time_s               (inc_time_s                 )
 
          );
+
+//--------------------------------------------------------------------------
+// IR Receiver
+//--------------------------------------------------------------------------
+
+nec_ir_top i_ir (
+
+              .rst_n                    (s_reset_ssn                ), 
+              .clk                      (mclk                       ), 
+
+              // Wishbone bus
+              .wbs_cyc_i                (reg_ir_cs                  ), 
+              .wbs_stb_i                (reg_ir_cs                  ), 
+              .wbs_adr_i                (reg_addr[4:0]              ),
+              .wbs_we_i                 (reg_wr                     ),
+              .wbs_dat_i                (reg_wdata                  ),
+              .wbs_sel_i                (reg_be                     ),
+              .wbs_dat_o                (reg_ir_rdata               ),
+              .wbs_ack_o                (reg_ir_ack                 ),
+
+              .ir_rx                    (ir_rx                      ),
+              .ir_tx                    (ir_tx                      ),
+
+              .irq                      (ir_intr                    )  
+
+);
 
 endmodule 
 

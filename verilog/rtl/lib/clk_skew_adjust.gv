@@ -157,24 +157,25 @@ clk_in, sel, clk_out);
   ctech_delay_clkbuf clkbuf_15 (.A(clk_d14),   .X(clk_d15));
 
 
-  // Tap point selection
-  assign in0  = clk_in;
-  assign in1  = clk_d1;
-  assign in2  = clk_d2;
-  assign in3  = clk_d3;
-  assign in4  = clk_d4;
-  assign in5  = clk_d5;
-  assign in6  = clk_d6;
-  assign in7  = clk_d7;
-  assign in8  = clk_d8;
-  assign in9  = clk_d9;
-  assign in10 = clk_d10;
-  assign in11 = clk_d11;
-  assign in12 = clk_d12;
-  assign in13 = clk_d13;
-  assign in14 = clk_d14;
-  assign in15 = clk_d15;
+   
 
+  // Tap point selection
+  ctech_clk_buf u_tap_0  (.A(clk_in),  .X(in0));
+  ctech_clk_buf u_tap_1  (.A(clk_d1),  .X(in1));
+  ctech_clk_buf u_tap_2  (.A(clk_d2),  .X(in2));
+  ctech_clk_buf u_tap_3  (.A(clk_d3),  .X(in3));
+  ctech_clk_buf u_tap_4  (.A(clk_d4),  .X(in4));
+  ctech_clk_buf u_tap_5  (.A(clk_d5),  .X(in5));
+  ctech_clk_buf u_tap_6  (.A(clk_d6),  .X(in6));
+  ctech_clk_buf u_tap_7  (.A(clk_d7),  .X(in7));
+  ctech_clk_buf u_tap_8  (.A(clk_d8),  .X(in8));
+  ctech_clk_buf u_tap_9  (.A(clk_d9),  .X(in9));
+  ctech_clk_buf u_tap_10 (.A(clk_d10), .X(in10));
+  ctech_clk_buf u_tap_11 (.A(clk_d11), .X(in11));
+  ctech_clk_buf u_tap_12 (.A(clk_d12), .X(in12));
+  ctech_clk_buf u_tap_13 (.A(clk_d13), .X(in13));
+  ctech_clk_buf u_tap_14 (.A(clk_d14), .X(in14));
+  ctech_clk_buf u_tap_15 (.A(clk_d15), .X(in15));
 
   // first level mux - 8
   ctech_mux2x1_2 u_mux_level_00 ( .X (d00) , .A0 (in0),  .A1(in1),  .S(sel[0]));

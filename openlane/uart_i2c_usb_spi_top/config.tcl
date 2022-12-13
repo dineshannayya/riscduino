@@ -30,6 +30,7 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "app_clk usb_clk u_uart0_core.u_lineclk_buf.genblk1.u_mux/X u_uart1_core.u_lineclk_buf.genblk1.u_mux/X"
 
 set ::env(SYNTH_MAX_FANOUT) 4
+set ::env(SYNTH_BUFFERING) {0}
 
 ## CTS BUFFER
 set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"

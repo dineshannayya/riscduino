@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Thu Dec  8 10:57:01 2022
+# Mon Dec 12 11:41:10 2022
 ###############################################################################
 current_design pinmux_top
 ###############################################################################
@@ -235,6 +235,7 @@ set_load -pin_load 0.0334 [get_ports {cpu_intf_rst_n}]
 set_load -pin_load 0.0334 [get_ports {i2cm_clk_i}]
 set_load -pin_load 0.0334 [get_ports {i2cm_data_i}]
 set_load -pin_load 0.0334 [get_ports {i2cm_rst_n}]
+set_load -pin_load 0.0334 [get_ports {ir_rx}]
 set_load -pin_load 0.0334 [get_ports {pll_ref_clk}]
 set_load -pin_load 0.0334 [get_ports {pulse1m_mclk}]
 set_load -pin_load 0.0334 [get_ports {qspim_rst_n}]
@@ -579,6 +580,8 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_ris
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {i2cm_data_oen}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {i2cm_intr}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {int_pll_clock}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ir_intr}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ir_tx}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {mclk}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {p_reset_n}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {reg_cs}]

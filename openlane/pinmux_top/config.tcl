@@ -46,6 +46,7 @@ set ::env(VERILOG_FILES) "\
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux_top.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pinmux.sv     \
      $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/glbl_reg.sv  \
+     $::env(DESIGN_DIR)/../../verilog/rtl/pinmux/src/pseudorandom.sv \
      $::env(DESIGN_DIR)/../../verilog/rtl/gpio/src/gpio_top.sv  \
      $::env(DESIGN_DIR)/../../verilog/rtl/gpio/src/gpio_reg.sv  \
      $::env(DESIGN_DIR)/../../verilog/rtl/gpio/src/gpio_intr.sv \

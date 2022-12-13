@@ -383,15 +383,15 @@ assign io_in[5]  = 1'b1; // RESET
 //  user core using the gpio pads
 //  ----------------------------------------------------
    wire flash_io1;
-   wire flash_clk = io_out[21];
-   tri  #1 flash_io0 = io_out[20];
-   assign io_in[19] = flash_io1;
+   wire flash_clk    = (io_oeb[21] == 1'b0) ? io_out[21] : 1'b0;
+   tri  #1 flash_io0 = (io_oeb[20] == 1'b0) ? io_out[20] : 1'b0;
+   assign io_in[19]  = (io_oeb[19] == 1'b1) ? flash_io1  : 1'b0;
 
    tri  #1 flash_io2 = 1'b1;
    tri  #1 flash_io3 = 1'b1;
 
 
-   wire spiram_csb0 = io_out[18];
+   wire spiram_csb0 = (io_oeb[18] == 1'b0) ? io_out[18] : 1'b0;
    is62wvs1288 #(.mem_file_name("flash0.hex"))
 	u_sfram_0 (
          // Data Inputs/Outputs
@@ -404,7 +404,7 @@ assign io_in[5]  = 1'b1; // RESET
            .io3    (flash_io3)
     );
 
-   wire spiram_csb1 = io_out[17];
+   wire spiram_csb1 = (io_oeb[17] == 1'b0) ? io_out[17] : 1'b0;
    is62wvs1288 #(.mem_file_name("flash1.hex"))
 	u_sfram_1 (
          // Data Inputs/Outputs
@@ -417,7 +417,7 @@ assign io_in[5]  = 1'b1; // RESET
            .io3    (flash_io3)
     );
 
-   wire spiram_csb2 = io_out[14];
+   wire spiram_csb2 = (io_oeb[14] == 1'b0) ? io_out[14] : 1'b0;
 is62wvs1288 #(.mem_file_name("flash2.hex"))
      u_sfram_2 (
       // Data Inputs/Outputs
@@ -430,7 +430,7 @@ is62wvs1288 #(.mem_file_name("flash2.hex"))
 	.io3    (flash_io3)
  );
 
-   wire spiram_csb3 = io_out[13];
+   wire spiram_csb3 = (io_oeb[13] == 1'b0) ? io_out[13] : 1'b0;
 is62wvs1288 #(.mem_file_name("flash3.hex"))
      u_sfram_3 (
       // Data Inputs/Outputs

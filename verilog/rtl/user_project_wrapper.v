@@ -43,6 +43,9 @@
 ////      16. AES 126 Encription/Decryption                       ////
 ////      17. FPU (Single Precision)                              ////
 ////      18. RTC                                                 ////
+////      19. Random Generator                                    ////
+////      20. NEC IR Receiver                                     ////
+////      21. NEC IR Transmitter                                  ////
 ////                                                              ////
 ////  To Do:                                                      ////
 ////    nothing                                                   ////
@@ -305,6 +308,12 @@
 ////    6.3  Dec 7, 2022, Dinesh A                                ////
 ////         A. peripheral block integration                      ////
 ////         B. RTC Integration                                   ////
+////    6.4  Dec 13, 2022, Dinesh A                               ////
+////         A. Random Generator Integration                      ////
+////         B. NEC IR Receiver Integration                       ////
+////         C. NEC IR Transmitter Integration                    ////
+////      Bug Fix In Pinmux                                       ////
+////         WS281x IO direction fix                              //// 
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
@@ -848,6 +857,13 @@ wire [31:0]                    reg_peri_rdata                         ;
 wire                           reg_peri_ack                           ;
 
 wire                           rtc_intr                               ; // RTC interrupt
+
+//---------------------------------------------------------------------
+// IR Receiver
+//---------------------------------------------------------------------
+wire                           ir_rx                                 ; // IR Receiver Input from pad
+wire                           ir_tx                                 ; // IR Transmitter
+wire                           ir_intr                               ; // IR Interrupt
 //---------------------------------------------------------------------
 // Strap
 //---------------------------------------------------------------------
@@ -1780,7 +1796,11 @@ pinmux_top u_pinmux(
           .reg_peri_rdata     (reg_peri_rdata               ),
           .reg_peri_ack       (reg_peri_ack                 ),
 
-          .rtc_intr           (rtc_intr                     )
+          .rtc_intr           (rtc_intr                     ),
+
+          .ir_rx              (ir_rx                        ),
+          .ir_tx              (ir_tx                        ),
+          .ir_intr            (ir_intr                      )
 
    ); 
 
@@ -1820,6 +1840,10 @@ peri_top u_peri(
 
           .inc_time_s              (                        ),
           .inc_date_d              (                        ),
+
+          .ir_rx                   (ir_rx                   ),
+          .ir_tx                   (ir_tx                   ),
+          .ir_intr                 (ir_intr                 ),
 
           .cfg_dac0_mux_sel        (cfg_dac0_mux_sel        ),
           .cfg_dac1_mux_sel        (cfg_dac1_mux_sel        ),

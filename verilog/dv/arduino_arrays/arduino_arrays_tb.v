@@ -145,14 +145,14 @@ parameter P_QDDR   = 2'b11;
       *   Pin-13       7         PD7/A1N1                  digital_io[15]/analog_io[3]
       *   ********************************************************/
 
-     wire [7:0]  port_d_in = {  io_out[15],
-		                        io_out[14],
-		                        io_out[13],
-		                        io_out[10],
-			                    io_out[9],
-			                    io_out[8],
-		                        io_out[7],
-		                        io_out[6]
+     wire [7:0]  port_d_in = {  (io_oeb[15] == 1'b0)? io_out[15]: 1'b0 ,
+		                        (io_oeb[14] == 1'b0)? io_out[14]: 1'b0 ,
+		                        (io_oeb[13] == 1'b0)? io_out[13]: 1'b0 ,
+		                        (io_oeb[10] == 1'b0)? io_out[10]: 1'b0 ,
+			                    (io_oeb[9]  == 1'b0)? io_out[9] : 1'b0 ,
+			                    (io_oeb[8]  == 1'b0)? io_out[8] : 1'b0 ,
+		                        (io_oeb[7]  == 1'b0)? io_out[7] : 1'b0 ,
+		                        (io_oeb[6]  == 1'b0)? io_out[6] : 1'b0 
 			                };
        
 
@@ -270,8 +270,8 @@ assign io_in[21] = 1'b0; // CLOCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[28];
-   wire flash_csb = io_out[29];
+   wire flash_clk = (io_oeb[28] == 1'b0) ? io_out[28]: 1'b0;
+   wire flash_csb = (io_oeb[29] == 1'b0) ? io_out[29]: 1'b0;
    // Creating Pad Delay
    wire #1 io_oeb_33 = io_oeb[33];
    wire #1 io_oeb_34 = io_oeb[34];
@@ -282,10 +282,10 @@ assign io_in[21] = 1'b0; // CLOCK
    tri  #1 flash_io2 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
    tri  #1 flash_io3 = (io_oeb_36== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[33] = flash_io0;
-   assign io_in[34] = flash_io1;
-   assign io_in[35] = flash_io2;
-   assign io_in[36] = flash_io3;
+   assign io_in[33] = (io_oeb[33] == 1'b1) ? flash_io0: 1'b0;
+   assign io_in[34] = (io_oeb[34] == 1'b1) ? flash_io1: 1'b0;
+   assign io_in[35] = (io_oeb[35] == 1'b1) ? flash_io2: 1'b0;
+   assign io_in[36] = (io_oeb[36] == 1'b1) ? flash_io3: 1'b0;
 
    // Quard flash
      s25fl256s #(.mem_file_name(`TB_HEX),
@@ -304,7 +304,7 @@ assign io_in[21] = 1'b0; // CLOCK
 
        );
 
-   wire spiram_csb = io_out[31];
+   wire spiram_csb = (io_oeb[31] == 1'b0) ? io_out[31] : 1'b0;
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (

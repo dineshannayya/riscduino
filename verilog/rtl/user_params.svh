@@ -4,9 +4,9 @@
 // ASCI Representation of RISC = 32'h8273_8343
 parameter CHIP_SIGNATURE = 32'h8273_8343;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h0712_2022;
+parameter CHIP_RELEASE_DATE = 32'h1312_2022;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0006_3000;
+parameter CHIP_REVISION   = 32'h0006_4000;
 
 parameter CLK_SKEW1_RESET_VAL = 32'b0100_0000_0100_0111_1001_1110_1000_0011;
 parameter CLK_SKEW2_RESET_VAL = 32'b1000_1000_1000_1000_1000_0100_1011_1110;
@@ -161,5 +161,6 @@ system strap decoding
 `define SEL_PERI    1'b1      // Peripheral
 `define SEL_D2A     4'b1000   // Digital2Analog  REGISTER
 `define SEL_RTC     4'b1001   // RTC     REGISTER
+`define SEL_IR      4'b1010   // IR     REGISTER
 `endif // USER_PARMS
 

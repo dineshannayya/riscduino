@@ -209,7 +209,13 @@ module pinmux_top (
                input logic [31:0]       reg_peri_rdata,
                input logic              reg_peri_ack,
 
-               input logic              rtc_intr
+               input logic              rtc_intr,
+
+               // IR Receiver I/F
+               output logic             ir_rx,
+               input  logic             ir_tx,
+               input  logic             ir_intr
+
                
    ); 
 
@@ -394,6 +400,7 @@ glbl_reg u_glbl_reg(
           .i2cm_intr                    (i2cm_intr               ),
           .pwm_intr                     (pwm_intr                ),
           .rtc_intr                     (rtc_intr                ),
+          .ir_intr                      (ir_intr                 ),
 
 
 
@@ -611,7 +618,10 @@ pinmux u_pinmux (
 
                .ws_txd                  (ws_txd              ),       
                                                    
-		       .dbg_clk_mon             (dbg_clk_mon         )
+		       .dbg_clk_mon             (dbg_clk_mon         ),
+
+               .ir_rx                   (ir_rx               ),
+               .ir_tx                   (ir_tx               )
 
 
    ); 

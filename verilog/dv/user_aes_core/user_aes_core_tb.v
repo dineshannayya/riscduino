@@ -106,14 +106,14 @@ reg 	       uart_fifo_enable     ;	// fifo mode disable
      *   Pin-10       PB7/XTAL2/TOSC2           digital_io[12]
      *   ********************************************************/
 
-     wire [7:0]  port_b_in = {   io_out[12],
-		                         io_out[11],
-		                         io_out[21],
-		                         io_out[20],
-			                     io_out[19],
-			                     io_out[18],
-		                         io_out[17],
-		                         io_out[16]
+     wire [7:0]  port_b_in = {  (io_oeb[12]== 1'b0) ? io_out[12] : 1'b0,
+		                 (io_oeb[11]== 1'b0) ? io_out[11] : 1'b0,
+		                 (io_oeb[21]== 1'b0) ? io_out[21] : 1'b0,
+		                 (io_oeb[20]== 1'b0) ? io_out[20] : 1'b0,
+			         (io_oeb[19]== 1'b0) ? io_out[19] : 1'b0,
+			         (io_oeb[18]== 1'b0) ? io_out[18] : 1'b0,
+		                 (io_oeb[17]== 1'b0) ? io_out[17] : 1'b0,
+		                 (io_oeb[16]== 1'b0) ? io_out[16] : 1'b0
 			     };
 	initial begin
 		test_fail = 0;
@@ -238,22 +238,22 @@ assign io_in[21] = 1'b0 ; // SPIS SCK
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[28];
-   wire flash_csb = io_out[29];
+   wire flash_clk = (io_oeb[28] == 1'b0) ? io_out[28]: 1'b0;
+   wire flash_csb = (io_oeb[29] == 1'b0) ? io_out[29]: 1'b0;
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[33];
-   wire #1 io_oeb_30 = io_oeb[34];
-   wire #1 io_oeb_31 = io_oeb[35];
-   wire #1 io_oeb_32 = io_oeb[36];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[33] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[34] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[35] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[36] : 1'bz;
+   wire #1 io_oeb_33 = io_oeb[33];
+   wire #1 io_oeb_34 = io_oeb[34];
+   wire #1 io_oeb_35 = io_oeb[35];
+   wire #1 io_oeb_36 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_33== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_34== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_36== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[33] = flash_io0;
-   assign io_in[34] = flash_io1;
-   assign io_in[35] = flash_io2;
-   assign io_in[36] = flash_io3;
+   assign io_in[33] = (io_oeb[33] == 1'b1) ? flash_io0: 1'b0;
+   assign io_in[34] = (io_oeb[34] == 1'b1) ? flash_io1: 1'b0;
+   assign io_in[35] = (io_oeb[35] == 1'b1) ? flash_io2: 1'b0;
+   assign io_in[36] = (io_oeb[36] == 1'b1) ? flash_io3: 1'b0;
 
    // Quard flash
      s25fl256s #(.mem_file_name("user_aes_core.hex"),
@@ -278,8 +278,8 @@ assign io_in[21] = 1'b0 ; // SPIS SCK
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[7];
-assign io_in[6]  = uart_rxd ;
+assign uart_txd   = (io_oeb[7] == 1'b0) ? io_out[7]: 1'b0;
+assign io_in[6]   = (io_oeb[6] == 1'b1) ? uart_rxd : 1'b0;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),

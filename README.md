@@ -669,6 +669,7 @@ Report an issue: <https://github.com/dineshannayya/riscduino/issues>
 
 # Documentation
 * **Syntacore Link** - https://github.com/syntacore/scr1
+* **Picked IR-Receiver/Random Number IP from ** - https://github.com/JulienOury/ChristmasTreeController/
 
 News on Riscduino
 ===============

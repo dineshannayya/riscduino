@@ -163,28 +163,28 @@ parameter real XTAL_PERIOD = 6;
 reg [21:2] arduino_din;
 assign  {  
            //io_in[0], - Exclude RESET
-           io_in[12],
-           io_in[11],
-           io_in[27],
-           io_in[26],
-           io_in[25],
-           io_in[24],
-           io_in[23],
-           io_in[22],
-           io_in[21],
-           io_in[20],
-           io_in[19],
-           io_in[18],
-           io_in[17],
-           io_in[16],
-           io_in[15],
-           io_in[14],
-           io_in[13],
-           io_in[10],
-           io_in[9],
-           io_in[8]
+           io_in[12] ,
+           io_in[11] ,
+           io_in[27] ,
+           io_in[26] ,
+           io_in[25] ,
+           io_in[24] ,
+           io_in[23] ,
+           io_in[22] ,
+           io_in[21] ,
+           io_in[20] ,
+           io_in[19] ,
+           io_in[18] ,
+           io_in[17] ,
+           io_in[16] ,
+           io_in[15] ,
+           io_in[14] ,
+           io_in[13] ,
+           io_in[10] ,
+           io_in[9]  ,
+           io_in[8]  
            // Uart pins io_in[2], io_in[1] are excluded
-          } = (u_top.p_reset_n == 0) ? 23'hZZ_ZZZZ: arduino_din; // Tri-state untill Strap pull completed
+          } = (u_top.p_reset_n == 0) ? 23'hZZ_ZZZZ: (&io_oeb[27:8]) ? arduino_din: 'h0; // Tri-state untill Strap pull completed
                     
     reg[7:0] pinmap[0:22]; //ardiono to gpio pinmaping
 
@@ -359,8 +359,8 @@ assign io_in[5]  = 1'b1; // RESET
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[28];
-   wire flash_csb = io_out[29];
+   wire flash_clk = (io_oeb[28] == 1'b0) ? io_out[28]: 1'b0;
+   wire flash_csb = (io_oeb[29] == 1'b0) ? io_out[29]: 1'b0;
    // Creating Pad Delay
    wire #1 io_oeb_33 = io_oeb[33];
    wire #1 io_oeb_34 = io_oeb[34];
@@ -371,10 +371,10 @@ assign io_in[5]  = 1'b1; // RESET
    tri  #1 flash_io2 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
    tri  #1 flash_io3 = (io_oeb_36== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[33] = flash_io0;
-   assign io_in[34] = flash_io1;
-   assign io_in[35] = flash_io2;
-   assign io_in[36] = flash_io3;
+   assign io_in[33] = (io_oeb[33] == 1'b1) ? flash_io0: 1'b0;
+   assign io_in[34] = (io_oeb[34] == 1'b1) ? flash_io1: 1'b0;
+   assign io_in[35] = (io_oeb[35] == 1'b1) ? flash_io2: 1'b0;
+   assign io_in[36] = (io_oeb[36] == 1'b1) ? flash_io3: 1'b0;
 
    // Quard flash
      s25fl256s #(.mem_file_name(`TB_HEX),
@@ -393,7 +393,7 @@ assign io_in[5]  = 1'b1; // RESET
 
        );
 
-   wire spiram_csb = io_out[31];
+   wire spiram_csb = (io_oeb[31] == 1'b0) ? io_out[31] : 1'b0;
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (
@@ -412,8 +412,8 @@ assign io_in[5]  = 1'b1; // RESET
 // --------------------------
 wire uart_txd,uart_rxd;
 
-assign uart_txd   = io_out[7];
-assign io_in[6]  = uart_rxd ;
+assign uart_txd   = (io_oeb[7] == 1'b0) ? io_out[7] : 1'b0;
+assign io_in[6]   = (io_oeb[6] == 1'b1) ? uart_rxd  : 1'b0;
  
 uart_agent tb_uart(
 	.mclk                (clock              ),
