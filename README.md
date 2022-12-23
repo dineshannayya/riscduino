@@ -108,6 +108,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Project Details</td>
     <td  align="center"> Github</td>
     <td  align="center"> Efabless</td>
+    <td  align="center"> Tapeout Link</td>
   </tr>
   <tr>
     <td  align="center"> MPW-2 </td> 
@@ -116,6 +117,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Single 32bit RISCV core without cache + SDRAM Controller + WB Interconnect</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/yifive">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/152">Link</a></td>
+    <td  align="center"> <a https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-002/slot-007">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-3 </td> 
@@ -124,6 +126,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Single 32bit RISCV core without cache + Onchip SRAM + WB Interconnect</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/385">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-003/slot-013">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-4 </td> 
@@ -132,14 +135,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM + WB Inter Connect</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/575">Link</a></td>
-  </tr>
-  <tr>
-    <td  align="center"> MPW-5 </td> 
-    <td  align="center"> 21-Mar-2022  </td>
-    <td  align="center"> Riscduino-SCORE (S0)</td>
-    <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
-    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
-    <td  align="center"> <a href="https://platform.efabless.com/projects/670">Link</a></td>
+    <td  align="center"> <a https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-004/slot-014">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-5 </td> 
@@ -148,6 +144,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/718">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-005/slot-013">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-5 </td> 
@@ -156,6 +153,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/782">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-005/slot-014">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-6 </td> 
@@ -164,6 +162,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/1047">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-006/slot-006">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-6 </td> 
@@ -172,6 +171,7 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/838">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-006/slot-004">Link</a></td>
   </tr>
   <tr>
     <td  align="center"> MPW-6 </td> 
@@ -180,6 +180,34 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
     <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
     <td  align="center"> <a href="https://platform.efabless.com/projects/839">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-006/slot-005">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-7 </td> 
+    <td  align="center"> 12-Sept-2022  </td>
+    <td  align="center"> Riscduino-SCORE (S4)</td>
+    <td  align="center"> Single 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/1166">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-007/slot-008">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-7 </td> 
+    <td  align="center"> 12-Sept-2022  </td>
+    <td  align="center"> Riscduino-DCORE (D3)</td>
+    <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/1167">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-007/slot-006">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-7 </td> 
+    <td  align="center"> 12-Sept-2022 </td>
+    <td  align="center"> Riscduino-QCORE (Q1)</td>
+    <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/1168">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-007/slot-007">Link</a></td>
   </tr>
 </table>
 
