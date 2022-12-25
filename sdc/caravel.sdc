@@ -158,7 +158,7 @@ set_case_analysis 1 [get_pins padframe/clock_pad/DM[0]]
 #################################################################
 set_case_analysis 0 [get_pins {mprj/u_peri/cfg_cska_peri[3]}]
 set_case_analysis 1 [get_pins {mprj/u_peri/cfg_cska_peri[2]}]
-set_case_analysis 0 [get_pins {mprj/u_peri/cfg_cska_peri[1]}]
+set_case_analysis 1 [get_pins {mprj/u_peri/cfg_cska_peri[1]}]
 set_case_analysis 0 [get_pins {mprj/u_peri/cfg_cska_peri[0]}]
 
 set_case_analysis 0 [get_pins {mprj/u_qspi_master/cfg_cska_sp_co[3]}]
@@ -183,7 +183,7 @@ set_case_analysis 1 [get_pins {mprj/u_qspi_master/cfg_cska_spi[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[3]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[2]}]
-set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[1]}]
+set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[1]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_intf/cfg_wcska[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_wb_host/cfg_cska_wh[3]}]
@@ -192,8 +192,8 @@ set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[1]}]
 set_case_analysis 0 [get_pins {mprj/u_wb_host/cfg_cska_wh[0]}]
 
 set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[3]}]
-set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[2]}]
-set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[0]}]
+set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[2]}]
+set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[0]}]
 set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[1]}]
 
 # clock skew cntrl-2
@@ -224,13 +224,13 @@ set_case_analysis 0 [get_pins {mprj/u_aes/cfg_cska[0]}]
 
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.i_core_top_0/cfg_ccska[3]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.i_core_top_0/cfg_ccska[2]}]
-set_case_analysis 0 [get_pins {mprj/u_riscv_top.i_core_top_0/cfg_ccska[1]}]
+set_case_analysis 1 [get_pins {mprj/u_riscv_top.i_core_top_0/cfg_ccska[1]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.i_core_top_0/cfg_ccska[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[3]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[2]}]
-set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[1]}]
-set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[0]}]
+set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[1]}]
+set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_ccska[3]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_ccska[2]}]

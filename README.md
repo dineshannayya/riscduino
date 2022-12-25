@@ -395,14 +395,18 @@ Following Design changes are done on the basic version of syntacore RISC core
 
 | Block             | Total Cell | Combo   | Seq      |
 | ------            | ---------  | -----   | -------- |
-| RISC              | 46285      | 40434   | 5851     |
-| QSPI              | 8662       |  7157   | 1505     |
-| UART_I2C_USB_SPI  | 22813      | 13061   | 2865     |
-| WB_HOST           | 5800       |  4701   | 1099     |
-| WB_INTC           | 11477      | 10081   | 1396     |
-| PINMUX            | 6740       |  5568   | 1172     |
+| RISC              |  47218     | 41230   | 5988     |
+| QSPI              |  9039      |  7526   | 1513     |
+| UART_I2C_USB_SPI  | 11793      |  8932   | 2861     |
+| WB_HOST           |  6508      |  5356   | 1152     |
+| WB_INTC           |  6949      |  5538   | 1411     |
+| PINMUX            | 11932      |  9327   | 2605     |
+| PHERIPHERAL       |  5852      |  4791   | 1061     |
+| FPU               | 12831      | 11394   | 1437     |
+| AES               | 21549      | 17960   | 3589     |
+| BUS-REPEATER      |   922      |   922   | 0        |
 |                   |            |         |          |
-| TOTAL             | 94890      | 81002   | 13888    |
+| TOTAL             | 134593     | 112976  | 21617    |
 
 
 

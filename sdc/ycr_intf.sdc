@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sun Nov 27 11:41:37 2022
+# Sun Dec 25 03:52:32 2022
 ###############################################################################
 current_design ycr_intf
 ###############################################################################
@@ -11,6 +11,9 @@ set_clock_transition 0.1500 [get_clocks {core_clk}]
 set_clock_uncertainty -setup 0.5000 core_clk
 set_clock_uncertainty -hold 0.2500 core_clk
 set_propagated_clock [get_clocks {core_clk}]
+create_clock -name rtc_clk -period 40.0000 
+set_clock_uncertainty -setup 0.5000 rtc_clk
+set_clock_uncertainty -hold 0.2500 rtc_clk
 create_clock -name wb_clk -period 10.0000 [get_ports {wb_clk}]
 set_clock_transition 0.1500 [get_clocks {wb_clk}]
 set_clock_uncertainty -setup 0.5000 wb_clk
@@ -37,6 +40,7 @@ set_clock_uncertainty -setup 0.5000 icache_mem_clk1
 set_clock_uncertainty -hold 0.2500 icache_mem_clk1
 set_propagated_clock [get_clocks {icache_mem_clk1}]
 set_clock_groups -name async_clock -asynchronous \
+ -group [get_clocks {rtc_clk}]\
  -group [get_clocks {wb_clk}]\
  -group [list [get_clocks {core_clk}]\
            [get_clocks {dcache_mem_clk0}]\

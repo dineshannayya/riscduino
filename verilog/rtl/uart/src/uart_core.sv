@@ -38,6 +38,9 @@
 ////    0.2 - 25th June 2021, Dinesh A                            ////
 ////        Pad logic moved inside core to avoid combo logic at   ////
 ////        soc digital core level                                ////
+////    0.3 - 20th Dec 2022, Dinesh A                             ////
+////        changed the async fifo mode to FAST mode to handle    ////
+////        any back-to back read case                            ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -267,7 +270,7 @@ uart_rxfsm u_rxfsm (
                .si               (si_ss              )
           );
 
-async_fifo_th #(W,DP,0,0) u_rxfifo (                  
+async_fifo_th #(W,DP,1,1) u_rxfifo (                  
                .wr_clk             (line_clk_16x       ),
                .wr_reset_n         (line_reset_n       ),
                .wr_en              (rx_fifo_wr         ),
@@ -283,7 +286,7 @@ async_fifo_th #(W,DP,0,0) u_rxfifo (
                .rd_data            (app_rxfifo_data    )
                 );
 
-async_fifo_th #(W,DP,0,0) u_txfifo  (
+async_fifo_th #(W,DP,1,1) u_txfifo  (
                .wr_clk             (app_clk            ),
                .wr_reset_n         (app_reset_n        ),
                .wr_en              (tx_fifo_wr_en      ),

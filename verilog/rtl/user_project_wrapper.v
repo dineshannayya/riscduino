@@ -314,6 +314,9 @@
 ////         C. NEC IR Transmitter Integration                    ////
 ////      Bug Fix In Pinmux                                       ////
 ////         WS281x IO direction fix                              //// 
+////    6.5  Dec 24, 2022, Dinesh A                               ////
+////         A. uart_core async fifo mode set to fast access      ////
+////         B. CTS buffering enabled in all blocks               ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////

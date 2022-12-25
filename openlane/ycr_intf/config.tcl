@@ -26,16 +26,18 @@ set ::env(CLOCK_PERIOD) "10"
 set ::env(CLOCK_PORT) "wb_clk core_clk"
 
 set ::env(SYNTH_MAX_FANOUT) 4
+set ::env(SYNTH_BUFFERING) {0}
 
 ## CTS BUFFER
+set ::env(CTS_CLK_MAX_WIRE_LENGTH) {250}
 set ::env(CTS_CLK_BUFFER_LIST) "sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8"
 set ::env(CTS_SINK_CLUSTERING_SIZE) "16"
 set ::env(CLOCK_BUFFER_FANOUT) "8"
 set ::env(LEC_ENABLE) 0
 
 set ::env(VERILOG_FILES) "\
-        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/clk_skew_adjust.gv                  \
-        $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/lib/ctech_cells.sv                      \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/clk_skew_adjust.gv                  \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/ctech_cells.sv                      \
         $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/dcache_top.sv            \
         $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/dcache_tag_fifo.sv       \
         $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/cache/src/core/icache_tag_fifo.sv       \
@@ -64,7 +66,7 @@ set ::env(GND_PIN) [list {vssd1}]
 ## Floorplan
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 810 640 "
+set ::env(DIE_AREA) "0 0 780 640 "
 set ::env(CELL_PAD) "8"
 set ::env(GRT_ADJUSTMENT) {0.2}
 
