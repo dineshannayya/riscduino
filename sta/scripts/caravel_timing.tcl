@@ -62,6 +62,10 @@
     read_verilog $::env(USER_ROOT)/verilog/gl/dg_pll.v
     read_verilog $::env(USER_ROOT)/verilog/gl/aes_top.v
     read_verilog $::env(USER_ROOT)/verilog/gl/fpu_wrapper.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_north.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_south.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_east.v
+    read_verilog $::env(USER_ROOT)/verilog/gl/bus_rep_west.v
     read_verilog $::env(USER_ROOT)/verilog/gl/user_project_wrapper.v  
 
 
@@ -179,6 +183,10 @@
 	read_spef -path mprj/u_pll                          $::env(USER_ROOT)/signoff/dg_pll/openlane-signoff/spef/dg_pll.nom.spef	
 	read_spef -path mprj/u_aes                          $::env(USER_ROOT)/signoff/aes_top/openlane-signoff/spef/aes_top.nom.spef	
 	read_spef -path mprj/u_fpu                          $::env(USER_ROOT)/signoff/fpu_wrapper/openlane-signoff/spef/fpu_wrapper.nom.spef	
+	read_spef -path mprj/u_rp_north                     $::env(USER_ROOT)/signoff/bus_rep_north/openlane-signoff/spef/bus_rep_north.nom.spef
+	read_spef -path mprj/u_rp_south                     $::env(USER_ROOT)/signoff/bus_rep_south/openlane-signoff/spef/bus_rep_south.nom.spef
+	read_spef -path mprj/u_rp_east                      $::env(USER_ROOT)/signoff/bus_rep_east/openlane-signoff/spef/bus_rep_east.nom.spef
+	read_spef -path mprj/u_rp_west                      $::env(USER_ROOT)/signoff/bus_rep_west/openlane-signoff/spef/bus_rep_west.nom.spef
     read_spef -path mprj                                $::env(USER_ROOT)/signoff/user_project_wrapper/openlane-signoff/spef/user_project_wrapper.nom.spef  
 
     read_spef $::env(CARAVEL_ROOT)/signoff/caravel/openlane-signoff/spef/caravel.nom.spef
@@ -192,6 +200,7 @@
 	report_worst_slack -min 	
 	report_checks -path_delay min -fields {slew cap input nets fanout} -format full_clock_expanded -slack_max 0.18 -group_count 10	
 	report_check_types -max_slew -max_capacitance -max_fanout -violators  > slew.cap.fanout.vio.rpt
+
 
 #    echo " Management Area Interface "	
 #    report_checks -to soc/core_clk -unconstrained -group_count 1	

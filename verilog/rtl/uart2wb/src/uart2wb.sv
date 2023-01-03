@@ -70,7 +70,7 @@ module uart2wb (
        input wire                  cfg_rx_enable    , // Enable Received Path
        input wire                  cfg_stop_bit     , // 0 -> 1 Start , 1 -> 2 Stop Bits
        input wire [1:0]            cfg_pri_mod      , // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
-       input wire [11:0]	       cfg_baud_16x     , // 16x Baud clock generation
+       input wire [11:0]	    cfg_baud_16x     , // 16x Baud clock generation
 
     // Master Port
        output   wire                wbm_cyc_o        ,  // strobe/request
@@ -85,7 +85,7 @@ module uart2wb (
 
        // Status information
        output   wire               frm_error        , // framing error
-       output   wire       	       par_error        , // par error
+       output   wire       	    par_error        , // par error
 
        output   wire               baud_clk_16x     , // 16x Baud clock
 
@@ -141,9 +141,9 @@ wire [11:0] cfg_baud_16x_i  = (cfg_auto_det) ?  auto_baud_16x: cfg_baud_16x;
 assign wbm_cyc_o  = wbm_stb_o;
 
 reset_sync  u_arst_sync (
-	          .scan_mode  (1'b0         ),
+	      .scan_mode  (1'b0         ),
               .dclk       (app_clk      ), // Destination clock domain
-	          .arst_n     (arst_n       ), // active low async reset
+	      .arst_n     (arst_n       ), // active low async reset
               .srst_n     (arst_ssn     )
           );
 
@@ -223,10 +223,10 @@ uart2_core u_core (
 
        // Status information
           .frm_error          (frm_error) ,
-	      .par_error          (par_error) ,
+	  .par_error          (par_error) ,
 
-	      .baud_clk_16x       (baud_clk_16x) ,
-	      .line_reset_n       (line_reset_n),
+	  .baud_clk_16x       (baud_clk_16x) ,
+	  .line_reset_n       (line_reset_n),
 
        // Line Interface
           .rxd                (rxd) ,
