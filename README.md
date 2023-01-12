@@ -401,7 +401,7 @@ Following Design changes are done on the basic version of syntacore RISC core
 | WB_HOST           |  6508      |  5356   | 1152     |
 | WB_INTC           |  6949      |  5538   | 1411     |
 | PINMUX            | 11932      |  9327   | 2605     |
-| PHERIPHERAL       |  5852      |  4791   | 1061     |
+| PERIPHERAL        |  5852      |  4791   | 1061     |
 | FPU               | 12831      | 11394   | 1437     |
 | AES               | 21549      | 17960   | 3589     |
 | BUS-REPEATER      |   922      |   922   | 0        |
@@ -483,33 +483,40 @@ Following Design changes are done on the basic version of syntacore RISC core
 The simulation package includes the following tests:
 
 ## Standalone Riscduino SOC Specific Test case 
-* **1.user_basic**          - Basic test case to validate strap and clocks
-* **2.user_uart**           - Standalone Risc with UART-0 Test
-* **3.user_uart1**          - Standalone Risc with UART-1 Test
-* **4.user_risc_boot**      - Standalone User Risc core boot
-* **4.risc_boot**           - Complete caravel User Risc core boot 
-* **5.user_qspi**           - Standalone Quad SPI test
-* **6.user_sspi**           - Standalone SSPI test
-* **7.user_i2c**            - Standalone I2C test
-* **8.user_usb**            - Standalone USB Host test
-* **9.user_gpio**           - Standalone GPIO Test
-* **10.user_aes**           - AES computation through Riscv core
-* **11.user_spi_isp**       - Device boot with SPI as ISP
-* **12.user_timer**         - Standalone timer Test
-* **13.user_uart_master**   - Standalone uart master test
-* **14.user_sram_exec**     - Riscv Boot with code running in SRAM
-* **15.user_cache_bypass**  - Riscv Boot without icache and dcache
-* **16.user_pwm**            -Standalone pwm Test
-* **17.user_sema**           -Standalone validation of hardware Semaphore function
-* **18.riscv_regress**       -Standalone riscv compliance and regression test suite
-* **19.user_rtc**            -Standalone RTC core test
-* **20.user_aes_core**       -Standalone AES Core test
-* **21.user_fpu_core**       -Standalone FPU(SP) Core test
+* **1.user_basic**             - Basic test case to validate strap and clocks
+* **2.user_uart**              - Standalone Risc with UART-0 Test
+* **3.user_uart1**             - Standalone Risc with UART-1 Test
+* **4.user_risc_boot**         - Standalone User Risc core boot
+* **4.risc_boot**              - Complete caravel User Risc core boot 
+* **5.user_qspi**              - Standalone Quad SPI test
+* **6.user_sspi**              - Standalone SSPI test
+* **7.user_i2c**               - Standalone I2C test
+* **8.user_usb**               - Standalone USB Host test
+* **9.user_gpio**              - Standalone GPIO Test
+* **10.user_aes**              - AES computation through Riscv core
+* **11.user_spi_isp**          - Device boot with SPI as ISP
+* **12.user_timer**            - Standalone timer Test
+* **13.user_uart_master**      - Standalone uart master test
+* **14.user_sram_exec**        - Riscv Boot with code running in SRAM
+* **15.user_cache_bypass**     - Riscv Boot without icache and dcache
+* **16.user_pwm**               -Standalone pwm Test
+* **17.user_sema**              -Standalone validation of hardware Semaphore function
+* **18.riscv_regress**          -Standalone riscv compliance and regression test suite
+* **19.user_rtc**               -Standalone RTC core test
+* **20.user_aes_core**          -Standalone AES Core test
+* **21.user_fpu_core**          -Standalone FPU(SP) Core test
+* **22.user_rtc**               -Standalone RTC core test
+* **24.user_ir_tx**             -Standalone IR Transmitted Test
+* **25.user_ir_rx**             -Standalone IR Receiver Test
+* **26.user_random**            - User Random core test
+* **27.step_motor_controller**  - Standalone Stepper Motor Controller
 
 ## Caravel+RISCDUINO Integrated Specific Test case 
 * **1.wb_port**             - Complete caravel User Wishbone validation
-* **2.uart_master**         - complete caravel user uart master test
-* **3.risc_boot**           - Complete caravel User Risc core boot 
+* **2.uart_master_test1**   - complete caravel user uart master test with baud control from LA port
+* **3.uart_master_test2**   - complete caravel user uart master test based on auto baud detection
+* **4.risc_boot**           - Complete caravel User Risc core boot 
+* **5.caravel_hkspi**       - Caravel House Keeping SPI test case
 
 ## Arduino Based Test Case
 * **1.arduino_arrays**                - Validation of Array function
@@ -701,8 +708,10 @@ Report an issue: <https://github.com/dineshannayya/riscduino/issues>
 Group Email: <https://groups.google.com/g/riscduino>
 
 # Documentation
-* **Syntacore Link** - https://github.com/syntacore/scr1
-* **Picked IR-Receiver/Random Number IP from ** - https://github.com/JulienOury/ChristmasTreeController/
+* **Syntacore**      - https://github.com/syntacore/scr1
+* **IR-Receiver**   - https://github.com/JulienOury/ChristmasTreeController/
+* **Random Number** - https://github.com/JulienOury/ChristmasTreeController/
+* **Stepper Motor** - https://github.com/JulienOury/ChristmasTreeController/
 
 News on Riscduino
 ===============
