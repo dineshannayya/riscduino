@@ -698,6 +698,7 @@ We are looking for community help in following activity, interested user can pin
 # Contacts
 
 Report an issue: <https://github.com/dineshannayya/riscduino/issues>
+Group Email: <https://groups.google.com/g/riscduino>
 
 # Documentation
 * **Syntacore Link** - https://github.com/syntacore/scr1
@@ -706,5 +707,6 @@ Report an issue: <https://github.com/dineshannayya/riscduino/issues>
 News on Riscduino
 ===============
 * **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
+* **Riscduino OpenRoad Article** - https://theopenroadproject.org/implementation-of-riscduino-core-using-a-hierarchical-design-flow/
 
 
