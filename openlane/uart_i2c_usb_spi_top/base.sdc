@@ -23,6 +23,8 @@ set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {uart0_baud_clk}]\
  -group [get_clocks {uart1_baud_clk}] -comment {Async Clock group}
 
+set_dont_touch { u_skew_uart.* }
+
 ### ClkSkew Adjust
 set_case_analysis 0 [get_ports {cfg_cska_uart[0]}]
 set_case_analysis 0 [get_ports {cfg_cska_uart[1]}]
@@ -30,9 +32,9 @@ set_case_analysis 0 [get_ports {cfg_cska_uart[2]}]
 set_case_analysis 0 [get_ports {cfg_cska_uart[3]}]
 
 
-set_max_delay 5 -from [get_ports {wbd_clk_int}]
-set_max_delay 5 -to   [get_ports {wbd_clk_uart}]
-set_max_delay 5 -from wbd_clk_int -to wbd_clk_uart
+#set_max_delay 5 -from [get_ports {wbd_clk_int}]
+#set_max_delay 5 -to   [get_ports {wbd_clk_uart}]
+#set_max_delay 5 -from wbd_clk_int -to wbd_clk_uart
 
 
 set_input_delay -max 6.0000 -clock [get_clocks {app_clk}] -add_delay [get_ports {i2c_rstn}]

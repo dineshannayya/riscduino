@@ -36,6 +36,8 @@
 ////  Revision :                                                  ////
 ////    0.1 - 07 Dec 2022, Dinesh A                               ////
 ////          initial version                                     ////
+////    0.2 - 05 Jan 2023, Dinesh A                               ////
+////          Stepper Motor Integration                           ////
 //////////////////////////////////////////////////////////////////////
 
 `include "user_params.svh"
@@ -52,7 +54,7 @@ module peri_top (
                        // System Signals
                        // Inputs
 		               input logic             mclk,
-                       input logic             s_reset_n              ,  // soft reset
+                       input logic             s_reset_n,  // soft reset
 
 		       // Reg Bus Interface Signal
                        input logic             reg_cs,
@@ -81,7 +83,15 @@ module peri_top (
                        output logic [7:0]      cfg_dac0_mux_sel,
                        output logic [7:0]      cfg_dac1_mux_sel,
                        output logic [7:0]      cfg_dac2_mux_sel,
-                       output logic [7:0]      cfg_dac3_mux_sel     
+                       output logic [7:0]      cfg_dac3_mux_sel,     
+
+                      //------------------------------
+                      // Stepper Motor Variable
+                      //------------------------------
+                      output logic              sm_a1,  
+                      output logic              sm_a2,  
+                      output logic              sm_b1,  
+                      output logic              sm_b2  
 
    ); 
 
@@ -106,17 +116,24 @@ logic [31:0]  reg_ir_rdata;
 logic         reg_ir_ack;
 logic         reg_ir_cs;
 
+logic [31:0]  reg_sm_rdata;
+logic         reg_sm_ack;
+logic         reg_sm_cs;
+
 assign reg_rdata  = (reg_addr[10:7] == `SEL_D2A) ? reg_d2a_rdata :
                     (reg_addr[10:7] == `SEL_RTC) ? reg_rtc_rdata :
                     (reg_addr[10:7] == `SEL_IR)  ? reg_ir_rdata :
+                    (reg_addr[10:7] == `SEL_SM)  ? reg_sm_rdata :
                      'h0;
 assign reg_ack    = (reg_addr[10:7] == `SEL_D2A) ? reg_d2a_ack   :
                     (reg_addr[10:7] == `SEL_RTC) ? reg_rtc_ack   :
                     (reg_addr[10:7] == `SEL_IR)  ? reg_ir_ack   :
+                    (reg_addr[10:7] == `SEL_SM)  ? reg_sm_ack   :
                     1'b0;
 assign reg_d2a_cs = (reg_addr[10:7] == `SEL_D2A)  ? reg_cs : 1'b0;
 assign reg_rtc_cs = (reg_addr[10:7] == `SEL_RTC)  ? reg_cs : 1'b0;
 assign reg_ir_cs  = (reg_addr[10:7] == `SEL_IR)  ? reg_cs : 1'b0;
+assign reg_sm_cs  = (reg_addr[10:7] == `SEL_SM)  ? reg_cs : 1'b0;
 
 
 // peri clock skew control
@@ -218,6 +235,35 @@ nec_ir_top i_ir (
               .irq                      (ir_intr                    )  
 
 );
+
+
+//-------------------------------------------------------
+// Stepper Motor Controller
+//-------------------------------------------------------
+
+sm_ctrl u_sm (
+
+          .rst_n              (s_reset_ssn        ),            
+          .clk                (mclk               ),            
+
+  // Wishbone bus
+          .wbs_cyc_i          (reg_sm_cs          ),            
+          .wbs_stb_i          (reg_sm_cs          ),            
+          .wbs_adr_i          (reg_addr[4:0]      ), 
+          .wbs_we_i           (reg_wr             ), 
+          .wbs_dat_i          (reg_wdata          ), 
+          .wbs_sel_i          (reg_be             ), 
+          .wbs_dat_o          (reg_sm_rdata       ), 
+          .wbs_ack_o          (reg_sm_ack         ), 
+
+  // Motor outputs
+          .motor_a1           (sm_a1              ),  
+          .motor_a2           (sm_a2              ),  
+          .motor_b1           (sm_b1              ),  
+          .motor_b2           (sm_b2              )   
+
+);
+
 
 endmodule 
 

@@ -166,6 +166,9 @@ parameter P_QDDR   = 2'b11;
 		// Remove Wb Reset
 		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
 
+        // Enable QSPI DCG
+		wb_user_core_write(`ADDR_SPACE_WBI+`WBI_CFG_DCG,'h01);
+
 	        repeat (2) @(posedge clock);
 		#1;
 		// Enable SPI Reset
@@ -289,7 +292,6 @@ parameter P_QDDR   = 2'b11;
 		wb_user_core_read_check(`ADDR_SPACE_QSPI+32'h00000314,read_data,32'h004902B7);
 		wb_user_core_read_check(`ADDR_SPACE_QSPI+32'h00000318,read_data,32'h03130291);
 		wb_user_core_read_check(`ADDR_SPACE_QSPI+32'h0000031C,read_data,32'ha0230630);
-		$dumpoff;
 		$display("#############################################");
 		$display("Testing Direct SPI Memory Read              ");
 		$display(" SPI Mode: Normal/Single Bit                ");

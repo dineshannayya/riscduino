@@ -10,13 +10,17 @@ create_clock -name mclk -period 10.0000 [get_ports {mclk}]
 set_clock_transition 0.1500 [get_clocks {mclk}]
 set_clock_uncertainty 0.2500 mclk
 set_propagated_clock [get_clocks {mclk}]
-set_input_delay -max 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {cfg_cska[0]}]
-set_input_delay -max 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {cfg_cska[1]}]
-set_input_delay -max 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {cfg_cska[2]}]
-set_input_delay -max 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {cfg_cska[3]}]
+
+
+set_dont_touch { u_skew.* }
+### ClkSkew Adjust
+
+set_case_analysis 0 [get_ports {cfg_cska[0]}]
+set_case_analysis 0 [get_ports {cfg_cska[1]}]
+set_case_analysis 0 [get_ports {cfg_cska[2]}]
+set_case_analysis 0 [get_ports {cfg_cska[3]}]
+
 set_input_delay -max 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {rst_n}]
-set_input_delay -max 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_clk_int}]
-set_output_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_clk_out}]
 
 set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {dmem_addr[0]}]
 set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {dmem_addr[1]}]
@@ -179,7 +183,6 @@ set_output_delay -min 2.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {d
 # Environment
 ###############################################################################
 set_load -pin_load 0.0334 [get_ports {dmem_req_ack}]
-set_load -pin_load 0.0334 [get_ports {wbd_clk_out}]
 set_load -pin_load 0.0334 [get_ports {dmem_rdata[31]}]
 set_load -pin_load 0.0334 [get_ports {dmem_rdata[30]}]
 set_load -pin_load 0.0334 [get_ports {dmem_rdata[29]}]
@@ -219,11 +222,6 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_ris
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {dmem_req}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {mclk}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {rst_n}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {wbd_clk_int}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska[3]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska[2]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska[1]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska[0]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {dmem_addr[4]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {dmem_addr[3]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {dmem_addr[2]}]

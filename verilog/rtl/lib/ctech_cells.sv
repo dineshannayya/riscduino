@@ -128,7 +128,16 @@ module ctech_clk_gate (
      );
 
 `ifndef SYNTHESIS
-   assign GCLK = CLK & GATE;
+   logic clk_enb;
+
+   assign #1 GCLK  = CLK & clk_enb;
+   
+   always_latch begin
+       if(CLK == 0) begin
+            clk_enb <= GATE;
+       end
+   end
+
 `else
     sky130_fd_sc_hd__dlclkp_2 u_gate(
                                    .GATE    (GATE     ), 

@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Dec 24 11:03:53 2022
+# Sat Feb 11 02:21:11 2023
 ###############################################################################
 current_design wb_interconnect
 ###############################################################################
@@ -1161,13 +1161,6 @@ set_output_delay 2.0000 -clock [get_clocks {clk_i}] -min -add_delay [get_ports {
 set_output_delay 4.0000 -clock [get_clocks {clk_i}] -max -add_delay [get_ports {s2_wbd_stb_o}]
 set_output_delay 2.0000 -clock [get_clocks {clk_i}] -min -add_delay [get_ports {s2_wbd_we_o}]
 set_output_delay 4.0000 -clock [get_clocks {clk_i}] -max -add_delay [get_ports {s2_wbd_we_o}]
-set_max_delay\
-    -from [get_ports {wbd_clk_int}] 4.0000
-set_max_delay\
-    -from [get_ports {wbd_clk_int}]\
-    -to [get_ports {wbd_clk_wi}] 4.0000
-set_max_delay\
-    -to [get_ports {wbd_clk_wi}] 2.0000
 ###############################################################################
 # Environment
 ###############################################################################
@@ -1183,22 +1176,22 @@ set_load -pin_load 0.0334 [get_ports {m2_wbd_lack_o}]
 set_load -pin_load 0.0334 [get_ports {m3_wbd_ack_o}]
 set_load -pin_load 0.0334 [get_ports {m3_wbd_err_o}]
 set_load -pin_load 0.0334 [get_ports {m3_wbd_lack_o}]
+set_load -pin_load 0.0334 [get_ports {peri_wbclk}]
+set_load -pin_load 0.0334 [get_ports {riscv_wbclk}]
+set_load -pin_load 0.0334 [get_ports {s0_mclk}]
 set_load -pin_load 0.0334 [get_ports {s0_wbd_bry_o}]
 set_load -pin_load 0.0334 [get_ports {s0_wbd_cyc_o}]
 set_load -pin_load 0.0334 [get_ports {s0_wbd_stb_o}]
 set_load -pin_load 0.0334 [get_ports {s0_wbd_we_o}]
+set_load -pin_load 0.0334 [get_ports {s1_mclk}]
 set_load -pin_load 0.0334 [get_ports {s1_wbd_cyc_o}]
 set_load -pin_load 0.0334 [get_ports {s1_wbd_stb_o}]
 set_load -pin_load 0.0334 [get_ports {s1_wbd_we_o}]
+set_load -pin_load 0.0334 [get_ports {s2_mclk}]
 set_load -pin_load 0.0334 [get_ports {s2_wbd_cyc_o}]
 set_load -pin_load 0.0334 [get_ports {s2_wbd_stb_o}]
 set_load -pin_load 0.0334 [get_ports {s2_wbd_we_o}]
 set_load -pin_load 0.0334 [get_ports {wbd_clk_wi}]
-set_load -pin_load 0.0334 [get_ports {ch_clk_out[7]}]
-set_load -pin_load 0.0334 [get_ports {ch_clk_out[6]}]
-set_load -pin_load 0.0334 [get_ports {ch_clk_out[5]}]
-set_load -pin_load 0.0334 [get_ports {ch_clk_out[4]}]
-set_load -pin_load 0.0334 [get_ports {ch_clk_out[3]}]
 set_load -pin_load 0.0334 [get_ports {ch_clk_out[2]}]
 set_load -pin_load 0.0334 [get_ports {ch_clk_out[1]}]
 set_load -pin_load 0.0334 [get_ports {ch_clk_out[0]}]
@@ -1674,7 +1667,9 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_ris
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {m3_wbd_cyc_i}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {m3_wbd_stb_i}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {m3_wbd_we_i}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {mclk_raw}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {rst_n}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {s0_idle}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {s0_wbd_ack_i}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {s0_wbd_lack_i}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {s1_wbd_ack_i}]
@@ -1684,11 +1679,6 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_ris
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_wi[2]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_wi[1]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_cska_wi[0]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[7]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[6]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[5]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[4]}]
-set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[3]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[2]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[1]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {ch_clk_in[0]}]

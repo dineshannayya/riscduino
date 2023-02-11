@@ -78,13 +78,13 @@ set ::env(GND_PIN) [list {vssd1}]
 ## Floorplan
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 500 925 "
+set ::env(DIE_AREA) "0 0 475 875 "
 
-set ::env(PL_TARGET_DENSITY) 0.45
+set ::env(PL_TARGET_DENSITY) 0.52
 set ::env(CELL_PAD) "8"
 
 ## Routing
-#set ::env(GRT_ADJUSTMENT) 0.2
+set ::env(GRT_ADJUSTMENT) 0.2
 
 set ::env(PL_TIME_DRIVEN) "1"
 

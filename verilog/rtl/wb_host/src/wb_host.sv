@@ -89,72 +89,73 @@ module wb_host (
     inout vccd1,	// User area 1 1.8V supply
     inout vssd1,	// User area 1 digital ground
 `endif
-       input logic                 user_clock1      ,
-       input logic                 user_clock2      ,
+    output logic                cfg_fast_sim     ,  // 0 -> Normal, 1 -> Fast Sim
+    input logic                 user_clock1      ,
+    input logic                 user_clock2      ,
 
-       output logic                cpu_clk          ,
+    output logic                cpu_clk          ,
 
-       // Global Reset control
-       output logic                wbd_int_rst_n    ,
-       output logic                wbd_pll_rst_n    ,
+    // Global Reset control
+    output logic                wbd_int_rst_n    ,
+    output logic                wbd_pll_rst_n    ,
 
 
-       // to/from Pinmux
-        input  logic               int_pll_clock     ,
-        input   logic              xtal_clk          ,
-	    output  logic              e_reset_n         ,  // external reset
-	    output  logic              p_reset_n         ,  // power-on reset
-        output  logic              s_reset_n         ,  // soft reset
-        output  logic              cfg_strap_pad_ctrl,
-	    output  logic [31:0]       system_strap      ,
-	    input   logic [31:0]       strap_sticky      ,
-	    input   logic [1:0]        strap_uartm       ,
+    // to/from Pinmux
+    input  logic               int_pll_clock     ,
+    input   logic              xtal_clk          ,
+	output  logic              e_reset_n         ,  // external reset
+	output  logic              p_reset_n         ,  // power-on reset
+    output  logic              s_reset_n         ,  // soft reset
+    output  logic              cfg_strap_pad_ctrl,
+	output  logic [31:0]       system_strap      ,
+	input   logic [31:0]       strap_sticky      ,
+	input   logic [1:0]        strap_uartm       ,
 
 
     // Master Port
-       input   logic               wbm_rst_i        ,  // Regular Reset signal
-       input   logic               wbm_clk_i        ,  // System clock
-       input   logic               wbm_cyc_i        ,  // strobe/request
-       input   logic               wbm_stb_i        ,  // strobe/request
-       input   logic [31:0]        wbm_adr_i        ,  // address
-       input   logic               wbm_we_i         ,  // write
-       input   logic [31:0]        wbm_dat_i        ,  // data output
-       input   logic [3:0]         wbm_sel_i        ,  // byte enable
-       output  logic [31:0]        wbm_dat_o        ,  // data input
-       output  logic               wbm_ack_o        ,  // acknowlegement
-       output  logic               wbm_err_o        ,  // error
+    input   logic               wbm_rst_i        ,  // Regular Reset signal
+    input   logic               wbm_clk_i        ,  // System clock
+    input   logic               wbm_cyc_i        ,  // strobe/request
+    input   logic               wbm_stb_i        ,  // strobe/request
+    input   logic [31:0]        wbm_adr_i        ,  // address
+    input   logic               wbm_we_i         ,  // write
+    input   logic [31:0]        wbm_dat_i        ,  // data output
+    input   logic [3:0]         wbm_sel_i        ,  // byte enable
+    output  logic [31:0]        wbm_dat_o        ,  // data input
+    output  logic               wbm_ack_o        ,  // acknowlegement
+    output  logic               wbm_err_o        ,  // error
 
     // Clock Skew Adjust
-       input   logic               wbd_clk_int      , 
-       output  logic               wbd_clk_wh       ,
-       input   logic [3:0]         cfg_cska_wh      , // clock skew adjust for web host
+    input   logic               wbd_clk_int      , 
+    output  logic               wbd_clk_wh       ,
+    input   logic [3:0]         cfg_cska_wh      , // clock skew adjust for web host
 
     // Slave Port
-       output  logic               wbs_clk_out      ,  // System clock
-       input   logic               wbs_clk_i        ,  // System clock
-       output  logic               wbs_cyc_o        ,  // strobe/request
-       output  logic               wbs_stb_o        ,  // strobe/request
-       output  logic [31:0]        wbs_adr_o        ,  // address
-       output  logic               wbs_we_o         ,  // write
-       output  logic [31:0]        wbs_dat_o        ,  // data output
-       output  logic [3:0]         wbs_sel_o        ,  // byte enable
-       input   logic [31:0]        wbs_dat_i        ,  // data input
-       input   logic               wbs_ack_i        ,  // acknowlegement
-       input   logic               wbs_err_i        ,  // error
+    output  logic               wbs_clk_out      ,  // System clock
+    input   logic               wbs_clk_i        ,  // System clock
+    output  logic               wbs_cyc_o        ,  // strobe/request
+    output  logic               wbs_stb_o        ,  // strobe/request
+    output  logic [31:0]        wbs_adr_o        ,  // address
+    output  logic               wbs_we_o         ,  // write
+    output  logic [31:0]        wbs_dat_o        ,  // data output
+    output  logic [3:0]         wbs_sel_o        ,  // byte enable
+    input   logic [31:0]        wbs_dat_i        ,  // data input
+    input   logic               wbs_ack_i        ,  // acknowlegement
+    input   logic               wbs_err_i        ,  // error
 
-       output logic [31:0]         cfg_clk_skew_ctrl1    ,
-       output logic [31:0]         cfg_clk_skew_ctrl2    ,
+    output logic [31:0]         cfg_clk_skew_ctrl1    ,
+    output logic [31:0]         cfg_clk_skew_ctrl2    ,
 
-       input  logic [17:0]         la_data_in       ,
+    input  logic [17:0]         la_data_in       ,
 
-       input  logic                uartm_rxd        ,
-       output logic                uartm_txd        ,
+    input  logic                uartm_rxd        ,
+    output logic                uartm_txd        ,
 
-       input  logic                sclk             ,
-       input  logic                ssn              ,
-       input  logic                sdin             ,
-       output logic                sdout            ,
-       output logic                sdout_oen        
+    input  logic                sclk             ,
+    input  logic                ssn              ,
+    input  logic                sdin             ,
+    output logic                sdout            ,
+    output logic                sdout_oen        
 
 
     );
@@ -212,7 +213,6 @@ logic [31:0]        wb_dat_int            ; // data input
 logic               wb_ack_int            ; // acknowlegement
 logic               wb_err_int            ; // error
 
-logic               cfg_fast_sim          ;
 logic               arst_n                ;
 logic               soft_reboot           ;
 logic               clk_enb               ;
@@ -235,9 +235,15 @@ reset_sync  u_wbm_rst (
               .srst_n     (wbm_rst_n      )
           );
 
+
+// Dummy clock gate to balence avoid clk-skew between two branch for simulation handling
+logic wbs_clk_g;
+ctech_clk_gate u_clkgate (.GATE (1'b1), . CLK(wbs_clk_i), .GCLK(wbs_clk_g));
+
+
 reset_sync  u_wbs_rst (
 	          .scan_mode  (1'b0           ),
-              .dclk       (wbs_clk_i      ), // Destination clock domain
+              .dclk       (wbs_clk_g      ), // Destination clock domain
 	          .arst_n     (s_reset_n      ), // active low async reset
               .srst_n     (wbs_rst_n      )
           );
@@ -522,7 +528,7 @@ async_wb u_async_wb(
 
 // Slave Port
        .wbs_rst_n   (wbs_rst_n     ),  
-       .wbs_clk_i   (wbs_clk_i     ),  
+       .wbs_clk_i   (wbs_clk_g     ),  
        .wbs_cyc_o   (wbs_cyc_o     ),  
        .wbs_stb_o   (wbs_stb_o     ),  
        .wbs_adr_o   (wbs_adr_o     ),  

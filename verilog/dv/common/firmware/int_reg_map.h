@@ -137,3 +137,9 @@
 #define reg_fpu_din2 (*(volatile uint32_t*)0x0C490108)  // Reg-2
 #define reg_fpu_res  (*(volatile uint32_t*)0x0C49010C)  // Reg-3
 
+// Wishbone Interconnect
+#define reg_wbi_stat         (*(volatile uint32_t*)0x10030000)  // Reg-0
+#define reg_wbi_dcg          (*(volatile uint32_t*)0x10030004)  // Reg-1
+
+
+

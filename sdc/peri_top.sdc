@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Dec 24 13:30:19 2022
+# Wed Feb  8 06:55:41 2023
 ###############################################################################
 current_design peri_top
 ###############################################################################
@@ -253,13 +253,6 @@ set_output_delay 1.0000 -clock [get_clocks {mclk}] -min -add_delay [get_ports {r
 set_output_delay 6.0000 -clock [get_clocks {mclk}] -max -add_delay [get_ports {reg_rdata[9]}]
 set_output_delay 1.0000 -clock [get_clocks {rtc_clk}] -min -add_delay [get_ports {rtc_intr}]
 set_output_delay 6.0000 -clock [get_clocks {rtc_clk}] -max -add_delay [get_ports {rtc_intr}]
-set_max_delay\
-    -from [get_ports {wbd_clk_int}] 3.5000
-set_max_delay\
-    -from [get_ports {wbd_clk_int}]\
-    -to [get_ports {wbd_clk_peri}] 3.5000
-set_max_delay\
-    -to [get_ports {wbd_clk_peri}] 2.0000
 ###############################################################################
 # Environment
 ###############################################################################

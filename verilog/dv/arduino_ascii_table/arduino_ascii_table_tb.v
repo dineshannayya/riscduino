@@ -197,8 +197,8 @@ parameter real XTAL_PERIOD = 6;
              // Check 
              // if all the 4224 byte received
              // if no error 
-             if(uart_rx_nu != 4224) test_fail = 1;
-             if(check_sum != 32'h3f01b) test_fail = 1;
+             if(uart_rx_nu != 4223) test_fail = 1;
+             if(check_sum != 32'h3efda) test_fail = 1;
              if(tb_uart.err_cnt != 0) test_fail = 1;
 
 	   

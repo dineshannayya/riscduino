@@ -116,7 +116,7 @@ integer i,j;
 	   initial begin
 	   	$dumpfile("simx.vcd");
 	   	$dumpvars(1, `TB_TOP);
-	   	$dumpvars(2, `TB_TOP.u_top);
+	   	$dumpvars(0, `TB_TOP.u_top);
 	   	$dumpvars(0, `TB_TOP.u_top.u_wb_host);
 	   	$dumpvars(2, `TB_TOP.u_top.u_riscv_top);
 	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
@@ -168,6 +168,7 @@ begin
 	$display("STATUS: Working with Risc core 3");
 	wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h81F);
    end
+
 
    repeat (100) @(posedge clock);  // wait for Processor Get Ready
 

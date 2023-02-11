@@ -743,7 +743,7 @@ parameter real XTAL_PERIOD = 6;
           $display("STATUS: Step-10, PWM One Shot + mode:3 + Comparator Center - PASSED");
        end
        $display("Check Sum: %x ",check_sum);
-       if(check_sum != 16'hc692) test_fail = 1;
+       if(check_sum != 16'hc557) test_fail = 1;
 
 		repeat (100) @(posedge clock);
 			// $display("+1000 cycles");

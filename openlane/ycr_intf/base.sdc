@@ -24,6 +24,9 @@ set_clock_groups -name async_clock -asynchronous \
  -group [get_clocks {rtc_clk}]\
  -group [get_clocks {wb_clk}] -comment {Async Clock group}
 
+set_dont_touch { u_skew_core_clk.* }
+set_dont_touch { u_skew_wb_clk.* }
+
 # Set case analysis
 set_case_analysis  0 [get_ports {cfg_ccska[3]}]
 set_case_analysis  0 [get_ports {cfg_ccska[2]}]

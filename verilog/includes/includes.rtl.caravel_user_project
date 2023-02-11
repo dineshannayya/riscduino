@@ -1,4 +1,5 @@
 # Caravel user project includes
++define+UNIT_DELAY=#0.2
 +incdir+$(USER_PROJECT_VERILOG)/rtl/
 +incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes
@@ -87,9 +88,12 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/lib/async_wb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_wbb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo2.sv
+-v $(USER_PROJECT_VERILOG)/rtl/lib/src_clk_gate.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_arb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_slave_port.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_interconnect.sv
+-v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wbi_reg.sv
+
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_hdu.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_pipe_tdu.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/core/pipeline/ycr_ipic.sv
@@ -191,3 +195,6 @@ $(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_regs.sv
 $(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_div8.sv
 $(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_tx.sv
 $(USER_PROJECT_VERILOG)/rtl/nec_ir/src/nec_ir_top.sv
+
+$(USER_PROJECT_VERILOG)/rtl/sm_ctrl/src/sm_ctrl.sv
+

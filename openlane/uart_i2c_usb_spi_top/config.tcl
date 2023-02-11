@@ -94,7 +94,7 @@ set ::env(GND_PIN) [list {vssd1}]
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
-set ::env(DIE_AREA) [list 0.0 0.0 520.0 800.0]
+set ::env(DIE_AREA) [list 0.0 0.0 500.0 750.0]
 
 
 

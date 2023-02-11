@@ -105,39 +105,43 @@ module wb_interconnect #(
          input logic            vssd1,    // User area 1 digital ground
 `endif
 	 // Bus repeaters
-	 input [CH_CLK_WD-1:0]  ch_clk_in,
-	 output [CH_CLK_WD-1:0] ch_clk_out,
-	 input [CH_DATA_WD-1:0] ch_data_in,
-	 output [CH_DATA_WD-1:0]ch_data_out,
+	     input [CH_CLK_WD-1:0]  ch_clk_in,
+	     output [CH_CLK_WD-1:0] ch_clk_out,
+	     input [CH_DATA_WD-1:0] ch_data_in,
+	     output [CH_DATA_WD-1:0]ch_data_out,
 
          // Clock Skew Adjust
          input logic [3:0]      cfg_cska_wi,
          input logic            wbd_clk_int,
-	 output logic           wbd_clk_wi,
+	     output logic           wbd_clk_wi,
 
 
-         input logic		clk_i, 
+         input logic            mclk_raw,
+         input logic		    clk_i, 
          input logic            rst_n,
+
+         output logic           peri_wbclk,
+         output logic           riscv_wbclk,
 
          
          // Master 0 Interface
          input   logic	[31:0]	m0_wbd_dat_i,
          input   logic  [31:0]	m0_wbd_adr_i,
          input   logic  [3:0]	m0_wbd_sel_i,
-         input   logic  	m0_wbd_we_i,
-         input   logic  	m0_wbd_cyc_i,
-         input   logic  	m0_wbd_stb_i,
+         input   logic  	    m0_wbd_we_i,
+         input   logic  	    m0_wbd_cyc_i,
+         input   logic  	    m0_wbd_stb_i,
          output  logic	[31:0]	m0_wbd_dat_o,
-         output  logic		m0_wbd_ack_o,
-         output  logic		m0_wbd_lack_o,
-         output  logic		m0_wbd_err_o,
+         output  logic		    m0_wbd_ack_o,
+         output  logic		    m0_wbd_lack_o,
+         output  logic		    m0_wbd_err_o,
          
          // Master 1 Interface
          input	logic [31:0]	m1_wbd_dat_i,
          input	logic [31:0]	m1_wbd_adr_i,
-         input	logic [3:0]	m1_wbd_sel_i,
-         input	logic [2:0]	m1_wbd_bl_i,
-         input	logic    	m1_wbd_bry_i,
+         input	logic [3:0]	    m1_wbd_sel_i,
+         input	logic [2:0]	    m1_wbd_bl_i,
+         input	logic    	    m1_wbd_bry_i,
          input	logic 	        m1_wbd_we_i,
          input	logic 	        m1_wbd_cyc_i,
          input	logic 	        m1_wbd_stb_i,
@@ -149,9 +153,9 @@ module wb_interconnect #(
          // Master 2 Interface
          input	logic [31:0]	m2_wbd_dat_i,
          input	logic [31:0]	m2_wbd_adr_i,
-         input	logic [3:0]	m2_wbd_sel_i,
-         input	logic [9:0]	m2_wbd_bl_i,
-         input	logic    	m2_wbd_bry_i,
+         input	logic [3:0]	    m2_wbd_sel_i,
+         input	logic [9:0]	    m2_wbd_bl_i,
+         input	logic    	    m2_wbd_bry_i,
          input	logic 	        m2_wbd_we_i,
          input	logic 	        m2_wbd_cyc_i,
          input	logic 	        m2_wbd_stb_i,
@@ -162,9 +166,9 @@ module wb_interconnect #(
          
          // Master 3 Interface
          input	logic [31:0]	m3_wbd_adr_i,
-         input	logic [3:0]	m3_wbd_sel_i,
-         input	logic [9:0]	m3_wbd_bl_i,
-         input	logic    	m3_wbd_bry_i,
+         input	logic [3:0]	    m3_wbd_sel_i,
+         input	logic [9:0]	    m3_wbd_bl_i,
+         input	logic    	    m3_wbd_bry_i,
          input	logic 	        m3_wbd_we_i,
          input	logic 	        m3_wbd_cyc_i,
          input	logic 	        m3_wbd_stb_i,
@@ -174,31 +178,35 @@ module wb_interconnect #(
          output	logic 	        m3_wbd_err_o,
          
          // Slave 0 Interface
+         output logic           s0_mclk,
+         input  logic           s0_idle,
          input	logic [31:0]	s0_wbd_dat_i,
          input	logic 	        s0_wbd_ack_i,
          input	logic 	        s0_wbd_lack_i,
          //input	logic 	s0_wbd_err_i, - unused
          output	logic [31:0]	s0_wbd_dat_o,
          output	logic [31:0]	s0_wbd_adr_o,
-         output	logic [3:0]	s0_wbd_sel_o,
-         output	logic [9:0]	s0_wbd_bl_o,
+         output	logic [3:0]	    s0_wbd_sel_o,
+         output	logic [9:0]	    s0_wbd_bl_o,
          output	logic 	        s0_wbd_bry_o,
          output	logic 	        s0_wbd_we_o,
          output	logic 	        s0_wbd_cyc_o,
          output	logic 	        s0_wbd_stb_o,
          
          // Slave 1 Interface
+         output logic           s1_mclk,
          input	logic [31:0]	s1_wbd_dat_i,
          input	logic 	        s1_wbd_ack_i,
          // input	logic 	s1_wbd_err_i, - unused
          output	logic [31:0]	s1_wbd_dat_o,
-         output	logic [8:0]	s1_wbd_adr_o, // Uart
-         output	logic [3:0]	s1_wbd_sel_o,
+         output	logic [8:0]	    s1_wbd_adr_o, // Uart
+         output	logic [3:0]	    s1_wbd_sel_o,
          output	logic 	        s1_wbd_we_o,
          output	logic 	        s1_wbd_cyc_o,
          output	logic 	        s1_wbd_stb_o,
          
          // Slave 2 Interface
+         output logic           s2_mclk,
          input	logic [31:0]	s2_wbd_dat_i,
          input	logic 	        s2_wbd_ack_i,
          // input	logic 	s2_wbd_err_i, - unused
@@ -220,6 +228,7 @@ parameter TARGET_SPI_MEM  = 4'b0000;
 parameter TARGET_SPI_REG  = 4'b0000;
 parameter TARGET_UART     = 4'b0001;
 parameter TARGET_PINMUX   = 4'b0010;
+parameter TARGET_WBI      = 4'b0011;
 
 // WishBone Wr Interface
 typedef struct packed { 
@@ -241,6 +250,12 @@ typedef struct packed {
   logic  	wbd_lack;
   logic  	wbd_err;
 } type_wb_rd_intf;
+
+// Master Write Interface
+type_wb_wr_intf m0_wb_wr;
+type_wb_wr_intf m1_wb_wr;
+type_wb_wr_intf m2_wb_wr;
+type_wb_wr_intf m3_wb_wr;
 
 // Master Read Interface
 type_wb_rd_intf  m0_bus_rd;
@@ -269,11 +284,39 @@ type_wb_rd_intf  m3_s2_wb_rd;
 type_wb_wr_intf  s0_wb_wr;
 type_wb_wr_intf  s1_wb_wr;
 type_wb_wr_intf  s2_wb_wr;
+type_wb_wr_intf  wbi_wb_wr;
 
 // Slave Read Interface
 type_wb_rd_intf  s0_wb_rd;
 type_wb_rd_intf  s1_wb_rd;
 type_wb_rd_intf  s2_wb_rd;
+type_wb_rd_intf  wbi_wb_rd;
+
+//------------------------------------
+// Register I/F
+//------------------------------------
+logic             reg_wbi_cs;
+logic             reg_wbi_wr;
+logic  [4:0]      reg_wbi_addr;
+logic  [31:0]     reg_wbi_wdata;
+logic             reg_wbi_be;
+
+logic  [31:0]     reg_wbi_rdata;
+logic  [31:0]     reg_wbi_ack;
+
+//------------------------------------
+// Dynamic Clock gate config
+//------------------------------------
+logic   [31:0]     cfg_dcg_ctrl;
+
+//------------------------------------
+// clock gate indication
+//------------------------------------
+logic   [7:0]     stat_reg_req; 
+logic   [7:0]     stat_clk_gate; 
+
+
+//--------------------------------------
 
 
 // channel repeater
@@ -292,6 +335,24 @@ clk_skew_adjust u_skew_wi
 	       .clk_out    (wbd_clk_wi                  ) 
        );
 
+//--------------------------------------------------------------------------------------
+// Dummy clock gate to balence avoid clk-skew between two branch for simulation handling
+//--------------------------------------------------------------------------------------
+logic clk_g;
+ctech_clk_gate u_wbi_clkgate (.GATE (1'b1), . CLK(clk_i), .GCLK(clk_g));
+
+//----------------------------------------
+// Reset Sync
+//----------------------------------------
+logic rst_ssn;
+
+reset_sync  u_rst_sync (
+	      .scan_mode  (1'b0       ),
+          .dclk       (clk_g       ), // Destination clock domain
+	      .arst_n     (rst_n      ), // active low async reset
+          .srst_n     (rst_ssn    )
+          );
+
 //-------------------------------------------------------------------
 // EXTERNAL MEMORY MAP
 // 0x0000_0000 to 0x0FFF_FFFF  - QSPI MEMORY
@@ -300,8 +361,9 @@ clk_skew_adjust u_skew_wi
 // 0x1001_0040 to 0x1001_007F  - I2C
 // 0x1001_0080 to 0x1001_00BF  - USB
 // 0x1001_00C0 to 0x1001_00FF  - SSPIM
-// 0x1002_0000 to 0x1002_00FF  - PINMUX
 // 0x1001_0100 to 0x1001_013F  - UART1
+// 0x1002_0000 to 0x1002_00FF  - PINMUX
+// 0x1003_0000 to 0x1003_00FF  - WBI
 // 0x3080_0000 to 0x3080_00FF  - WB HOST (This decoding happens at wb_host block)
 // ---------------------------------------------------------------------------
 //
@@ -309,7 +371,8 @@ wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[31:28] == 4'b0000   ) ? TARGET_SPI
                                 (m0_wbd_adr_i[31:16] == 16'h1000  ) ? TARGET_SPI_REG :   // SPI REG
                                 (m0_wbd_adr_i[31:16] == 16'h1001  ) ? TARGET_UART    :   // UART/I2C/USB/SPI
                                 (m0_wbd_adr_i[31:16] == 16'h1002  ) ? TARGET_PINMUX  :   // PINMUX
-				4'b0000; 
+                                (m0_wbd_adr_i[31:16] == 16'h1003  ) ? TARGET_WBI     :   // WB-INTER
+				                TARGET_SPI_MEM; 
 
 //------------------------------
 // RISC Data Memory Map
@@ -321,32 +384,38 @@ wire [3:0] m0_wbd_tid_i       = (m0_wbd_adr_i[31:28] == 4'b0000   ) ? TARGET_SPI
 // 0x1001_00C0 to 0x1001_00FF  - SSPIM
 // 0x1001_0100 to 0x1001_013F  - UART1
 // 0x1002_0000 to 0x1002_00FF  - PINMUX
+// 0x1003_0000 to 0x1003_00FF  - WBI
 //-----------------------------
 // 
 wire [3:0] m1_wbd_tid_i     = (m1_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
                               (m1_wbd_adr_i[31:16] == 16'h1000 ) ? TARGET_SPI_REG :
                               (m1_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART :
                               (m1_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
-			      4'b0000; 
+                              (m1_wbd_adr_i[31:16] == 16'h1003 ) ? TARGET_WBI : 
+			                  TARGET_SPI_MEM; 
 
 wire [3:0] m2_wbd_tid_i     = (m2_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
                               (m2_wbd_adr_i[31:16] == 16'h1000 ) ? TARGET_SPI_REG :
                               (m2_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART : 
                               (m2_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
-			      4'b0000; 
+                              (m2_wbd_adr_i[31:16] == 16'h1003 ) ? TARGET_WBI : 
+			                  TARGET_SPI_MEM; 
 wire [3:0] m3_wbd_tid_i     = (m3_wbd_adr_i[31:28] ==  4'b0000 ) ? TARGET_SPI_MEM :
                               (m3_wbd_adr_i[31:16] == 16'h1000 ) ? TARGET_SPI_REG :
                               (m3_wbd_adr_i[31:16] == 16'h1001 ) ? TARGET_UART : 
                               (m3_wbd_adr_i[31:16] == 16'h1002 ) ? TARGET_PINMUX : 
-			      4'b0000; 
+                              (m3_wbd_adr_i[31:16] == 16'h1003 ) ? TARGET_WBI : 
+			                  TARGET_SPI_MEM; 
 
 
+//----------------------------------------
 // Target Port -0
+//----------------------------------------
 wb_slave_port  u_s0 (
 
-          .clk_i                   (clk_i                  ), 
-          .rst_n                   (rst_n                  ),
-	  .cfg_slave_id            (TARGET_SPI_MEM         ),
+          .clk_i                   (clk_g                  ), 
+          .rst_n                   (rst_ssn                ),
+	  .cfg_slave_id                (TARGET_SPI_MEM         ),
 
          // Master 0 Interface
           .m0_wbd_dat_i            (m0_wbd_dat_i           ),
@@ -399,7 +468,7 @@ wb_slave_port  u_s0 (
           .m3_wbd_we_i             (m3_wbd_we_i            ),
           .m3_wbd_cyc_i            (m3_wbd_cyc_i           ),
           .m3_wbd_stb_i            (m3_wbd_stb_i           ),
-	  .m3_wbd_tid_i            (m3_wbd_tid_i           ),
+	      .m3_wbd_tid_i            (m3_wbd_tid_i           ),
           .m3_wbd_dat_o            (m3_s0_wb_rd.wbd_dat    ),
           .m3_wbd_ack_o            (m3_s0_wb_rd.wbd_ack    ),
           .m3_wbd_lack_o           (m3_s0_wb_rd.wbd_lack   ),
@@ -421,11 +490,13 @@ wb_slave_port  u_s0 (
          
 	);
 
+//----------------------------------------
 // Target Port -1
+//----------------------------------------
 wb_slave_port  u_s1 (
 
-          .clk_i                   (clk_i                  ), 
-          .rst_n                   (rst_n                  ),
+          .clk_i                   (clk_g                  ), 
+          .rst_n                   (rst_ssn                ),
 	      .cfg_slave_id            (TARGET_UART            ),
 
          // Master 0 Interface
@@ -501,12 +572,14 @@ wb_slave_port  u_s1 (
          
 	);
 
+//----------------------------------------
 // Target Port -2
+//----------------------------------------
 wb_slave_port  u_s2 (
 
-          .clk_i                   (clk_i                  ), 
-          .rst_n                   (rst_n                  ),
-	  .cfg_slave_id            (TARGET_PINMUX          ),
+          .clk_i                   (clk_g                  ), 
+          .rst_n                   (rst_ssn                ),
+	      .cfg_slave_id            (TARGET_PINMUX          ),
 
          // Master 0 Interface
           .m0_wbd_dat_i            (m0_wbd_dat_i           ),
@@ -584,6 +657,14 @@ wb_slave_port  u_s2 (
 /////////////////////////////////////////////////
 // Master-0 Mapping
 // ---------------------------------------------
+assign m0_wb_wr.wbd_dat  = m0_wbd_dat_i;
+assign m0_wb_wr.wbd_adr  = m0_wbd_adr_i;
+assign m0_wb_wr.wbd_sel  = m0_wbd_sel_i;
+assign m0_wb_wr.wbd_bl   = 'h0;
+assign m0_wb_wr.wbd_bry  = 1'b1;
+assign m0_wb_wr.wbd_we   = m0_wbd_we_i;
+assign m0_wb_wr.wbd_cyc  = m0_wbd_cyc_i;
+assign m0_wb_wr.wbd_stb  = m0_wbd_stb_i;
 
 assign m0_wbd_dat_o  = m0_bus_rd.wbd_dat;
 assign m0_wbd_ack_o  = m0_bus_rd.wbd_ack;
@@ -596,6 +677,7 @@ always_comb begin
         TARGET_SPI_REG:	   m0_bus_rd = m0_s0_wb_rd;
         TARGET_UART:	   m0_bus_rd = m0_s1_wb_rd;
         TARGET_PINMUX:	   m0_bus_rd = m0_s2_wb_rd;
+        TARGET_WBI:	       m0_bus_rd = wbi_wb_rd;
         default:           m0_bus_rd = m0_s0_wb_rd;
      endcase			
 end
@@ -603,6 +685,14 @@ end
 /////////////////////////////////////////////////
 // Master-1 Mapping
 // ---------------------------------------------
+assign m1_wb_wr.wbd_dat  = m1_wbd_dat_i;
+assign m1_wb_wr.wbd_adr  = m1_wbd_adr_i;
+assign m1_wb_wr.wbd_sel  = m1_wbd_sel_i;
+assign m1_wb_wr.wbd_bl   = m1_wbd_bl_i;
+assign m1_wb_wr.wbd_bry  = m1_wbd_bry_i;
+assign m1_wb_wr.wbd_we   = m1_wbd_we_i;
+assign m1_wb_wr.wbd_cyc  = m1_wbd_cyc_i;
+assign m1_wb_wr.wbd_stb  = m1_wbd_stb_i;
 
 assign m1_wbd_dat_o  = m1_bus_rd.wbd_dat;
 assign m1_wbd_ack_o  = m1_bus_rd.wbd_ack;
@@ -615,6 +705,7 @@ always_comb begin
         TARGET_SPI_REG:	   m1_bus_rd = m1_s0_wb_rd;
         TARGET_UART:	   m1_bus_rd = m1_s1_wb_rd;
         TARGET_PINMUX:	   m1_bus_rd = m1_s2_wb_rd;
+        TARGET_WBI:	       m1_bus_rd = wbi_wb_rd;
         default:           m1_bus_rd = m1_s0_wb_rd;
      endcase			
 end
@@ -622,6 +713,14 @@ end
 /////////////////////////////////////////////////
 // Master-2 Mapping
 // ---------------------------------------------
+assign m2_wb_wr.wbd_dat  = m2_wbd_dat_i;
+assign m2_wb_wr.wbd_adr  = m2_wbd_adr_i;
+assign m2_wb_wr.wbd_sel  = m2_wbd_sel_i;
+assign m2_wb_wr.wbd_bl   = m2_wbd_bl_i;
+assign m2_wb_wr.wbd_bry  = m2_wbd_bry_i;
+assign m2_wb_wr.wbd_we   = m2_wbd_we_i;
+assign m2_wb_wr.wbd_cyc  = m2_wbd_cyc_i;
+assign m2_wb_wr.wbd_stb  = m2_wbd_stb_i;
 
 assign m2_wbd_dat_o  = m2_bus_rd.wbd_dat;
 assign m2_wbd_ack_o  = m2_bus_rd.wbd_ack;
@@ -634,6 +733,7 @@ always_comb begin
         TARGET_SPI_REG:	   m2_bus_rd = m2_s0_wb_rd;
         TARGET_UART:	   m2_bus_rd = m2_s1_wb_rd;
         TARGET_PINMUX:	   m2_bus_rd = m2_s2_wb_rd;
+        TARGET_WBI:	       m2_bus_rd = wbi_wb_rd;
         default:           m2_bus_rd = m2_s0_wb_rd;
      endcase			
 end
@@ -641,6 +741,14 @@ end
 /////////////////////////////////////////////////
 // Master-3 Mapping
 // ---------------------------------------------
+assign m3_wb_wr.wbd_dat  = 'h0; // icache doesnot had wdata
+assign m3_wb_wr.wbd_adr  = m3_wbd_adr_i;
+assign m3_wb_wr.wbd_sel  = m3_wbd_sel_i;
+assign m3_wb_wr.wbd_bl   = m3_wbd_bl_i;
+assign m3_wb_wr.wbd_bry  = m3_wbd_bry_i;
+assign m3_wb_wr.wbd_we   = m3_wbd_we_i;
+assign m3_wb_wr.wbd_cyc  = m3_wbd_cyc_i;
+assign m3_wb_wr.wbd_stb  = m3_wbd_stb_i;
 
 assign m3_wbd_dat_o  = m3_bus_rd.wbd_dat;
 assign m3_wbd_ack_o  = m3_bus_rd.wbd_ack;
@@ -653,6 +761,7 @@ always_comb begin
         TARGET_SPI_REG:	   m3_bus_rd = m3_s0_wb_rd;
         TARGET_UART:	   m3_bus_rd = m3_s1_wb_rd;
         TARGET_PINMUX:	   m3_bus_rd = m3_s2_wb_rd;
+        TARGET_WBI:	       m3_bus_rd = wbi_wb_rd;
         default:           m3_bus_rd = m3_s0_wb_rd;
      endcase			
 end
@@ -701,9 +810,152 @@ end
  assign s2_wb_rd.wbd_err  = 1'b0; // s2_wbd_err_i ; - unused
 
 
+//----------------------------
+// Register Interface
+//----------------------------
+wire [1:0] wbi_grnt;
+wire m0_wbi_req = m0_wbd_stb_i & (m0_wbd_tid_i == TARGET_WBI);
+wire m1_wbi_req = m1_wbd_stb_i & (m1_wbd_tid_i == TARGET_WBI);
+wire m2_wbi_req = m2_wbd_stb_i & (m2_wbd_tid_i == TARGET_WBI);
+wire m3_wbi_req = m3_wbd_stb_i & (m3_wbd_tid_i == TARGET_WBI);
 
 
+wb_arb u_wbi_arb(
+	.clk      (clk_g ), 
+	.rstn     (rst_ssn), 
+	.req      ({m3_wbi_req,m2_wbi_req,m1_wbi_req,m0_wbi_req}), 
+	.gnt      (wbi_grnt)
+        );
 
+always_comb begin
+     case(wbi_grnt)
+        2'b00:	   wbi_wb_wr = m0_wb_wr;
+        2'b01:	   wbi_wb_wr = m1_wb_wr;
+        2'b10:	   wbi_wb_wr = m2_wb_wr;
+        2'b11:	   wbi_wb_wr = m3_wb_wr;
+     endcase			
+end
+
+always_comb begin
+     case(wbi_grnt)
+        2'b00:	   reg_wbi_cs = m0_wbi_req;
+        2'b01:	   reg_wbi_cs = m1_wbi_req;
+        2'b10:	   reg_wbi_cs = m2_wbi_req;
+        2'b11:	   reg_wbi_cs = m3_wbi_req;
+     endcase			
+end
+
+assign  reg_wbi_wr     = wbi_wb_wr.wbd_we;
+assign  reg_wbi_addr   = wbi_wb_wr.wbd_adr[4:0];
+assign  reg_wbi_wdata  = wbi_wb_wr.wbd_dat;
+assign  reg_wbi_be     = wbi_wb_wr.wbd_sel;
+
+assign wbi_wb_rd.wbd_dat   = reg_wbi_rdata ;
+assign wbi_wb_rd.wbd_ack   = reg_wbi_ack ;
+assign wbi_wb_rd.wbd_lack  = reg_wbi_ack ;
+assign wbi_wb_rd.wbd_err   = 1'b0; 
+
+assign stat_reg_req = {4'b0,m3_wb_wr.wbd_stb,m2_wb_wr.wbd_stb,m1_wb_wr.wbd_stb,m0_wb_wr.wbd_stb};
+
+wbi_reg  u_reg(
+                       // System Signals
+                       // Inputs
+		               .mclk                   (clk_g            ),
+	                   .reset_n                (rst_ssn          ),  // external reset
+
+
+		       // Reg Bus Interface Signal
+                       .reg_cs                 (reg_wbi_cs       ),
+                       .reg_wr                 (reg_wbi_wr       ),
+                       .reg_addr               (reg_wbi_addr     ),
+                       .reg_wdata              (reg_wbi_wdata    ),
+                       .reg_be                 (reg_wbi_be       ),
+
+                       // Outputs
+                       .reg_rdata              (reg_wbi_rdata    ),
+                       .reg_ack                (reg_wbi_ack      ),
+
+                       // Dynamic Clock gate config
+                       .cfg_dcg_ctrl           (cfg_dcg_ctrl     ),
+
+                       // clock gate indication
+                       .stat_reg_req           (stat_reg_req     ), 
+                       .stat_clk_gate          (stat_clk_gate    )          
+   ); 
+
+//----------------------------
+// Source Clock Gating for S0
+//----------------------------
+src_clk_gate  u_dcg_s0(
+                        .reset_n               (rst_ssn             ),
+                        .clk_in                (mclk_raw            ),
+                        .cfg_mode              (cfg_dcg_ctrl[1:0]   ),
+                        .dst_idle              (s0_idle             ), // 1 - indicate destination is ideal
+                        .src_req               (s0_wbd_stb_o        ), // 1 - Source Request
+
+                        .clk_enb               (stat_clk_gate[0]    ), // clock enable indication
+                        .clk_out               (s0_mclk             )  // clock output
+     
+       );
+//----------------------------
+// Source Clock Gating for S1
+//----------------------------
+src_clk_gate  u_dcg_s1(
+                        .reset_n               (rst_ssn            ),
+                        .clk_in                (mclk_raw           ),
+                        .cfg_mode              (cfg_dcg_ctrl[3:2]  ),
+                        .dst_idle              (1'b0               ), // 1 - indicate destination is ideal
+                        .src_req               (s1_wbd_stb_o       ), // 1 - Source Request
+
+                        .clk_enb               (stat_clk_gate[1]   ), // clock enable indication
+                        .clk_out               (s1_mclk            )  // clock output
+     
+       );
+
+//----------------------------
+// Source Clock Gating for S2
+//----------------------------
+src_clk_gate  u_dcg_s2(
+                        .reset_n               (rst_ssn            ),
+                        .clk_in                (mclk_raw           ),
+                        .cfg_mode              (cfg_dcg_ctrl[5:4]  ),
+                        .dst_idle              (1'b0               ), // 1 - indicate destination is ideal
+                        .src_req               (s2_wbd_stb_o       ), // 1 - Source Request
+
+                        .clk_enb               (stat_clk_gate[2]   ), // clock enable indication
+                        .clk_out               (s2_mclk            )  // clock output
+     
+       );
+
+//----------------------------
+// Source Clock Gating for S2
+//----------------------------
+src_clk_gate  u_dcg_peri(
+                        .reset_n               (rst_ssn            ),
+                        .clk_in                (mclk_raw           ),
+                        .cfg_mode              (cfg_dcg_ctrl[7:6]  ),
+                        .dst_idle              (1'b0               ), // 1 - indicate destination is ideal
+                        .src_req               (s2_wbd_stb_o       ), // 1 - Source Request
+
+                        .clk_enb               (stat_clk_gate[3]   ), // clock enable indication
+                        .clk_out               (peri_wbclk         )  // clock output
+     
+       );
+
+//----------------------------
+// Source Clock Gating for RISCV-WB
+//----------------------------
+src_clk_gate  u_dcg_riscv(
+                        .reset_n               (rst_ssn            ),
+                        .clk_in                (mclk_raw           ),
+                        .cfg_mode              (cfg_dcg_ctrl[9:8]  ),
+                        .dst_idle              (1'b0               ), // 1 - indicate destination is ideal
+                        .src_req               (1'b0               ), // 1 - Source Request
+
+                        .clk_enb               (stat_clk_gate[4]   ), // clock enable indication
+                        .clk_out               (riscv_wbclk        )  // clock output
+     
+       );
 
 endmodule
 

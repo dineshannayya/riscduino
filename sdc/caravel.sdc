@@ -197,8 +197,8 @@ set_case_analysis 0 [get_pins {mprj/u_intercon/cfg_cska_wi[0]}]
 set_case_analysis 1 [get_pins {mprj/u_intercon/cfg_cska_wi[1]}]
 
 # clock skew cntrl-2
-set_case_analysis 1 [get_pins {mprj/u_fpu/cfg_cska[3]}]
-set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[2]}]
+set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[3]}]
+set_case_analysis 1 [get_pins {mprj/u_fpu/cfg_cska[2]}]
 set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[1]}]
 set_case_analysis 0 [get_pins {mprj/u_fpu/cfg_cska[0]}]
 
@@ -230,7 +230,7 @@ set_case_analysis 0 [get_pins {mprj/u_riscv_top.i_core_top_0/cfg_ccska[0]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[3]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[2]}]
 set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[1]}]
-set_case_analysis 0 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[0]}]
+set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_connect/cfg_ccska[0]}]
 
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_ccska[3]}]
 set_case_analysis 1 [get_pins {mprj/u_riscv_top.u_intf/cfg_ccska[2]}]

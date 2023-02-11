@@ -198,7 +198,7 @@ end
 	   	$dumpvars(1, `TB_TOP.u_top);
 	   	//$dumpvars(0, `TB_TOP.u_top.u_pll);
 	   	$dumpvars(0, `TB_TOP.u_top.u_wb_host);
-	   	//$dumpvars(0, `TB_TOP.u_top.u_intercon);
+	   	$dumpvars(0, `TB_TOP.u_top.u_intercon);
 	   	//$dumpvars(1, `TB_TOP.u_top.u_intercon);
 	   	$dumpvars(0, `TB_TOP.u_top.u_pinmux);
 	   	$dumpvars(0, `TB_TOP.u_top.u_rp_south);

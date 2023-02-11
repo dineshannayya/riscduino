@@ -72,6 +72,8 @@
 ////          C. software register address moved, 4 register will ////
 ////             reset under power-on reset, 4 register will reset////
 ////             system reset                                     ////
+////    0.9 - 5 Jan 2023, Dinesh A                                ////
+////          A. Stepper Motor Integration                        ////
 //////////////////////////////////////////////////////////////////////
 `include "user_params.svh"
 module pinmux_top (
@@ -214,7 +216,16 @@ module pinmux_top (
                // IR Receiver I/F
                output logic             ir_rx,
                input  logic             ir_tx,
-               input  logic             ir_intr
+               input  logic             ir_intr,
+
+               //------------------------------
+               // Stepper Motor Variable
+               //------------------------------
+               input logic              sm_a1,  
+               input logic              sm_a2,  
+               input logic              sm_b1,  
+               input logic              sm_b2  
+
 
                
    ); 
@@ -621,8 +632,15 @@ pinmux u_pinmux (
 		       .dbg_clk_mon             (dbg_clk_mon         ),
 
                .ir_rx                   (ir_rx               ),
-               .ir_tx                   (ir_tx               )
+               .ir_tx                   (ir_tx               ),
 
+               //-------------------------------------
+               // Stpper Motor outputs
+               //-------------------------------------
+               .sm_a1                   (sm_a1               ),  
+               .sm_a2                   (sm_a2               ),  
+               .sm_b1                   (sm_b1               ),  
+               .sm_b2                   (sm_b2               )   
 
    ); 
 

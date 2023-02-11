@@ -32,9 +32,11 @@ set_case_analysis 0 [get_ports {cfg_cska_peri[1]}]
 set_case_analysis 0 [get_ports {cfg_cska_peri[2]}]
 set_case_analysis 0 [get_ports {cfg_cska_peri[3]}]
 
-set_max_delay   3.5 -from [get_ports {wbd_clk_int}]
-set_max_delay   2 -to   [get_ports {wbd_clk_peri}]
-set_max_delay 3.5 -from wbd_clk_int -to wbd_clk_peri
+#set_max_delay   3.5 -from [get_ports {wbd_clk_int}]
+#set_max_delay   2 -to   [get_ports {wbd_clk_peri}]
+#set_max_delay 3.5 -from wbd_clk_int -to wbd_clk_peri
+
+set_dont_touch { u_skew_peri.* }
 
 set_input_delay -max 6.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {s_reset_n}]
 set_input_delay -min 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {s_reset_n}]

@@ -4,12 +4,12 @@
 // ASCI Representation of RISC = 32'h8273_8343
 parameter CHIP_SIGNATURE = 32'h8273_8343;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h2412_2022;
+parameter CHIP_RELEASE_DATE = 32'h2901_2023;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0006_5000;
+parameter CHIP_REVISION   = 32'h0006_7000;
 
 parameter CLK_SKEW1_RESET_VAL = 32'b0110_0000_0100_0111_1001_1100_1000_0101;
-parameter CLK_SKEW2_RESET_VAL = 32'b1000_1000_1000_1000_1000_0110_1000_1110;
+parameter CLK_SKEW2_RESET_VAL = 32'b0100_1000_1000_1000_1000_0110_1001_1110;
 
 parameter PSTRAP_DEFAULT_VALUE = 15'b000_0011_1010_0000;
 
@@ -160,7 +160,8 @@ system strap decoding
 `define SEL_WS      4'b0101   // WS281x  REGISTER
 `define SEL_PERI    1'b1      // Peripheral
 `define SEL_D2A     4'b1000   // Digital2Analog  REGISTER
-`define SEL_RTC     4'b1001   // RTC     REGISTER
-`define SEL_IR      4'b1010   // IR     REGISTER
+`define SEL_RTC     4'b1001   // RTC REGISTER
+`define SEL_IR      4'b1010   // IR REGISTER
+`define SEL_SM      4'b1011   // STEPER MOTOR
 `endif // USER_PARMS
 

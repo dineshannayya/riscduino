@@ -1404,7 +1404,8 @@ endspecify
     always @(posedge RST_in)
     begin:Threset
         RST_out = 1'b0;
-        #(35000000-200000) RST_out = 1'b1;
+        //#(35000000-200000) RST_out = 1'b1; - DineshA
+        #(3500000-200000) RST_out = 1'b1;
     end
 
     always @(negedge CSNeg_ipd)

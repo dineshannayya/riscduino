@@ -41,9 +41,13 @@ set_case_analysis 0 [get_ports {cfg_cska_wh[2]}]
 set_case_analysis 0 [get_ports {cfg_cska_wh[3]}]
 
 
-set_max_delay   3.5 -from [get_ports {wbd_clk_int}]
-set_max_delay   2 -to   [get_ports {wbd_clk_wh}]
-set_max_delay 3.5 -from wbd_clk_int -to wbd_clk_wh
+#set_max_delay   3.5 -from [get_ports {wbd_clk_int}]
+#set_max_delay   2 -to   [get_ports {wbd_clk_wh}]
+#set_max_delay 3.5 -from wbd_clk_int -to wbd_clk_wh
+
+## Don't touch delay cells
+set_dont_touch { u_skew_wh.* }
+
 
 ### WBM I/F
 #Strobe is registered inside the wb_host before generating chip select

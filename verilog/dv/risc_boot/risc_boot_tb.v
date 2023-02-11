@@ -130,11 +130,12 @@ pullup(mprj_io[3]);
         begin
            $dumpfile("simx.vcd");
            $dumpvars(1,risc_boot_tb);
-           //$dumpvars(1,risc_boot_tb.u_spi_flash_256mb);
+           $dumpvars(0,risc_boot_tb.u_spi_flash_256mb);
            //$dumpvars(2,risc_boot_tb.u_top);
            $dumpvars(1,risc_boot_tb.u_top.mprj);
            $dumpvars(0,risc_boot_tb.u_top.mprj.u_wb_host);
            $dumpvars(0,risc_boot_tb.u_top.mprj.u_pinmux);
+           $dumpvars(0,risc_boot_tb.u_top.mprj.u_qspi_master);
            //$dumpvars(0,risc_boot_tb.tb_uart);
            //$dumpvars(0,risc_boot_tb.u_user_spiflash);
 	   $display("Waveform Dump started");

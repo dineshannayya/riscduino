@@ -12,6 +12,9 @@ puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 1
 set_timing_derate -early [expr {1-$::env(SYNTH_TIMING_DERATE)}]
 set_timing_derate -late [expr {1+$::env(SYNTH_TIMING_DERATE)}]
 
+set_dont_touch { u_skew_core_clk.* }
+
+
 #IMEM Constraints
 set_output_delay -max 7.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2imem_cmd_o}]
 set_output_delay -max 7.0000 -clock [get_clocks {core_clk}] -add_delay [get_ports {core2imem_req_o}]

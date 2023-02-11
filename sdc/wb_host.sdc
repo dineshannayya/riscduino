@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sun Dec 25 07:45:31 2022
+# Thu Feb  9 11:01:49 2023
 ###############################################################################
 current_design wb_host
 ###############################################################################
@@ -463,16 +463,10 @@ set_multicycle_path -setup\
            [get_ports {wbm_sel_i[2]}]\
            [get_ports {wbm_sel_i[3]}]\
            [get_ports {wbm_we_i}]] 2
-set_max_delay\
-    -from [get_ports {wbd_clk_int}] 3.5000
-set_max_delay\
-    -from [get_ports {wbd_clk_int}]\
-    -to [get_ports {wbd_clk_wh}] 3.5000
-set_max_delay\
-    -to [get_ports {wbd_clk_wh}] 2.0000
 ###############################################################################
 # Environment
 ###############################################################################
+set_load -pin_load 0.0334 [get_ports {cfg_fast_sim}]
 set_load -pin_load 0.0334 [get_ports {cfg_strap_pad_ctrl}]
 set_load -pin_load 0.0334 [get_ports {cpu_clk}]
 set_load -pin_load 0.0334 [get_ports {e_reset_n}]

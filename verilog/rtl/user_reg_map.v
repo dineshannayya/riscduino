@@ -18,6 +18,8 @@
 `define ADDR_SPACE_ANALOG  32'h3002_0400
 `define ADDR_SPACE_RTC     32'h3002_0480
 `define ADDR_SPACE_IR      32'h3002_0500
+`define ADDR_SPACE_SM      32'h3002_0580
+`define ADDR_SPACE_WBI     32'h3003_0000
 `define ADDR_SPACE_WBHOST  32'h3008_0000
 
 //--------------------------------------------------
@@ -188,3 +190,18 @@
 `define IR_CFG_DIVIDER      8'h08 
 `define IR_CFG_RX_DATA      8'h0C 
 `define IR_CFG_TX_DATA      8'h10 
+
+//--------------------------------------------------------
+// STEPPER Register Map
+//--------------------------------------------------------
+`define SM_CFG_CMD          8'h00
+`define SM_CFG_MUL          8'h04
+`define SM_CFG_DIV          8'h08
+`define SM_CFG_PER          8'h0C
+`define SM_CFG_CTRL         8'h10
+
+//--------------------------------------------------------
+// WB INTER-CONNECT Register Map
+//--------------------------------------------------------
+`define WBI_CFG_STAT        8'h00
+`define WBI_CFG_DCG         8'h04

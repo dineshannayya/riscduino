@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Dec 24 09:57:13 2022
+# Tue Feb  7 17:04:52 2023
 ###############################################################################
 current_design qspim_top
 ###############################################################################
@@ -259,11 +259,6 @@ set_output_delay 1.0000 -clock [get_clocks {mclk}] -max -add_delay [get_ports {w
 set_output_delay -2.7500 -clock [get_clocks {mclk}] -min -add_delay [get_ports {wbd_err_o}]
 set_output_delay 1.0000 -clock [get_clocks {mclk}] -max -add_delay [get_ports {wbd_err_o}]
 set_max_delay\
-    -from [get_ports {wbd_clk_int}] 3.5000
-set_max_delay\
-    -from [get_ports {wbd_clk_int}]\
-    -to [get_ports {wbd_clk_spi}] 3.5000
-set_max_delay\
     -to [get_ports {spi_debug[0]}] 10.0000
 set_max_delay\
     -to [get_ports {spi_debug[10]}] 10.0000
@@ -327,8 +322,6 @@ set_max_delay\
     -to [get_ports {spi_debug[8]}] 10.0000
 set_max_delay\
     -to [get_ports {spi_debug[9]}] 10.0000
-set_max_delay\
-    -to [get_ports {wbd_clk_spi}] 2.0000
 ###############################################################################
 # Environment
 ###############################################################################
@@ -413,6 +406,7 @@ set_load -pin_load 0.0334 [get_ports {wbd_dat_o[3]}]
 set_load -pin_load 0.0334 [get_ports {wbd_dat_o[2]}]
 set_load -pin_load 0.0334 [get_ports {wbd_dat_o[1]}]
 set_load -pin_load 0.0334 [get_ports {wbd_dat_o[0]}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_fast_sim}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_init_bypass}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {mclk}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {rst_n}]
