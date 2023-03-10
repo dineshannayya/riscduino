@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Tue Feb  7 16:20:11 2023
+# Sat Mar  4 16:56:11 2023
 ###############################################################################
 current_design ycr_core_top
 ###############################################################################
@@ -372,6 +372,10 @@ set_load -pin_load 0.0334 [get_ports {core2imem_req_o}]
 set_load -pin_load 0.0334 [get_ports {core_clk_skew}]
 set_load -pin_load 0.0334 [get_ports {core_rdc_qlfy_o}]
 set_load -pin_load 0.0334 [get_ports {core_rst_n_o}]
+set_load -pin_load 0.0334 [get_ports {sys_rdc_qlfy_o}]
+set_load -pin_load 0.0334 [get_ports {sys_rst_n_o}]
+set_load -pin_load 0.0334 [get_ports {tapc_tdo}]
+set_load -pin_load 0.0334 [get_ports {tapc_tdo_en}]
 set_load -pin_load 0.0334 [get_ports {core2dmem_addr_o[31]}]
 set_load -pin_load 0.0334 [get_ports {core2dmem_addr_o[30]}]
 set_load -pin_load 0.0334 [get_ports {core2dmem_addr_o[29]}]
@@ -531,6 +535,10 @@ set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_ris
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {imem2core_req_ack_i}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {pwrup_rst_n}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {rst_n}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {tapc_tck}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {tapc_tdi}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {tapc_tms}]
+set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {trst_n}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_ccska[3]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_ccska[2]}]
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_8 -pin {Y} -input_transition_rise 0.0000 -input_transition_fall 0.0000 [get_ports {cfg_ccska[1]}]

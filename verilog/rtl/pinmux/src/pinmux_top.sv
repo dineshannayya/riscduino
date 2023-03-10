@@ -74,6 +74,8 @@
 ////             system reset                                     ////
 ////    0.9 - 5 Jan 2023, Dinesh A                                ////
 ////          A. Stepper Motor Integration                        ////
+////    1.0 - 5 Mar 2023, Dinesh A                                ////
+////          A. Riscv Tap access integration                     ////
 //////////////////////////////////////////////////////////////////////
 `include "user_params.svh"
 module pinmux_top (
@@ -91,6 +93,16 @@ module pinmux_top (
 	                   input logic             e_reset_n              ,  // external reset
 	                   input logic             p_reset_n              ,  // power-on reset
                        input logic             s_reset_n              ,  // soft reset
+
+                       `ifdef YCR_DBG_EN
+                           // -- JTAG I/F
+                        output   logic         riscv_trst_n,
+                        output   logic         riscv_tck,
+                        output   logic         riscv_tms,
+                        output   logic         riscv_tdi,
+                        input    logic         riscv_tdo,
+                        input    logic         riscv_tdo_en,
+                       `endif // YCR_DBG_EN
 
                        // to/from Global Reset FSM
                         input  logic           cfg_strap_pad_ctrl     ,
@@ -565,6 +577,16 @@ ws281x_top  u_ws281x(
 //----------------------------------------------------------------------
 
 pinmux u_pinmux (
+       `ifdef YCR_DBG_EN
+           // -- JTAG I/F
+              .riscv_trst_n             (riscv_trst_n        ),
+              .riscv_tck                (riscv_tck           ),
+              .riscv_tms                (riscv_tms           ),
+              .riscv_tdi                (riscv_tdi           ),
+              .riscv_tdo                (riscv_tdo           ),
+              .riscv_tdo_en             (riscv_tdo_en        ),
+       `endif // YCR_DBG_EN
+
                .cfg_strap_pad_ctrl      (cfg_strap_pad_ctrl  ),
                .pad_strap_in            (pad_strap_in        ),
                // Digital IO

@@ -299,10 +299,10 @@ logic             reg_wbi_cs;
 logic             reg_wbi_wr;
 logic  [4:0]      reg_wbi_addr;
 logic  [31:0]     reg_wbi_wdata;
-logic             reg_wbi_be;
+logic  [3:0]      reg_wbi_be;
 
 logic  [31:0]     reg_wbi_rdata;
-logic  [31:0]     reg_wbi_ack;
+logic             reg_wbi_ack;
 
 //------------------------------------
 // Dynamic Clock gate config
@@ -314,6 +314,7 @@ logic   [31:0]     cfg_dcg_ctrl;
 //------------------------------------
 logic   [7:0]     stat_reg_req; 
 logic   [7:0]     stat_clk_gate; 
+logic   [7:0]     stat_clk_gate_ss; 
 
 
 //--------------------------------------
@@ -880,7 +881,7 @@ wbi_reg  u_reg(
 
                        // clock gate indication
                        .stat_reg_req           (stat_reg_req     ), 
-                       .stat_clk_gate          (stat_clk_gate    )          
+                       .stat_clk_gate          (stat_clk_gatess  )          
    ); 
 
 //----------------------------
@@ -957,5 +958,18 @@ src_clk_gate  u_dcg_riscv(
      
        );
 
+
+/**************************************
+ As there is hugh clock skey at stat_clk_gate
+between mclk_raw & clk_g. We are creating async
+path to simply the timing closure
+***************************************/
+
+double_sync_high  #(.WIDTH(8)) u_dsync(
+              .in_data    ( stat_clk_gate     ),
+              .out_clk    ( clk_g             ),
+              .out_rst_n  ( rst_ssn           ),
+              .out_data   ( stat_clk_gate_ss  )
+          );
 endmodule
 

@@ -6,7 +6,15 @@ current_design wb_interconnect
 ###############################################################################
 # Timing Constraints
 ###############################################################################
-create_clock -name clk_i -period 10.0000 [get_ports {clk_i}]
+create_clock -name clk_i    -period 10.0000 [get_ports {clk_i}]
+create_clock -name mclk_raw -period 10.0000 [get_ports {mclk_raw}]
+
+set_clock_groups \
+   -name async_group \
+   -logically_exclusive \
+   -group [get_clocks {clk_i}]\
+   -group [get_clocks {mclk_raw}]\
+   -comment {Async Clock group}
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.5000 [all_clocks]

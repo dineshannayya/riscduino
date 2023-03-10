@@ -428,8 +428,9 @@ generic_intr_stat_reg #(.WD(32),
 assign  cfg_multi_func_sel = reg_5[31:0]; // to be used for read
 
 // bit[31] '1' - uart master enable on power up
+// bit[30] '1' - Riscv Tap enable on power up
 
-gen_32b_reg  #(32'h8000_0000) u_reg_5	(
+gen_32b_reg  #(32'hC000_0000) u_reg_5	(
 	      //List of Inputs
 	      .reset_n    (s_reset_n     ),
 	      .clk        (mclk          ),

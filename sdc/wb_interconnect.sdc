@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Sat Feb 11 02:21:11 2023
+# Thu Mar  9 06:17:48 2023
 ###############################################################################
 current_design wb_interconnect
 ###############################################################################
@@ -11,6 +11,14 @@ set_clock_transition 0.1500 [get_clocks {clk_i}]
 set_clock_uncertainty -setup 0.5000 clk_i
 set_clock_uncertainty -hold 0.2500 clk_i
 set_propagated_clock [get_clocks {clk_i}]
+create_clock -name mclk_raw -period 10.0000 [get_ports {mclk_raw}]
+set_clock_transition 0.1500 [get_clocks {mclk_raw}]
+set_clock_uncertainty -setup 0.5000 mclk_raw
+set_clock_uncertainty -hold 0.2500 mclk_raw
+set_propagated_clock [get_clocks {mclk_raw}]
+set_clock_groups -name async_group -logically_exclusive \
+ -group [get_clocks {clk_i}]\
+ -group [get_clocks {mclk_raw}] -comment {Async Clock group}
 set_input_delay 2.0000 -clock [get_clocks {clk_i}] -min -add_delay [get_ports {m0_wbd_adr_i[0]}]
 set_input_delay 4.0000 -clock [get_clocks {clk_i}] -max -add_delay [get_ports {m0_wbd_adr_i[0]}]
 set_input_delay 2.0000 -clock [get_clocks {clk_i}] -min -add_delay [get_ports {m0_wbd_adr_i[10]}]

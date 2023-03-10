@@ -48,17 +48,36 @@ begin
    end
 end
 
+//----------------------------------------------
+// Double Sync the config signal to match clock skew 
+//----------------------------------------------
+logic [1:0] cfg_mode_ss;
+
+double_sync_high  #(.WIDTH(2)) u_dsync(
+              .in_data    ( cfg_mode     ),
+              .out_clk    ( clk_in       ),
+              .out_rst_n  ( reset_n      ),
+              .out_data   ( cfg_mode_ss  )
+          );
+
+
 always_comb begin
-   case(cfg_mode)
+   case(cfg_mode_ss)
+      // No clock gating 
       NCLK_GATE:   clk_enb = 1'b1;
+
+      // Dynamic Clock gating
       DYCLK_GATE:  clk_enb = (src_req     == 1'b1) ? 1'b1 :
                              (dst_idle_r  == 1'b0) ? 1'b1 : 
                              (idle_his    == 1'b1) ? 1'b1 : 1'b0;
+      // Force Clock Gating
       FOCLK_GATE:   clk_enb = 1'b0;
       default   :   clk_enb = 1;
    endcase
 end
 
+
+// Clock Gating
 
 ctech_clk_gate u_clkgate (.GATE (clk_enb), . CLK(clk_in), .GCLK(clk_out));
 

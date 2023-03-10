@@ -87,7 +87,7 @@ set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 #set ::env(MACRO_PLACEMENT_CFG) $::env(DESIGN_DIR)/macro.cfg
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 460 500"
+set ::env(DIE_AREA) "0 0 450 450"
 
 
 # If you're going to use multiple power domains, then keep this disabled.

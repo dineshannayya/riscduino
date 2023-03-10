@@ -297,6 +297,9 @@ wire        flash_oen;
 ***/
 
 
+/*************************************
+  Quad SPI Slave Intergartion
+*************************************/
 
 wire        wbm_qspis_cyc_o;
 wire        wbm_qspis_stb_o;
@@ -346,13 +349,13 @@ end
 always @(posedge wb_rst_i or posedge sys_clk)
 begin
    if(wb_rst_i == 1'b1) begin
-      wbm_qspis_ack_i = 1'b0;
+      wbm_qspis_ack_i <= 1'b0;
    end else begin
       if(wbm_qspis_stb_o && wbm_qspis_we_o == 1'b0 && wbm_qspis_ack_i == 1'b0) begin
           wbm_qspis_dat_i =  {ProgamMem[wbm_qspis_adr_o+0], ProgamMem[wbm_qspis_adr_o+1],ProgamMem[wbm_qspis_adr_o+2],ProgamMem[wbm_qspis_adr_o+3]};
-          wbm_qspis_ack_i = 1'b1;
+          wbm_qspis_ack_i <= 1'b1;
       end else begin
-          wbm_qspis_ack_i = 1'b0;
+          wbm_qspis_ack_i <= 1'b0;
       end
    end
 end

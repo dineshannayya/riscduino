@@ -1,6 +1,6 @@
 ###############################################################################
 # Created by write_sdc
-# Wed Feb  8 07:02:14 2023
+# Fri Mar 10 05:08:27 2023
 ###############################################################################
 current_design ycr_iconnect
 ###############################################################################
@@ -627,6 +627,7 @@ set_load -pin_load 0.0334 [get_ports {core_icache_cmd}]
 set_load -pin_load 0.0334 [get_ports {core_icache_req}]
 set_load -pin_load 0.0334 [get_ports {cpu_clk_aes}]
 set_load -pin_load 0.0334 [get_ports {cpu_clk_fpu}]
+set_load -pin_load 0.0334 [get_ports {cpu_clk_intf}]
 set_load -pin_load 0.0334 [get_ports {fpu_dmem_cmd}]
 set_load -pin_load 0.0334 [get_ports {fpu_dmem_req}]
 set_load -pin_load 0.0334 [get_ports {sram0_clk0}]

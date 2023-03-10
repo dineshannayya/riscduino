@@ -1,5 +1,6 @@
 # Caravel user project includes
 +define+UNIT_DELAY=#0.2
++define+YCR_DBG_EN
 +incdir+$(USER_PROJECT_VERILOG)/rtl/
 +incdir+$(USER_PROJECT_VERILOG)/rtl/i2cm/src/includes
 +incdir+$(USER_PROJECT_VERILOG)/rtl/usb1_host/src/includes
@@ -89,6 +90,7 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_wbb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/sync_fifo2.sv
 -v $(USER_PROJECT_VERILOG)/rtl/lib/src_clk_gate.sv
+-v $(USER_PROJECT_VERILOG)/rtl/lib/double_sync_high.v
 -v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_arb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_slave_port.sv
 -v $(USER_PROJECT_VERILOG)/rtl/wb_interconnect/src/wb_interconnect.sv

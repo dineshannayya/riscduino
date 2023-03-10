@@ -329,6 +329,9 @@
 ////         A. Centrialized Source Clock gating logic added at wishbone inter connect           ////
 ////         B. QSpim Modified to generate Idle indication                                       ////
 ////         C. Register Space Allocated for Wishbone Interconnect                               ////
+////    6.9 Mar 5, 2023, Dinesh A                                                                ////
+////         A. Risc core Tap access enabled                                                     ////
+////         B. all the cpu clk are routed from ycr_iconnect                                     ////
 ////                                                                                             ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////                                                                                             ////
@@ -358,10 +361,10 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*********************************************************************
-    Memory Map:                                               ////
-                                                              ////
-       SOC Memory Map                                         ////
-       0x0000_0000 to 0x0FFF_FFFF  - QSPIM MEMORY             ////
+    Memory Map:                                               
+                                                              
+       SOC Memory Map                                         
+       0x0000_0000 to 0x0FFF_FFFF  - QSPIM MEMORY             
        0x1000_0000 to 0x1000_00FF  - QSPIM REG
        0x1001_0000 to 0x1001_003F  - UART0
        0x1001_0040 to 0x1001_007F  - I2
@@ -880,6 +883,15 @@ wire                           rtc_intr                               ; // RTC i
 wire                           ir_rx                                 ; // IR Receiver Input from pad
 wire                           ir_tx                                 ; // IR Transmitter
 wire                           ir_intr                               ; // IR Interrupt
+`ifdef YCR_DBG_EN
+    // -- JTAG I/F
+wire                           riscv_trst_n                          ;
+wire                           riscv_tck                             ;
+wire                           riscv_tms                             ;
+wire                           riscv_tdi                             ;
+wire                           riscv_tdo                             ;
+wire                           riscv_tdo_en                          ;
+`endif // YCR_DBG_EN
 //---------------------------------------------------------------------
 // Strap
 //---------------------------------------------------------------------
@@ -948,7 +960,7 @@ wire   int_pll_clock       = pll_clk_out[0];
 //-------------------------------------
 wire [2:0] cpu_clk_rp;
 
-wire [1:0] cpu_clk_rp_risc   = cpu_clk_rp[1:0];
+wire       cpu_clk_rp_risc   = cpu_clk_rp[0];
 wire       cpu_clk_rp_pinmux = cpu_clk_rp[2];
 
 //----------------------------------------------------------
@@ -1076,6 +1088,17 @@ ycr_top_wb u_riscv_top (
           .wbd_clk_int             (riscv_wbclk                ), 
           .cfg_wcska_riscv_intf    (cfg_wcska_riscv_rp         ), 
           .wbd_clk_skew            (wbd_clk_riscv_skew         ),
+
+
+           `ifdef YCR_DBG_EN
+               // -- JTAG I/F
+            .trst_n                (riscv_trst_n               ),
+            .tck                   (riscv_tck                  ),
+            .tms                   (riscv_tms                  ),
+            .tdi                   (riscv_tdi                  ),
+            .tdo                   (riscv_tdo                  ),
+            .tdo_en                (riscv_tdo_en               ),
+           `endif // YCR_DBG_EN
 
     // Reset
           .pwrup_rst_n             (wbd_int_rst_n              ),
@@ -1699,6 +1722,16 @@ pinmux_top u_pinmux(
           .p_reset_n          (p_reset_n_rp                 ),
           .s_reset_n          (wbd_int_rst_n                ),
 
+       `ifdef YCR_DBG_EN
+           // -- JTAG I/F
+          .riscv_trst_n       (riscv_trst_n                 ),
+          .riscv_tck          (riscv_tck                    ),
+          .riscv_tms          (riscv_tms                    ),
+          .riscv_tdi          (riscv_tdi                    ),
+          .riscv_tdo          (riscv_tdo                    ),
+          .riscv_tdo_en       (riscv_tdo_en                 ),
+       `endif // YCR_DBG_EN
+
           .cfg_strap_pad_ctrl (cfg_strap_pad_ctrl_rp        ),
           .system_strap       (system_strap_rp              ),
           .strap_sticky       (strap_sticky                 ),
@@ -1892,7 +1925,6 @@ dac_top  u_4x8bit_dac(
           .Vout2              (analog_io[17]                ),
           .Vout3              (analog_io[18]                )
    );
-
 
 
 endmodule : user_project_wrapper

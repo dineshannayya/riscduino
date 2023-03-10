@@ -94,7 +94,7 @@ set ::env(GND_PIN) [list {vssd1}]
 
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) "absolute"
-set ::env(DIE_AREA) [list 0.0 0.0 500.0 750.0]
+set ::env(DIE_AREA) "0 0 500 700"
 
 
 
@@ -105,7 +105,7 @@ set ::env(RUN_CVC) 0
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.42"
+set ::env(PL_TARGET_DENSITY) "0.43"
 
 # helps in anteena fix
 set ::env(USE_ARC_ANTENNA_CHECK) "0"

@@ -127,7 +127,7 @@ set ::env(EXTRA_GDS_FILES) "\
 	$gds_root/peri_top.gds \
 	"
 
-set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
+set ::env(SYNTH_DEFINES) [list SYNTHESIS YCR_DBG_EN ]
 
 set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/yifive/ycr1c/src/includes ]
 

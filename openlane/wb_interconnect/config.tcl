@@ -49,6 +49,7 @@ set ::env(VERILOG_FILES) "\
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_wbb.sv                \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/sync_fifo2.sv                \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/src_clk_gate.sv              \
+        $::env(DESIGN_DIR)/../../verilog/rtl/lib/double_sync_high.v              \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/registers.v              \
         $::env(DESIGN_DIR)/../../verilog/rtl/lib/reset_sync.sv              \
         $::env(DESIGN_DIR)/../../verilog/rtl/wb_interconnect/src/wb_arb.sv     \
