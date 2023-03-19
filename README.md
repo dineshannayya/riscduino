@@ -716,6 +716,7 @@ We are looking for community help in following activity, interested user can pin
 News on Riscduino
 ===============
 * **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
+* **Riscduino MPW-2 Bringup Status** - https://www.youtube.com/watch?v=Qo_RZ8Fo--c
 * **Riscduino OpenRoad Article** - https://theopenroadproject.org/implementation-of-riscduino-core-using-a-hierarchical-design-flow/
 
 
