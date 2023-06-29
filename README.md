@@ -686,8 +686,6 @@ Riscduino Soc flow uses Openlane tool sets.
     4. `CVC` - Performs Circuit Validity Checks
 
 
-# News
-* **Riscduino Aim** - <https://www.youtube.com/watch?v=lFVnicPhTI0>
 
 # How To Contribute
 
@@ -707,16 +705,32 @@ We are looking for community help in following activity, interested user can pin
 * **Report an issue**: <https://github.com/dineshannayya/riscduino/issues>
 * **Group Email**: <https://groups.google.com/g/riscduino>
 
-# Documentation
-* **Syntacore**      - https://github.com/syntacore/scr1
+# Reference
+* **Syntacore**     - https://github.com/syntacore/scr1
+* **DCore Riscv**   - https://github.com/dineshannayya/ycr2c
+* **quad spi**      - https://github.com/dineshannayya/qspim
+* **security core** - https://github.com/dineshannayya/security_core
+* **fpu**           - https://github.com/dineshannayya/fpu
+* **rtc**           - https://github.com/dineshannayya/rtc
+* **uart**          - https://github.com/dineshannayya/uart2spi
+* **jtag vpi**      - https://github.com/fjullien/jtag_vpi
+* **clock gating**  - https://github.com/AUCOHL/Lighter
+* **i2c**           - http://www.opencores.org/projects/i2c/
+* **USB1 core**     - https://github.com/ultraembedded/core_usb_host
+* **USB1 phy**      - https://github.com/ultraembedded/core_usb_fs_phy
+* **8 bit DAC**     - https://github.com/pramitpal/8bit_dac
 * **IR-Receiver**   - https://github.com/JulienOury/ChristmasTreeController/
 * **Random Number** - https://github.com/JulienOury/ChristmasTreeController/
 * **Stepper Motor** - https://github.com/JulienOury/ChristmasTreeController/
 
-News on Riscduino
+Youtube video on Riscduino
 ===============
 * **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
 * **Riscduino MPW-2 Bringup Status** - https://www.youtube.com/watch?v=Qo_RZ8Fo--c
+
+News on Riscduino
+===============
 * **Riscduino OpenRoad Article** - https://theopenroadproject.org/implementation-of-riscduino-core-using-a-hierarchical-design-flow/
+* **riscv.org News** - https://riscv.org/news/2023/01/implementation-of-riscduino-core-using-a-hierarchical-design-flow-dinesh-annayya-openroad/
 
 
