@@ -42,7 +42,7 @@ parameter bit  [15:0] PAD_STRAP = 16'b0000_0000_1010_0000;
 reg            clock         ;
 reg            clock2        ;
 reg            xtal_clk      ;
-reg            wb_rst_i      ;
+wire           wb_rst_i      ;
 
 reg            power1, power2;
 reg            power3, power4;
@@ -91,8 +91,8 @@ begin
    // Run in Fast Sim Mode
    `ifdef GL
        // Note During wb_host resynth this FF is changes,
-       // Keep cross-check during Gate Sim
-       force u_top.u_wb_host._10258_.Q= 1'b1; 
+       // Keep cross-check during Gate Sim - u_reg.cfg_glb_ctrl[8]
+       force u_top.u_wb_host._10252_.Q= 1'b1; 
        //force u_top.u_wb_host.u_reg.u_fastsim_buf.u_buf.X = 1'b1; 
        //force u_top.u_wb_host.u_reg.cfg_fast_sim = 1'b1; 
    `else
@@ -148,6 +148,27 @@ user_project_wrapper u_top(
     .user_irq       () 
 
 );
+	//-----------------------------------------------------------------
+	// Since this is regression, reset will be applied multiple time
+	// Reset logic
+	// ----------------------------------------------------------------
+    event	      reinit_event;
+	bit [1:0]     rst_cnt;
+    bit           rst_init;
+	wire          rst_n;
+
+
+    assign rst_n = &rst_cnt;
+        
+    always_ff @(posedge clock) begin
+	if (rst_init)   begin
+	     rst_cnt <= '0;
+	     -> reinit_event;
+	end
+            else if (~&rst_cnt) rst_cnt <= rst_cnt + 1'b1;
+    end
+
+    assign wb_rst_i = !rst_n;
 
 //--------------------------------------------------------
 // Apply Reset Sequence and wait for reset completion
@@ -156,12 +177,13 @@ user_project_wrapper u_top(
 task init;
 begin
    //#1 - Apply Reset
-   #1000 wb_rst_i = 0; 
+   rst_init = 1; 
    repeat (10) @(posedge clock);
-   #1000 wb_rst_i = 1; 
+   #100 rst_init = 0; 
 
    //#3 - Remove Reset
-   #1000 wb_rst_i = 0; 
+   wait(rst_n == 1'b1);
+
    repeat (10) @(posedge clock);
    //#4 - Wait for Power on reset removal
    wait(u_top.p_reset_n == 1);          
@@ -183,14 +205,14 @@ begin
 
    repeat (10) @(posedge clock);
    //#1 - Apply Reset
-   wb_rst_i = 1; 
+   rst_init = 1; 
    //#2 - Apply Strap
    force u_top.io_in[36:29] = strap[15:8];
    force u_top.io_in[20:13] = strap[7:0];
    repeat (10) @(posedge clock);
     
    //#3 - Remove Reset
-   wb_rst_i = 0; // Remove Reset
+   rst_init = 0; // Remove Reset
 
    //#4 - Wait for Power on reset removal
    wait(u_top.p_reset_n == 1);          

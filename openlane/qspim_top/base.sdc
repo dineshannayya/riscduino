@@ -274,10 +274,12 @@ set_max_delay  10.0000 -to [get_ports {spi_debug[7]}]
 set_max_delay  10.0000 -to [get_ports {spi_debug[8]}]
 set_max_delay  10.0000 -to [get_ports {spi_debug[9]}]
 
+set_output_delay -max 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_lack_o}]
 set_output_delay -max 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_ack_o}]
 set_output_delay -max 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_dat_o[*]}]
 set_output_delay -max 1.0000 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_err_o}]
 
+set_output_delay -min -2.7500 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_lack_o}]
 set_output_delay -min -2.7500 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_ack_o}]
 set_output_delay -min -2.7500 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_dat_o[*]}]
 set_output_delay -min -2.7500 -clock [get_clocks {mclk}] -add_delay [get_ports {wbd_err_o}]

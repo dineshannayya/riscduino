@@ -58,6 +58,11 @@ _start:
 4:  bne     a1, a2, 3b
     la      sp, __C_STACK_TOP__
 
+    // Risc Core Clock Gate enable for AES/FPU
+    li    t0, mclk_cfg
+    li    t1,0x5 
+    sw    t1, (t0)
+
     // Timer init
     li      t0, mtime_ctrl
     li      t1, (1 << YCR_MTIME_CTRL_EN)   // enable, use internal clock

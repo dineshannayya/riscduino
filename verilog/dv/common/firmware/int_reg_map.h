@@ -142,4 +142,7 @@
 #define reg_wbi_dcg          (*(volatile uint32_t*)0x10030004)  // Reg-1
 
 
+// CPU Core Specific Register
+#define reg_cpu_glbl_cfg (*(volatile uint32_t*)0x0C490018)  // Global config
+#define reg_cpu_clk_cfg  (*(volatile uint32_t*)0x0C49001C)  // CPU clock config
 

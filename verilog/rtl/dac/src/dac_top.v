@@ -1,24 +1,29 @@
-module dac_top (Vout0,
-    Vout1,
-    Vout2,
-    Vout3,
-    Vref,
-    vccd1,
-    vssd1,
-    DIn0,
-    DIn1,
-    DIn2,
-    DIn3);
- output Vout0;
- output Vout1;
- output Vout2;
- output Vout3;
- input Vref;
- input vccd1;
- input vssd1;
- input [7:0] DIn0;
- input [7:0] DIn1;
- input [7:0] DIn2;
- input [7:0] DIn3;
+module dac_top (
+    VOUT0,
+    VOUT1,
+    VOUT2,
+    VOUT3,
+    VREFH,
+    VDDA,  // User area 1 3.3V supply
+    VSSA,  // User area 1 3.3V analog ground
+    VCCD,  // User area 1 1.8V Digital
+    VSSD,  // User area 1 1.8V Digital ground
+    Din0,
+    Din1,
+    Din2,
+    Din3);
+ output VOUT0;
+ output VOUT1;
+ output VOUT2;
+ output VOUT3;
+ input VREFH;
+ inout VDDA;
+ inout VSSA;
+ inout VCCD;
+ inout VSSD;
+ input [7:0] Din0;
+ input [7:0] Din1;
+ input [7:0] Din2;
+ input [7:0] Din3;
 
 endmodule

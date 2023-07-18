@@ -329,9 +329,18 @@
 ////         A. Centrialized Source Clock gating logic added at wishbone inter connect           ////
 ////         B. QSpim Modified to generate Idle indication                                       ////
 ////         C. Register Space Allocated for Wishbone Interconnect                               ////
-////    6.9 Mar 5, 2023, Dinesh A                                                                ////
+////    6.9 April 8, 2023, Dinesh A                                                              ////
 ////         A. Risc core Tap access enabled                                                     ////
 ////         B. all the cpu clk are routed from ycr_iconnect                                     ////
+////         C. glbl_reg_10 add to support software-wise interrupt set                           ////
+////    6.10 May 1, 2023, Dinesh A                                                               ////
+////         A. AES and FPU idle generation for clock gating purpose                             ////
+////    6.11 June 1, 2023, Dinesh A                                                              ////
+////         A. Clock Gating for Riscv Core                                                      ////
+////         B. Bug fix inside Riscv Core - Tap Reset connectivity                               ////
+////    6.12 June 14, 2023, Dinesh A                                                             ////
+////         A. Inferred Clock Gating (At Synthesis) add for SPIQ                                ////
+////         b. New 4x8bit DAC added with voltage follower and issolation for digital input      //// 
 ////                                                                                             ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////                                                                                             ////
@@ -1239,6 +1248,7 @@ ycr_top_wb u_riscv_top (
           .aes_dmem_req_ack        (aes_dmem_req_ack        ),
           .aes_dmem_rdata          (aes_dmem_rdata          ),
           .aes_dmem_resp           (aes_dmem_resp           ),
+          .aes_idle                (aes_idle                ),
 
           .cpu_clk_fpu             (cpu_clk_fpu             ),
           .fpu_dmem_req            (fpu_dmem_req            ),
@@ -1248,7 +1258,8 @@ ycr_top_wb u_riscv_top (
           .fpu_dmem_wdata          (fpu_dmem_wdata          ),
           .fpu_dmem_req_ack        (fpu_dmem_req_ack        ),
           .fpu_dmem_rdata          (fpu_dmem_rdata          ),
-          .fpu_dmem_resp           (fpu_dmem_resp           )
+          .fpu_dmem_resp           (fpu_dmem_resp           ),
+          .fpu_idle                (fpu_idle                )
 );
 
 //----------------------------------------------
@@ -1370,7 +1381,9 @@ aes_top u_aes (
     .dmem_wdata            (aes_dmem_wdata   ),
     .dmem_req_ack          (aes_dmem_req_ack ),
     .dmem_rdata            (aes_dmem_rdata   ),
-    .dmem_resp             (aes_dmem_resp    )
+    .dmem_resp             (aes_dmem_resp    ),
+
+    .idle                  (aes_idle         )
 );
 
 /***********************************************
@@ -1396,7 +1409,9 @@ fpu_wrapper u_fpu (
           .dmem_wdata         (fpu_dmem_wdata               ),
           .dmem_req_ack       (fpu_dmem_req_ack             ),
           .dmem_rdata         (fpu_dmem_rdata               ),
-          .dmem_resp          (fpu_dmem_resp                )
+          .dmem_resp          (fpu_dmem_resp                ),
+
+          .idle               (fpu_idle                     )
 );
 
 /*********************************************************
@@ -1912,18 +1927,20 @@ peri_top u_peri(
 
 dac_top  u_4x8bit_dac(
 `ifdef USE_POWER_PINS
-          .vccd1              (vdda1                        ),
-          .vssd1              (vssa1                        ),
+          .VDDA               (vdda1                        ),
+          .VSSA               (vssa1                        ),
+          .VCCD               (vccd1                        ),
+          .VSSD               (vssd1                        ),
 `endif
-          .Vref               (analog_io[23]                ),
-          .DIn0               (cfg_dac0_mux_sel             ),
-          .DIn1               (cfg_dac1_mux_sel             ),
-          .DIn2               (cfg_dac2_mux_sel             ),
-          .DIn3               (cfg_dac3_mux_sel             ),
-          .Vout0              (analog_io[15]                ),
-          .Vout1              (analog_io[16]                ),
-          .Vout2              (analog_io[17]                ),
-          .Vout3              (analog_io[18]                )
+          .VREFH              (analog_io[23]                ),
+          .Din0               (cfg_dac0_mux_sel             ),
+          .Din1               (cfg_dac1_mux_sel             ),
+          .Din2               (cfg_dac2_mux_sel             ),
+          .Din3               (cfg_dac3_mux_sel             ),
+          .VOUT0              (analog_io[15]                ),
+          .VOUT1              (analog_io[16]                ),
+          .VOUT2              (analog_io[17]                ),
+          .VOUT3              (analog_io[18]                )
    );
 
 

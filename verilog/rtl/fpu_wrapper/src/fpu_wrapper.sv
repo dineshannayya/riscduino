@@ -56,7 +56,10 @@ module fpu_wrapper #( parameter WB_WIDTH = 32) (
     input   logic [31:0]                 dmem_wdata,
     output  logic                        dmem_req_ack,
     output  logic [31:0]                 dmem_rdata,
-    output  logic [1:0]                  dmem_resp
+    output  logic [1:0]                  dmem_resp,
+
+
+    output  logic                        idle
 );
 
 
@@ -119,7 +122,9 @@ fpu_reg u_reg(
         .cfg_fpu_cmd                    (cfg_fpu_cmd                  ),
         .cfg_fpu_din1                   (cfg_fpu_din1                 ),
         .cfg_fpu_din2                   (cfg_fpu_din2                 ),
-        .fpu_result                     (fpu_result                   )
+        .fpu_result                     (fpu_result                   ),
+
+        .idle                           (idle                         )
 
       );
 

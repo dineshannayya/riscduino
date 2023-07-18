@@ -139,6 +139,7 @@ logic [31:0]   reg_6;  //
 logic [31:0]   reg_7;  // 
 logic [31:0]   reg_8;  // 
 logic [31:0]   reg_9;  // Random Number
+//logic [31:0]   reg_10; // Interrupt Set
 logic [31:0]   reg_12; // Latched Strap 
 logic [31:0]   reg_13; // Strap Sticky
 logic [31:0]   reg_14; // System Strap
@@ -264,7 +265,7 @@ wire   sw_rd_en_31 = sw_rd_en  & (sw_addr == 5'h1F);
 
 wire [15:0] manu_id      =  16'h8268; // Asci value of RD
 wire [3:0]  total_core   =  4'h1;
-wire [3:0]  chip_id      =  4'h5;
+wire [3:0]  chip_id      =  4'h6;
 wire [7:0]  chip_rev     =  8'h01;
 
 assign reg_0 = {manu_id,total_core,chip_id,chip_rev};
@@ -402,6 +403,13 @@ end
 
 wire [31:0] hware_intr_req = {gpio_intr[31:8], ir_intr_ss,rtc_intr_ss,pwm_intr,usb_intr_ss, i2cm_intr_ss,timer_intr[2:0]};
 
+// Interrupt can be set by hware req or by writting reg_10
+wire [31:0]  intr_req = {{({8{sw_wr_en_10 & reg_ack & wr_be[3]}} & sw_reg_wdata[31:24]) | hware_intr_req[31:24] },
+                        {({8{sw_wr_en_10 & reg_ack & wr_be[2]}} & sw_reg_wdata[23:16]) | hware_intr_req[23:16] },
+                        {({8{sw_wr_en_10 & reg_ack & wr_be[1]}} & sw_reg_wdata[15:8])  | hware_intr_req[15:8]  },
+                        {({8{sw_wr_en_10 & reg_ack & wr_be[0]}} & sw_reg_wdata[7:0])   | hware_intr_req[7:0]  }};
+
+
 generic_intr_stat_reg #(.WD(32),
 	                .RESET_DEFAULT(0)) u_reg4 (
 		 //inputs
@@ -412,7 +420,7 @@ generic_intr_stat_reg #(.WD(32),
                         {8{sw_wr_en_4 & reg_ack & wr_be[1]}},
                         {8{sw_wr_en_4 & reg_ack & wr_be[0]}}}),		 
 		 .reg_din    (sw_reg_wdata[31:0] ),
-		 .hware_req  (hware_intr_req     ),
+		 .hware_req  (intr_req           ),
 		 
 		 //outputs
 		 .data_out    (reg_4[31:0]       )
@@ -694,7 +702,7 @@ begin
     5'b00111 : reg_out [31:0] = reg_7  ;    
     5'b01000 : reg_out [31:0] = reg_8  ;    
     5'b01001 : reg_out [31:0] = reg_9  ;    
-    5'b01010 : reg_out [31:0] = 'h0 ;   
+    5'b01010 : reg_out [31:0] = reg_4  ; // Interrupt Set   
     5'b01011 : reg_out [31:0] = 'h0 ;   
     5'b01100 : reg_out [31:0] = reg_12 ;   
     5'b01101 : reg_out [31:0] = reg_13 ;   

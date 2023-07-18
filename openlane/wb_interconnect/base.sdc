@@ -20,6 +20,12 @@ set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.5000 [all_clocks]
 set_clock_uncertainty -hold 0.2500 [all_clocks]
 
+# check ocv table (not provided) -- maybe try 8% 
+set derate 0.0375
+puts "\[INFO\]: Setting derate factor to: [expr $derate * 100] %"
+set_timing_derate -early [expr 1-$derate]
+set_timing_derate -late [expr 1+$derate]
+
 #Clock Skew adjustment
 set_case_analysis 0 [get_ports {cfg_cska_wi[0]}]
 set_case_analysis 0 [get_ports {cfg_cska_wi[1]}]

@@ -138,9 +138,11 @@ clk_in, sel, clk_out);
   wire d20;
   wire d21;
   wire d30;
+  wire clk_inbuf;
 
+  ctech_clk_buf u_clkbuf_in    (.A(clk_in),    .X(clk_inbuf));
 
-  ctech_delay_clkbuf clkbuf_1  (.A(clk_in),    .X(clk_d1));
+  ctech_delay_clkbuf clkbuf_1  (.A(clk_inbuf), .X(clk_d1));
   ctech_delay_clkbuf clkbuf_2  (.A(clk_d1),    .X(clk_d2));
   ctech_delay_clkbuf clkbuf_3  (.A(clk_d2),    .X(clk_d3));
   ctech_delay_clkbuf clkbuf_4  (.A(clk_d3),    .X(clk_d4));
@@ -160,7 +162,7 @@ clk_in, sel, clk_out);
    
 
   // Tap point selection
-  ctech_clk_buf u_tap_0  (.A(clk_in),  .X(in0));
+  ctech_clk_buf u_tap_0  (.A(clk_inbuf),  .X(in0));
   ctech_clk_buf u_tap_1  (.A(clk_d1),  .X(in1));
   ctech_clk_buf u_tap_2  (.A(clk_d2),  .X(in2));
   ctech_clk_buf u_tap_3  (.A(clk_d3),  .X(in3));
@@ -201,6 +203,6 @@ clk_in, sel, clk_out);
   ctech_mux2x1_4 u_mux_level_30 ( .X (d30) , .A0 (d20), .A1(d21), .S(sel[3]));
 
 
-  assign clk_out = d30;
+  ctech_clk_buf u_clkbuf_out (.A(d30), .X(clk_out));
 
 endmodule

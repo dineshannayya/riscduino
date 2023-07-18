@@ -29,6 +29,10 @@
 #define mtimecmp        0x0C490010
 #define mtimecmph       0x0C490014
 
+#define mglbl_cfg       0x0C490018
+#define mclk_cfg        0x0C49001C
+
+
 #define YCR_MTIME_CTRL_EN          0
 #define YCR_MTIME_CTRL_CLKSRC      1
 

@@ -135,6 +135,7 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_icache_router.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_dcache_router.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_req_retiming.sv
+-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/top/ycr_cclk_ctrl_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/icache_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/icache_app_fsm.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/icache_tag_fifo.sv
@@ -142,6 +143,8 @@ $(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/cache/src/core/dcache_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_async_wbb.sv
 -v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_arb.sv
+-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_clk_gate1.sv
+-v $(USER_PROJECT_VERILOG)/rtl/yifive/ycr1c/src/lib/ycr_clk_gate2.sv
 
 $(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_sbox.sv			    
 $(USER_PROJECT_VERILOG)/rtl/security_core/verilog/rtl/aes128/core/aes_rcon.sv			    

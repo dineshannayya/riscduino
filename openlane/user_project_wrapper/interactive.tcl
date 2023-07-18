@@ -270,7 +270,7 @@ proc run_flow {args} {
         "lvs" "run_lvs_step $LVS_ENABLED " \
         "drc" "run_drc_step $DRC_ENABLED " \
         "antenna_check" "run_antenna_check_step $ANTENNACHECK_ENABLED " \
-        "cvc" "run_lef_cvc"
+        "cvc" "run_erc"
     ]
 
     if { [info exists arg_values(-from) ]} {

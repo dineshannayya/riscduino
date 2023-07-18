@@ -106,8 +106,9 @@ void main()
 
     // Remove Reset
     reg_glbl_cfg0 = 0x01f;
-
-    if (reg_glbl_chip_id != 0x82681501) bFail = 1;
+    
+    // Chip Version ID - Different for score/dcore/qcore
+    if (reg_glbl_chip_id != 0x82681601) bFail = 1;
     if (bFail == 1) reg_mprj_datal = 0xAB610000;
 
     // write software write & read Register

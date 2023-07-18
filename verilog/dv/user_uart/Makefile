@@ -55,6 +55,7 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-gcc -O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las  -D__RVC_EXT -static -std=gnu99 -fno-common -fno-builtin-printf -DTCM=0 -Wa,-march=rv32imc -march=rv32imc -mabi=ilp32 -DFLAGS_STR=\""-O2 -funroll-loops -fpeel-loops -fgcse-sm -fgcse-las "\"  -D__ASSEMBLY__=1 -c -I./ -I$(YIFIVE_FIRMWARE_PATH)  $(YIFIVE_FIRMWARE_PATH)/crt.S -o crt.o
 	${GCC_PREFIX}-gcc -o ${PATTERN}.elf -T $(YIFIVE_FIRMWARE_PATH)/link.ld ${PATTERN}.o crt.o -nostartfiles -nostdlib -lc -lgcc -march=rv32imc -mabi=ilp32 -N
 	${GCC_PREFIX}-objcopy -O verilog ${PATTERN}.elf ${PATTERN}.hex
+	${GCC_PREFIX}-objcopy -O ihex ${PATTERN}.elf ${PATTERN}.ihex
 	${GCC_PREFIX}-objdump -D ${PATTERN}.elf > ${PATTERN}.dump
 	rm crt.o ${PATTERN}.o
 ifeq ($(SIM),RTL)

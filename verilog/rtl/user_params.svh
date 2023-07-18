@@ -1,15 +1,15 @@
 `ifndef USER_PARMS
 `define USER_PARMS
 
-// ASCI Representation of RISC = 32'h8273_8343
-parameter CHIP_SIGNATURE = 32'h8273_8343;
+// ASCI Representation of RDS0 - RiscDuino S0 = 32'h52445330
+parameter CHIP_SIGNATURE = 32'h5244_4430;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h0503_2023;
+parameter CHIP_RELEASE_DATE = 32'h1406_2023;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0006_9000;
+parameter CHIP_REVISION   = 32'h0006_1200;
 
-parameter CLK_SKEW1_RESET_VAL = 32'b0110_0000_0100_0111_1001_1100_1000_0101;
-parameter CLK_SKEW2_RESET_VAL = 32'b0100_1000_1000_1000_1000_0110_1001_1110;
+parameter CLK_SKEW1_RESET_VAL = 32'b0110_0000_0011_0110_0101_1000_1101_1100;
+parameter CLK_SKEW2_RESET_VAL = 32'b0010_1000_1000_1000_0111_0110_1011_1101;
 
 parameter PSTRAP_DEFAULT_VALUE = 15'b000_0011_1010_0000;
 
@@ -48,7 +48,7 @@ pad_strap_in decoding
                  2'b01 - Default value + 2               
                  2'b10 - Default value + 4               
                  2'b11 - Default value - 4 
-     bit [4:13]   - uart master config control
+     bit [14:13]   - uart master config control
                  2'b00   - Auto Detect (Default)
                  2'b01   - constant value based on system clock-50Mhz
                  2'b10   - constant value based on system clock-4Mhz 

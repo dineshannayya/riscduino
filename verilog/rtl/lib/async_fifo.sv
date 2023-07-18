@@ -77,7 +77,7 @@ module async_fifo (wr_clk,
    parameter WR_FAST = 1'b1;
    parameter RD_FAST = 1'b1;
    parameter FULL_DP = DP;
-   parameter EMPTY_DP = 'b0;
+   parameter EMPTY_DP = 1'b0;
 
    parameter AW = (DP == 2)   ? 1 : 
 		  (DP == 4)   ? 2 :

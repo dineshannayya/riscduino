@@ -133,6 +133,8 @@ set ::env(VERILOG_INCLUDE_DIRS) [glob $::env(DESIGN_DIR)/../../verilog/rtl/yifiv
 
 #set ::env(GLB_RT_MAXLAYER) 6
 set ::env(RT_MAX_LAYER) {met5}
+set ::env(GRT_ALLOW_CONGESTION) {1}
+
 
 ## Internal Macros
 ### Macro PDN Connections
@@ -152,8 +154,8 @@ set ::env(FP_PDN_VOFFSET) "5"
 set ::env(FP_PDN_VPITCH) "80"
 set ::env(FP_PDN_HOFFSET) "5"
 set ::env(FP_PDN_HPITCH) "80"
-set ::env(FP_PDN_HWIDTH) {5.2}
-set ::env(FP_PDN_VWIDTH) {5.2}
+set ::env(FP_PDN_HWIDTH) {4.2}
+set ::env(FP_PDN_VWIDTH) {4.2}
 set ::env(FP_PDN_HSPACING) {13.8}
 set ::env(FP_PDN_VSPACING) {13.8}
 
@@ -168,20 +170,23 @@ set ::env(PDN_STRIPE) {vccd1 vdda1 vssd1 vssa1}
 set ::env(DRT_OPT_ITERS) {32}
 
 set ::env(GRT_OBS) "                              \
-	                li1   150 130  833.1  546.54,\
-	                met1  150 130  833.1  546.54,\
-	                met2  150 130  833.1  546.54,\
-                    met3  150 130  833.1  546.54,\
-	                li1   950 130  1633.1 546.54,\
-	                met1  950 130  1633.1 546.54,\
-	                met2  950 130  1633.1 546.54,\
-                    met3  950 130  1633.1 546.54,\
-                    li1   150  750 833.1  1166.54,\
-                    met1  150  750 833.1  1166.54,\
-                    met2  150  750 833.1  1166.54,\
-                    met3  150  750 833.1  1166.54,\
-                    met3  50   100 100    3350,\
 	                met5  0 0 2920 3520"
+
+#set ::env(GRT_OBS) "                              \
+#	                li1   150 130  833.1  546.54,\
+#	                met1  150 130  833.1  546.54,\
+#	                met2  150 130  833.1  546.54,\
+#                    met3  150 130  833.1  546.54,\
+#	                li1   950 130  1633.1 546.54,\
+#	                met1  950 130  1633.1 546.54,\
+#	                met2  950 130  1633.1 546.54,\
+#                    met3  950 130  1633.1 546.54,\
+#                    li1   150  750 833.1  1166.54,\
+#                    met1  150  750 833.1  1166.54,\
+#                    met2  150  750 833.1  1166.54,\
+#                    met3  150  750 833.1  1166.54,\
+#                    met3  50   100 100    3350,\
+#	                met5  0 0 2920 3520"
 
 #set ::env(FP_PDN_POWER_STRAPS) "vccd1 vssd1 1, vccd2 vssd2 0, vdda1 vssa1 1, vdda2 vssa2 1"
 
@@ -198,7 +203,8 @@ set ::env(FP_PDN_MACRO_HOOKS) " \
 	u_riscv_top.i_core_top_0    vccd1 vssd1 vccd1 vssd1,\
 	u_riscv_top.u_connect       vccd1 vssd1 VPWR  VGND, \
 	u_riscv_top.u_intf          vccd1 vssd1 vccd1 vssd1,\
-	u_4x8bit_dac                vdda1 vssa1 vccd1 vssd1,\
+	u_4x8bit_dac                vdda1 vssa1 VDDA  VSSA,\
+	u_4x8bit_dac                vccd1 vssd1 VCCD  VSSD,\
 	u_aes                       vccd1 vssd1 vccd1 vssd1,\
 	u_fpu                       vccd1 vssd1 vccd1 vssd1,\
 	u_rp_south                  vccd1 vssd1 vccd1 vssd1,\

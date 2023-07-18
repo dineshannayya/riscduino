@@ -183,7 +183,7 @@ parameter P_QDDR   = 2'b11;
 	    repeat (200) @(posedge clock);
         wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
 
-        if(u_top.strap_qspi_sram) begin // if the SRAM STRAP in QUAD Mode, then send reset command to switch to SINGLE PHASE
+        if(u_top.u_qspi_master.strap_sram) begin // if the SRAM STRAP in QUAD Mode, then send reset command to switch to SINGLE PHASE
 		   wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_QUAD,P_QUAD,4'b0100});
 		   wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'hFF});
 		   wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);

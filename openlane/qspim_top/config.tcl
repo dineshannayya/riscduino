@@ -60,6 +60,8 @@ set ::env(SYNTH_READ_BLACKBOX_LIB) 1
 set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
+set ::env(SYNTH_ENB_CG) 1
+
 set ::env(LEC_ENABLE) 0
 
 set ::env(VDD_PIN) [list {vccd1}]

@@ -35,18 +35,19 @@
 ************************************************************************************/
 
 module fpu_reg (
-        input  logic           mclk                             ,
-        input  logic           rst_n                            ,
+
+        input  logic           mclk           ,
+        input  logic           rst_n          ,
 
 
-        input   logic          dmem_req,
-        input   logic          dmem_cmd,
-        input   logic [1:0]    dmem_width,
-        input   logic [4:0]    dmem_addr,
-        input   logic [31:0]   dmem_wdata,
-        output  logic          dmem_req_ack,
-        output  logic [31:0]   dmem_rdata,
-        output  logic [1:0]    dmem_resp,
+        input   logic          dmem_req       ,
+        input   logic          dmem_cmd       ,
+        input   logic [1:0]    dmem_width     ,
+        input   logic [4:0]    dmem_addr      , 
+        input   logic [31:0]   dmem_wdata     ,
+        output  logic          dmem_req_ack   ,
+        output  logic [31:0]   dmem_rdata     ,
+        output  logic [1:0]    dmem_resp      ,
 
 
       // Encription Reg Interface
@@ -55,7 +56,9 @@ module fpu_reg (
         output  logic [3:0]    cfg_fpu_cmd    ,
         output  logic [31:0]   cfg_fpu_din1   ,
         output  logic [31:0]   cfg_fpu_din2   ,
-        input   logic [31:0]   fpu_result                
+        input   logic [31:0]   fpu_result     ,
+
+        output  logic          idle          
 
 
       );
@@ -80,6 +83,12 @@ logic          cfg_fpu_req     ;
 logic          cfg_fpu_req_l   ;
 logic [1:0]    dmem_addr_l     ;
 logic [1:0]    dmem_width_l    ;
+
+
+//---------------------
+// FPU Idle generation
+//---------------------
+assign idle = !cfg_fpu_req;
 
 //Generate Byte Select
 function automatic logic[3:0] conv_bsel (

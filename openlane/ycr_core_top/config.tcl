@@ -70,7 +70,9 @@ set ::env(SYNTH_DEFINES) [list SYNTHESIS ]
 set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
+set ::env(SYNTH_ENB_CG) 1
 set ::env(LEC_ENABLE) 0
+set ::env(GRT_ALLOW_CONGESTION) {1}
 
 set ::env(VDD_PIN) [list {vccd1}]
 set ::env(GND_PIN) [list {vssd1}]
@@ -78,10 +80,10 @@ set ::env(GND_PIN) [list {vssd1}]
 ## Floorplan
 set ::env(FP_PIN_ORDER_CFG) $::env(DESIGN_DIR)/pin_order.cfg
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 475 875 "
+set ::env(DIE_AREA) "0 0 530 900 "
 
 set ::env(PL_TARGET_DENSITY) 0.52
-set ::env(CELL_PAD) "8"
+set ::env(CELL_PAD) "4"
 
 ## Routing
 set ::env(GRT_ADJUSTMENT) 0.2

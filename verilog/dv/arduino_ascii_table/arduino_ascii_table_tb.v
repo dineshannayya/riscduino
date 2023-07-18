@@ -197,8 +197,8 @@ parameter real XTAL_PERIOD = 6;
              // Check 
              // if all the 4224 byte received
              // if no error 
-             if(uart_rx_nu != 4223) test_fail = 1;
-             if(check_sum != 32'h3efda) test_fail = 1;
+             if(uart_rx_nu != 4224) test_fail = 1;
+             if(check_sum != 32'h3f01b) test_fail = 1;
              if(tb_uart.err_cnt != 0) test_fail = 1;
 
 	   
@@ -221,8 +221,8 @@ parameter real XTAL_PERIOD = 6;
 	end
 
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0; // CLOCK
 
 `ifndef GL // Drive Power for Hold Fix Buf
     // All standard cell need power hook-up for functionality work

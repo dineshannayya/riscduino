@@ -31,6 +31,8 @@ set ::env(CLOCK_PORT) "mclk"
 
 set ::env(SYNTH_MAX_FANOUT) 4
 set ::env(SYNTH_BUFFERING) {0}
+set ::env(SYNTH_MIN_BUF_PORT) {sky130_fd_sc_hd__buf_8 A X}
+
 
 ## CTS BUFFER
 set ::env(CTS_CLK_MAX_WIRE_LENGTH) {250}
@@ -63,6 +65,7 @@ set ::env(SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 set ::env(BASE_SDC_FILE) $::env(DESIGN_DIR)/base.sdc
 
 set ::env(LEC_ENABLE) 0
+set ::env(SYNTH_ENB_CG) 1
 
 set ::env(VDD_PIN) [list {vccd1}]
 set ::env(GND_PIN) [list {vssd1}]
@@ -80,7 +83,7 @@ set ::env(GRT_ADJUSTMENT) 0.2
 
 
 set ::env(PL_TIME_DRIVEN) 1
-set ::env(PL_TARGET_DENSITY) "0.42"
+set ::env(PL_TARGET_DENSITY) "0.43"
 
 # If you're going to use multiple power domains, then keep this disabled.
 set ::env(RUN_CVC) 0

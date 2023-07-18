@@ -507,7 +507,7 @@ wb_slave_port  u_s1 (
           .m0_wbd_we_i             (m0_wbd_we_i            ),
           .m0_wbd_cyc_i            (m0_wbd_cyc_i           ),
           .m0_wbd_stb_i            (m0_wbd_stb_i           ),
-	      .m0_wbd_tid_i            (m0_wbd_tid_i           ),
+	  .m0_wbd_tid_i            (m0_wbd_tid_i           ),
           .m0_wbd_dat_o            (m0_s1_wb_rd.wbd_dat    ),
           .m0_wbd_ack_o            (m0_s1_wb_rd.wbd_ack    ),
           .m0_wbd_lack_o           (m0_s1_wb_rd.wbd_lack   ),
@@ -522,7 +522,7 @@ wb_slave_port  u_s1 (
           .m1_wbd_we_i             (m1_wbd_we_i            ),
           .m1_wbd_cyc_i            (m1_wbd_cyc_i           ),
           .m1_wbd_stb_i            (m1_wbd_stb_i           ),
-	      .m1_wbd_tid_i            (m1_wbd_tid_i           ),
+	  .m1_wbd_tid_i            (m1_wbd_tid_i           ),
           .m1_wbd_dat_o            (m1_s1_wb_rd.wbd_dat    ),
           .m1_wbd_ack_o            (m1_s1_wb_rd.wbd_ack    ),
           .m1_wbd_lack_o           (m1_s1_wb_rd.wbd_lack   ),
@@ -537,7 +537,7 @@ wb_slave_port  u_s1 (
           .m2_wbd_we_i             (m2_wbd_we_i            ),
           .m2_wbd_cyc_i            (m2_wbd_cyc_i           ),
           .m2_wbd_stb_i            (m2_wbd_stb_i           ),
-	      .m2_wbd_tid_i            (m2_wbd_tid_i           ),
+	  .m2_wbd_tid_i            (m2_wbd_tid_i           ),
           .m2_wbd_dat_o            (m2_s1_wb_rd.wbd_dat    ),
           .m2_wbd_ack_o            (m2_s1_wb_rd.wbd_ack    ),
           .m2_wbd_lack_o           (m2_s1_wb_rd.wbd_lack   ),
@@ -551,7 +551,7 @@ wb_slave_port  u_s1 (
           .m3_wbd_we_i             (m3_wbd_we_i            ),
           .m3_wbd_cyc_i            (m3_wbd_cyc_i           ),
           .m3_wbd_stb_i            (m3_wbd_stb_i           ),
-	      .m3_wbd_tid_i            (m3_wbd_tid_i           ),
+	  .m3_wbd_tid_i            (m3_wbd_tid_i           ),
           .m3_wbd_dat_o            (m3_s1_wb_rd.wbd_dat    ),
           .m3_wbd_ack_o            (m3_s1_wb_rd.wbd_ack    ),
           .m3_wbd_lack_o           (m3_s1_wb_rd.wbd_lack   ),
@@ -589,7 +589,7 @@ wb_slave_port  u_s2 (
           .m0_wbd_we_i             (m0_wbd_we_i            ),
           .m0_wbd_cyc_i            (m0_wbd_cyc_i           ),
           .m0_wbd_stb_i            (m0_wbd_stb_i           ),
-	      .m0_wbd_tid_i            (m0_wbd_tid_i           ),
+	  .m0_wbd_tid_i            (m0_wbd_tid_i           ),
           .m0_wbd_dat_o            (m0_s2_wb_rd.wbd_dat    ),
           .m0_wbd_ack_o            (m0_s2_wb_rd.wbd_ack    ),
           .m0_wbd_lack_o           (m0_s2_wb_rd.wbd_lack   ),
@@ -604,7 +604,7 @@ wb_slave_port  u_s2 (
           .m1_wbd_we_i             (m1_wbd_we_i            ),
           .m1_wbd_cyc_i            (m1_wbd_cyc_i           ),
           .m1_wbd_stb_i            (m1_wbd_stb_i           ),
-	      .m1_wbd_tid_i            (m1_wbd_tid_i           ),
+	  .m1_wbd_tid_i            (m1_wbd_tid_i           ),
           .m1_wbd_dat_o            (m1_s2_wb_rd.wbd_dat    ),
           .m1_wbd_ack_o            (m1_s2_wb_rd.wbd_ack    ),
           .m1_wbd_lack_o           (m1_s2_wb_rd.wbd_lack   ),
@@ -619,7 +619,7 @@ wb_slave_port  u_s2 (
           .m2_wbd_we_i             (m2_wbd_we_i            ),
           .m2_wbd_cyc_i            (m2_wbd_cyc_i           ),
           .m2_wbd_stb_i            (m2_wbd_stb_i           ),
-	      .m2_wbd_tid_i            (m2_wbd_tid_i           ),
+	  .m2_wbd_tid_i            (m2_wbd_tid_i           ),
           .m2_wbd_dat_o            (m2_s2_wb_rd.wbd_dat    ),
           .m2_wbd_ack_o            (m2_s2_wb_rd.wbd_ack    ),
           .m2_wbd_lack_o           (m2_s2_wb_rd.wbd_lack   ),
@@ -633,7 +633,7 @@ wb_slave_port  u_s2 (
           .m3_wbd_we_i             (m3_wbd_we_i            ),
           .m3_wbd_cyc_i            (m3_wbd_cyc_i           ),
           .m3_wbd_stb_i            (m3_wbd_stb_i           ),
-	      .m3_wbd_tid_i            (m3_wbd_tid_i           ),
+	  .m3_wbd_tid_i            (m3_wbd_tid_i           ),
           .m3_wbd_dat_o            (m3_s2_wb_rd.wbd_dat    ),
           .m3_wbd_ack_o            (m3_s2_wb_rd.wbd_ack    ),
           .m3_wbd_lack_o           (m3_s2_wb_rd.wbd_lack   ),
@@ -666,6 +666,7 @@ assign m0_wb_wr.wbd_bry  = 1'b1;
 assign m0_wb_wr.wbd_we   = m0_wbd_we_i;
 assign m0_wb_wr.wbd_cyc  = m0_wbd_cyc_i;
 assign m0_wb_wr.wbd_stb  = m0_wbd_stb_i;
+assign m0_wb_wr.wbd_tid  = 4'b0; // unused
 
 assign m0_wbd_dat_o  = m0_bus_rd.wbd_dat;
 assign m0_wbd_ack_o  = m0_bus_rd.wbd_ack;
@@ -676,8 +677,8 @@ always_comb begin
      case(m0_wbd_tid_i)
         TARGET_SPI_MEM:	   m0_bus_rd = m0_s0_wb_rd;
         TARGET_SPI_REG:	   m0_bus_rd = m0_s0_wb_rd;
-        TARGET_UART:	   m0_bus_rd = m0_s1_wb_rd;
-        TARGET_PINMUX:	   m0_bus_rd = m0_s2_wb_rd;
+        TARGET_UART:	           m0_bus_rd = m0_s1_wb_rd;
+        TARGET_PINMUX:	           m0_bus_rd = m0_s2_wb_rd;
         TARGET_WBI:	       m0_bus_rd = wbi_wb_rd;
         default:           m0_bus_rd = m0_s0_wb_rd;
      endcase			
@@ -694,6 +695,7 @@ assign m1_wb_wr.wbd_bry  = m1_wbd_bry_i;
 assign m1_wb_wr.wbd_we   = m1_wbd_we_i;
 assign m1_wb_wr.wbd_cyc  = m1_wbd_cyc_i;
 assign m1_wb_wr.wbd_stb  = m1_wbd_stb_i;
+assign m1_wb_wr.wbd_tid  = 4'b0; // unused
 
 assign m1_wbd_dat_o  = m1_bus_rd.wbd_dat;
 assign m1_wbd_ack_o  = m1_bus_rd.wbd_ack;
@@ -722,6 +724,7 @@ assign m2_wb_wr.wbd_bry  = m2_wbd_bry_i;
 assign m2_wb_wr.wbd_we   = m2_wbd_we_i;
 assign m2_wb_wr.wbd_cyc  = m2_wbd_cyc_i;
 assign m2_wb_wr.wbd_stb  = m2_wbd_stb_i;
+assign m2_wb_wr.wbd_tid  = 4'b0; // unused
 
 assign m2_wbd_dat_o  = m2_bus_rd.wbd_dat;
 assign m2_wbd_ack_o  = m2_bus_rd.wbd_ack;
@@ -750,6 +753,7 @@ assign m3_wb_wr.wbd_bry  = m3_wbd_bry_i;
 assign m3_wb_wr.wbd_we   = m3_wbd_we_i;
 assign m3_wb_wr.wbd_cyc  = m3_wbd_cyc_i;
 assign m3_wb_wr.wbd_stb  = m3_wbd_stb_i;
+assign m3_wb_wr.wbd_tid  = 4'b0; // unused
 
 assign m3_wbd_dat_o  = m3_bus_rd.wbd_dat;
 assign m3_wbd_ack_o  = m3_bus_rd.wbd_ack;
@@ -881,7 +885,7 @@ wbi_reg  u_reg(
 
                        // clock gate indication
                        .stat_reg_req           (stat_reg_req     ), 
-                       .stat_clk_gate          (stat_clk_gatess  )          
+                       .stat_clk_gate          (stat_clk_gate_ss )          
    ); 
 
 //----------------------------
@@ -898,6 +902,12 @@ src_clk_gate  u_dcg_s0(
                         .clk_out               (s0_mclk             )  // clock output
      
        );
+
+//---------------------------------------------------------------------------------------
+// Special Note: There is hugh clock skew difference between mclk and mclk_raw clock
+// for timing closure purpose all the mclk_raw output signal need to double sync to mclk
+//----------------------------------------------------------------------------------------
+
 //----------------------------
 // Source Clock Gating for S1
 //----------------------------
@@ -965,7 +975,9 @@ between mclk_raw & clk_g. We are creating async
 path to simply the timing closure
 ***************************************/
 
-double_sync_high  #(.WIDTH(8)) u_dsync(
+assign stat_clk_gate[7:5] = 3'b0;
+
+ctech_dsync_high  #(.WB(8)) u_dsync(
               .in_data    ( stat_clk_gate     ),
               .out_clk    ( clk_g             ),
               .out_rst_n  ( rst_ssn           ),

@@ -41,6 +41,7 @@
 ////          re-arrange the arduino pins from 5 onward           ////
 ////    0.4 - 5 Jan 2023, Dinesh A                                ////
 ////          A. Stepper Motor Integration                        ////
+////          B. Riscv Tap Integration                            ////
 //////////////////////////////////////////////////////////////////////
 /************************************************
 * Pin Mapping    Arduino              ATMGE CONFIG

@@ -12,7 +12,7 @@ create_generated_clock -name icache_mem_clk1 -add -source [get_ports {core_clk}]
 
 set_clock_transition 0.1500 [all_clocks]
 set_clock_uncertainty -setup 0.5000 [all_clocks]
-set_clock_uncertainty -hold 0.2500 [all_clocks]
+set_clock_uncertainty -hold 0.3000 [all_clocks]
 
 set ::env(SYNTH_TIMING_DERATE) 0.05
 puts "\[INFO\]: Setting timing derate to: [expr {$::env(SYNTH_TIMING_DERATE) * 10}] %"

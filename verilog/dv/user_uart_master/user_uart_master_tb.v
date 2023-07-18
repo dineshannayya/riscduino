@@ -109,7 +109,10 @@ integer i,j;
 `ifdef WFDUMP
 initial begin
    $dumpfile("risc_boot.vcd");
-   $dumpvars(0, `TB_TOP);
+   $dumpvars(1, `TB_TOP);
+   $dumpvars(1, `TB_TOP.u_top.u_wb_host);
+   $dumpvars(1, `TB_TOP.u_top.u_intercon);
+   $dumpvars(1, `TB_TOP.u_top.u_pinmux);
 end
 `endif
 

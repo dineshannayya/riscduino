@@ -516,8 +516,8 @@ begin
         wb_user_core_read_check(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC2,read_data,'h33);
         wb_user_core_read_check(`ADDR_SPACE_ANALOG+`ANALOG_CFG_DAC3,read_data,'h44);
         repeat (10) @(posedge clock);
-        if((u_top.u_4x8bit_dac.DIn0 != 'h11) || (u_top.u_4x8bit_dac.DIn1 != 'h22) ||
-           (u_top.u_4x8bit_dac.DIn2 != 'h33) || (u_top.u_4x8bit_dac.DIn3 != 'h44)) begin
+        if((u_top.u_4x8bit_dac.Din0 != 'h11) || (u_top.u_4x8bit_dac.Din1 != 'h22) ||
+           (u_top.u_4x8bit_dac.Din2 != 'h33) || (u_top.u_4x8bit_dac.Din3 != 'h44)) begin
            test_fail = 1;
         end
 
