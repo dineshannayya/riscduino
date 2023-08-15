@@ -440,21 +440,21 @@ Following Design changes are done on the basic version of syntacore RISC core
     - flow automatically pull the required docker based on MPW version.
     - RTL to gds docker is hardcoded inside File: openlane/Makefile
 ```bash
-     OPENLANE_TAG = mpw7
+     OPENLANE_TAG = mpw9
      OPENLANE_IMAGE_NAME = riscduino/openlane:$(OPENLANE_TAG)
 ```
 ## Note-1.1: View the RTL to GDS Docker content
-    - for MPW-7 caravel pdk and openlane avaible inside riscduino/openlane:mpw7 docker 
+    - for MPW-9 caravel pdk and openlane avaible inside riscduino/openlane:mpw9 docker 
     - caravel, openlane and pdk envionment are automatically pointed to internal docker pointer
     - To view the docker contents
 ```bash
-    docker run -ti --rm riscduino/openlane:mpw7  bash
-    cd /opt/pdk_mpw7     -  pdk folder
+    docker run -ti --rm riscduino/openlane:mpw9  bash
+    cd /opt/pdk_mpw9     -  pdk folder
     cd /opt/caravel      -  caravel folder 
     cd /openlane         -  openlane folder
     env   - Show the internally defined env's
         CARAVEL_ROOT=/opt/caravel
-        PDK_ROOT=/opt/pdk_mpw6
+        PDK_ROOT=/opt/pdk_mpw9
 ```
 
 ## Note-2: RTL Simulation Docker
@@ -466,12 +466,12 @@ Following Design changes are done on the basic version of syntacore RISC core
 	    docker pull riscduino/dv_setup:mpw6
 
 ## Note-2.1: View the RTL Simulation Docker content
-    - for MPW-7 caravel and pdk avaible inside riscduino/dv_setup:mpw7 docker this is used for RTL to gds flows
+    - for MPW-7 caravel and pdk avaible inside riscduino/dv_setup:mpw9 docker this is used for RTL to gds flows
     - caravel and pdk envionment are automatically pointed to internal docker pointer
     - To view the docker contents
 ```bash
-    docker run -ti --rm riscduino/dv_setup:mpw7  bash
-    cd /opt/pdk_mpw7     -  pdk folder
+    docker run -ti --rm riscduino/dv_setup:mpw9  bash
+    cd /opt/pdk_mpw9     -  pdk folder
     cd /opt/caravel      -  caravel folder 
     env   - Show the internally defined env's
         CARAVEL_ROOT=/opt/caravel

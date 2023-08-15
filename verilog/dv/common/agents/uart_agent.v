@@ -172,6 +172,15 @@ fork
 // start cycle
 	@(negedge rxd) 
 	 disable loop_1;
+
+    // Cross-check We enter Due any glitch in rxd (in Gate Sim) then expit
+	@(negedge mclk)
+    if(rxd== 1)  disable loop_2;
+
+	@(posedge mclk)
+    if(rxd== 1)  disable loop_2;
+
+    // Now Bit Extraction Start
 	 read = 1;
 
 // data cycle
@@ -343,6 +352,7 @@ reg 	[7:0] data;
 reg	parity;
 
 begin
+    rxd_data = 8'h0;
 	data = 8'h0;
 	parity = 1;
 	timeout_count = 0;
@@ -365,6 +375,15 @@ fork
 // start cycle
 	@(negedge rxd) 
 	 disable loop_1;
+
+    // Cross-check We enter Due any glitch in rxd (in Gate Sim) then expit
+	@(negedge mclk)
+    if(rxd== 1)  disable loop_2;
+
+	@(posedge mclk)
+    if(rxd== 1)  disable loop_2;
+
+    // Now Bit Extraction Start
 	 read = 1;
 
 // data cycle
