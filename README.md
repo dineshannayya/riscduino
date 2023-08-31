@@ -222,7 +222,7 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
 
 <table>
   <tr align="center"> <td> ATMGA328 Pin No</td> <td> Functionality           </td> <td> Arudino Pin Name</td> <td> Carvel Pin Mapping                   </td></tr>
-  <tr align="center"> <td> Pin-1           </td> <td> PC6/RESET              </td> <td>                 </td> <td> digital_io[5]                        </td></tr>
+  <tr align="center"> <td> Pin-1           </td> <td> PC6/RESET              </td> <td>  D20            </td> <td> digital_io[5]                        </td></tr>
   <tr align="center"> <td> Pin-2           </td> <td> PD0/RXD[0]             </td> <td>  D0             </td> <td> digital_io[6]                        </td></tr>
   <tr align="center"> <td> Pin-3           </td> <td> PD1/TXD[0]             </td> <td>  D1             </td> <td> digital_io[7]/analog_io[0]           </td></tr>
   <tr align="center"> <td> Pin-4           </td> <td> PD2/RXD[1]/INT0        </td> <td>  D2             </td> <td> digital_io[8]/analog_io[1]           </td></tr>
@@ -230,8 +230,8 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
   <tr align="center"> <td> Pin-6           </td> <td> PD4/TXD[1]             </td> <td>  D4             </td> <td> digital_io[10]/analog_io[3]          </td></tr>
   <tr align="center"> <td> Pin-7           </td> <td> VCC                    </td> <td>                 </td> <td>  -                                   </td></tr>
   <tr align="center"> <td> Pin-8           </td> <td> GND                    </td> <td>                 </td> <td>  -                                   </td></tr>
-  <tr align="center"> <td> Pin-9           </td> <td> PB6/XTAL1/TOSC1        </td> <td>                 </td> <td> digital_io[11]/analog_io[4]          </td></tr>
-  <tr align="center"> <td> Pin-10          </td> <td> PB7/XTAL2/TOSC2        </td> <td>                 </td> <td> digital_io[12]/analog_io[5]          </td></tr>
+  <tr align="center"> <td> Pin-9           </td> <td> PB6/XTAL1/TOSC1        </td> <td> D21             </td> <td> digital_io[11]/analog_io[4]          </td></tr>
+  <tr align="center"> <td> Pin-10          </td> <td> PB7/XTAL2/TOSC2        </td> <td> D22             </td> <td> digital_io[12]/analog_io[5]          </td></tr>
   <tr align="center"> <td> Pin-11          </td> <td> PD5/SS[3]/OC0B(PWM1)/T1      </td> <td> D5        </td> <td> digital_io[13]/analog_io[6]          </td></tr>
   <tr align="center"> <td> Pin-12          </td> <td> PD6/SS[2]/OC0A(PWM2)/AIN0    </td> <td> D6        </td> <td> digital_io[14]/analog_io[7]          </td></tr>
   <tr align="center"> <td> Pin-13          </td> <td> PD7/A1N1               </td> <td> D7              </td> <td> digital_io[15]/analog_io[8]          </td></tr>
@@ -244,12 +244,12 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
   <tr align="center"> <td> Pin-20          </td> <td> AVCC                   </td> <td>                 </td> <td> -                                    </td></tr>
   <tr align="center"> <td> Pin-21          </td> <td> AREF                   </td> <td>                 </td> <td> analog_io[23]                        </td></tr>
   <tr align="center"> <td> Pin-22          </td> <td> GND                    </td> <td>                 </td> <td> -                                    </td></tr>
-  <tr align="center"> <td> Pin-23          </td> <td> PC0/uartm_rxd/ADC0     </td> <td>  A0             </td> <td> digital_io[22]/analog_io[15]         </td></tr>
-  <tr align="center"> <td> Pin-24          </td> <td> PC1/uartm/ADC1         </td> <td>  A1             </td> <td> digital_io[23]/analog_io[16]         </td></tr>
-  <tr align="center"> <td> Pin-25          </td> <td> PC2/usb_dp/ADC2        </td> <td>  A2             </td> <td> digital_io[24]/analog_io[17]         </td></tr>
-  <tr align="center"> <td> Pin-26          </td> <td> PC3/usb_dn/ADC3        </td> <td>  A3             </td> <td> digital_io[25]/analog_io[18]         </td></tr>
-  <tr align="center"> <td> Pin-27          </td> <td> PC4/ADC4/SDA           </td> <td>  A4             </td> <td> digital_io[26]/analog_io[19]         </td></tr>
-  <tr align="center"> <td> Pin-28          </td> <td> PC5/ADC5/SCL           </td> <td>  A5             </td> <td> digital_io[27]/analog_io[20]         </td></tr>
+  <tr align="center"> <td> Pin-23          </td> <td> PC0/uartm_rxd/ADC0     </td> <td>  D14/A0         </td> <td> digital_io[22]/analog_io[15]         </td></tr>
+  <tr align="center"> <td> Pin-24          </td> <td> PC1/uartm/ADC1         </td> <td>  D15/A1         </td> <td> digital_io[23]/analog_io[16]         </td></tr>
+  <tr align="center"> <td> Pin-25          </td> <td> PC2/usb_dp/ADC2        </td> <td>  D16/A2         </td> <td> digital_io[24]/analog_io[17]         </td></tr>
+  <tr align="center"> <td> Pin-26          </td> <td> PC3/usb_dn/ADC3        </td> <td>  D17/A3         </td> <td> digital_io[25]/analog_io[18]         </td></tr>
+  <tr align="center"> <td> Pin-27          </td> <td> PC4/ADC4/SDA           </td> <td>  D18/A4         </td> <td> digital_io[26]/analog_io[19]         </td></tr>
+  <tr align="center"> <td> Pin-28          </td> <td> PC5/ADC5/SCL           </td> <td>  D19/A5         </td> <td> digital_io[27]/analog_io[20]         </td></tr>
   <tr align="center"> <td colspan="4">   Additional Pad used for Externam ROM/RAM/USB </td></tr>
   <tr align="center"> <td> Sflash          </td> <td> sflash_sck             </td> <td>                 </td> <td> digital_io[28]/Analog[21]            </td></tr>
   <tr align="center"> <td> SFlash          </td> <td> sflash_ss0             </td> <td>                 </td> <td> digital_io[29]/Analog[22]            </td></tr>
@@ -262,10 +262,10 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
   <tr align="center"> <td> SFlash          </td> <td> sflash_io3             </td> <td>                 </td> <td> digital_io[36]                       </td></tr>
   <tr align="center"> <td> DEBUG           </td> <td> dbg_clk_mon            </td> <td>                 </td> <td> digital_io[37]                       </td></tr>
   <tr align="center"> <td> SPARE           </td> <td> PA0                    </td> <td>                 </td> <td> digital_io[0]                       </td></tr>
-  <tr align="center"> <td> SPARE           </td> <td> PA1                    </td> <td>                 </td> <td> digital_io[1]                       </td></tr>
-  <tr align="center"> <td> SPARE           </td> <td> PA2                    </td> <td>                 </td> <td> digital_io[2]                       </td></tr>
+  <tr align="center"> <td> SPARE           </td> <td> PA1                    </td> <td> D23             </td> <td> digital_io[1]                       </td></tr>
+  <tr align="center"> <td> SPARE           </td> <td> PA2                    </td> <td> D24             </td> <td> digital_io[2]                       </td></tr>
   <tr align="center"> <td> SPARE           </td> <td> PA3                    </td> <td>                 </td> <td> digital_io[3]                       </td></tr>
-  <tr align="center"> <td> SPARE           </td> <td> PA4                     </td> <td>                </td> <td> digital_io[4]                       </td></tr>
+  <tr align="center"> <td> SPARE           </td> <td> PA4                     </td> <td> D25            </td> <td> digital_io[4]                       </td></tr>
 </table>
 
 
@@ -466,7 +466,7 @@ Following Design changes are done on the basic version of syntacore RISC core
 	    docker pull riscduino/dv_setup:mpw6
 
 ## Note-2.1: View the RTL Simulation Docker content
-    - for MPW-7 caravel and pdk avaible inside riscduino/dv_setup:mpw9 docker this is used for RTL to gds flows
+    - for MPW-9 caravel and pdk avaible inside riscduino/dv_setup:mpw9 docker this is used for RTL to gds flows
     - caravel and pdk envionment are automatically pointed to internal docker pointer
     - To view the docker contents
 ```bash
@@ -476,6 +476,38 @@ Following Design changes are done on the basic version of syntacore RISC core
     env   - Show the internally defined env's
         CARAVEL_ROOT=/opt/caravel
         PDK_ROOT=/opt/pdk_mpw6
+```
+## Note-3: Clock Gate Plugin integration
+1. **Hack-1: Modify following files for synthesis script update**
+```
+   Directory: OpenSTA (hacks/src/OpenSTA)
+   Source Files:
+	   OpenLane/scripts/yosys/synth.tcl
+	   OpenLane/configuration/synthesis.tcl
+	   OpenLane/scripts/utils/utils.tcl
+    Modifield File: 
+       hacks/clk_gating/synth.tcl
+       hacks/clk_gating/synthesis.tcl
+       hacks/clk_gating/utils.tcl
+```
+2. **Hack-2: Create a pluging directory in openlane and add following files**
+```
+plugin
+   └── yosys
+       └── Lighter
+           ├── clock_gating_plugin.cc
+           ├── README.md
+           ├── sky130_clkg_blackbox.v
+           └── sky130_ff_map.v
+```
+
+3. **Hack-3: Add ENV to enable clock gating in config.tcl**
+```
+   set ::env(SYNTH_ENB_CG) 1
+```
+4. **Hack-4: Check Clock gate insertion in Generated netlist file**
+```
+   grep sky130_fd_sc_hd__dlclkp  <your netlist file>
 ```
 
 # Tests preparation
@@ -725,6 +757,8 @@ We are looking for community help in following activity, interested user can pin
 
 Youtube video on Riscduino
 ===============
+* **Riscduino CI2206Q Bringup Status** - https://youtu.be/EzxGh2Bxo_o
+* **Riscduino Live Demo** - https://youtu.be/FrcUKUgzDW4
 * **Riscduino Aim** - https://www.youtube.com/watch?v=lFVnicPhTI0
 * **Riscduino MPW-2 Bringup Status** - https://www.youtube.com/watch?v=Qo_RZ8Fo--c
 
