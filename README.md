@@ -209,6 +209,24 @@ Riscduino is a Single 32 bit RISC V based SOC design pin compatible to arduino p
     <td  align="center"> <a href="https://platform.efabless.com/projects/1168">Link</a></td>
     <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-007/slot-007">Link</a></td>
   </tr>
+  <tr>
+    <td  align="center"> MPW-8 </td> 
+    <td  align="center"> 31-Dec-2022  </td>
+    <td  align="center"> Riscduino-DCORE (D4)</td>
+    <td  align="center"> Dual 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_dcore">Link</a></td>
+    <td  align="center"> <a href="https://platform.efabless.com/projects/1632">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-008/slot-004">Link</a></td>
+  </tr>
+  <tr>
+    <td  align="center"> MPW-7 </td> 
+    <td  align="center"> 12-Sept-2022 </td>
+    <td  align="center"> Riscduino-QCORE (Q3)</td>
+    <td  align="center"> Quad 32bit RISCV core with cache + Onchip SRAM+ WB Cross Bar</td>
+    <td  align="center"> <a href="https://github.com/dineshannayya/riscduino_qcore">Link</a></td>
+    <td  align="center"> <a https://platform.efabless.com/projects/1633">Link</a></td>
+    <td  align="center"> <a href="https://foss-eda-tools.googlesource.com/third_party/shuttle/sky130/mpw-008/slot-005">Link</a></td>
+  </tr>
 </table>
 
 # SOC Pin Mapping
