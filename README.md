@@ -291,7 +291,7 @@ Carvel SOC provides 38 GPIO pins for user functionality. Riscduino SOC GPIO Pin 
 *  Riscduino documentation available at : <https://riscduino.readthedocs.io/en/latest/>
 
 # Arduino ide integration
-*  We are in initial phase of Riscduino board integration into arduino and integration details are available at : <https://github.com/dineshannayya/riscduino_board/>
+*  We are in initial phase of Riscduino board integration into arduino and integration details are available at : <https://github.com/dineshannayya/riscduino_tools/>
 
 
 # Sub IP features
