@@ -435,7 +435,7 @@ Following Design changes are done on the basic version of syntacore RISC core
    sudo apt update
    sudo apt-get install apt-transport-https curl rtificates -agent software-properties-common
    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+   sudo apt-get install apt-transport-https curl ca-certificates software-properties-common
    sudo apt update
    apt-cache policy docker-ce
    sudo apt install docker-ce
