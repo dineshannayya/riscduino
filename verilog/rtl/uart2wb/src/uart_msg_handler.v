@@ -61,10 +61,11 @@ module uart_msg_handler (
       // Towards Register Interface
         reg_addr,
         reg_wr,  
+        reg_be,  
         reg_wdata,
         reg_req,
-	reg_ack,
-	reg_rdata
+	    reg_ack,
+	    reg_rdata
 
      );
 
@@ -78,9 +79,12 @@ module uart_msg_handler (
 `define ADR_PHASE	     4'h5
 `define WR_DATA_PHASE	 4'h6
 `define SEND_WR_REQ	     4'h7
-`define SEND_RD_REQ	     4'h8
-`define SEND_RD_DATA	 4'h9
-`define TX_MSG           4'hA
+`define SEND_BWR_REQ	 4'h8
+`define SEND_RD_REQ	     4'h9
+`define RXD_BRD_SIZE	 4'hA
+`define PEND_BRD_REQ     4'hB
+`define SEND_RD_DATA	 4'hC
+`define TX_MSG           4'hD
      
 `define BREAK_CHAR       8'h0A
 
@@ -116,6 +120,7 @@ output  [31:0] reg_addr           ; // Operend-1
 output  [31:0] reg_wdata          ; // Operend-2
 output         reg_req            ; // Register Request
 output         reg_wr             ; // 1 -> write; 0 -> read
+output  [3:0]  reg_be             ; // Byte enable
 input          reg_ack            ; // Register Ack
 input   [31:0] reg_rdata          ;
 
@@ -133,8 +138,10 @@ reg  [15:0]     cmd                ; // command
 reg  [31:0]     reg_addr           ; // reg_addr
 reg  [31:0]     reg_wdata          ; // reg_addr
 reg             reg_wr             ; // 1 -> Reg Write request, 0 -> Read Requestion
+reg  [3:0]      reg_be             ; // Byte enable
 reg             reg_req            ; // 1 -> Register request
 reg   [7:0]     wait_cnt           ;
+reg   [15:0]    burst_cnt         ; // 2 Byte Max Burst Read access
 
 wire rx_ready = 1; 
 /****************************************************************
@@ -166,13 +173,17 @@ begin
       reg_req       <= 0;
       reg_addr       <= 0;
       reg_wr        <= 1'b0; // Read request
+      reg_be        <= 4'b0; // byte enable
       reg_wdata     <= 0;
       State         <= `POWERON_WAIT;
       NextState     <= `POWERON_WAIT;
       wait_cnt      <= 'h0;
+      burst_cnt     <= 'h0;
    end else begin
    case(State)
+      //-------------------------
       // Send Default Message
+      //-------------------------
       `POWERON_WAIT: begin
          if(cfg_uart_enb) begin
            if(wait_cnt == 8'hff) begin
@@ -190,7 +201,9 @@ begin
 	       NextState     <= `IDLE_TX_MSG1;
        end
 
+      //--------------------------------
       // Send Default Message (Contd..)
+      //--------------------------------
       `IDLE_TX_MSG1: begin
 	   TxMsgBuf      <= "wm <ad> <data>\n "; // Align to 16 character format by appending space character 
            TxMsgSize     <= 15;
@@ -199,7 +212,9 @@ begin
 	   NextState     <= `IDLE_TX_MSG2;
         end
 
+      //--------------------------------
       // Send Default Message (Contd..)
+      //--------------------------------
       `IDLE_TX_MSG2: begin
 	   TxMsgBuf      <= "rm <ad>\n>>      ";  // Align to 16 character format by appending space character
            TxMsgSize     <= 10;
@@ -209,98 +224,234 @@ begin
 	   NextState     <= `RX_CMD_PHASE;
       end
 
-       // Wait for Response
-    `RX_CMD_PHASE: begin
-	if(rx_wr == 1) begin
-	   //if(RxMsgCnt == 0 && rx_data == " ") begin // Ignore the same
-	   if(RxMsgCnt == 0 && rx_data == 8'h20) begin // Ignore the same
-	   //end else if(RxMsgCnt > 0 && rx_data == " ") begin // Check the command
-	   end else if(RxMsgCnt > 0 && rx_data == 8'h20) begin // Check the command
-	      reg_addr <= 0;
-	      RxMsgCnt <= 0;
-	     //if(cmd == "wm") begin
-	     if(cmd == 16'h776D) begin
-		 State <= `ADR_PHASE;
-	      //end else if(cmd == "rm") begin
-	     end else if(cmd == 16'h726D) begin
-
-		 State <= `ADR_PHASE;
-             end else begin // Unknow command
-	        State         <= `IDLE;
-             end
-	   //end else if(rx_data == "\n") begin // Error State
-	   end else if(rx_data == `BREAK_CHAR) begin // Error State
-	      State         <= `IDLE;
-	   end 
-	   else begin
-              cmd <=  (cmd << 8) | rx_data ;
-	      RxMsgCnt <= RxMsgCnt+1;
-           end
-        end 
-     end
-       // Write Address Phase 
-    `ADR_PHASE: begin
-	if(rx_wr == 1) begin
-	   //if(RxMsgCnt == 0 && rx_data == " ") begin // Ignore the Space character
-	   if(RxMsgCnt == 0 && rx_data == 8'h20) begin // Ignore the Space character
-	   end else if(RxMsgCnt > 0 && (rx_data == 8'h20 || rx_data == `BREAK_CHAR)) begin // Move to write data phase
-	     //if(RxMsgCnt > 0 && "wm" && rx_data == " ") begin // Move to write data phase
-	       if(cmd == 16'h776D && rx_data == 8'h20) begin // Move to write data phase
-	           reg_wdata     <= 0;
-	           State         <= `WR_DATA_PHASE;
-	   //  end else if(RxMsgCnt > 0 && "rm" && rx_data == "\n") begin // Move to read data phase
-	       end else if(cmd == 16'h726D && rx_data == `BREAK_CHAR) begin // Move to read data phase
-	           reg_wr        <= 1'b0; // Read request
-	           reg_req       <= 1'b1; // Reg Request
-	           State         <= `SEND_RD_REQ;
-                end else begin // Unknow command
-	          State         <= `IDLE;
+      //--------------------------------
+      // Wait for Response
+      //--------------------------------
+     `RX_CMD_PHASE: begin
+         if(rx_wr == 1) begin
+            //if(RxMsgCnt == 0 && rx_data == " ") begin // Ignore 
+            if(RxMsgCnt == 0 && rx_data == 8'h20) begin // Ignore 
+            //end else if(RxMsgCnt > 0 && rx_data == " ") begin // Check the command
+            end else if(RxMsgCnt > 0 && rx_data == 8'h20) begin // Check the command
+               reg_addr <= 0;
+               RxMsgCnt <= 0;
+               //if(cmd == "wm") begin
+               if(cmd == 16'h776D) begin
+                  State <= `ADR_PHASE;
+                  //end else if(cmd == "rm") begin
+               end else if(cmd == 16'h726D) begin
+                  State <= `ADR_PHASE;
+                  //end else if(cmd == "br") begin // burst read
+               end else if(cmd == 16'h6272) begin
+                  State <= `ADR_PHASE;
+               end else begin // Unknown command
+                  State      <= `IDLE;
                end
-	   //end else if(rx_data == "\n") begin // Error State
-	   end else if(rx_data == `BREAK_CHAR) begin // Error State
-	      State         <= `IDLE;
-	   end else begin 
-              reg_addr <= (reg_addr << 4) | char2hex(rx_data); 
-	      RxMsgCnt <= RxMsgCnt+1;
-           end
-	end
-     end
+               //end else if(rx_data == "\n") begin // Error State
+            end else if(rx_data == `BREAK_CHAR) begin // Error State
+               State         <= `IDLE;
+            end else begin
+               cmd <=  (cmd << 8) | rx_data ;
+               RxMsgCnt <= RxMsgCnt+1;
+            end
+         end 
+      end
+
+      //----------------------------
+      // Write/Read Address Phase 
+      //----------------------------
+    `ADR_PHASE: begin
+	   if(rx_wr == 1) begin
+	      //if(RxMsgCnt == 0 && rx_data == " ") begin // Ignore the Space character
+	      if(RxMsgCnt == 0 && rx_data == 8'h20) begin // Ignore the Space character
+	      end else if(RxMsgCnt > 0 && (rx_data == 8'h20 || rx_data == `BREAK_CHAR)) begin // Move to write data phase
+	          //if(RxMsgCnt > 0 && "wm" && rx_data == " ") begin // Move to write data phase
+	          if(cmd == 16'h776D && rx_data == 8'h20) begin // Move to write data phase
+	              reg_wdata     <= 0;
+                  reg_be        <= 0;
+                  RxMsgCnt      <= 0;
+	              State         <= `WR_DATA_PHASE;
+	          //end else if(RxMsgCnt > 0 && "rm" && rx_data == "\n") begin // Move to read data phase
+	          end else if(cmd == 16'h726D && rx_data == `BREAK_CHAR) begin // Move to read data phase
+	              reg_wr        <= 1'b0; // Read request
+	              reg_be        <= 4'hF; // Byte enable
+	              reg_req       <= 1'b1; // Reg Request
+                  burst_cnt     <= 'h1;
+	              State         <= `SEND_RD_REQ;
+	          //end else if(RxMsgCnt > 0 && "br" && rx_data == " ") begin // Move to burst read data phase
+	          end else if(cmd == 16'h6272 && rx_data == 8'h20) begin // Move to read burst data phase
+	              reg_wr        <= 1'b0; // Read request
+                  burst_cnt     <= 'h0;
+	              State         <= `RXD_BRD_SIZE;
+              end else begin // Unknow command
+	             State         <= `IDLE;
+                  end
+	      //end else if(rx_data == "\n") begin // Error State
+	      end else if(rx_data == `BREAK_CHAR) begin // Error State
+	         State         <= `IDLE;
+	      end else begin 
+             reg_addr <= (reg_addr << 4) | char2hex(rx_data); 
+	         RxMsgCnt <= RxMsgCnt+1;
+          end
+	   end
+    end
+    //-------------------------
     // Write Data Phase 
+    //-------------------------
     `WR_DATA_PHASE: begin
-	if(rx_wr == 1) begin
-	   //if(rx_data == " ") begin // Ignore the Space character
-	   if(rx_data == 8'h20) begin // Ignore the Space character
-	   //end else if(rx_data == "\n") begin // Error State
-	   end else if(rx_data == `BREAK_CHAR) begin // Error State
-	      State           <= `SEND_WR_REQ;
-	      reg_wr          <= 1'b1; // Write request
-	      reg_req         <= 1'b1;
-	   end else begin // A to F
-                 reg_wdata <= (reg_wdata << 4) | char2hex(rx_data); 
-           end
-	end
-     end
+	   if(rx_wr == 1) begin
+	      //if(rx_data == " ") begin // Burst Write Phase
+	      if(RxMsgCnt == 0 && rx_data == 8'h20) begin // Ignore space
+	      end else if(rx_data == 8'h20) begin // Burst Write case
+	         State        <= `SEND_BWR_REQ;
+	         reg_wr       <= 1'b1; // Write request
+	         reg_req      <= 1'b1;
+             // Generate Byte enable based on lower Address bit and Number of Byte Rxd
+             // Note: One Byte will equal to two character
+             case({RxMsgCnt[3:0],reg_addr[1:0]})
+              // One Byte
+              6'b001000 :  begin reg_be <= 4'b0001; reg_wdata <= {24'h0,reg_wdata[7:0]}; end
+              6'b001001 :  begin reg_be <= 4'b0010; reg_wdata <= {16'h0,reg_wdata[7:0],8'h0}; end
+              6'b001010 :  begin reg_be <= 4'b0100; reg_wdata <= {8'h0,reg_wdata[7:0],16'h0}; end
+              6'b001011 :  begin reg_be <= 4'b1000; reg_wdata <= {reg_wdata[7:0],24'h0}; end
+
+              // Two Byte
+              6'b010000 :  begin reg_be <= 4'b0011; reg_wdata <= {16'h0,reg_wdata[15:0]}; end
+              6'b010001 :  begin reg_be <= 4'b0110; reg_wdata <= {8'h0,reg_wdata[15:0],8'h0}; end
+              6'b010010 :  begin reg_be <= 4'b1100; reg_wdata <= {reg_wdata[15:0],16'h0}; end
+              6'b010011 :  begin reg_be <= 4'b1001; reg_wdata <= 'h0; end // Invalid combination
+
+              // Three Byte
+              6'b011000 :  begin reg_be <= 4'b0111; reg_wdata <= {8'h0,reg_wdata[23:0]}; end
+              6'b011001 :  begin reg_be <= 4'b1110; reg_wdata <= {reg_wdata[23:0],8'h0}; end
+              6'b011010 :  begin reg_be <= 4'b1101; reg_wdata <= 'h0; end // Invalid combination
+              6'b011011 :  begin reg_be <= 4'b1011; reg_wdata <= 'h0; end // Invalid combination
+
+              // Four Byte
+              6'b011000 :  begin reg_be <= 4'b1111; reg_wdata <=  reg_wdata; end
+              6'b011001 :  begin reg_be <= 4'b1111; reg_wdata <= 'h0; end // Invalid combination
+              6'b011010 :  begin reg_be <= 4'b1111; reg_wdata <= 'h0; end // Invalid combination
+              6'b011011 :  begin reg_be <= 4'b1111; reg_wdata <= 'h0; end // Invalid combination
+              default   :  begin reg_be <= 4'b1111; reg_wdata <= reg_wdata; end
+
+             endcase
+	      end else if(rx_data == `BREAK_CHAR) begin // Last Write 
+	         State           <= `SEND_WR_REQ;
+	         reg_wr          <= 1'b1; // Write request
+	         reg_req         <= 1'b1;
+             // Generate Byte enable based on lower Address bit and Number of Byte Rxd
+             // Note: One Byte will equal to two character
+             case({RxMsgCnt[3:0],reg_addr[1:0]})
+              // One Byte
+              6'b001000 :  begin reg_be <= 4'b0001; reg_wdata <= {24'h0,reg_wdata[7:0]}; end
+              6'b001001 :  begin reg_be <= 4'b0010; reg_wdata <= {16'h0,reg_wdata[7:0],8'h0}; end
+              6'b001010 :  begin reg_be <= 4'b0100; reg_wdata <= {8'h0,reg_wdata[7:0],16'h0}; end
+              6'b001011 :  begin reg_be <= 4'b1000; reg_wdata <= {reg_wdata[7:0],24'h0}; end
+
+              // Two Byte
+              6'b010000 :  begin reg_be <= 4'b0011; reg_wdata <= {16'h0,reg_wdata[15:0]}; end
+              6'b010001 :  begin reg_be <= 4'b0110; reg_wdata <= {8'h0,reg_wdata[15:0],8'h0}; end
+              6'b010010 :  begin reg_be <= 4'b1100; reg_wdata <= {reg_wdata[15:0],16'h0}; end
+              6'b010011 :  begin reg_be <= 4'b1001; reg_wdata <= 'h0; end // Invalid combination
+
+              // Three Byte
+              6'b011000 :  begin reg_be <= 4'b0111; reg_wdata <= {8'h0,reg_wdata[23:0]}; end
+              6'b011001 :  begin reg_be <= 4'b1110; reg_wdata <= {reg_wdata[23:0],8'h0}; end
+              6'b011010 :  begin reg_be <= 4'b1101; reg_wdata <= 'h0; end // Invalid combination
+              6'b011011 :  begin reg_be <= 4'b1011; reg_wdata <= 'h0; end // Invalid combination
+
+              // Four Byte
+              6'b011000 :  begin reg_be <= 4'b1111; reg_wdata <=  reg_wdata; end
+              6'b011001 :  begin reg_be <= 4'b1111; reg_wdata <= 'h0; end // Invalid combination
+              6'b011010 :  begin reg_be <= 4'b1111; reg_wdata <= 'h0; end // Invalid combination
+              6'b011011 :  begin reg_be <= 4'b1111; reg_wdata <= 'h0; end // Invalid combination
+              default   :  begin reg_be <= 4'b1111; reg_wdata <= reg_wdata; end
+
+             endcase
+	      end else begin // A to F
+              reg_wdata <= (reg_wdata << 4) | char2hex(rx_data); 
+	          RxMsgCnt  <= RxMsgCnt+1;
+          end
+	   end
+    end
+
+    //----------------------------------------------
+    // Wait for each burst access to complete
+    // Assumption: Only last burst access can have partial byte and all
+    // intermediate will have 4bytes
+    //----------------------------------------------
+    `SEND_BWR_REQ: begin
+	if(reg_ack)  begin
+	   reg_req       <= 1'b0;
+       reg_addr      <= reg_addr+4; 
+       reg_wdata     <= 0;
+       reg_be        <= 0;
+       RxMsgCnt      <= 0;
+	   State         <= `WR_DATA_PHASE;
+       end
+    end
+    //----------------------------------------------
+    // Last Burst Write
+    //----------------------------------------------
     `SEND_WR_REQ: begin
 	if(reg_ack)  begin
 	   reg_req       <= 1'b0;
 	   TxMsgBuf      <= "cmd success\n>>  "; // Align to 16 character format by appending space character 
-           TxMsgSize     <= 14;
+       TxMsgSize     <= 14;
 	   tx_data_avail <= 0;
 	   State         <= `TX_MSG;
 	   NextState     <= `RX_CMD_PHASE;
        end
     end
-
+    //---------------------------------
+    // Receive Read Burst Size
+    //---------------------------------
+    `RXD_BRD_SIZE: begin
+	   if(rx_wr == 1) begin
+	      //if(rx_data == " ") begin // Ignore the Space character
+	      if(RxMsgCnt == 0 && rx_data == 8'h20) begin // Ignore space
+	      end else if(RxMsgCnt >  0 && rx_data == 8'h20) begin // Burst read case
+	         State        <= `SEND_RD_REQ;
+	         reg_wr       <= 1'b0; // Read request
+	         reg_req      <= 1'b1;
+	      end else if(rx_data == `BREAK_CHAR) begin // Error State
+	         State           <= `SEND_RD_REQ;
+	         reg_wr          <= 1'b0; // Write request
+	         reg_req         <= 1'b1;
+	      end else begin // A to F
+              burst_cnt <= (burst_cnt << 4) | char2hex(rx_data); 
+	          RxMsgCnt  <= RxMsgCnt+1;
+          end
+	   end
+     end
+    //---------------------------------
+    // Manage Each Read Response
+    //---------------------------------
     `SEND_RD_REQ: begin
-	if(reg_ack)  begin
-	   reg_req       <= 1'b0;
-	   TxMsgBuf      <= "Response:       "; // Align to 16 character format by appending space character 
-           TxMsgSize     <= 10;
-	   tx_data_avail <= 0;
-	   State         <= `TX_MSG;
-	   NextState     <= `SEND_RD_DATA;
+	   if(reg_ack)  begin
+	      reg_req       <= 1'b0;
+	      tx_data_avail <= 0;
+          if(burst_cnt > 1) begin
+             reg_addr   <= reg_addr+4;
+	         State        <= `SEND_RD_DATA; 
+	         NextState    <= `PEND_BRD_REQ;
+          end else begin
+	         State         <= `SEND_RD_DATA;
+	         NextState     <= `RX_CMD_PHASE;
+          end
        end
     end
+
+    //---------------------------------
+    // Generating Pending read Request for inter burst read cycle
+    //---------------------------------
+    `PEND_BRD_REQ: begin
+       burst_cnt  <= burst_cnt-1;
+	   reg_req    <= 1'b1;
+	   reg_wr     <= 1'b0; // Read request
+	   State      <= `SEND_RD_REQ; // Add Dummy Read cycle
+    end
+
     `SEND_RD_DATA: begin // Wait for Operation Completion
 	   TxMsgBuf[16*8-1:15*8] <= hex2char(reg_rdata[31:28]);
 	   TxMsgBuf[15*8-1:14*8] <= hex2char(reg_rdata[27:24]);
@@ -310,11 +461,14 @@ begin
 	   TxMsgBuf[11*8-1:10*8] <= hex2char(reg_rdata[11:8]);
 	   TxMsgBuf[10*8-1:9*8]  <= hex2char(reg_rdata[7:4]);
 	   TxMsgBuf[9*8-1:8*8]   <= hex2char(reg_rdata[3:0]);
-	   TxMsgBuf[8*8-1:7*8]   <= "\n";
-           TxMsgSize     <= 9;
+       if(burst_cnt == 1) begin
+	      TxMsgBuf[8*8-1:7*8]   <= "\n";
+       end else begin
+	      TxMsgBuf[8*8-1:7*8]   <= " ";
+       end
+       TxMsgSize     <= 9;
 	   tx_data_avail <= 0;
 	   State         <= `TX_MSG;
-	   NextState     <= `RX_CMD_PHASE;
      end
 
        // Send Default Message (Contd..)
@@ -324,11 +478,11 @@ begin
 	   if(TxMsgSize == 0) begin
 	      tx_data_avail <= 0;
 	      State         <= NextState;
-           end else if(tx_rd) begin
+       end else if(tx_rd) begin
    	      TxMsgBuf      <= TxMsgBuf << 8;
-              TxMsgSize     <= TxMsgSize -1;
-           end
-        end
+          TxMsgSize     <= TxMsgSize -1;
+          end
+       end
       default: begin
            State         <= `IDLE;
            NextState     <= `IDLE;

@@ -53,6 +53,9 @@
 ////    0.5 - Aug 30 2022, Dinesh A                               ////
 ////          A. System strap related changes, reset_fsm added    ////
 ////          B. rtc and usb clock moved to pinmux                ////
+////    0.6 - July 31, 2023, Dinesh A                             ////
+////          Seperated Stop bit for uart tx and rx               ////
+////          recomended setting rx = 0, tx = 1                   ////
 ////                                                              //// 
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -109,7 +112,6 @@ module wb_host (
     output  logic              cfg_strap_pad_ctrl,
 	output  logic [31:0]       system_strap      ,
 	input   logic [31:0]       strap_sticky      ,
-	input   logic [1:0]        strap_uartm       ,
 
 
     // Master Port
@@ -146,7 +148,7 @@ module wb_host (
     output logic [31:0]         cfg_clk_skew_ctrl1    ,
     output logic [31:0]         cfg_clk_skew_ctrl2    ,
 
-    input  logic [17:0]         la_data_in       ,
+    input  logic [19:0]         la_data_in       ,
 
     input  logic                uartm_rxd        ,
     output logic                uartm_txd        ,
@@ -167,6 +169,7 @@ module wb_host (
 //--------------------------------
 logic               wbm_rst_n;
 logic               wbs_rst_n;
+logic               strap_uartm;
 
 logic               reg_sel    ;
 logic [31:0]        reg_rdata  ;
@@ -279,23 +282,19 @@ wbh_reset_fsm u_reset_fsm (
 //      it has additional 1 cycle additional count,
 //      so we are subtracting desired count by 2
 // strap_uartm
-//     2'b00 - Auto Baud Detect
-//     2'b01 - 50Mhz - 324
-//     2'b10 - 4Mhz - 24
-//     2'b11 - Load from LA
+//     1'b0 - Auto Baud Detect
+//     1'b1 - Load from LA
 //-------------------------------------------------
 
+assign     strap_uartm           = system_strap[`STRAP_UARTM_CFG];
 
-wire       cfg_uartm_tx_enable   = (strap_uartm==2'b11) ? la_data_in[1]     : 1'b1;
-wire       cfg_uartm_rx_enable   = (strap_uartm==2'b11) ? la_data_in[2]     : 1'b1;
-wire       cfg_uartm_stop_bit    = (strap_uartm==2'b11) ? la_data_in[3]     : 1'b1;
-wire [1:0] cfg_uartm_cfg_pri_mod = (strap_uartm==2'b11) ? la_data_in[17:16] : 2'b0;
-
-wire [11:0]cfg_uart_baud_16x     = (strap_uartm==2'b00) ? 'h0:
-                                   (strap_uartm==2'b01) ? 324:
-                                   (strap_uartm==2'b10) ? 24: la_data_in[15:4];
-
-wire       cfg_uartm_aut_det     = (strap_uartm==2'b00) ? 1'b1: 1'b0;
+wire       cfg_uartm_tx_enable   = (strap_uartm==1'b1) ? la_data_in[1]     : 1'b1;
+wire       cfg_uartm_rx_enable   = (strap_uartm==1'b1) ? la_data_in[2]     : 1'b1;
+wire       cfg_uartm_tx_stop_bit = (strap_uartm==1'b1) ? la_data_in[3]     : 1'b1;
+wire       cfg_uartm_rx_stop_bit = (strap_uartm==1'b1) ? la_data_in[4]     : 1'b0;
+wire [1:0] cfg_uartm_cfg_pri_mod = (strap_uartm==1'b1) ? la_data_in[6:5]   : 2'b0;
+wire [11:0]cfg_uart_baud_16x     = (strap_uartm==1'b0) ? 'h0: la_data_in[19:8];
+wire       cfg_uartm_aut_det     = (strap_uartm==1'b0) ? 1'b1: 1'b0;
 
 
 
@@ -308,7 +307,8 @@ uart2wb u_uart2wb (
        .cfg_auto_det     (cfg_uartm_aut_det       ), // Auto Baud Value detect
        .cfg_tx_enable    (cfg_uartm_tx_enable     ), // Enable Transmit Path
        .cfg_rx_enable    (cfg_uartm_rx_enable     ), // Enable Received Path
-       .cfg_stop_bit     (cfg_uartm_stop_bit      ), // 0 -> 1 Start , 1 -> 2 Stop Bits
+       .cfg_tx_stop_bit  (cfg_uartm_tx_stop_bit   ), // 0 -> 1 Start , 1 -> 2 Stop Bits
+       .cfg_rx_stop_bit  (cfg_uartm_rx_stop_bit   ), // 0 -> 1 Start , 1 -> 2 Stop Bits
        .cfg_baud_16x     (cfg_uart_baud_16x       ), // 16x Baud clock generation
        .cfg_pri_mod      (cfg_uartm_cfg_pri_mod   ), // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 

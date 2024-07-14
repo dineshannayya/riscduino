@@ -43,15 +43,17 @@ reg [15:0] timeout_err_cnt;
 reg [15:0] err_cnt;
 reg        uart_rxenb; // uart rx enable
 
-reg 	   txd, read, write;
-wire	   uart_rx_clk;
-reg	   uart_clk;
-reg	   stop_err_check;
+reg 	   txd, write;
+reg	       uart_rx_clk;
+reg	       uart_tx_clk;
+reg	       stop_err_check;
 
 integer timeout_count;
 integer data_bit_number;
-reg [15:0] clk_count;
+reg [15:0] clk_tx_count;
+reg [15:0] clk_rx_count;
 reg        debug_mode;
+reg        uart_rx_phase = 0;
 
 reg      error_ind; // 1 indicate error
 
@@ -60,22 +62,43 @@ begin
     uart_rxenb = 0;
 	debug_mode = 1; // Keep in debug mode and enable display
 	txd = 1'b1;
- 	uart_clk = 0;
-	clk_count = 0;
+ 	uart_tx_clk = 0;
+ 	uart_rx_clk = 0;
+	clk_tx_count = 0;
+	clk_rx_count = 0;
 	stop_err_check = 0;
-  error_ind = 0;
+    error_ind = 0;
+    uart_rx_phase = 0;
 end
 
+// Free Running uart tx clock
 always @(posedge mclk)
 begin
-   if (clk_count == 'h0) begin
-      uart_clk  = ~uart_clk;
-      clk_count = control_setup.divisor;	
+   if (clk_tx_count == 'h0) begin
+      uart_tx_clk  = ~uart_tx_clk;
+      clk_tx_count = control_setup.divisor;	
    end else begin
-      clk_count = clk_count - 1;	
+      clk_tx_count = clk_tx_count - 1;	
    end
 end
-assign uart_rx_clk = uart_clk;
+
+// Rx clock generation
+always @(posedge mclk)
+begin
+   if(uart_rx_phase) begin
+       if (clk_rx_count == 'h0) begin
+          uart_rx_clk  = ~uart_rx_clk;
+          clk_rx_count = control_setup.divisor;	
+       end else begin
+          clk_rx_count = clk_rx_count - 1;	
+       end
+   end else begin
+       uart_rx_clk = 1;
+       clk_rx_count = 0;
+   end
+end
+
+
 
 always @(posedge mclk)
 begin
@@ -128,7 +151,7 @@ end
 task uart_init;
 begin
   uart_rxenb = 0;
-  read = 0;
+  uart_rx_phase = 0;
   write = 0;
   tx_count = 0;
   rx_count = 0;
@@ -138,7 +161,8 @@ begin
   stop_err2_cnt = 0;
   timeout_err_cnt = 0;
   err_cnt = 0;
-  clk_count = 0;
+  clk_tx_count = 0;
+  clk_rx_count = 0;
 
 end 
 endtask 
@@ -181,7 +205,10 @@ fork
     if(rxd== 1)  disable loop_2;
 
     // Now Bit Extraction Start
-	 read = 1;
+    // Align Rx Phase at center of baud clock (Around 8 cycle)
+    uart_rx_phase = 1;
+
+
 
 // data cycle
 	@(posedge uart_rx_clk);
@@ -215,7 +242,7 @@ fork
 	     end
 
 // stop cycle 2
-	if (control_setup.stop_bit_number)
+	if (control_setup.rx_stop_bit_number)
 	begin
 	      @(posedge uart_rx_clk);	// stop cycle 2
 		if (!rxd)
@@ -226,7 +253,7 @@ fork
 		  end
 	end
 
-	read = 0;
+    uart_rx_phase = 0;
 	-> uart_read_done;
 
 	if (expected_data != data)
@@ -277,7 +304,9 @@ begin
 
 // start cycle
 	@(negedge rxd) 
-	 read = 1;
+    // Align Rx Phase at center of baud clock (Around 8 cycle)
+    // Align Rx Phase at center of baud clock (Around 8 cycle)
+    uart_rx_phase = 1;
 
 // data cycle
 	@(posedge uart_rx_clk );
@@ -311,7 +340,7 @@ begin
 	     end
 
 // stop cycle 2
-	if (control_setup.stop_bit_number)
+	if (control_setup.rx_stop_bit_number)
 	begin
 	      @(posedge uart_rx_clk);	// stop cycle 2
 		if (!rxd)
@@ -322,7 +351,7 @@ begin
 		  end
 	end
 
-	read = 0;
+    uart_rx_phase = 0;
 	-> uart_read_done;
 
 //      $display ("(%m) Received Data  %c", data);
@@ -384,7 +413,9 @@ fork
     if(rxd== 1)  disable loop_2;
 
     // Now Bit Extraction Start
-	 read = 1;
+    // Align Rx Phase at center of baud clock (Around 8 cycle)
+	 uart_rx_phase = 1;
+
 
 // data cycle
 	@(posedge uart_rx_clk);
@@ -418,7 +449,7 @@ fork
 	     end
 
 // stop cycle 2
-	if (control_setup.stop_bit_number)
+	if (control_setup.rx_stop_bit_number)
 	begin
 	      @(posedge uart_rx_clk);	// stop cycle 2
 		if (!rxd)
@@ -429,7 +460,7 @@ fork
 		  end
 	end
 
-	read = 0;
+	uart_rx_phase = 0;
 	-> uart_read_done;
 
 	rxd_data = data;
@@ -467,7 +498,9 @@ fork
 
 // start cycle
 	@(negedge rxd) 
-	 read = 1;
+    // Align Rx Phase at center of baud clock (Around 8 cycle)
+	 uart_rx_phase = 1;
+
 
 // data cycle
 	@(posedge uart_rx_clk);
@@ -501,7 +534,7 @@ fork
 	     end
 
 // stop cycle 2
-	if (control_setup.stop_bit_number)
+	if (control_setup.rx_stop_bit_number)
 	begin
 	      @(posedge uart_rx_clk);	// stop cycle 2
 		if (!rxd)
@@ -512,7 +545,7 @@ fork
 		  end
 	end
 
-	read = 0;
+	uart_rx_phase = 0;
 	-> uart_read_done;
 
 	rxd_data = data;
@@ -535,7 +568,7 @@ begin
 	parity =  #1 1;
 
 // start cycle
-	@(posedge uart_clk)
+	@(posedge uart_tx_clk)
 	 begin
 		txd = #1 0;
 		write = #1 1;
@@ -545,7 +578,7 @@ begin
 	begin
 	   for (i = 0; i < data_bit_number; i = i + 1)
 	   begin
-		@(posedge uart_clk)
+		@(posedge uart_tx_clk)
 		    txd = #1 data[i];
 		parity = parity ^ data[i];
 	   end
@@ -554,25 +587,23 @@ begin
 // parity cycle
 	if (control_setup.parity_en)
 	begin
-		@(posedge uart_clk)
+		@(posedge uart_tx_clk)
 			txd = #1 
 //				control_setup.stick_parity ? ~control_setup.even_odd_parity : 
 				control_setup.even_odd_parity ? !parity : parity;
 	end
 
 // stop cycle 1
-	@(posedge uart_clk)
+	@(posedge uart_tx_clk)
 		txd = #1 stop_err_check ? 0 : 1;
 
 // stop cycle 2
-	@(posedge uart_clk);
+	if (control_setup.tx_stop_bit_number) begin
+	    @(posedge uart_tx_clk);
 		txd = #1 1;
-	if (data_bit_number == 5)
-		@(negedge uart_clk);
-	else if (control_setup.stop_bit_number)
-		@(posedge uart_clk);
+    end
 
-	write = #1 0;
+	write = 0;
 	if(debug_mode)
 	   $display ("%m:... Write data %h to UART done cnt : %d ...\n", data,tx_count+1);
         else
@@ -585,7 +616,8 @@ endtask
 ////////////////////////////////////////////////////////////////////////////////
 task control_setup;
 input	  [1:0] data_bit_set;	
-input		stop_bit_number;
+input		tx_stop_bit_number;
+input		rx_stop_bit_number;
 input		parity_en;
 input		even_odd_parity;
 input		stick_parity;
@@ -593,7 +625,8 @@ input	 [15:0] maxtime;
 input	 [15:0] divisor;
 
 begin
-        clk_count = divisor;	
+    clk_tx_count = divisor;	
+    clk_rx_count = divisor;	
 	data_bit_number = data_bit_set + 5;
 end
 endtask
@@ -606,7 +639,8 @@ output 	[15:0] tx_nu;
 begin
 	$display ("-------------------- UART Reporting Configuration --------------------");
 	$display ("	Data bit number setting is : %0d", data_bit_number);
-	$display ("	Stop bit number setting is : %0d", control_setup.stop_bit_number + 1);
+	$display ("	Tx Stop bit number setting is : %0d", control_setup.tx_stop_bit_number + 1);
+	$display ("	Rx Stop bit number setting is : %0d", control_setup.rx_stop_bit_number + 1);
 	$display ("	Divisor of Uart clock   is : %0d", control_setup.divisor);
 	if (control_setup.parity_en) 
 	$display ("	Parity is enable");

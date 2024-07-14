@@ -169,7 +169,7 @@ parameter real XTAL_PERIOD = 6;
 
 	    tb_uart.debug_mode = 0; // disable debug display
         tb_uart.uart_init;
-        tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+        tb_uart.control_setup (uart_data_bit, uart_stop_bits,uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                        uart_stick_parity, uart_timeout, uart_divisor);
 
          u_i2c_slave_0.debug = 1; // disable i2c bfm debug message

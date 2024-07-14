@@ -108,7 +108,6 @@ module pinmux_top (
                         input  logic           cfg_strap_pad_ctrl     ,
 	                    input  logic [31:0]    system_strap           ,
 	                    output logic [31:0]    strap_sticky           ,
-                        output logic [1:0]     strap_uartm            ,
 
                         input logic            user_clock1            ,
                         input logic            user_clock2            ,
@@ -380,7 +379,6 @@ glbl_reg u_glbl_reg(
           .pad_strap_in                 (pad_strap_in            ),
           .system_strap                 (system_strap            ),
           .strap_sticky                 (strap_sticky            ),
-          .strap_uartm                  (strap_uartm             ),
 
           .user_clock1                  (user_clock1             ),
           .user_clock2                  (user_clock2             ),

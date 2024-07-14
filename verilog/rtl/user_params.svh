@@ -2,16 +2,16 @@
 `define USER_PARMS
 
 // ASCI Representation of RDS0 - RiscDuino S0 = 32'h52445330
-parameter CHIP_SIGNATURE = 32'h5244_4430;
+parameter CHIP_SIGNATURE = 32'h5244_5330;
 // Software Reg-1, Release date: <DAY><MONTH><YEAR>
-parameter CHIP_RELEASE_DATE = 32'h1406_2023;
+parameter CHIP_RELEASE_DATE = 32'h0210_2023;
 // Software Reg-2: Poject Revison 5.1 = 0005200
-parameter CHIP_REVISION   = 32'h0006_1200;
+parameter CHIP_REVISION   = 32'h0006_1500;
 
 parameter CLK_SKEW1_RESET_VAL = 32'b0110_0000_0011_0110_0101_1000_1101_1100;
 parameter CLK_SKEW2_RESET_VAL = 32'b0010_1000_1000_1000_0111_0110_1011_1101;
 
-parameter PSTRAP_DEFAULT_VALUE = 15'b000_0011_1010_0000;
+parameter PSTRAP_DEFAULT_VALUE = 11'b011_1010_0000;
 
 /*****************************************************
 pad_strap_in decoding
@@ -25,7 +25,9 @@ pad_strap_in decoding
                  01 - 2 Div       
                  10 - 4 Div
                  11 - 8 Div
-     bit [4]   - Reserved
+     bit [4]   - uart master config control
+                 1'b0   - Auto Detect (Default)
+                 1'b1   - load from LA
      bit [5]   - QSPI SRAM Mode Selection
                  1'b0 - Single    
                  1'b1 - Quad      (Default)
@@ -43,18 +45,7 @@ pad_strap_in decoding
      bit [10]  - Riscv SRAM clock edge selection
                  0 - Normal      (Default)
                  1 - Invert        
-     bit [12:11] - Skew selection
-                 2'b00 - Default value  (Default)
-                 2'b01 - Default value + 2               
-                 2'b10 - Default value + 4               
-                 2'b11 - Default value - 4 
-     bit [14:13]   - uart master config control
-                 2'b00   - Auto Detect (Default)
-                 2'b01   - constant value based on system clock-50Mhz
-                 2'b10   - constant value based on system clock-4Mhz 
-                 2'b11   - load from LA
-
-     bit[15]   - Strap Mode
+     bit[11]   - Strap Mode
                 0 - [14:0] loaded from pad
                 1 - Default reset value loaded
                     PSTRAP_DEFAULT_VALUE
@@ -68,10 +59,7 @@ pad_strap_in decoding
 `define PSTRAP_RISCV_RESET_MODE    8
 `define PSTRAP_RISCV_CACHE_BYPASS  9
 `define PSTRAP_RISCV_SRAM_CLK_EDGE 10
-`define PSTRAP_CLK_SKEW            12:11
-`define PSTRAP_UARTM_CFG           14:13
-
-`define PSTRAP_DEFAULT_VALUE       15
+`define PSTRAP_DEFAULT_VALUE       11
 
 /************************************************************
 system strap decoding
@@ -96,8 +84,8 @@ system strap decoding
                  10 - 4 Div
                  11 - 8 Div
      bit [8]   - uart master config control
-                 0   - load from LA
-                 1   - constant value based on system clock selection
+                 0   - Auto value based on system clock selection
+                 1   - load from LA
      bit [9]   - QSPI SRAM Mode Selection CS#2
                  1'b0 - Single
                  1'b1 - Quad
@@ -115,15 +103,7 @@ system strap decoding
      bit [14]  - Riscv SRAM clock edge selection
                  0 - Normal
                  1 - Invert
-
-     bit [15]    -  Soft Reboot Request
-     bit [17:16] -  cfg_cska_wi Skew selection      
-     bit [19:18] -  cfg_cska_wh Skew selection        
-     bit [21:20] -  cfg_cska_riscv Skew selection      
-     bit [23:22] -  cfg_cska_qspi  Skew selection      
-     bit [25:24] -  cfg_cska_uart  Skew selection       
-     bit [27:26] -  cfg_cska_pinmux Skew selection     
-     bit [29:28] -  cfg_cska_qspi_co Skew selection    
+     bit [15]  -  Soft Reboot Request
 
 
 ********************************************************/
@@ -139,13 +119,6 @@ system strap decoding
 `define STRAP_RISCV_CACHE_BYPASS   13
 `define STRAP_RISCV_SRAM_CLK_EDGE  14
 `define STRAP_QSPI_PRE_SRAM        15      // Previous SRAM Strap Status
-`define STRAP_SCLK_SKEW_WI          17:16
-`define STRAP_SCLK_SKEW_WH          19:18
-`define STRAP_SCLK_SKEW_RISCV       21:20
-`define STRAP_SCLK_SKEW_QSPI        23:22
-`define STRAP_SCLK_SKEW_UART        25:24
-`define STRAP_SCLK_SKEW_PINMUX      27:26
-`define STRAP_SCLK_SKEW_QSPI_CO     29:28
 `define STRAP_QSPI_INIT_BYPASS     30
 `define STRAP_SOFT_REBOOT_REQ      31
 

@@ -117,7 +117,7 @@ parameter real XTAL_PERIOD = 6;
 	`ifdef WFDUMP
 	   initial begin
 	   	$dumpfile("simx.vcd");
-	   	$dumpvars(1, `TB_TOP);
+	   	$dumpvars(0, `TB_TOP);
 	   	$dumpvars(0, `TB_TOP.tb_uart);
 	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.i_core_top_0);
 	   	//$dumpvars(0, `TB_TOP.u_top.u_riscv_top.u_connect);
@@ -170,7 +170,7 @@ parameter real XTAL_PERIOD = 6;
 
 	    tb_uart.debug_mode = 0; // disable debug display
         tb_uart.uart_init;
-        tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+        tb_uart.control_setup (uart_data_bit, uart_stop_bits,uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                        uart_stick_parity, uart_timeout, uart_divisor);
 
         u_i2c_slave_0.debug = 0; // disable i2c bfm debug message

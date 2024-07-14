@@ -198,42 +198,9 @@ generic_register #(16,16'h1000 ) u_bank_sel (
 // reg-2: clock skew control-1
 //----------------------------------------------
 
-wire [31:0] rst_clk_ctrl1;
-
-assign rst_clk_ctrl1[3:0]   = (strap_sticky[`STRAP_SCLK_SKEW_WI] == 2'b00) ? CLK_SKEW1_RESET_VAL[3:0] :
-                              (strap_sticky[`STRAP_SCLK_SKEW_WI] == 2'b01) ? CLK_SKEW1_RESET_VAL[3:0] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_WI] == 2'b10) ? CLK_SKEW1_RESET_VAL[3:0] + 4 : CLK_SKEW1_RESET_VAL[3:0]-4;
-
-assign rst_clk_ctrl1[7:4]   = (strap_sticky[`STRAP_SCLK_SKEW_WH] == 2'b00) ? CLK_SKEW1_RESET_VAL[7:4]  :
-                              (strap_sticky[`STRAP_SCLK_SKEW_WH] == 2'b01) ? CLK_SKEW1_RESET_VAL[7:4] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_WH] == 2'b10) ? CLK_SKEW1_RESET_VAL[7:4] + 4 : CLK_SKEW1_RESET_VAL[7:4]-4;
-
-assign rst_clk_ctrl1[11:8]  = (strap_sticky[`STRAP_SCLK_SKEW_RISCV] == 2'b00) ?  CLK_SKEW1_RESET_VAL[11:8]  :
-                              (strap_sticky[`STRAP_SCLK_SKEW_RISCV] == 2'b01) ?  CLK_SKEW1_RESET_VAL[11:8] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_RISCV] == 2'b10) ?  CLK_SKEW1_RESET_VAL[11:8] + 4 : CLK_SKEW1_RESET_VAL[11:8]-4;
-
-assign rst_clk_ctrl1[15:12] = (strap_sticky[`STRAP_SCLK_SKEW_QSPI] == 2'b00) ?  CLK_SKEW1_RESET_VAL[15:12]  :
-                              (strap_sticky[`STRAP_SCLK_SKEW_QSPI] == 2'b01) ?  CLK_SKEW1_RESET_VAL[15:12] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_QSPI] == 2'b10) ?  CLK_SKEW1_RESET_VAL[15:12] + 4 : CLK_SKEW1_RESET_VAL[15:12]-4;
-
-assign rst_clk_ctrl1[19:16] = (strap_sticky[`STRAP_SCLK_SKEW_UART] == 2'b00) ?  CLK_SKEW1_RESET_VAL[19:16]  :
-                              (strap_sticky[`STRAP_SCLK_SKEW_UART] == 2'b01) ?  CLK_SKEW1_RESET_VAL[19:16] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_UART] == 2'b10) ?  CLK_SKEW1_RESET_VAL[19:16] + 4 : CLK_SKEW1_RESET_VAL[19:16]-4;
-
-assign rst_clk_ctrl1[23:20] = (strap_sticky[`STRAP_SCLK_SKEW_PINMUX] == 2'b00) ?  CLK_SKEW1_RESET_VAL[23:20]  :
-                              (strap_sticky[`STRAP_SCLK_SKEW_PINMUX] == 2'b01) ?  CLK_SKEW1_RESET_VAL[23:20] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_PINMUX] == 2'b10) ?  CLK_SKEW1_RESET_VAL[23:20] + 4 : CLK_SKEW1_RESET_VAL[23:20]-4;
-
-assign rst_clk_ctrl1[27:24] = (strap_sticky[`STRAP_SCLK_SKEW_QSPI_CO] == 2'b00) ?  CLK_SKEW1_RESET_VAL[27:24] :
-                              (strap_sticky[`STRAP_SCLK_SKEW_QSPI_CO] == 2'b01) ?  CLK_SKEW1_RESET_VAL[27:24] + 2 :
-                              (strap_sticky[`STRAP_SCLK_SKEW_QSPI_CO] == 2'b10) ?  CLK_SKEW1_RESET_VAL[27:24] + 4 : CLK_SKEW1_RESET_VAL[27:24]-4;
-
-assign rst_clk_ctrl1[31:28] = CLK_SKEW1_RESET_VAL[31:28];
-
-
-always @ (posedge mclk ) begin 
+always @ (posedge mclk or negedge p_reset_n) begin 
   if (p_reset_n == 1'b0) begin
-     cfg_clk_skew_ctrl1  <= rst_clk_ctrl1 ;
+     cfg_clk_skew_ctrl1  <= CLK_SKEW1_RESET_VAL ;
   end
   else begin 
      if(sw_wr_en_2 ) 
@@ -247,11 +214,10 @@ end
 //     we have not given any strap control for it.
 //----------------------------------------------
 
-always @ (posedge mclk ) begin 
+always @ (posedge mclk or negedge p_reset_n ) begin 
   if (p_reset_n == 1'b0) begin
      cfg_clk_skew_ctrl2  <= CLK_SKEW2_RESET_VAL ;
-  end
-  else begin 
+  end else begin 
      if(sw_wr_en_3 ) 
        cfg_clk_skew_ctrl2   <= reg_wdata[31:0];
   end
@@ -342,9 +308,5 @@ clk_div8 u_cpuclk (
        .mclk          (cpu_ref_clk            ),
        .reset_n       (p_reset_n              )
    );
-
-
-
-
 
 endmodule

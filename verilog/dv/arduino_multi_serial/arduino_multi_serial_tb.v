@@ -165,12 +165,12 @@ parameter real XTAL_PERIOD = 6;
 
 	            tb_uart0.debug_mode = 1; // enable debug display
                 tb_uart0.uart_init;
-                tb_uart0.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+                tb_uart0.control_setup (uart_data_bit, uart_stop_bits,uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                                uart_stick_parity, uart_timeout, uart_divisor);
 	        
 		        tb_uart1.debug_mode = 1; // enable debug display
                 tb_uart1.uart_init;
-                tb_uart1.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+                tb_uart1.control_setup (uart_data_bit, uart_stop_bits,uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                                uart_stick_parity, uart_timeout, uart_divisor);
 
                 repeat (10000) @(posedge clock);  // wait for Processor Get Ready

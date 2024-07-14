@@ -143,8 +143,8 @@ always @(negedge reset_n or posedge baud_clk_16x) begin
       case(rxstate)
        idle_st   : begin
             fifo_wr <= 0;
-            if(!si) begin // Start indication
-               if(fifo_aval && cfg_rx_enable) begin
+            if(!si && cfg_rx_enable) begin // Start indication
+               if(fifo_aval) begin
                  rxstate   <=   xfr_start;
                  cnt       <=   0;
                  rxpos     <=   offset + 8; // Assign center rxoffset

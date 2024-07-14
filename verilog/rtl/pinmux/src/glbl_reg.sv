@@ -62,7 +62,6 @@ module glbl_reg (
                        // to/from Global Reset FSM
 	                    input  logic [31:0]    system_strap           ,
 	                    output logic [31:0]    strap_sticky           ,
-	                    output logic [1:0]     strap_uartm            ,
                        
 
                        // Global Reset control
@@ -538,8 +537,7 @@ strap_ctrl u_strap (
 	      
 	      //List of Outs
            .strap_latch         (strap_latch ),
-	       .strap_sticky        (strap_sticky),
-	       .strap_uartm         (strap_uartm) 
+	       .strap_sticky        (strap_sticky)
          );
 
 

@@ -13,8 +13,9 @@
 // IPIC
 #define IRQ_LINES_MASK              0x1002000C      // Interrupt Mask
 #define IRQ_LINES_ADDR              0x10020010      // simulation
-#define TRIG_EXT_IRQ_ADDR           0x10020010      // external irq is triggered when tb memory is set to non-zero // Bit [15:0]
-#define TRIG_SW_IRQ_ADDR            0x10020010      // software irq is triggered when tb memory is set to non-zero // Bit [16]
+#define TRIG_SET_EXT_IRQ_ADDR       0x10020028      // set external irq 
+#define TRIG_CLR_EXT_IRQ_ADDR       0x10020010      // clear external irq 
+#define TRIG_SW_IRQ_ADDR            0x10020008      // software irq is triggered when tb memory is set to non-zero // Bit [16]
 
 #define IPIC_EOI                    0xBF4           // end of interrupt
 #define IPIC_SOI                    0xBF5           // start of interrupt
@@ -166,7 +167,7 @@ test_start:
     #endif
     li                  t0, MEIE
     csrs                mie, t0                        // enable external interrupt 
-    li                  t0, TRIG_EXT_IRQ_ADDR
+    li                  t0, TRIG_SET_EXT_IRQ_ADDR
     #ifdef IPIC_ENABLED          
         li                  t1, (1 << IPIC_IRQ_LINE7)
     #else
@@ -182,7 +183,7 @@ test_start:
     /// configuring software interrupt /// 
     csrw                mie, zero                      // disable all interrupts
     li                  t0, TRIG_SW_IRQ_ADDR
-    li                  t1, 0x00010000                 // Soft ireq bit [16] 
+    li                  t1, 0x00000008                 // Soft ireq bit [3] 
     sw                  t1, (t0)                       //send command to generate software interrupt 
     li                  t0, MSIE
     csrs                mie, t0                        // enable software interrupt 
@@ -249,8 +250,8 @@ vec_machine_ext_handler:
     li                  t0, MEIE
     csrc                mie, t0             // disable software interrupt 
 
-    li              t0, TRIG_EXT_IRQ_ADDR
-    li              t1, EXT_IRQ_LINE_COMMON         
+    li              t0, TRIG_CLR_EXT_IRQ_ADDR
+    li              t1, (1 << IPIC_IRQ_LINE7)
     sh              t1, (t0)                // send command to disable external interrupt 
      
     csrr            t1, mip

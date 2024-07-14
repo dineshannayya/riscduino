@@ -4,13 +4,12 @@
 wire  [15:0]    strap_in;
 assign strap_in[`PSTRAP_CLK_SRC] = 2'b00;            // System Clock Source wbs/riscv: User clock1
 assign strap_in[`PSTRAP_CLK_DIV] = 2'b00;            // Clock Division for wbs/riscv : 0 Div
-assign strap_in[`PSTRAP_UARTM_CFG] = 2'b0;           // uart master config control -  constant value based on system clock selection
+assign strap_in[`PSTRAP_UARTM_CFG] = 1'b0;           // uart master config control -  constant value based on system clock selection
 assign strap_in[`PSTRAP_QSPI_SRAM] = 1'b1;           // QSPI SRAM Mode Selection - Quad 
 assign strap_in[`PSTRAP_QSPI_FLASH] = 2'b10;         // QSPI Fash Mode Selection - Quad
 assign strap_in[`PSTRAP_RISCV_RESET_MODE] = 1'b1;    // Riscv Reset control - Removed Riscv on Power On Reset
 assign strap_in[`PSTRAP_RISCV_CACHE_BYPASS] = 1'b0;  // Riscv Cache Bypass: 0 - Cache Enable
 assign strap_in[`PSTRAP_RISCV_SRAM_CLK_EDGE] = 1'b0; // Riscv SRAM clock edge selection: 0 - Normal
-assign strap_in[`PSTRAP_CLK_SKEW] = 2'b00;           // Skew selection 2'b00 - Default value
 
 assign strap_in[`PSTRAP_DEFAULT_VALUE] = 1'b0;       // 0 - Normal
 parameter bit  [15:0] PAD_STRAP = (2'b00 << `PSTRAP_CLK_SRC             ) |
@@ -207,8 +206,18 @@ begin
    //#1 - Apply Reset
    rst_init = 1; 
    //#2 - Apply Strap
-   force u_top.io_in[36:29] = strap[15:8];
-   force u_top.io_in[20:13] = strap[7:0];
+   force u_top.io_in[37] = strap[11];
+   force u_top.io_in[32] = strap[10];
+   force u_top.io_in[31] = strap[9];
+   force u_top.io_in[30] = strap[8];
+   force u_top.io_in[29] = strap[7];
+   force u_top.io_in[28] = strap[6];
+   force u_top.io_in[21] = strap[5];
+   force u_top.io_in[18] = strap[4];
+   force u_top.io_in[17] = strap[3];
+   force u_top.io_in[13] = strap[2];
+   force u_top.io_in[10] = strap[1];
+   force u_top.io_in[7]  = strap[0];
    repeat (10) @(posedge clock);
     
    //#3 - Remove Reset
@@ -218,8 +227,18 @@ begin
    wait(u_top.p_reset_n == 1);          
 
    // #5 - Release the Strap
-   release u_top.io_in[36:29];
-   release u_top.io_in[20:13];
+   release u_top.io_in[37] ;
+   release u_top.io_in[32] ;
+   release u_top.io_in[31] ;
+   release u_top.io_in[30] ;
+   release u_top.io_in[29] ;
+   release u_top.io_in[28] ;
+   release u_top.io_in[21] ;
+   release u_top.io_in[18] ;
+   release u_top.io_in[17] ;
+   release u_top.io_in[13] ;
+   release u_top.io_in[10] ;
+   release u_top.io_in[7]  ;
 
    // #6 - Wait for system reset removal
    wait(u_top.s_reset_n == 1);          // Wait for system reset removal
@@ -234,29 +253,97 @@ endtask
 //---------------------------------------------------------
 genvar gCnt;
 generate
- for(gCnt=0; gCnt<16; gCnt++) begin : g_strap
-    if(gCnt < 8) begin
-       if(PAD_STRAP[gCnt]) begin
-           pullup(io_in[13+gCnt]); 
-       end else begin
-           pulldown(io_in[13+gCnt]); 
-       end
+    if(PAD_STRAP[0]) begin
+        pullup(io_in[7]); 
     end else begin
-       if(PAD_STRAP[gCnt]) begin
-           pullup(io_in[29+gCnt-8]); 
-       end else begin
-           pulldown(io_in[29+gCnt-8]); 
-       end
+        pulldown(io_in[7]); 
     end
- end 
- // Add Non Strap with pull-up to avoid unkown propagation during gate sim 
- for(gCnt=0; gCnt<13; gCnt++) begin : g_nostrap1
-    pullup(io_in[gCnt]); 
- end 
- for(gCnt=21; gCnt<29; gCnt++) begin : g_nostrap2
-    pullup(io_in[gCnt]); 
- end 
+
+    if(PAD_STRAP[1]) begin
+        pullup(io_in[10]); 
+    end else begin
+        pulldown(io_in[10]); 
+    end
+    if(PAD_STRAP[2]) begin
+        pullup(io_in[13]); 
+    end else begin
+        pulldown(io_in[13]); 
+    end
+    if(PAD_STRAP[3]) begin
+        pullup(io_in[17]); 
+    end else begin
+        pulldown(io_in[17]); 
+    end
+    if(PAD_STRAP[4]) begin
+        pullup(io_in[18]); 
+    end else begin
+        pulldown(io_in[18]); 
+    end
+    if(PAD_STRAP[5]) begin
+        pullup(io_in[21]); 
+    end else begin
+        pulldown(io_in[21]); 
+    end
+    if(PAD_STRAP[6]) begin
+        pullup(io_in[28]); 
+    end else begin
+        pulldown(io_in[28]); 
+    end
+    if(PAD_STRAP[7]) begin
+        pullup(io_in[29]); 
+    end else begin
+        pulldown(io_in[29]); 
+    end
+    if(PAD_STRAP[8]) begin
+        pullup(io_in[30]); 
+    end else begin
+        pulldown(io_in[30]); 
+    end
+    if(PAD_STRAP[9]) begin
+        pullup(io_in[31]); 
+    end else begin
+        pulldown(io_in[31]); 
+    end
+    if(PAD_STRAP[10]) begin
+        pullup(io_in[32]); 
+    end else begin
+        pulldown(io_in[32]); 
+    end
+    if(PAD_STRAP[11]) begin
+        pullup(io_in[37]); 
+    end else begin
+        pulldown(io_in[37]); 
+    end
 endgenerate
+
+ // Add Non Strap with pull-up to avoid unkown propagation during gate sim 
+ pullup(io_in[0]); 
+ pullup(io_in[1]); 
+ pullup(io_in[2]); 
+ pullup(io_in[3]); 
+ pullup(io_in[4]); 
+ pullup(io_in[5]); 
+ pullup(io_in[6]); 
+ pullup(io_in[8]); 
+ pullup(io_in[9]); 
+ pullup(io_in[11]); 
+ pullup(io_in[12]); 
+ pullup(io_in[14]); 
+ pullup(io_in[15]); 
+ pullup(io_in[16]); 
+ pullup(io_in[6]); 
+ pullup(io_in[19]); 
+ pullup(io_in[20]); 
+ pullup(io_in[22]); 
+ pullup(io_in[23]); 
+ pullup(io_in[24]); 
+ pullup(io_in[25]); 
+ pullup(io_in[26]); 
+ pullup(io_in[27]); 
+ pullup(io_in[33]); 
+ pullup(io_in[34]); 
+ pullup(io_in[35]); 
+ pullup(io_in[36]); 
 
 `ifdef RISC_BOOT // RISCV Based Test case
 //-------------------------------------------

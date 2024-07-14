@@ -27,7 +27,7 @@ DESIGNS?=../../..
 TOOLS?=/opt/riscv32i/
 
 export USER_PROJECT_VERILOG ?=  $(DESIGNS)/verilog
-export RISCDUINO_BOARD ?=  $(USER_PROJECT_VERILOG)/dv/common/riscduino_firmware/custom_board/riscduino
+export RISCDUINO_BOARD ?=  $(USER_PROJECT_VERILOG)/dv/common/riscduino_firmware/custom_board/arduino
 ## YIFIVE FIRMWARE
 YIFIVE_FIRMWARE_PATH = $(USER_PROJECT_VERILOG)/dv/common/firmware
 GCC_PREFIX?=riscv32-unknown-elf
@@ -52,7 +52,7 @@ all:  ${PATTERN:=.vcd}
 vvp:  ${PATTERN:=.vvp}
 
 %.vvp: %_tb.v
-	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${PATTERN}.ino.cpp -o ${PATTERN}.ino.cpp.o
+	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard -I${RISCDUINO_BOARD}/libraries/WS281X/src ${PATTERN}.ino.cpp -o ${PATTERN}.ino.cpp.o
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/Print.cpp -o Print.cpp.o
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/WMath.cpp -o WMath.cpp.o
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/WString.cpp -o WString.cpp.o
@@ -75,6 +75,8 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-gcc -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -Wall -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/wiring_digital.c -o wiring_digital.c.o
 	${GCC_PREFIX}-g++ -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/wiring_pulse.cpp -o wiring_pulse.cpp.o
 	${GCC_PREFIX}-gcc -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -Wall -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/wiring_shift.c -o wiring_shift.c.o
+	${GCC_PREFIX}-gcc -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -Wall -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard ${RISCDUINO_BOARD}/cores/riscduino/TIMERClass.cpp -o TIMERClass.cpp.o
+	${GCC_PREFIX}-gcc -c -O2 -march=rv32imac -fpeel-loops -ffreestanding -ffunction-sections -fdata-sections -Wall -I${RISCDUINO_BOARD}/system/include -I${RISCDUINO_BOARD}/sdk/bsp/include -I${RISCDUINO_BOARD}/sdk/bsp/env -I${RISCDUINO_BOARD}/sdk/bsp/drivers -I${RISCDUINO_BOARD}/sdk/bsp/env/uncache -include sys/cdefs.h -g -DARDUINO=10607 -DF_CPU=50000000LL -DRISCDUINO_SOC=122023 -I${RISCDUINO_BOARD}/cores/riscduino -I${RISCDUINO_BOARD}/variants/standard -I${RISCDUINO_BOARD}/libraries/WS281X/src ${RISCDUINO_BOARD}/libraries/WS281X/src/WS281X.cpp -o WS281X.cpp.o
 	${GCC_PREFIX}-ar rcs core.a Print.cpp.o
 	${GCC_PREFIX}-ar rcs core.a UARTClass.cpp.o
 	${GCC_PREFIX}-ar rcs core.a TIMERClass.cpp.o
@@ -99,6 +101,8 @@ vvp:  ${PATTERN:=.vvp}
 	${GCC_PREFIX}-ar rcs core.a wiring_digital.c.o
 	${GCC_PREFIX}-ar rcs core.a wiring_pulse.cpp.o
 	${GCC_PREFIX}-ar rcs core.a wiring_shift.c.o
+	${GCC_PREFIX}-ar rcs core.a TIMERClass.cpp.o
+	${GCC_PREFIX}-ar rcs core.a WS281X.cpp.o
 	${GCC_PREFIX}-g++ -T ${RISCDUINO_BOARD}/sdk/bsp/env/uncache/link.lds -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk ${PATTERN}.ino.cpp.o -nostdlib -Wl,--start-group core.a -lm -lstdc++ -lc -lgloss -Wl,--end-group -lgcc -o ${PATTERN}.elf
 	${GCC_PREFIX}-objcopy -R .rel.dyn -O binary ${PATTERN}.elf ${PATTERN}.bin
 	${GCC_PREFIX}-objcopy -R .rel.dyn -O verilog ${PATTERN}.elf ${PATTERN}.hex

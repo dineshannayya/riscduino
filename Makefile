@@ -110,7 +110,7 @@ install:
 # Install DV setup
 .PHONY: simenv
 simenv:
-	docker pull riscduino/dv_setup:mpw7
+	docker pull riscduino/dv_setup:latest
 
 .PHONY: setup
 setup: install check-env install_mcw openlane pdk-with-volare setup-timing-scripts
@@ -132,7 +132,7 @@ $(DV_PATTERNS): verify-% : ./verilog/dv/%  check-coremark_repo check-riscv_comp_
 		-e TOOLS=/opt/riscv32i \
 		-e DESIGNS=$(TARGET_PATH) \
 		-e GCC_PREFIX=riscv32-unknown-elf \
-		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:mpw7 \
+		-u $$(id -u $$USER):$$(id -g $$USER) riscduino/dv_setup:latest \
 		sh -c $(verify_command)
 
 

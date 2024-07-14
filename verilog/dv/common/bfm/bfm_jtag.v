@@ -10,7 +10,7 @@
 module bfm_jtag
 #(	parameter DEBUG_INFO = 0,
 	parameter TP = 1,
-	parameter TCK_HALF_PERIOD = 50, // Clock half period (Clock period = 100 ns => 10 MHz)
+	parameter TCK_HALF_PERIOD = 100, // Clock half period (Clock period = 200 ns => 5 MHz)
 	parameter  CMD_DELAY = 1000
 )
 (

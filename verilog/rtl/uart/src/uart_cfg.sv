@@ -96,7 +96,8 @@ module uart_cfg (
        // configuration
              cfg_tx_enable,
              cfg_rx_enable,
-             cfg_stop_bit ,
+             cfg_tx_stop_bit ,
+             cfg_rx_stop_bit ,
              cfg_pri_mod  ,
              cfg_baud_16x ,
 
@@ -132,7 +133,8 @@ input [7:0]      rx_fifo_data;
 //----------------------------------
 output           cfg_tx_enable       ; // Tx Enable
 output           cfg_rx_enable       ; // Rx Enable
-output           cfg_stop_bit        ; // 0 -> 1 Stop, 1 -> 2 Stop
+output           cfg_tx_stop_bit        ; // 0 -> 1 Stop, 1 -> 2 Stop
+output           cfg_rx_stop_bit        ; // 0 -> 1 Stop, 1 -> 2 Stop
 output [1:0]     cfg_pri_mod         ; // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 output [11:0]    cfg_baud_16x        ; // 16x Baud clock config
 
@@ -292,24 +294,25 @@ end
 //-----------------------------------------------------------------------
 // Logic for Register 0 : uart Control Register
 //-----------------------------------------------------------------------
-wire [1:0]   cfg_pri_mod     = reg_0[4:3]; // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
-wire         cfg_stop_bit    = reg_0[2];   // 0 -> 1 Stop, 1 -> 2 Stop
+wire [1:0]   cfg_pri_mod     = reg_0[5:4]; // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
+wire         cfg_rx_stop_bit = reg_0[3];   // Rx Stop Bit: 0 -> 1 Stop, 1 -> 2 Stop
+wire         cfg_tx_stop_bit = reg_0[2];   // Tx Stop Bit 0 -> 1 Stop, 1 -> 2 Stop
 wire         cfg_rx_enable   = reg_0[1];   // Rx Enable
 wire         cfg_tx_enable   = reg_0[0];   // Tx Enable
 
-generic_register #(5,0  ) u_uart_ctrl_be0 (
-	      .we            ({5{sw_wr_en_0 & 
+generic_register #(6,0  ) u_uart_ctrl_be0 (
+	      .we            ({6{sw_wr_en_0 & 
                                  wr_be   }}  ),		 
-	      .data_in       (reg_wdata[4:0]    ),
+	      .data_in       (reg_wdata[5:0]    ),
 	      .reset_n       (reset_n           ),
 	      .clk           (mclk              ),
 	      
 	      //List of Outs
-	      .data_out      (reg_0[4:0]        )
+	      .data_out      (reg_0[5:0]        )
           );
 
 
-assign reg_0[7:5] = 3'h0;
+assign reg_0[7:6] = 2'h0;
 
 //-----------------------------------------------------------------------
 // Logic for Register 1 : uart interrupt status

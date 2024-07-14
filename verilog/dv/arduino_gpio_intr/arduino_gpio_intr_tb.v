@@ -257,7 +257,7 @@ assign  {
 
 	    tb_uart.debug_mode = 0; // disable debug display
         tb_uart.uart_init;
-        tb_uart.control_setup (uart_data_bit, uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
+        tb_uart.control_setup (uart_data_bit, uart_stop_bits,uart_stop_bits, uart_parity_en, uart_even_odd_parity, 
                                        uart_stick_parity, uart_timeout, uart_divisor);
 
         repeat (40000) @(posedge clock);  // wait for Processor Get Ready
@@ -320,8 +320,8 @@ assign  {
            // Check 
            // if all the 102 byte received
            // if no error 
-           if(uart_rx_nu != 1063) test_fail = 1;
-           if(check_sum != 32'h143de) test_fail = 1;
+           if(uart_rx_nu != 1062) test_fail = 1;
+           if(check_sum != 32'h143b1) test_fail = 1;
            if(tb_uart.err_cnt != 0) test_fail = 1;
 
 	   

@@ -83,145 +83,45 @@ localparam [31:0]      YCR1_SIM_PRINT_ADDR     = 32'hF000_0000;
 localparam [31:0]      YCR1_SIM_EXT_IRQ_ADDR   = 32'hF000_0100;
 localparam [31:0]      YCR1_SIM_SOFT_IRQ_ADDR  = 32'hF000_0200;
 
- `define QSPIM_GLBL_CTRL          32'h10000000
- `define QSPIM_DMEM_G0_RD_CTRL    32'h10000004
- `define QSPIM_DMEM_G0_WR_CTRL    32'h10000008
- `define QSPIM_DMEM_G1_RD_CTRL    32'h1000000C
- `define QSPIM_DMEM_G1_WR_CTRL    32'h10000010
-
- `define QSPIM_DMEM_CS_AMAP        32'h10000014
- `define QSPIM_DMEM_CA_AMASK       32'h10000018
-
- `define QSPIM_IMEM_CTRL1          32'h1000001C
- `define QSPIM_IMEM_CTRL2          32'h10000020
- `define QSPIM_IMEM_ADDR           32'h10000024
- `define QSPIM_IMEM_WDATA          32'h10000028
- `define QSPIM_IMEM_RDATA          32'h1000002C
- `define QSPIM_SPI_STATUS          32'h10000030
-
 module user_risc_regress_tb;
-	reg clock;
-	reg wb_rst_i;
-	reg power1, power2;
-	reg power3, power4;
+parameter real CLK1_PERIOD  = 20; // 50Mhz
+parameter real CLK2_PERIOD = 2.5;
+parameter real IPLL_PERIOD = 5.008;
+parameter real XTAL_PERIOD = 6;
 
-        reg        wbd_ext_cyc_i;  // strobe/request
-        reg        wbd_ext_stb_i;  // strobe/request
-        reg [31:0] wbd_ext_adr_i;  // address
-        reg        wbd_ext_we_i;  // write
-        reg [31:0] wbd_ext_dat_i;  // data output
-        reg [3:0]  wbd_ext_sel_i;  // byte enable
-
-        wire [31:0] wbd_ext_dat_o;  // data input
-        wire        wbd_ext_ack_o;  // acknowlegement
-        wire        wbd_ext_err_o;  // error
-	wire        clk;
-
-	// User I/O
-	wire [37:0] io_oeb;
-	wire [37:0] io_out;
-	wire [37:0] io_in;
-
-	wire gpio;
-	wire [37:0] mprj_io;
-	wire [7:0] mprj_io_0;
-	reg         test_fail;
-	reg [31:0] read_data;
-
+`include "user_tasks.sv"
 
 	int unsigned                f_results;
-        int unsigned                f_info;
+    int unsigned                f_info;
         
-        string                      s_results;
-        string                      s_info;
-        `ifdef SIGNATURE_OUT
-        string                      s_testname;
-        bit                         b_single_run_flag;
-        `endif  //  SIGNATURE_OUT
+    string                      s_results;
+    string                      s_info;
+    `ifdef SIGNATURE_OUT
+    string                      s_testname;
+    bit                         b_single_run_flag;
+    `endif  //  SIGNATURE_OUT
 
 
 	`ifdef VERILATOR
-         logic [255:0]          test_file;
+     logic [255:0]          test_file;
 	 logic [255:0]          test_ram_file;
-         `else // VERILATOR
-         string                 test_file;
+     `else // VERILATOR
+     string                 test_file;
 	 string                 test_ram_file;
 
-         `endif // VERILATOR
+     `endif // VERILATOR
 
 
-        event	               reinit_event;
 	bit                    test_running;
-        int unsigned           tests_passed;
-        int unsigned           tests_total;
+    int unsigned           tests_passed;
+    int unsigned           tests_total;
 
 	logic  [7:0]           tem_mem[0:4095];
 	logic  [31:0]          mem_data;
-	integer    d_risc_id;
-
-
-parameter P_FSM_C      = 4'b0000; // Command Phase Only
-parameter P_FSM_CW     = 4'b0001; // Command + Write DATA Phase Only
-parameter P_FSM_CA     = 4'b0010; // Command -> Address Phase Only
-
-parameter P_FSM_CAR    = 4'b0011; // Command -> Address -> Read Data
-parameter P_FSM_CADR   = 4'b0100; // Command -> Address -> Dummy -> Read Data
-parameter P_FSM_CAMR   = 4'b0101; // Command -> Address -> Mode -> Read Data
-parameter P_FSM_CAMDR  = 4'b0110; // Command -> Address -> Mode -> Dummy -> Read Data
-
-parameter P_FSM_CAW    = 4'b0111; // Command -> Address ->Write Data
-parameter P_FSM_CADW   = 4'b1000; // Command -> Address -> DUMMY + Write Data
-parameter P_FSM_CAMW   = 4'b1001; // Command -> Address -> MODE + Write Data
-
-parameter P_FSM_CDR    = 4'b1010; // COMMAND -> DUMMY -> READ
-parameter P_FSM_CDW    = 4'b1011; // COMMAND -> DUMMY -> WRITE
-parameter P_FSM_CR     = 4'b1100;  // COMMAND -> READ
-
-parameter P_MODE_SWITCH_IDLE     = 2'b00;
-parameter P_MODE_SWITCH_AT_ADDR  = 2'b01;
-parameter P_MODE_SWITCH_AT_DATA  = 2'b10;
-
-parameter P_SINGLE = 2'b00;
-parameter P_DOUBLE = 2'b01;
-parameter P_QUAD   = 2'b10;
-parameter P_QDDR   = 2'b11;
-	//-----------------------------------------------------------------
-	// Since this is regression, reset will be applied multiple time
-	// Reset logic
-	// ----------------------------------------------------------------
-	bit [1:0]     rst_cnt;
-        bit           rst_init;
-	wire          rst_n;
-
-
-        assign rst_n = &rst_cnt;
-	assign wb_rst_i    =  !rst_n;
-        
-        always_ff @(posedge clk) begin
-	if (rst_init)   begin
-	     rst_cnt <= '0;
-	     -> reinit_event;
-	end
-            else if (~&rst_cnt) rst_cnt <= rst_cnt + 1'b1;
-        end
-
-	// External clock is used by default.  Make this artificially fast for the
-	// simulation.  Normally this would be a slow clock and the digital PLL
-	// would be the fast clock.
-
-	always #12.5 clock <= (clock === 1'b0);
-
-	assign clk = clock;
+    bit                    test_start;
 
 	initial begin
-		clock = 0;
-                wbd_ext_cyc_i ='h0;  // strobe/request
-                wbd_ext_stb_i ='h0;  // strobe/request
-                wbd_ext_adr_i ='h0;  // address
-                wbd_ext_we_i  ='h0;  // write
-                wbd_ext_dat_i ='h0;  // data output
-                wbd_ext_sel_i ='h0;  // byte enable
-   
+        test_start = 0;
 		$value$plusargs("risc_core_id=%d", d_risc_id);
 	end
 
@@ -247,13 +147,13 @@ parameter P_QDDR   = 2'b11;
 
 
 		// Initialize the SPI memory with hex content
-                $write("\033[0;34m---Initializing the SPI Memory with Hexfile: %s\033[0m\n", test_file);
-                $readmemh(test_file,u_spi_flash_256mb.Mem);
+         $write("\033[0;34m---Initializing the SPI Memory with Hexfile: %s\033[0m\n", test_file);
+         $readmemh(test_file,u_spi_flash_256mb.Mem);
 
 		// some of the RISCV test need SRAM area for specific
 		// instruction execution like fence
 		$sformat(test_ram_file, "%s.ram",test_file);
-                $readmemh(test_ram_file,u_sram.memory);
+        $readmemh(test_ram_file,u_sram.memory);
 
 		/***
 		// Split the Temp memory content to two sram file
@@ -278,44 +178,36 @@ parameter P_QDDR   = 2'b11;
 
 
 		#200; 
-	        repeat (10) @(posedge clock);
+	    repeat (10) @(posedge clock);
 		$display("Monitor: Core reset removal");
 
 		// Remove Wb Reset
-		wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
-	        repeat (2) @(posedge clock);
+		//wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_GLBL_CFG,'h1);
+	    repeat (2) @(posedge clock);
 		#1;
 		//------------ fuse_mhartid= 0x00
-                //wb_user_core_write('h3002_0004,'h0);
+        //wb_user_core_write('h3002_0004,'h0);
 
 
-	        repeat (2) @(posedge clock);
+        test_start = 1;
+	    repeat (2) @(posedge clock);
 		#1;
-		// Remove WB and SPI Reset, Keep SDARM and CORE under Reset
-                wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h01F);
-
-		// CS#2 Switch to QSPI Mode
-                wb_user_core_write(`ADDR_SPACE_WBHOST+`WBHOST_BANK_SEL,'h1000); // Change the Bank Sel 1000
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL1,{16'h0,1'b0,1'b0,4'b0000,P_MODE_SWITCH_IDLE,P_SINGLE,P_SINGLE,4'b0100});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_CTRL2,{8'h0,2'b00,2'b00,P_FSM_C,8'h00,8'h38});
-		wb_user_core_write(`ADDR_SPACE_QSPI+`QSPIM_IMEM_WDATA,32'h0);
-
-		// Enable the DCACHE Remap to SRAM region
-		//wb_user_core_write('h3080_000C,{4'b0000,4'b1111, 24'h0});
-		//
-		// Remove all the reset
-               if(d_risc_id == 0) begin
-                    $display("STATUS: Working with Risc core 0");
-                    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
-               end else begin
-                    $display("STATUS: Working with Risc core 1");
-                    wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
-               end
+        // Remove all the reset
+        if(d_risc_id == 0) begin
+             $display("STATUS: Working with Risc core 0");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h11F);
+        end else if(d_risc_id == 1) begin
+             $display("STATUS: Working with Risc core 1");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h21F);
+        end else if(d_risc_id == 2) begin
+             $display("STATUS: Working with Risc core 2");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h41F);
+        end else if(d_risc_id == 3) begin
+             $display("STATUS: Working with Risc core 3");
+             wb_user_core_write(`ADDR_SPACE_GLBL+`GLBL_CFG_CFG0,'h81F);
+        end
 
 	end
-
-wire USER_VDD1V8 = 1'b1;
-wire VSS = 1'b0;
 
 //-------------------------------------------------------------------------------
 // Run tests
@@ -324,47 +216,9 @@ wire VSS = 1'b0;
 `include "riscv_runtests.sv"
 
 
-//-------------------------------------------------------------------------------
-// Core instance
-//-------------------------------------------------------------------------------
-
-user_project_wrapper u_top(
-`ifdef USE_POWER_PINS
-    .vccd1(USER_VDD1V8),	// User area 1 1.8V supply
-    .vssd1(VSS),	// User area 1 digital ground
-`endif
-    .wb_clk_i        (clock),  // System clock
-    .user_clock2     (1'b1),  // Real-time clock
-    .wb_rst_i        (wb_rst_i),  // Regular Reset signal
-
-    .wbs_cyc_i   (wbd_ext_cyc_i),  // strobe/request
-    .wbs_stb_i   (wbd_ext_stb_i),  // strobe/request
-    .wbs_adr_i   (wbd_ext_adr_i),  // address
-    .wbs_we_i    (wbd_ext_we_i),  // write
-    .wbs_dat_i   (wbd_ext_dat_i),  // data output
-    .wbs_sel_i   (wbd_ext_sel_i),  // byte enable
-
-    .wbs_dat_o   (wbd_ext_dat_o),  // data input
-    .wbs_ack_o   (wbd_ext_ack_o),  // acknowlegement
-
- 
-    // Logic Analyzer Signals
-    .la_data_in      ('1) ,
-    .la_data_out     (),
-    .la_oenb         ('0),
- 
-
-    // IOs
-    .io_in          (io_in)  ,
-    .io_out         (io_out) ,
-    .io_oeb         (io_oeb) ,
-
-    .user_irq       () 
-
-);
 // SSPI Slave I/F
-assign io_in[0]  = 1'b1; // RESET
-assign io_in[16] = 1'b0 ; // SPIS SCK 
+assign io_in[5]  = 1'b1; // RESET
+assign io_in[21] = 1'b0 ; // SPIS SCK 
 
 
 logic [31:0] riscv_dmem_req_cnt; // cnt dmem req
@@ -392,22 +246,22 @@ end
 //  user core using the gpio pads
 //  ----------------------------------------------------
 
-   wire flash_clk = io_out[24];
-   wire flash_csb = io_out[25];
+   wire flash_clk = (io_oeb[28] == 1'b0) ? io_out[28]: 1'b0;
+   wire flash_csb = (io_oeb[29] == 1'b0) ? io_out[29]: 1'b0;
    // Creating Pad Delay
-   wire #1 io_oeb_29 = io_oeb[29];
-   wire #1 io_oeb_30 = io_oeb[30];
-   wire #1 io_oeb_31 = io_oeb[31];
-   wire #1 io_oeb_32 = io_oeb[32];
-   tri  #1 flash_io0 = (io_oeb_29== 1'b0) ? io_out[29] : 1'bz;
-   tri  #1 flash_io1 = (io_oeb_30== 1'b0) ? io_out[30] : 1'bz;
-   tri  #1 flash_io2 = (io_oeb_31== 1'b0) ? io_out[31] : 1'bz;
-   tri  #1 flash_io3 = (io_oeb_32== 1'b0) ? io_out[32] : 1'bz;
+   wire #1 io_oeb_33 = io_oeb[33];
+   wire #1 io_oeb_34 = io_oeb[34];
+   wire #1 io_oeb_35 = io_oeb[35];
+   wire #1 io_oeb_36 = io_oeb[36];
+   tri  #1 flash_io0 = (io_oeb_33== 1'b0) ? io_out[33] : 1'bz;
+   tri  #1 flash_io1 = (io_oeb_34== 1'b0) ? io_out[34] : 1'bz;
+   tri  #1 flash_io2 = (io_oeb_35== 1'b0) ? io_out[35] : 1'bz;
+   tri  #1 flash_io3 = (io_oeb_36== 1'b0) ? io_out[36] : 1'bz;
 
-   assign io_in[29] = flash_io0;
-   assign io_in[30] = flash_io1;
-   assign io_in[31] = flash_io2;
-   assign io_in[32] = flash_io3;
+   assign io_in[33] = (io_oeb[33] == 1'b1) ? flash_io0: 1'b0;
+   assign io_in[34] = (io_oeb[34] == 1'b1) ? flash_io1: 1'b0;
+   assign io_in[35] = (io_oeb[35] == 1'b1) ? flash_io2: 1'b0;
+   assign io_in[36] = (io_oeb[36] == 1'b1) ? flash_io3: 1'b0;
 
 
    // Quard flash
@@ -428,7 +282,7 @@ end
        );
 
 
-   wire spiram_csb = io_out[27];
+   wire spiram_csb = (io_oeb[31] == 1'b0) ? io_out[31] : 1'b0;
 
    is62wvs1288 #(.mem_file_name("none"))
 	u_sram (
@@ -444,60 +298,6 @@ end
 
 
 
-task wb_user_core_write;
-input [31:0] address;
-input [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h1;  // write
-  wbd_ext_dat_i =data;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS WRITE Address : %x, Data : %x",address,data);
-  repeat (2) @(posedge clock);
-end
-endtask
-
-task  wb_user_core_read;
-input [31:0] address;
-output [31:0] data;
-reg    [31:0] data;
-begin
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_adr_i =address;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='0;  // data output
-  wbd_ext_sel_i ='hF;  // byte enable
-  wbd_ext_cyc_i ='h1;  // strobe/request
-  wbd_ext_stb_i ='h1;  // strobe/request
-  wait(wbd_ext_ack_o == 1);
-  repeat (1) @(negedge clock);
-  data  = wbd_ext_dat_o;  
-  repeat (1) @(posedge clock);
-  #1;
-  wbd_ext_cyc_i ='h0;  // strobe/request
-  wbd_ext_stb_i ='h0;  // strobe/request
-  wbd_ext_adr_i ='h0;  // address
-  wbd_ext_we_i  ='h0;  // write
-  wbd_ext_dat_i ='h0;  // data output
-  wbd_ext_sel_i ='h0;  // byte enable
-  $display("DEBUG WB USER ACCESS READ Address : %x, Data : %x",address,data);
-  repeat (2) @(posedge clock);
-end
-endtask
 
 `ifdef GL
 

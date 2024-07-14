@@ -68,7 +68,9 @@ pad_strap_in decoding
                  01 - 2 Div
                  10 - 4 Div
                  11 - 8 Div
-     bit [4]   - Reserved
+     bit [4]   - uart master config control
+                 1'b0   - Auto Detect (Default)
+                 1'b1   - load from LA
      bit [5]   - QSPI SRAM Mode Selection
                  1'b0 - Single 
                  1'b1 - Quad   (Default)
@@ -86,18 +88,7 @@ pad_strap_in decoding
      bit [10]  - Riscv SRAM clock edge selection
                  0 - Normal
                  1 - Invert (Default)
-     bit [12:11] - Skew selection
-                 2'b00 - Default value (Default
-                 2'b01 - Default value + 2               
-                 2'b10 - Default value + 4               
-                 2'b11 - Default value - 4 
-     bit [4:13]   - uart master config control
-                 2'b00   - Auto Detect (Default)
-                 2'b01   - constant value based on system clock-50Mhz
-                 2'b10   - constant value based on system clock-4Mhz 
-                 2'b11   - load from LA
-     bit [14:13] - Reserved
-     bit [15]    - Strap Mode
+     bit [11]    - Strap Mode
                    0 - Normal
                    1 - Pick Default Value
 
@@ -123,8 +114,8 @@ system strap decoding
                  10 - 4 Div
                  11 - 8 Div
      bit [8]   - uart master config control
-                 0   - load from LA
-                 1   - constant value based on system clock selection
+                 0   - Auto value based on system clock selection
+                 1   - load from LA
      bit [9]   - QSPI SRAM Mode Selection CS#2
                  1'b0 - Single
                  1'b1 - Quad
@@ -144,13 +135,6 @@ system strap decoding
                  1 - Invert
 
      bit [15]    -  Soft Reboot Request
-     bit [17:16] -  cfg_cska_wi Skew selection      
-     bit [19:18] -  cfg_cska_wh Skew selection        
-     bit [21:20] -  cfg_cska_riscv Skew selection      
-     bit [23:22] -  cfg_cska_qspi  Skew selection      
-     bit [25:24] -  cfg_cska_uart  Skew selection       
-     bit [27:26] -  cfg_cska_pinmux Skew selection     
-     bit [29:28] -  cfg_cska_qspi_co Skew selection    
 
 **************************************************************************/
 module strap_ctrl (
@@ -168,8 +152,7 @@ module strap_ctrl (
 	         
 	         //List of Outs
              output logic [15:0] strap_latch         ,
-	         output logic [31:0] strap_sticky        ,
-             output logic [1:0]  strap_uartm           // Uart Master Strap Config
+	         output logic [31:0] strap_sticky        
 
          );
 
@@ -181,25 +164,25 @@ logic [31:0] strap_map;
 logic [14:0] pstrap_select;
 
 // Pad Strap selection based on strap mode
-assign pstrap_select = (strap_latch[15] == 1'b1) ?  PSTRAP_DEFAULT_VALUE : strap_latch[14:0];
+assign pstrap_select = (strap_latch[11] == 1'b1) ?  PSTRAP_DEFAULT_VALUE : strap_latch[10:0];
 
 assign strap_map = {
                    1'b0               ,   // bit[31]      - Soft Reboot Request - Need to double sync to local clock
                    1'b0               ,   // bit[30]      - reserved
-                   pstrap_select[12:11] , // bit[29:28]   - cfg_cska_qspi_co Skew selection
-                   pstrap_select[12:11] , // bit[27:26]   - cfg_cska_pinmux Skew selection
-                   pstrap_select[12:11] , // bit[25:24]   - cfg_cska_uart  Skew selection
-                   pstrap_select[12:11] , // bit[23:22]   - cfg_cska_qspi  Skew selection
-                   pstrap_select[12:11] , // bit[21:20]   - cfg_cska_riscv Skew selection
-                   pstrap_select[12:11] , // bit[19:18]   - cfg_cska_wh Skew selection
-                   pstrap_select[12:11] , // bit[17:16]   - cfg_cska_wi Skew selection
+                   2'b00 ,                // bit[29:28]   - cfg_cska_qspi_co Skew selection
+                   2'b00 ,                // bit[27:26]   - cfg_cska_pinmux Skew selection
+                   2'b00 ,                // bit[25:24]   - cfg_cska_uart  Skew selection
+                   2'b00 ,                // bit[23:22]   - cfg_cska_qspi  Skew selection
+                   2'b00 ,                // bit[21:20]   - cfg_cska_riscv Skew selection
+                   2'b00 ,                // bit[19:18]   - cfg_cska_wh Skew selection
+                   2'b00 ,                // bit[17:16]   - cfg_cska_wi Skew selection
                    1'b0                 , // bit[15]      - Reserved
                    pstrap_select[10]    , // bit[14]      - Riscv SRAM clock edge selection
                    pstrap_select[9]     , // bit[13]      - Riscv Cache Bypass
                    pstrap_select[8]     , // bit[12]      - Riscv Reset control
                    pstrap_select[7:6]   , // bit[11:10]   - QSPI FLASH Mode Selection CS#0
                    pstrap_select[5]     , // bit[9]       - QSPI SRAM Mode Selection CS#2
-                   pstrap_select[4]     , // bit[8]       - Reserved
+                   pstrap_select[4]     , // bit[8]       - Uart Master Config
                    pstrap_select[3:2]   , // bit[7:6]     - riscv clock div
                    pstrap_select[1:0]   , // bit[5:4]     - riscv clock source sel
                    pstrap_select[3:2]   , // bit[3:2]     - wbs clock division
@@ -207,7 +190,6 @@ assign strap_map = {
                    };
 
 
-assign strap_uartm = strap_latch[`PSTRAP_UARTM_CFG];
 
 //------------------------------------
 // Generating strap latch
@@ -215,7 +197,7 @@ assign strap_uartm = strap_latch[`PSTRAP_UARTM_CFG];
 always_latch begin
   if ( ~e_reset_n )
   begin
-    strap_latch =  pad_strap_in[15:0];
+    strap_latch =  pad_strap_in;
   end
 end
 

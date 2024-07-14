@@ -75,7 +75,7 @@ wire [31:0] pc_curr_ff         = u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_pip
 wire [31:0] exu2pipe_pc_curr_o = u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_pipe_exu.exu2pipe_pc_curr_o ;
 wire [31:0] mprf_int_10        = u_top.u_riscv_top.i_core_top_0.i_pipe_top.i_pipe_mprf.mprf_int[10]      ;
 
-always @(posedge clk) begin
+always @(posedge clock) begin
     bit test_pass;
     int unsigned                            f_test;
     int unsigned                            f_test_ram;
@@ -111,7 +111,7 @@ always @(posedge clk) begin
 	        wait(u_top.u_riscv_top.u_intf.u_dcache.force_flush_done == 1'b1);
 	        release u_top.u_riscv_top.u_intf.u_dcache.cfg_force_flush;
 	        repeat (2000) @(posedge clock); // wait data to flush in pipe
-		$display("STATUS: Checking Complaince Test Status .... ");
+		        $display("STATUS: Checking Complaince Test Status .... ");
                 test_running <= 1'b0;
                 test_pass = 1;
 
@@ -144,9 +144,9 @@ always @(posedge clk) begin
                     stop = tmpv;
                 end
                 $fclose(fd);
-		start = start & 32'h07FF_FFFF;
-	        stop  = stop & 32'h07FF_FFFF;
-		$display("Complaince Signature Start Address: %x End Address:%x",start,stop);
+		        start = start & 32'h07FF_FFFF;
+	            stop  = stop & 32'h07FF_FFFF;
+		        $display("Complaince Signature Start Address: %x End Address:%x",start,stop);
 
 		//if((start & 32'h1FFF) > 512)
 		//	$display("ERROR: Start address is more than 512, Start: %x",start & 32'h1FFF);
@@ -200,9 +200,9 @@ always @(posedge clk) begin
                     tests_total += 1;
                     tests_passed += test_pass;
                     if (test_pass) begin
-                        $write("\033[0;32mTest passed\033[0m\n");
+                        $write("Monitor: %s Test Passed\n",test_file);
                     end else begin
-                        $write("\033[0;31mTest failed-2\033[0m\n");
+                        $write("Monitor: %s Test Failed\n",test_file);
                     end
                 `endif  // SIGNATURE_OUT
             end else begin // Non compliance mode
@@ -215,13 +215,13 @@ always @(posedge clk) begin
                 tests_passed    += test_pass;
                 `ifndef SIGNATURE_OUT
                     if (test_pass) begin
-                        $write("\033[0;32mTest passed\033[0m\n");
+                        $write("Monitor: %s Test Passed\n",test_file);
                     end else begin
-                        $write("\033[0;31mTest failed\033[0m\n");
+                        $write("Monitor: %s Test Failed\n",test_file);
                     end
                 `endif //SIGNATURE_OUT
             end
-            $fwrite(f_results, "%s\t\t%s\t%s\n", test_file, "OK" , (test_pass ? "PASS" : "__FAIL"));
+            $fwrite(f_results, "%s\t\t%s\t%s\n", test_file, "OK" , (test_pass ? "Passed" : "Failed"));
         end
     end else begin
 `ifdef VERILATOR

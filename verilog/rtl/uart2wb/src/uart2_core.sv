@@ -65,7 +65,8 @@ module uart2_core (
 	// configuration control
         input wire       cfg_tx_enable  , // Enable Transmit Path
         input wire       cfg_rx_enable  , // Enable Received Path
-        input wire       cfg_stop_bit   , // 0 -> 1 Start , 1 -> 2 Stop Bits
+        input wire       cfg_tx_stop_bit   , // 0 -> 1 Start , 1 -> 2 Stop Bits
+        input wire       cfg_rx_stop_bit   , // 0 -> 1 Start , 1 -> 2 Stop Bits
         input wire [1:0] cfg_pri_mod    , // priority mode, 0 -> nop, 1 -> Even, 2 -> Odd
 	input wire [11:0]cfg_baud_16x   , // 16x baud rate control
 
@@ -143,7 +144,7 @@ uart_txfsm u_txfsm (
                . baud_clk_16x      ( baud_clk_16x      ),
 
                . cfg_tx_enable     ( cfg_tx_enable     ),
-               . cfg_stop_bit      ( cfg_stop_bit      ),
+               . cfg_stop_bit      ( cfg_tx_stop_bit   ),
                . cfg_pri_mod       ( cfg_pri_mod       ),
 
        // FIFO control signal
@@ -161,7 +162,7 @@ uart_rxfsm u_rxfsm (
                . baud_clk_16x      (  baud_clk_16x     ) ,
 
                . cfg_rx_enable     (  cfg_rx_enable    ),
-               . cfg_stop_bit      (  cfg_stop_bit     ),
+               . cfg_stop_bit      (  cfg_rx_stop_bit  ),
                . cfg_pri_mod       (  cfg_pri_mod      ),
 
                . error_ind         (  error_ind        ),

@@ -341,6 +341,23 @@
 ////    6.12 June 14, 2023, Dinesh A                                                             ////
 ////         A. Inferred Clock Gating (At Synthesis) add for SPIQ                                ////
 ////         b. New 4x8bit DAC added with voltage follower and issolation for digital input      //// 
+////    6.13. July 2, 2023, Dinesh A                                                             ////
+////         Based on CI2206Q Silicon debug, following strap changes are done                    ////
+////           A. uart master strap reduced from 2 to 1 bits                                     ////
+////           B. Skew adjustment through strap is removed                                       ////
+////           C. Total Strap reduced from 16 to 12                                              ////
+////           D. QPSIM de-assertion at clock_enable=0 does not take out of spi_clk ratio        ////
+////           E. QSPIM Direct SRAM access does not support byte enabled based write             ////
+////           F. Need to add seperate Stop bit config for TX and RX UART logic                  ////
+////           G. If Possbile, Make Dcache as Extended TCM Memory                                ////
+////    6.14 - Aug 2, 2023, Dinesh A                                                             ////
+////          A. Seperated Stop bit for uart tx and rx                                           ////
+////              recomended setting rx = 0, tx = 1                                              ////
+////          B. Bug Fix: Added Support for partital byte based write access at SPI SRAM         ////
+////    6.15 - Oct 3, 2023, Dinesh A                                                             ////
+////          A. Burst Write and Read access support at uart message handler                     ////
+////          B. Byte Write is supported in uart message handler
+////                                                                                             ////
 ////                                                                                             ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////                                                                                             ////
@@ -381,6 +398,13 @@
        0x1001_00C0 to 0x1001_00FF  - SSPIM
        0x1001_0100 to 0x1001_013F  - UART1
        0x1002_0000 to 0x1002_00FF  - PINMUX
+
+  CPU Memory Map:                                              
+       0x0000_0000 to 0x07FF_FFFF (128MB) - ICACHE            
+       0x0800_0000 to 0x0BFF_FFFF (64MB)  - DCACHE           
+       0x0C48_0000 to 0x0C48_FFFF (64K)   - TCM SRAM        
+       0x0C49_0000 to 0x0C49_000F (16)    - TIMER          
+
 
        Caravel Memory Map:
 -----------------------------------------------------------------------
@@ -901,11 +925,9 @@ wire                           riscv_tdo_en                          ;
 //---------------------------------------------------------------------
 wire [31:0]                    system_strap                           ;
 wire [31:0]                    strap_sticky                           ;
-wire [1:0]                     strap_uartm                            ;
 
 wire [31:0]                    system_strap_rp                        ;
 wire [31:0]                    strap_sticky_rp                        ;
-wire [1:0]                     strap_uartm_rp                         ;
 
 wire [1:0]  strap_qspi_flash       = system_strap[`STRAP_QSPI_FLASH];
 wire        strap_qspi_sram        = system_strap[`STRAP_QSPI_SRAM];
@@ -1006,7 +1028,6 @@ wb_host u_wb_host(
           .cfg_strap_pad_ctrl      (cfg_strap_pad_ctrl      ),
 	      .system_strap            (system_strap            ),
 	      .strap_sticky            (strap_sticky_rp         ),
-	      .strap_uartm             (strap_uartm_rp          ),
 
           .wbd_int_rst_n           (wbd_int_rst_n           ),
           .wbd_pll_rst_n           (wbd_pll_rst_n           ),
@@ -1045,7 +1066,7 @@ wb_host u_wb_host(
           .cfg_clk_skew_ctrl1      (cfg_clk_skew_ctrl1      ),
           .cfg_clk_skew_ctrl2      (cfg_clk_skew_ctrl2      ),
 
-          .la_data_in              (la_data_in_rp[17:0]     ),
+          .la_data_in              (la_data_in_rp[19:0]     ),
 
           .uartm_rxd               (uartm_rxd               ),
           .uartm_txd               (uartm_txd               ),
@@ -1090,7 +1111,6 @@ ycr_top_wb u_riscv_top (
           .vssd1                   (vssd1                      ),// User area 1 digital ground
 `endif
           .wbd_clk_int             (riscv_wbclk                ), 
-          .cfg_wcska_riscv_intf    (cfg_wcska_riscv_rp         ), 
           .wbd_clk_skew            (wbd_clk_riscv_skew         ),
 
 
@@ -1472,7 +1492,7 @@ qspim_top
 wb_interconnect  #(
 	`ifndef SYNTHESIS
           .CH_CLK_WD          (3                            ),
-          .CH_DATA_WD         (158                          )
+          .CH_DATA_WD         (156                          )
         `endif
 	) u_intercon (
 `ifdef USE_POWER_PINS
@@ -1492,7 +1512,6 @@ wb_interconnect  #(
                                   cfg_ccska_fpu[3:0],
                                   cfg_ccska_aes[3:0],
                                   strap_sticky[31:0],
-                                  strap_uartm[1:0],
                                   system_strap[31:0],
                                   p_reset_n,
                                   e_reset_n,
@@ -1519,7 +1538,6 @@ wb_interconnect  #(
 			                      cfg_ccska_fpu_rp[3:0],
 			                      cfg_ccska_aes_rp[3:0],
                                   strap_sticky_rp[31:0],
-                                  strap_uartm_rp[1:0],
                                   system_strap_rp[31:0],
                                   p_reset_n_rp,
                                   e_reset_n_rp,
@@ -1742,7 +1760,6 @@ pinmux_top u_pinmux(
           .cfg_strap_pad_ctrl (cfg_strap_pad_ctrl_rp        ),
           .system_strap       (system_strap_rp              ),
           .strap_sticky       (strap_sticky                 ),
-          .strap_uartm        (strap_uartm                  ),
 
           .user_clock1        (wb_clk_i_rp                  ),
           .user_clock2        (user_clock2_rp               ),
