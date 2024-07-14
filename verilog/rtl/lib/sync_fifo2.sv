@@ -90,6 +90,7 @@ module sync_fifo2 (clk,
    output            full, empty;
    output            afull, aempty;       // about full and about to empty
 
+   reg [AW:0] rd_ptr;
 
    // synopsys translate_off
 
@@ -145,7 +146,6 @@ module sync_fifo2 (clk,
 
 
    /************************ read side *****************************/
-   reg [AW:0] rd_ptr;
    reg empty_q;
    wire empty_c;
    wire aempty_c;

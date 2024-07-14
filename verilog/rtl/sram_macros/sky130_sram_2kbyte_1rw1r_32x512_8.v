@@ -14,6 +14,8 @@ module sky130_sram_2kbyte_1rw1r_32x512_8(
     clk1,csb1,addr1,dout1
   );
 
+/// sta-blackbox
+
   parameter NUM_WMASKS = 4 ;
   parameter DATA_WIDTH = 32 ;
   parameter ADDR_WIDTH = 9 ;
@@ -46,6 +48,8 @@ module sky130_sram_2kbyte_1rw1r_32x512_8(
   reg [DATA_WIDTH-1:0]  din0_reg;
   reg [DATA_WIDTH-1:0]  dout0;
 
+  reg [DATA_WIDTH-1:0]    mem [0:RAM_DEPTH-1];
+
   // All inputs are registers
   always @(posedge clk0)
   begin
@@ -77,7 +81,6 @@ module sky130_sram_2kbyte_1rw1r_32x512_8(
       $display($time," Reading %m addr1=%b dout1=%b",addr1_reg,mem[addr1_reg]);
   end
 
-reg [DATA_WIDTH-1:0]    mem [0:RAM_DEPTH-1];
 
   // Memory Write Block Port 0
   // Write Operation : When web0 = 0, csb0 = 0

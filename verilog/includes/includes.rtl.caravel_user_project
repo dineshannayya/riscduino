@@ -9,7 +9,6 @@
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/bfm
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/model
 +incdir+$(USER_PROJECT_VERILOG)/dv/common/agents
-$(USER_PROJECT_VERILOG)/rtl/user_reg_map.v
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux_top.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/pinmux.sv
 -v $(USER_PROJECT_VERILOG)/rtl/pinmux/src/glbl_reg.sv

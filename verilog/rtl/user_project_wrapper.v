@@ -441,8 +441,9 @@
 ************************************************************************/
 
 `include "user_params.svh"
+`include "user_reg_map.svh"
 
-module user_project_wrapper (
+module user_project_wrapper #(parameter WB_WIDTH=32) (
 `ifdef USE_POWER_PINS
     inout vdda1,	// User area 1 3.3V supply
     inout vdda2,	// User area 2 3.3V supply
@@ -491,12 +492,6 @@ module user_project_wrapper (
 // Local Parameter Declaration
 // --------------------------------------------------
 
-parameter     BIST_NO_SRAM  = 4; // NO of MBIST MEMORY
-parameter     SDR_DW        = 8;  // SDR Data Width 
-parameter     SDR_BW        = 1;  // SDR Byte Width
-parameter     WB_WIDTH      = 32; // WB ADDRESS/DARA WIDTH
-parameter     BIST1_ADDR_WD = 11; // 512x32 SRAM
-parameter     BIST_DATA_WD  = 32;
 
 //---------------------------------------------------------------------
 // Wishbone Risc V Dcache Memory Interface
@@ -1370,7 +1365,6 @@ aes_top u_aes (
     .mclk                  (cpu_clk_aes_skew ),
     .rst_n                 (cpu_intf_rst_n   ),
 
-    .cfg_cska              (cfg_ccska_aes_rp ),
     .wbd_clk_int           (cpu_clk_aes      ),
     .wbd_clk_out           (cpu_clk_aes_skew ),
 
@@ -1442,8 +1436,6 @@ qspim_top
           .cfg_init_bypass         (strap_qspi_init_bypass  ),
 
     // Clock Skew Adjust
-          .cfg_cska_sp_co          (cfg_wcska_qspi_co_rp     ),
-          .cfg_cska_spi            (cfg_wcska_qspi_rp        ),
           .wbd_clk_int             (qspim_mclk               ),
           .wbd_clk_spi             (wbd_clk_spi              ),
 

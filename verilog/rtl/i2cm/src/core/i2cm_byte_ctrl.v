@@ -137,6 +137,8 @@ module i2cm_byte_ctrl (
 	reg  [2:0] dcnt;
 	wire       cnt_done;
 
+	reg [4:0] c_state; // synopsys enum_state
+
 	//
 	// Module body
 	//
@@ -198,7 +200,6 @@ module i2cm_byte_ctrl (
 	//
 	// state machine
 	//
-	reg [4:0] c_state; // synopsys enum_state
 
 	always @(posedge clk or negedge aresetn)
 	  if (!aresetn)
